@@ -1,0 +1,482 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		78B6A548193A3B3900C7E36A /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 78B6A547193A3B3900C7E36A /* Cocoa.framework */; };
+		78B6A552193A3B3900C7E36A /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 78B6A550193A3B3900C7E36A /* InfoPlist.strings */; };
+		78B6A554193A3B3900C7E36A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 78B6A553193A3B3900C7E36A /* main.m */; };
+		78B6A558193A3B3900C7E36A /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = 78B6A556193A3B3900C7E36A /* Credits.rtf */; };
+		78B6A55B193A3B3900C7E36A /* ISAAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 78B6A55A193A3B3900C7E36A /* ISAAppDelegate.m */; };
+		78B6A55E193A3B3900C7E36A /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 78B6A55C193A3B3900C7E36A /* MainMenu.xib */; };
+		78B6A560193A3B3900C7E36A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 78B6A55F193A3B3900C7E36A /* Images.xcassets */; };
+		78B6A567193A3B3900C7E36A /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 78B6A566193A3B3900C7E36A /* XCTest.framework */; };
+		78B6A568193A3B3900C7E36A /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 78B6A547193A3B3900C7E36A /* Cocoa.framework */; };
+		78B6A570193A3B3900C7E36A /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 78B6A56E193A3B3900C7E36A /* InfoPlist.strings */; };
+		78B6A572193A3B3900C7E36A /* NeutronsReaderTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 78B6A571193A3B3900C7E36A /* NeutronsReaderTests.m */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		78B6A569193A3B3900C7E36A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 78B6A53C193A3B3800C7E36A /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 78B6A543193A3B3900C7E36A;
+			remoteInfo = NeutronsReader;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		78B6A544193A3B3900C7E36A /* NeutronsReader.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NeutronsReader.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		78B6A547193A3B3900C7E36A /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
+		78B6A54A193A3B3900C7E36A /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
+		78B6A54B193A3B3900C7E36A /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = System/Library/Frameworks/CoreData.framework; sourceTree = SDKROOT; };
+		78B6A54C193A3B3900C7E36A /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		78B6A54F193A3B3900C7E36A /* NeutronsReader-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "NeutronsReader-Info.plist"; sourceTree = "<group>"; };
+		78B6A551193A3B3900C7E36A /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		78B6A553193A3B3900C7E36A /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		78B6A555193A3B3900C7E36A /* NeutronsReader-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NeutronsReader-Prefix.pch"; sourceTree = "<group>"; };
+		78B6A557193A3B3900C7E36A /* en */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; name = en; path = en.lproj/Credits.rtf; sourceTree = "<group>"; };
+		78B6A559193A3B3900C7E36A /* ISAAppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ISAAppDelegate.h; sourceTree = "<group>"; };
+		78B6A55A193A3B3900C7E36A /* ISAAppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ISAAppDelegate.m; sourceTree = "<group>"; };
+		78B6A55D193A3B3900C7E36A /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/MainMenu.xib; sourceTree = "<group>"; };
+		78B6A55F193A3B3900C7E36A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
+		78B6A565193A3B3900C7E36A /* NeutronsReaderTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = NeutronsReaderTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		78B6A566193A3B3900C7E36A /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
+		78B6A56D193A3B3900C7E36A /* NeutronsReaderTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "NeutronsReaderTests-Info.plist"; sourceTree = "<group>"; };
+		78B6A56F193A3B3900C7E36A /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		78B6A571193A3B3900C7E36A /* NeutronsReaderTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NeutronsReaderTests.m; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		78B6A541193A3B3900C7E36A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				78B6A548193A3B3900C7E36A /* Cocoa.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		78B6A562193A3B3900C7E36A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				78B6A568193A3B3900C7E36A /* Cocoa.framework in Frameworks */,
+				78B6A567193A3B3900C7E36A /* XCTest.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		78B6A53B193A3B3800C7E36A = {
+			isa = PBXGroup;
+			children = (
+				78B6A54D193A3B3900C7E36A /* NeutronsReader */,
+				78B6A56B193A3B3900C7E36A /* NeutronsReaderTests */,
+				78B6A546193A3B3900C7E36A /* Frameworks */,
+				78B6A545193A3B3900C7E36A /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		78B6A545193A3B3900C7E36A /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				78B6A544193A3B3900C7E36A /* NeutronsReader.app */,
+				78B6A565193A3B3900C7E36A /* NeutronsReaderTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		78B6A546193A3B3900C7E36A /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				78B6A547193A3B3900C7E36A /* Cocoa.framework */,
+				78B6A566193A3B3900C7E36A /* XCTest.framework */,
+				78B6A549193A3B3900C7E36A /* Other Frameworks */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		78B6A549193A3B3900C7E36A /* Other Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				78B6A54A193A3B3900C7E36A /* AppKit.framework */,
+				78B6A54B193A3B3900C7E36A /* CoreData.framework */,
+				78B6A54C193A3B3900C7E36A /* Foundation.framework */,
+			);
+			name = "Other Frameworks";
+			sourceTree = "<group>";
+		};
+		78B6A54D193A3B3900C7E36A /* NeutronsReader */ = {
+			isa = PBXGroup;
+			children = (
+				78B6A559193A3B3900C7E36A /* ISAAppDelegate.h */,
+				78B6A55A193A3B3900C7E36A /* ISAAppDelegate.m */,
+				78B6A55C193A3B3900C7E36A /* MainMenu.xib */,
+				78B6A55F193A3B3900C7E36A /* Images.xcassets */,
+				78B6A54E193A3B3900C7E36A /* Supporting Files */,
+			);
+			path = NeutronsReader;
+			sourceTree = "<group>";
+		};
+		78B6A54E193A3B3900C7E36A /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				78B6A54F193A3B3900C7E36A /* NeutronsReader-Info.plist */,
+				78B6A550193A3B3900C7E36A /* InfoPlist.strings */,
+				78B6A553193A3B3900C7E36A /* main.m */,
+				78B6A555193A3B3900C7E36A /* NeutronsReader-Prefix.pch */,
+				78B6A556193A3B3900C7E36A /* Credits.rtf */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		78B6A56B193A3B3900C7E36A /* NeutronsReaderTests */ = {
+			isa = PBXGroup;
+			children = (
+				78B6A571193A3B3900C7E36A /* NeutronsReaderTests.m */,
+				78B6A56C193A3B3900C7E36A /* Supporting Files */,
+			);
+			path = NeutronsReaderTests;
+			sourceTree = "<group>";
+		};
+		78B6A56C193A3B3900C7E36A /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				78B6A56D193A3B3900C7E36A /* NeutronsReaderTests-Info.plist */,
+				78B6A56E193A3B3900C7E36A /* InfoPlist.strings */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		78B6A543193A3B3900C7E36A /* NeutronsReader */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 78B6A575193A3B3900C7E36A /* Build configuration list for PBXNativeTarget "NeutronsReader" */;
+			buildPhases = (
+				78B6A540193A3B3900C7E36A /* Sources */,
+				78B6A541193A3B3900C7E36A /* Frameworks */,
+				78B6A542193A3B3900C7E36A /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = NeutronsReader;
+			productName = NeutronsReader;
+			productReference = 78B6A544193A3B3900C7E36A /* NeutronsReader.app */;
+			productType = "com.apple.product-type.application";
+		};
+		78B6A564193A3B3900C7E36A /* NeutronsReaderTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 78B6A578193A3B3900C7E36A /* Build configuration list for PBXNativeTarget "NeutronsReaderTests" */;
+			buildPhases = (
+				78B6A561193A3B3900C7E36A /* Sources */,
+				78B6A562193A3B3900C7E36A /* Frameworks */,
+				78B6A563193A3B3900C7E36A /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				78B6A56A193A3B3900C7E36A /* PBXTargetDependency */,
+			);
+			name = NeutronsReaderTests;
+			productName = NeutronsReaderTests;
+			productReference = 78B6A565193A3B3900C7E36A /* NeutronsReaderTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		78B6A53C193A3B3800C7E36A /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				CLASSPREFIX = ISA;
+				LastUpgradeCheck = 0510;
+				ORGANIZATIONNAME = "Andrey Isaev";
+				TargetAttributes = {
+					78B6A564193A3B3900C7E36A = {
+						TestTargetID = 78B6A543193A3B3900C7E36A;
+					};
+				};
+			};
+			buildConfigurationList = 78B6A53F193A3B3800C7E36A /* Build configuration list for PBXProject "NeutronsReader" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 78B6A53B193A3B3800C7E36A;
+			productRefGroup = 78B6A545193A3B3900C7E36A /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				78B6A543193A3B3900C7E36A /* NeutronsReader */,
+				78B6A564193A3B3900C7E36A /* NeutronsReaderTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		78B6A542193A3B3900C7E36A /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				78B6A552193A3B3900C7E36A /* InfoPlist.strings in Resources */,
+				78B6A560193A3B3900C7E36A /* Images.xcassets in Resources */,
+				78B6A558193A3B3900C7E36A /* Credits.rtf in Resources */,
+				78B6A55E193A3B3900C7E36A /* MainMenu.xib in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		78B6A563193A3B3900C7E36A /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				78B6A570193A3B3900C7E36A /* InfoPlist.strings in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		78B6A540193A3B3900C7E36A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				78B6A55B193A3B3900C7E36A /* ISAAppDelegate.m in Sources */,
+				78B6A554193A3B3900C7E36A /* main.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		78B6A561193A3B3900C7E36A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				78B6A572193A3B3900C7E36A /* NeutronsReaderTests.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		78B6A56A193A3B3900C7E36A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 78B6A543193A3B3900C7E36A /* NeutronsReader */;
+			targetProxy = 78B6A569193A3B3900C7E36A /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		78B6A550193A3B3900C7E36A /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				78B6A551193A3B3900C7E36A /* en */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+		78B6A556193A3B3900C7E36A /* Credits.rtf */ = {
+			isa = PBXVariantGroup;
+			children = (
+				78B6A557193A3B3900C7E36A /* en */,
+			);
+			name = Credits.rtf;
+			sourceTree = "<group>";
+		};
+		78B6A55C193A3B3900C7E36A /* MainMenu.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				78B6A55D193A3B3900C7E36A /* Base */,
+			);
+			name = MainMenu.xib;
+			sourceTree = "<group>";
+		};
+		78B6A56E193A3B3900C7E36A /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				78B6A56F193A3B3900C7E36A /* en */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		78B6A573193A3B3900C7E36A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		78B6A574193A3B3900C7E36A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		78B6A576193A3B3900C7E36A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				COMBINE_HIDPI_IMAGES = YES;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "NeutronsReader/NeutronsReader-Prefix.pch";
+				INFOPLIST_FILE = "NeutronsReader/NeutronsReader-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = app;
+			};
+			name = Debug;
+		};
+		78B6A577193A3B3900C7E36A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				COMBINE_HIDPI_IMAGES = YES;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "NeutronsReader/NeutronsReader-Prefix.pch";
+				INFOPLIST_FILE = "NeutronsReader/NeutronsReader-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = app;
+			};
+			name = Release;
+		};
+		78B6A579193A3B3900C7E36A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/NeutronsReader.app/Contents/MacOS/NeutronsReader";
+				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(DEVELOPER_FRAMEWORKS_DIR)",
+					"$(inherited)",
+				);
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "NeutronsReader/NeutronsReader-Prefix.pch";
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				INFOPLIST_FILE = "NeutronsReaderTests/NeutronsReaderTests-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_HOST = "$(BUNDLE_LOADER)";
+				WRAPPER_EXTENSION = xctest;
+			};
+			name = Debug;
+		};
+		78B6A57A193A3B3900C7E36A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/NeutronsReader.app/Contents/MacOS/NeutronsReader";
+				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(DEVELOPER_FRAMEWORKS_DIR)",
+					"$(inherited)",
+				);
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "NeutronsReader/NeutronsReader-Prefix.pch";
+				INFOPLIST_FILE = "NeutronsReaderTests/NeutronsReaderTests-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_HOST = "$(BUNDLE_LOADER)";
+				WRAPPER_EXTENSION = xctest;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		78B6A53F193A3B3800C7E36A /* Build configuration list for PBXProject "NeutronsReader" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				78B6A573193A3B3900C7E36A /* Debug */,
+				78B6A574193A3B3900C7E36A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		78B6A575193A3B3900C7E36A /* Build configuration list for PBXNativeTarget "NeutronsReader" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				78B6A576193A3B3900C7E36A /* Debug */,
+				78B6A577193A3B3900C7E36A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+		78B6A578193A3B3900C7E36A /* Build configuration list for PBXNativeTarget "NeutronsReaderTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				78B6A579193A3B3900C7E36A /* Debug */,
+				78B6A57A193A3B3900C7E36A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 78B6A53C193A3B3800C7E36A /* Project object */;
+}
