@@ -1,8 +1,9 @@
 #import "ISAAppDelegate.h"
+#import "ISACalibration.h"
 
 static int const kNeutronMaxSearchTimeInMks = 130; // from t(FF) to t(last neutron)
 static int const kFissionsMaxSearchTimeInMks = 3; // from t(FF1) to t(FF2)
-static unsigned short kFissionMinChannel = 500; // FBack or FFront channel
+static unsigned short kFissionMinEnergy = 500; // FBack or FFront channel
 static unsigned short kFFont1 = 1;
 static unsigned short kFFont2 = 2;
 static unsigned short kFFont3 = 3;
@@ -28,7 +29,7 @@ typedef struct {
 @interface ISAAppDelegate ()
 
 @property (strong, nonatomic) NSMutableArray *selectedFiles;
-@property (copy, nonatomic) NSString *sMinChannel;
+@property (copy, nonatomic) NSString *sMinEnergy;
 @property (weak) IBOutlet NSProgressIndicator *activity;
 @property (strong, nonatomic) NSMutableDictionary *multiplicity;
 @property (assign, nonatomic) BOOL isNewCycle;
@@ -36,6 +37,7 @@ typedef struct {
 @property (assign, nonatomic) int fissionBackSumm;
 @property (assign, nonatomic) int fissionWel;
 @property (assign, nonatomic) unsigned long long neutronsSummPerAct;
+@property (strong, nonatomic) ISACalibration *calibration;
 
 @end
 
@@ -43,8 +45,17 @@ typedef struct {
 
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification
 {
-    self.sMinChannel = [NSString stringWithFormat:@"%d", kFissionMinChannel];
-    self.selectedFiles = [NSMutableArray array];
+    _sMinEnergy = [NSString stringWithFormat:@"%d", kFissionMinEnergy];
+    _selectedFiles = [NSMutableArray array];
+    [self loadCalibration];
+}
+
+- (void)loadCalibration
+{
+    NSString *path = [[NSBundle mainBundle] pathForResource:@"test" ofType:@"clb"];
+    NSURL *url = [NSURL fileURLWithPath:path];
+//TODO: use open panel
+    _calibration = [ISACalibration calibrationWithUrl:url];
 }
 
 - (IBAction)start:(id)sender
@@ -68,29 +79,34 @@ typedef struct {
                 double deltaTime =  fabs(event.param1 - self.firstFissionTime);
                 
                 // Завершаем цикл если прошло слишком много времени, с момента запуска.
-                if (self.isNewCycle && (deltaTime > kNeutronMaxSearchTimeInMks) && [self isValidEventIdForTimeCheck:event.eventId]) {
+                if (_isNewCycle && (deltaTime > kNeutronMaxSearchTimeInMks) && [self isValidEventIdForTimeCheck:event.eventId]) {
                     
                     unsigned long long summ = [[self.multiplicity objectForKey:@(self.neutronsSummPerAct)] unsignedLongLongValue];
                     summ += 1; // Одно событие для всех нейтронов в одном акте деления
                     [self.multiplicity setObject:@(summ) forKey:@(self.neutronsSummPerAct)];
                     
                     self.neutronsSummPerAct = 0;
-                    self.isNewCycle = NO;
+                    _isNewCycle = NO;
                 }
                 
                 if (isFFront) {
                     // Запускаем новый цикл поиска, только если энергия осколка на лицевой стороне детектора выше установленной.
                     unsigned short channel = event.param2 & kFissionMask;
-                    if (channel >= [self.sMinChannel intValue]) {
+                    
+                    unsigned short eventId = event.eventId;
+                    unsigned short strip = event.param2 >> 12;
+                    NSString *name = [NSString stringWithFormat:@"FFron%d.%d", eventId, strip];
+                    NSInteger energy = [_calibration energyForAmplitude:channel ofEvent:name];
+                    if (energy >= [_sMinEnergy intValue]) {
                         self.firstFissionTime = event.param1;
-                        self.isNewCycle = YES;
+                        _isNewCycle = YES;
                     }
                     
                     continue;
                 }
                 
                 // Инкрементируем в пределах одного цикла.
-                if (isNeutron && self.isNewCycle && (deltaTime <= kNeutronMaxSearchTimeInMks)) {
+                if (isNeutron && _isNewCycle && (deltaTime <= kNeutronMaxSearchTimeInMks)) {
                     self.neutronsSummPerAct += 1;
                     
                     continue;
