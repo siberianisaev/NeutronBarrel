@@ -61,7 +61,7 @@ static NSString * const kCoefficientB = @"kCoefficientB";
     }
 }
 
-- (NSInteger)energyForAmplitude:(unsigned short)channel ofEvent:(NSString *)name
+- (double)energyForAmplitude:(unsigned short)channel ofEvent:(NSString *)name
 {
     NSDictionary *value = [self.data objectForKey:name];
     NSNumber *nB = [value objectForKey:kCoefficientB];
@@ -70,7 +70,7 @@ static NSString * const kCoefficientB = @"kCoefficientB";
         [NSException raise:@"No calibration for name!" format:@"%@", name];
     }
     
-    return [nB floatValue] + [nA floatValue] * (NSInteger)channel;
+    return [nB doubleValue] + [nA doubleValue] * (double)channel;
 }
 
 @end
