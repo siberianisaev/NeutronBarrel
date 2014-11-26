@@ -33,6 +33,7 @@ typedef struct {
 @property (weak) IBOutlet NSProgressIndicator *activity;
 @property (strong, nonatomic) NSMutableDictionary *neutronsMultiplicityTotal;
 @property (strong, nonatomic) NSMutableArray *fissionsFrontPerAct;
+@property (strong, nonatomic) NSMutableArray *fissionsBackPerAct;
 @property (strong, nonatomic) NSMutableArray *fissionsWelPerAct;
 @property (strong, nonatomic) NSMutableArray *gammaPerAct;
 @property (assign, nonatomic) BOOL isNewCycle;
@@ -67,11 +68,13 @@ typedef struct {
     
     _neutronsMultiplicityTotal = [NSMutableDictionary dictionary];
     _fissionsFrontPerAct = [NSMutableArray array];
+    _fissionsBackPerAct = [NSMutableArray array];
     _gammaPerAct = [NSMutableArray array];
     _fissionsWelPerAct = [NSMutableArray array];
     
     for (NSString *path in self.selectedFiles) {
         FILE *file = fopen([path UTF8String], "rb");
+        printf("\nFile: %s\n\n", [[path lastPathComponent] UTF8String]);
         if (file == NULL) {
             exit(-1);
         } else {
@@ -96,13 +99,13 @@ typedef struct {
 #warning TODO: суммируем осколки с лицевой стороны в пределах 5 мкс
                 if (isFFront) {
                     // Запускаем новый цикл поиска, только если энергия осколка на лицевой стороне детектора выше установленной.
-                    unsigned short eventId = event.eventId;
+                    unsigned short encoder = [self fissionEncoderForEventId:event.eventId];
                     unsigned short strip_0_15 = event.param2 >> 12;  // value from 0 to 15
                     unsigned short strip_1_16 = strip_0_15 + 1; // value from 1 to 16
                     
                     double energy = [self getFissionEnegry:event];
                     if (energy >= [_sMinEnergy doubleValue]) {
-                        NSDictionary *fissionInfo = @{@"id":@(eventId),
+                        NSDictionary *fissionInfo = @{@"encoder":@(encoder),
                                                       @"strip":@(strip_1_16),
                                                       @"energy":@(energy)};
                         [_fissionsFrontPerAct addObject:fissionInfo];
@@ -118,7 +121,13 @@ typedef struct {
                 if ((isFBack || isFWel) && _isNewCycle && (deltaTime <= kFissionsMaxSearchTimeInMks)) {
                     // Осколки с тыльной стороны фокального детектора
                     if (isFBack) {
-#warning TODO: FBack save ID & strip!
+                        unsigned short encoder = [self fissionEncoderForEventId:event.eventId];
+                        unsigned short strip_0_15 = event.param2 >> 12;  // value from 0 to 15
+                        unsigned short strip_1_16 = strip_0_15 + 1; // value from 1 to 16
+                        
+                        NSDictionary *fissionInfo = @{@"encoder":@(encoder),
+                                                      @"strip":@(strip_1_16)};
+                        [_fissionsBackPerAct addObject:fissionInfo];
                         continue;
                     }
                     
@@ -170,6 +179,7 @@ typedef struct {
     unsigned short eventId = event.eventId;
     unsigned short strip_0_15 = event.param2 >> 12;  // value from 0 to 15
     unsigned short strip_1_16 = strip_0_15 + 1; // value from 1 to 16
+    unsigned short encoder = [self fissionEncoderForEventId:eventId];
     
     NSString *prefix = nil;
     if (kFFont1 == eventId || kFFont2 == eventId || kFFont3 == eventId) {
@@ -179,9 +189,23 @@ typedef struct {
     } else {
         prefix = @"FWel";
     }
-    NSString *name = [NSString stringWithFormat:@"%@%d.%d", prefix, eventId, strip_1_16];
+    NSString *name = [NSString stringWithFormat:@"%@%d.%d", prefix, encoder, strip_1_16];
     
     return [_calibration energyForAmplitude:channel ofEvent:name];
+}
+
+- (unsigned short)fissionEncoderForEventId:(unsigned short)eventId
+{
+    if (kFFont1 == eventId || kFBack1 == eventId || kFWel1 == eventId) {
+        return 1;
+    }
+    if (kFFont2 == eventId || kFBack2 == eventId || kFWel2 == eventId) {
+        return 2;
+    }
+    if (kFFont3 == eventId || kFBack3 == eventId) {
+        return 3;
+    }
+    return 0;
 }
 
 - (void)closeCycle
@@ -192,6 +216,7 @@ typedef struct {
     // Обнуляем все данные для акта
     _neutronsSummPerAct = 0;
     [_fissionsFrontPerAct removeAllObjects];
+    [_fissionsBackPerAct removeAllObjects];
     [_gammaPerAct removeAllObjects];
     [_fissionsWelPerAct removeAllObjects];
     
@@ -202,24 +227,25 @@ typedef struct {
 - (void)logActResults
 {
     for (NSDictionary *fissionInfo in _fissionsFrontPerAct) {
-        printf("FFRON%d.%d\n", [[fissionInfo objectForKey:@"id"] intValue], [[fissionInfo objectForKey:@"strip"] intValue]);
-        printf("%f MeV\n", [[fissionInfo objectForKey:@"energy"] doubleValue]);
+        printf("FFron%d.%d\t\t%f MeV\n", [[fissionInfo objectForKey:@"encoder"] intValue], [[fissionInfo objectForKey:@"strip"] intValue], [[fissionInfo objectForKey:@"energy"] doubleValue]);
     }
     
-    printf("Neutrons %llu\n", _neutronsSummPerAct);
+    printf("Neutrons\t%llu\n", _neutronsSummPerAct);
     
     if ([_gammaPerAct count]) {
-        printf("GAM1\n");
         for (NSNumber *energy in _gammaPerAct) {
-            printf("%f MeV\n", [energy doubleValue]);
+            printf("Gam1\t\t%f MeV\n", [energy doubleValue]);
         }
     }
     
     if ([_fissionsWelPerAct count]) {
-        printf("FWel\n");
         for (NSNumber *energy in _fissionsWelPerAct) {
-            printf("%f MeV\n", [energy doubleValue]);
+            printf("FWel\t\t%f MeV\n", [energy doubleValue]);
         }
+    }
+    
+    for (NSDictionary *fissionInfo in _fissionsBackPerAct) {
+        printf("FBack%d.%d\n", [[fissionInfo objectForKey:@"encoder"] intValue], [[fissionInfo objectForKey:@"strip"] intValue]);
     }
     
     printf("\n");
@@ -317,7 +343,7 @@ typedef struct {
                 [self.selectedFiles addObject:path];
             }
         }
-        printf("\n");
+        printf("\n\n");
     }
 }
 
