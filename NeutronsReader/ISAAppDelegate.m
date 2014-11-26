@@ -3,7 +3,7 @@
 
 static int const kNeutronMaxSearchTimeInMks = 132; // from t(FF) to t(last neutron)
 static int const kGammaMaxSearchTimeInMks = 5; // from t(FF) to t(last gamma)
-static int const kFissionsMaxSearchTimeInMks = 3; // from t(FF1) to t(FF2)
+static int const kFissionsMaxSearchTimeInMks = 5; // from t(FF1) to t(FF2)
 static unsigned short kFissionMinEnergy = 20; // FBack or FFront MeV
 static unsigned short kFFont1 = 1;
 static unsigned short kFFont2 = 2;
@@ -17,7 +17,6 @@ static unsigned short kGam1 = 10; // Gamma-detector ID
 static unsigned short kNeutrons = 18;
 static unsigned short kFissionMask = 0x0FFF;
 static unsigned short kGamMask = 0x1FFF;
-static unsigned short kNeutronsTimeMask = 0x007F;
 static unsigned short kFissionMarker = 0; // !Recoil
 
 typedef struct {
@@ -34,7 +33,8 @@ typedef struct {
 @property (weak) IBOutlet NSProgressIndicator *activity;
 @property (strong, nonatomic) NSMutableDictionary *neutronsMultiplicityTotal;
 @property (strong, nonatomic) NSMutableArray *fissionsFrontPerAct;
-@property (strong, nonatomic) NSMutableArray *gammaEnergiesPerAct;
+@property (strong, nonatomic) NSMutableArray *fissionsWelPerAct;
+@property (strong, nonatomic) NSMutableArray *gammaPerAct;
 @property (assign, nonatomic) BOOL isNewCycle;
 @property (assign, nonatomic) unsigned short firstFissionTime;
 @property (assign, nonatomic) int fissionBackSumm;
@@ -67,7 +67,8 @@ typedef struct {
     
     _neutronsMultiplicityTotal = [NSMutableDictionary dictionary];
     _fissionsFrontPerAct = [NSMutableArray array];
-    _gammaEnergiesPerAct = [NSMutableArray array];
+    _gammaPerAct = [NSMutableArray array];
+    _fissionsWelPerAct = [NSMutableArray array];
     
     for (NSString *path in self.selectedFiles) {
         FILE *file = fopen([path UTF8String], "rb");
@@ -79,9 +80,7 @@ typedef struct {
                 fread(&event, sizeof(event), 1, file);
                 
                 BOOL isFFront = [self isFissionFront:event];
-                
-                
-                double deltaTime =  fabs(event.param1 - _firstFissionTime);
+                double deltaTime = fabs(event.param1 - _firstFissionTime);
                 
                 // Завершаем цикл если прошло слишком много времени, с момента запуска.
                 if (_isNewCycle && (deltaTime > kNeutronMaxSearchTimeInMks) && [self isValidEventIdForTimeCheck:event.eventId]) {
@@ -91,35 +90,45 @@ typedef struct {
                     summ += 1; // Одно событие для всех нейтронов в одном акте деления
                     [_neutronsMultiplicityTotal setObject:@(summ) forKey:@(_neutronsSummPerAct)];
                     
-                    // Выводим результаты для акта деления
-                    [self logActResults];
-                    
-                    // Обнуляем все данные для акта
-                    _neutronsSummPerAct = 0;
-                    [_fissionsFrontPerAct removeAllObjects];
-                    [_gammaEnergiesPerAct removeAllObjects];
-                    _isNewCycle = NO;
+                    [self closeCycle];
                 }
                 
 #warning TODO: суммируем осколки с лицевой стороны в пределах 5 мкс
                 if (isFFront) {
                     // Запускаем новый цикл поиска, только если энергия осколка на лицевой стороне детектора выше установленной.
-                    unsigned short channel = event.param2 & kFissionMask;
                     unsigned short eventId = event.eventId;
-                    unsigned short strip = event.param2 >> 12;
-#warning TODO: правильное определение стрипа в 48 стриповом детекторе (чередуются для каждого кодировщика!), на основе event id !
-                    strip += 1;
+                    unsigned short strip_0_15 = event.param2 >> 12;  // value from 0 to 15
+                    unsigned short strip_1_16 = strip_0_15 + 1; // value from 1 to 16
                     
-                    NSString *name = [NSString stringWithFormat:@"FFron%d.%d", eventId, strip];
-                    double energy = [_calibration energyForAmplitude:channel ofEvent:name];
+                    double energy = [self getFissionEnegry:event];
                     if (energy >= [_sMinEnergy doubleValue]) {
-                        NSDictionary *fissionInfo = @{@"id":@(eventId), @"strip":@(strip), @"energy":@(energy)};
+                        NSDictionary *fissionInfo = @{@"id":@(eventId),
+                                                      @"strip":@(strip_1_16),
+                                                      @"energy":@(energy)};
                         [_fissionsFrontPerAct addObject:fissionInfo];
                         _firstFissionTime = event.param1;
                         _isNewCycle = YES;
                     }
                     
                     continue;
+                }
+                
+                BOOL isFBack = [self isFissionBack:event];
+                BOOL isFWel = [self isFissionWel:event];
+                if ((isFBack || isFWel) && _isNewCycle && (deltaTime <= kFissionsMaxSearchTimeInMks)) {
+                    // Осколки с тыльной стороны фокального детектора
+                    if (isFBack) {
+#warning TODO: FBack save ID & strip!
+                        continue;
+                    }
+                    
+                    // Осколки в боковых детекторах
+                    if (isFWel) {
+                        double energy = [self getFissionEnegry:event];
+                        [_fissionsWelPerAct addObject:@(energy)];
+                        
+                        continue;
+                    }
                 }
                 
                 // Определение множественности нейтронов в акте деления
@@ -130,14 +139,20 @@ typedef struct {
                     continue;
                 }
                 
+                // Гамма-кванты
                 BOOL isGamma = (kGam1 == event.eventId);
                 if (isGamma && _isNewCycle && (deltaTime <= kGammaMaxSearchTimeInMks)) {
                     unsigned short channel = event.param3 & kGamMask;
                     double energy = [_calibration energyForAmplitude:channel ofEvent:@"Gam1"];
                     
-                    [_gammaEnergiesPerAct addObject:@(energy)];
+                    [_gammaPerAct addObject:@(energy)];
                     
                     continue;
+                }
+                
+                // Достигли конца последнего файла.
+                if (feof(file) && [[self.selectedFiles lastObject] isEqualTo:path] && _isNewCycle) {
+                    [self closeCycle];
                 }
             }
         }
@@ -147,6 +162,40 @@ typedef struct {
     [self logTotalMultiplicity];
     
     [self.activity stopAnimation:self];
+}
+
+- (double)getFissionEnegry:(ISAEvent)event
+{
+    unsigned short channel = event.param2 & kFissionMask;
+    unsigned short eventId = event.eventId;
+    unsigned short strip_0_15 = event.param2 >> 12;  // value from 0 to 15
+    unsigned short strip_1_16 = strip_0_15 + 1; // value from 1 to 16
+    
+    NSString *prefix = nil;
+    if (kFFont1 == eventId || kFFont2 == eventId || kFFont3 == eventId) {
+        prefix = @"FFron";
+    } else if (kFBack1 == eventId || kFBack2 == eventId || kFBack3 == eventId) {
+        prefix = @"FBack";
+    } else {
+        prefix = @"FWel";
+    }
+    NSString *name = [NSString stringWithFormat:@"%@%d.%d", prefix, eventId, strip_1_16];
+    
+    return [_calibration energyForAmplitude:channel ofEvent:name];
+}
+
+- (void)closeCycle
+{
+    // Выводим результаты для акта деления
+    [self logActResults];
+    
+    // Обнуляем все данные для акта
+    _neutronsSummPerAct = 0;
+    [_fissionsFrontPerAct removeAllObjects];
+    [_gammaPerAct removeAllObjects];
+    [_fissionsWelPerAct removeAllObjects];
+    
+    _isNewCycle = NO;
 }
 
 //TODO: вывод в виде таблицы
@@ -159,9 +208,16 @@ typedef struct {
     
     printf("Neutrons %llu\n", _neutronsSummPerAct);
     
-    if ([_gammaEnergiesPerAct count]) {
+    if ([_gammaPerAct count]) {
         printf("GAM1\n");
-        for (NSNumber *energy in _gammaEnergiesPerAct) {
+        for (NSNumber *energy in _gammaPerAct) {
+            printf("%f MeV\n", [energy doubleValue]);
+        }
+    }
+    
+    if ([_fissionsWelPerAct count]) {
+        printf("FWel\n");
+        for (NSNumber *energy in _fissionsWelPerAct) {
             printf("%f MeV\n", [energy doubleValue]);
         }
     }
@@ -176,6 +232,21 @@ typedef struct {
         NSNumber *value = [_neutronsMultiplicityTotal objectForKey:key];
         printf("%d-x: %llu\n", [key intValue], [value unsignedLongLongValue]);
     }
+}
+
+#warning TODO: будет применяться при определении близжайших осколков в фокальном детекторе
+/**
+ В фокальном детекторе, стрипы поочередно выводятся на 3 разных 16-канальных кодировщика.
+ */
+- (unsigned short)focalFissionStrip48Format:(unsigned short)strip16Format eventId:(unsigned short)eventId
+{
+    int encoder = 0;
+    if (kFFont2 == eventId || kFBack2 == eventId) {
+        encoder = 1;
+    } else if (kFFont3 == eventId || kFBack3 == eventId) {
+        encoder = 2;
+    }
+    return (strip16Format * 3) + encoder;
 }
 
 /**
@@ -201,6 +272,20 @@ typedef struct {
     unsigned short eventId = event.eventId;
     unsigned short marker = [self getMarker:event.param3];
     return (kFissionMarker == marker) && (kFFont1 == eventId || kFFont2 == eventId || kFFont3 == eventId);
+}
+
+- (BOOL)isFissionWel:(ISAEvent)event
+{
+    unsigned short eventId = event.eventId;
+    unsigned short marker = [self getMarker:event.param3];
+    return (kFissionMarker == marker) && (kFWel1 == eventId || kFWel2 == eventId);
+}
+
+- (BOOL)isFissionBack:(ISAEvent)event
+{
+    unsigned short eventId = event.eventId;
+    unsigned short marker = [self getMarker:event.param3];
+    return (kFissionMarker == marker) && (kFBack1 == eventId || kFBack2 == eventId || kFBack3 == eventId);
 }
 
 - (IBAction)select:(id)sender
