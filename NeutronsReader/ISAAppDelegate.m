@@ -3,6 +3,7 @@
 
 static int const kNeutronMaxSearchTimeInMks = 132; // from t(FF) to t(last neutron)
 static int const kGammaMaxSearchTimeInMks = 5; // from t(FF) to t(last gamma)
+static int const kTOFMaxSearchTimeInMks = 2; // from t(FF) (случайные генерации, а не отмеки рекойлов)
 static int const kFissionsMaxSearchTimeInMks = 5; // from t(FF1) to t(FF2)
 static unsigned short kFissionMinEnergy = 20; // FBack or FFront MeV
 static unsigned short kFFont1 = 1;
@@ -14,9 +15,11 @@ static unsigned short kFBack3 = 6;
 static unsigned short kFWel1 = 7;
 static unsigned short kFWel2 = 8;
 static unsigned short kGam1 = 10; // Gamma-detector ID
+static unsigned short kTOF = 12;
 static unsigned short kNeutrons = 18;
 static unsigned short kFissionMask = 0x0FFF;
 static unsigned short kGamMask = 0x1FFF;
+static unsigned short kTOFMask = 0x1FFF;
 static unsigned short kFissionMarker = 0; // !Recoil
 
 typedef struct {
@@ -36,6 +39,7 @@ typedef struct {
 @property (strong, nonatomic) NSMutableArray *fissionsBackPerAct;
 @property (strong, nonatomic) NSMutableArray *fissionsWelPerAct;
 @property (strong, nonatomic) NSMutableArray *gammaPerAct;
+@property (strong, nonatomic) NSMutableArray *tofPerAct;
 @property (assign, nonatomic) BOOL isNewCycle;
 @property (assign, nonatomic) unsigned short firstFissionTime;
 @property (assign, nonatomic) int fissionBackSumm;
@@ -70,6 +74,7 @@ typedef struct {
     _fissionsFrontPerAct = [NSMutableArray array];
     _fissionsBackPerAct = [NSMutableArray array];
     _gammaPerAct = [NSMutableArray array];
+    _tofPerAct = [NSMutableArray array];
     _fissionsWelPerAct = [NSMutableArray array];
     
     for (NSString *path in self.selectedFiles) {
@@ -99,6 +104,7 @@ typedef struct {
 #warning TODO: суммируем осколки с лицевой стороны в пределах 5 мкс
                 if (isFFront) {
                     // Запускаем новый цикл поиска, только если энергия осколка на лицевой стороне детектора выше установленной.
+                    unsigned short channel = event.param2 & kFissionMask;
                     unsigned short encoder = [self fissionEncoderForEventId:event.eventId];
                     unsigned short strip_0_15 = event.param2 >> 12;  // value from 0 to 15
                     unsigned short strip_1_16 = strip_0_15 + 1; // value from 1 to 16
@@ -107,6 +113,7 @@ typedef struct {
                     if (energy >= [_sMinEnergy doubleValue]) {
                         NSDictionary *fissionInfo = @{@"encoder":@(encoder),
                                                       @"strip":@(strip_1_16),
+                                                      @"channel":@(channel),
                                                       @"energy":@(energy)};
                         [_fissionsFrontPerAct addObject:fissionInfo];
                         _firstFissionTime = event.param1;
@@ -155,6 +162,15 @@ typedef struct {
                     double energy = [_calibration energyForAmplitude:channel ofEvent:@"Gam1"];
                     
                     [_gammaPerAct addObject:@(energy)];
+                    
+                    continue;
+                }
+                
+                // TOF рекойлов
+                BOOL isTOF = (kTOF == event.eventId);
+                if (isTOF && _isNewCycle && (deltaTime <= kTOFMaxSearchTimeInMks)) {
+                    unsigned short channel = event.param3 & kTOFMask;
+                    [_tofPerAct addObject:@(channel)];
                     
                     continue;
                 }
@@ -218,6 +234,7 @@ typedef struct {
     [_fissionsFrontPerAct removeAllObjects];
     [_fissionsBackPerAct removeAllObjects];
     [_gammaPerAct removeAllObjects];
+    [_tofPerAct removeAllObjects];
     [_fissionsWelPerAct removeAllObjects];
     
     _isNewCycle = NO;
@@ -227,7 +244,7 @@ typedef struct {
 - (void)logActResults
 {
     for (NSDictionary *fissionInfo in _fissionsFrontPerAct) {
-        printf("FFron%d.%d\t\t%f MeV\n", [[fissionInfo objectForKey:@"encoder"] intValue], [[fissionInfo objectForKey:@"strip"] intValue], [[fissionInfo objectForKey:@"energy"] doubleValue]);
+        printf("FFron%d.%d\t\t%f MeV (%d channel)\n", [[fissionInfo objectForKey:@"encoder"] intValue], [[fissionInfo objectForKey:@"strip"] intValue], [[fissionInfo objectForKey:@"energy"] doubleValue], [[fissionInfo objectForKey:@"channel"] intValue]);
     }
     
     printf("Neutrons\t%llu\n", _neutronsSummPerAct);
@@ -246,6 +263,12 @@ typedef struct {
     
     for (NSDictionary *fissionInfo in _fissionsBackPerAct) {
         printf("FBack%d.%d\n", [[fissionInfo objectForKey:@"encoder"] intValue], [[fissionInfo objectForKey:@"strip"] intValue]);
+    }
+    
+    if ([_tofPerAct count]) {
+        for (NSNumber *channel in _tofPerAct) {
+            printf("TOF\t\t%d channel\n", [channel intValue]);
+        }
     }
     
     printf("\n");
@@ -323,7 +346,7 @@ typedef struct {
     
     if (NSOKButton == [openPanel runModal]) {
         if ([[openPanel URLs] count]) {
-            printf("Selected files:\n");
+//            printf("Selected files:\n");
         }
         for (NSURL *url in [openPanel URLs]) {
             NSString *path = [url path];
@@ -333,17 +356,17 @@ typedef struct {
                 NSArray *dirFiles = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:path error:nil];
                 // Исключаем файл протокола из выборки
                 NSArray *dataFiles = [dirFiles filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"!(self ENDSWITH '.PRO') AND !(self ENDSWITH '.DS_Store')"]];
-                for (NSString *fileName in dataFiles) {
-                    NSString *filePath = [path stringByAppendingPathComponent:fileName];
-                    printf("\n%s", [filePath UTF8String]);
-                    [self.selectedFiles addObject:filePath];
-                }
+//                for (NSString *fileName in dataFiles) {
+//                    NSString *filePath = [path stringByAppendingPathComponent:fileName];
+//                    printf("\n%s", [filePath UTF8String]);
+//                    [self.selectedFiles addObject:filePath];
+//                }
             } else {
-                printf("\n%s", [path UTF8String]);
+//                printf("\n%s", [path UTF8String]);
                 [self.selectedFiles addObject:path];
             }
         }
-        printf("\n\n");
+//        printf("\n\n");
     }
 }
 
