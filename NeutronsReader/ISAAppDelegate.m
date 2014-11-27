@@ -356,11 +356,11 @@ typedef struct {
                 NSArray *dirFiles = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:path error:nil];
                 // Исключаем файл протокола из выборки
                 NSArray *dataFiles = [dirFiles filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"!(self ENDSWITH '.PRO') AND !(self ENDSWITH '.DS_Store')"]];
-//                for (NSString *fileName in dataFiles) {
-//                    NSString *filePath = [path stringByAppendingPathComponent:fileName];
+                for (NSString *fileName in dataFiles) {
+                    NSString *filePath = [path stringByAppendingPathComponent:fileName];
 //                    printf("\n%s", [filePath UTF8String]);
-//                    [self.selectedFiles addObject:filePath];
-//                }
+                    [self.selectedFiles addObject:filePath];
+                }
             } else {
 //                printf("\n%s", [path UTF8String]);
                 [self.selectedFiles addObject:path];
