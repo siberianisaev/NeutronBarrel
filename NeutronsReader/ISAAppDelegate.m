@@ -106,6 +106,7 @@ typedef struct {
                         // Запускаем новый цикл поиска, только если энергия осколка на лицевой стороне детектора выше минимальной
                         if ([self getFissionEnegry:event] >= [_sMinEnergy doubleValue]) {
                             [self storeFirstFissionFront:event];
+                            [self analyzeOldFissions];
                             _isNewCycle = YES;
                         } else {  // FFron пришедшие до первого
                             [self storePreviousFissionFront:event];
@@ -332,7 +333,6 @@ typedef struct {
 {
     // Выводим результаты для акта деления
     [self logActResults];
-    [self analyzeOldFissions];
     
     // Обнуляем все данные для акта
     _neutronsSummPerAct = 0;
