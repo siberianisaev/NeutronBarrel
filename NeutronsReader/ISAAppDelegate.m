@@ -349,9 +349,20 @@ typedef struct {
 //TODO: вывод в виде таблицы
 - (void)logActResults
 {
+    double summFFron = 0;
     for (NSDictionary *fissionInfo in _fissionsFrontPerAct) {
-        printf("FFron%d.%d\t\t%f MeV (%d channel)\n", [[fissionInfo objectForKey:@"encoder"] intValue], [[fissionInfo objectForKey:@"strip"] intValue], [[fissionInfo objectForKey:@"energy"] doubleValue], [[fissionInfo objectForKey:@"channel"] intValue]);
+        int encoder = [[fissionInfo objectForKey:@"encoder"] intValue];
+        int strip = [[fissionInfo objectForKey:@"strip"] intValue];
+        double energy = [[fissionInfo objectForKey:@"energy"] doubleValue];
+        int channel = [[fissionInfo objectForKey:@"channel"] intValue];
+        printf("FFron%d.%d\t\t%f MeV", encoder, strip, energy);
+        if (energy >= [_sMinEnergy doubleValue]) {
+            printf(" (%d channel)", channel);
+        }
+        printf("\n");
+        summFFron += energy;
     }
+    printf("∑FFron\t\t%f MeV\n", summFFron);
     
     printf("Neutrons\t%llu\n", _neutronsSummPerAct);
     
