@@ -1,5 +1,6 @@
 #import "ISAAppDelegate.h"
 #import "ISACalibration.h"
+#import "ISAEventStack.h"
 
 static int const kNeutronMaxSearchTimeInMks = 132; // from t(FF) to t(last neutron)
 static int const kGammaMaxSearchTimeInMks = 5; // from t(FF) to t(last gamma)
@@ -40,12 +41,14 @@ typedef struct {
 @property (strong, nonatomic) NSMutableArray *fissionsWelPerAct;
 @property (strong, nonatomic) NSMutableArray *gammaPerAct;
 @property (strong, nonatomic) NSMutableArray *tofPerAct;
-@property (assign, nonatomic) BOOL isNewCycle;
-@property (assign, nonatomic) unsigned short firstFissionTime;
+@property (strong, nonatomic) NSDictionary *firstFissionInfo; // информация о главном осколке в цикле
+@property (assign, nonatomic) unsigned short firstFissionTime; // время главного осколка в цикле
 @property (assign, nonatomic) int fissionBackSumm;
 @property (assign, nonatomic) int fissionWel;
 @property (assign, nonatomic) unsigned long long neutronsSummPerAct;
+@property (assign, nonatomic) BOOL isNewCycle;
 @property (strong, nonatomic) ISACalibration *calibration;
+@property (strong, nonatomic) ISAEventStack *fissionsFrontNotInCycleStack; // осколки пришедшие до обнаружения главного осколка (стек нужен для возврата к нескольким предыдущем событиям по времени)
 
 @end
 
@@ -76,6 +79,7 @@ typedef struct {
     _gammaPerAct = [NSMutableArray array];
     _tofPerAct = [NSMutableArray array];
     _fissionsWelPerAct = [NSMutableArray array];
+    _fissionsFrontNotInCycleStack = [ISAEventStack stack];
     
     for (NSString *path in self.selectedFiles) {
         FILE *file = fopen([path UTF8String], "rb");
@@ -101,23 +105,20 @@ typedef struct {
                     [self closeCycle];
                 }
                 
-#warning TODO: суммируем осколки с лицевой стороны в пределах 5 мкс
                 if (isFFront) {
-                    // Запускаем новый цикл поиска, только если энергия осколка на лицевой стороне детектора выше установленной.
-                    unsigned short channel = event.param2 & kFissionMask;
-                    unsigned short encoder = [self fissionEncoderForEventId:event.eventId];
-                    unsigned short strip_0_15 = event.param2 >> 12;  // value from 0 to 15
-                    unsigned short strip_1_16 = strip_0_15 + 1; // value from 1 to 16
-                    
-                    double energy = [self getFissionEnegry:event];
-                    if (energy >= [_sMinEnergy doubleValue]) {
-                        NSDictionary *fissionInfo = @{@"encoder":@(encoder),
-                                                      @"strip":@(strip_1_16),
-                                                      @"channel":@(channel),
-                                                      @"energy":@(energy)};
-                        [_fissionsFrontPerAct addObject:fissionInfo];
-                        _firstFissionTime = event.param1;
-                        _isNewCycle = YES;
+                    if (NO == _isNewCycle) {
+                        // Запускаем новый цикл поиска, только если энергия осколка на лицевой стороне детектора выше минимальной
+                        double energy = [self getFissionEnegry:event];
+                        if (energy >= [_sMinEnergy doubleValue]) {
+                            [self storeFirstFissionFront:event];
+                            
+                            _isNewCycle = YES;
+                        } else {
+                            NSValue *value = [NSValue valueWithBytes:&event objCType:@encode(ISAEvent)];
+                            [_fissionsFrontNotInCycleStack pushEvent:value];
+                        }
+                    } else if (deltaTime <= kFissionsMaxSearchTimeInMks && [self isNearToFirstFissionFront:event]) { // FFron пришедшие после первого
+                        [self storeNextFissionFront:event];
                     }
                     
                     continue;
@@ -189,6 +190,86 @@ typedef struct {
     [self.activity stopAnimation:self];
 }
 
+- (void)storeFirstFissionFront:(ISAEvent)event
+{
+    [self storeFissionFront:event isFirst:YES];
+}
+
+- (void)storeNextFissionFront:(ISAEvent)event
+{
+    [self storeFissionFront:event isFirst:NO];
+}
+
+- (void)storeFissionFront:(ISAEvent)event isFirst:(BOOL)isFirst
+{
+    unsigned short channel = event.param2 & kFissionMask;
+    unsigned short encoder = [self fissionEncoderForEventId:event.eventId];
+    unsigned short strip_0_15 = event.param2 >> 12;  // value from 0 to 15
+    unsigned short strip_1_16 = strip_0_15 + 1; // value from 1 to 16
+    
+    double energy = [self getFissionEnegry:event];
+    NSDictionary *fissionInfo = @{@"encoder":@(encoder),
+                                  @"strip":@(strip_1_16),
+                                  @"channel":@(channel),
+                                  @"energy":@(energy)};
+    [_fissionsFrontPerAct addObject:fissionInfo];
+    
+    if (isFirst) {
+        _firstFissionTime = event.param1;
+        _firstFissionInfo = fissionInfo;
+    }
+}
+
+/**
+ Метод проверяет находится ли осколок event, на соседних стрипах относительно первого осколка
+ */
+- (BOOL)isNearToFirstFissionFront:(ISAEvent)event
+{
+    unsigned short encoder = [self fissionEncoderForEventId:event.eventId];
+    unsigned short strip_0_15 = event.param2 >> 12;  // value from 0 to 15
+    unsigned short strip_1_16 = strip_0_15 + 1; // value from 1 to 16
+    
+    int encoderFirstFF = [[_firstFissionInfo objectForKey:@"encoder"] intValue];
+    int stripFirstFF = [[_firstFissionInfo objectForKey:@"strip"] intValue];
+    
+    if (encoder == encoderFirstFF) { // Должны быть на одном и том же стрипе!
+        return (strip_1_16 == stripFirstFF);
+    }
+    
+#warning TODO: доработать, нужно искать только на +/-1 стрип в разные стороны от fission 1!
+    
+    if (encoder > encoderFirstFF) {
+        return (strip_1_16 == stripFirstFF || strip_1_16 == stripFirstFF + 1);
+    }
+    
+    if (encoder < encoderFirstFF) {
+        return (strip_1_16 == stripFirstFF || strip_1_16 == stripFirstFF - 1);
+    }
+    
+    return NO;
+}
+
+/**
+ Анализируем стек осколков с конца, если осколок близкий по времени и по позиции первому осколку (триггеру цикла), то сохраняем его в _fissionsFrontPerAct.
+ */
+- (void)analyzeOldFissions
+{
+    for (NSValue *value in [_fissionsFrontNotInCycleStack.events reverseObjectEnumerator]) {
+        ISAEvent event;
+        [value getValue:&event];
+        
+        double deltaTime = fabs(event.param1 - _firstFissionTime);
+        if (deltaTime <= kFissionsMaxSearchTimeInMks) {
+            if ([self isNearToFirstFissionFront:event]) {
+                [self storeNextFissionFront:event];
+            }
+        } else { // Далее в цикле пойдут слишком удаленные по времени события
+            break;
+        }
+    }
+    [_fissionsFrontNotInCycleStack clear];
+}
+
 - (double)getFissionEnegry:(ISAEvent)event
 {
     unsigned short channel = event.param2 & kFissionMask;
@@ -228,6 +309,7 @@ typedef struct {
 {
     // Выводим результаты для акта деления
     [self logActResults];
+    [self analyzeOldFissions];
     
     // Обнуляем все данные для акта
     _neutronsSummPerAct = 0;
@@ -236,6 +318,7 @@ typedef struct {
     [_gammaPerAct removeAllObjects];
     [_tofPerAct removeAllObjects];
     [_fissionsWelPerAct removeAllObjects];
+    _firstFissionInfo = nil;
     
     _isNewCycle = NO;
 }

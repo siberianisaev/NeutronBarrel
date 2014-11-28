@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		65E46E001A25AA7C00FA28DB /* test.clb in Resources */ = {isa = PBXBuildFile; fileRef = 65E46DFF1A25AA7C00FA28DB /* test.clb */; };
 		65E46E031A25AB4400FA28DB /* ISACalibration.m in Sources */ = {isa = PBXBuildFile; fileRef = 65E46E021A25AB4400FA28DB /* ISACalibration.m */; };
+		789B8DF91A27B44500C44FF0 /* ISAEventStack.m in Sources */ = {isa = PBXBuildFile; fileRef = 789B8DF81A27B44500C44FF0 /* ISAEventStack.m */; };
 		78B6A548193A3B3900C7E36A /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 78B6A547193A3B3900C7E36A /* Cocoa.framework */; };
 		78B6A552193A3B3900C7E36A /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 78B6A550193A3B3900C7E36A /* InfoPlist.strings */; };
 		78B6A554193A3B3900C7E36A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 78B6A553193A3B3900C7E36A /* main.m */; };
@@ -36,6 +37,8 @@
 		65E46DFF1A25AA7C00FA28DB /* test.clb */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = test.clb; sourceTree = "<group>"; };
 		65E46E011A25AB4400FA28DB /* ISACalibration.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ISACalibration.h; sourceTree = "<group>"; };
 		65E46E021A25AB4400FA28DB /* ISACalibration.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ISACalibration.m; sourceTree = "<group>"; };
+		789B8DF71A27B44500C44FF0 /* ISAEventStack.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ISAEventStack.h; sourceTree = "<group>"; };
+		789B8DF81A27B44500C44FF0 /* ISAEventStack.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ISAEventStack.m; sourceTree = "<group>"; };
 		78B6A544193A3B3900C7E36A /* NeutronsReader.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NeutronsReader.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		78B6A547193A3B3900C7E36A /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		78B6A54A193A3B3900C7E36A /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
@@ -124,6 +127,8 @@
 				78B6A55A193A3B3900C7E36A /* ISAAppDelegate.m */,
 				65E46E011A25AB4400FA28DB /* ISACalibration.h */,
 				65E46E021A25AB4400FA28DB /* ISACalibration.m */,
+				789B8DF71A27B44500C44FF0 /* ISAEventStack.h */,
+				789B8DF81A27B44500C44FF0 /* ISAEventStack.m */,
 				65E46DFF1A25AA7C00FA28DB /* test.clb */,
 				78B6A55C193A3B3900C7E36A /* MainMenu.xib */,
 				78B6A55F193A3B3900C7E36A /* Images.xcassets */,
@@ -265,6 +270,7 @@
 				78B6A55B193A3B3900C7E36A /* ISAAppDelegate.m in Sources */,
 				65E46E031A25AB4400FA28DB /* ISACalibration.m in Sources */,
 				78B6A554193A3B3900C7E36A /* main.m in Sources */,
+				789B8DF91A27B44500C44FF0 /* ISAEventStack.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
