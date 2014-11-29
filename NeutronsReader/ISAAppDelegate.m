@@ -46,7 +46,7 @@ typedef struct {
 @property (assign, nonatomic) int fissionBackSumm;
 @property (assign, nonatomic) int fissionWel;
 @property (assign, nonatomic) unsigned long long neutronsSummPerAct;
-@property (assign, nonatomic) BOOL isNewCycle;
+@property (assign, nonatomic) BOOL isNewAct;
 @property (strong, nonatomic) ISACalibration *calibration;
 @property (strong, nonatomic) ISAEventStack *fissionsFrontNotInCycleStack; // осколки пришедшие до обнаружения главного осколка (стек нужен для возврата к нескольким предыдущем событиям по времени)
 
@@ -94,20 +94,16 @@ typedef struct {
                 double deltaTime = fabs(event.param1 - _firstFissionTime);
                 
                 // Завершаем цикл если прошло слишком много времени, с момента запуска.
-                if (_isNewCycle && (deltaTime > kNeutronMaxSearchTimeInMks) && [self isValidEventIdForTimeCheck:event.eventId]) {
-                    [self updateNeutronsMultiplicity];
-                    [self closeCycle];
+                if (_isNewAct && (deltaTime > kNeutronMaxSearchTimeInMks) && [self isValidEventIdForTimeCheck:event.eventId]) {
+                    [self actStoped];
                 }
                 
                 // FFron
-                BOOL isFFront = [self isFissionFront:event];
-                if (isFFront) {
-                    if (NO == _isNewCycle) {
+                if ([self isFissionFront:event]) {
+                    if (NO == _isNewAct) {
                         // Запускаем новый цикл поиска, только если энергия осколка на лицевой стороне детектора выше минимальной
                         if ([self getFissionEnegry:event] >= [_sMinEnergy doubleValue]) {
-                            [self storeFirstFissionFront:event];
-                            [self analyzeOldFissions];
-                            _isNewCycle = YES;
+                            [self actStartedWithEvent:event];
                         } else {  // FFron пришедшие до первого
                             [self storePreviousFissionFront:event];
                         }
@@ -118,45 +114,43 @@ typedef struct {
                     continue;
                 }
                 
+                if (NO == _isNewAct) {
+                    continue;
+                }
+                
                 // FBack
-                BOOL isFBack = [self isFissionBack:event];
-                if (isFBack && _isNewCycle && (deltaTime <= kFissionsMaxSearchTimeInMks)) {
+                if ([self isFissionBack:event] && (deltaTime <= kFissionsMaxSearchTimeInMks)) {
                     [self storeFissionBack:event];
                     continue;
                 }
                 
                 // FWel
-                BOOL isFWel = [self isFissionWel:event];
-                if (isFWel && _isNewCycle && (deltaTime <= kFissionsMaxSearchTimeInMks)) {
+                if ([self isFissionWel:event] && (deltaTime <= kFissionsMaxSearchTimeInMks)) {
                     [self storeFissionWell:event];
                     continue;
                 }
                 
                 // Gam1
-                BOOL isGamma = (kGam1 == event.eventId);
-                if (isGamma && _isNewCycle && (deltaTime <= kGammaMaxSearchTimeInMks)) {
+                if ((kGam1 == event.eventId) && (deltaTime <= kGammaMaxSearchTimeInMks)) {
                     [self storeGamma:event];
                     continue;
                 }
                 
                 // TOF
-                BOOL isTOF = (kTOF == event.eventId);
-                if (isTOF && _isNewCycle && (deltaTime <= kTOFMaxSearchTimeInMks)) {
+                if ((kTOF == event.eventId) && (deltaTime <= kTOFMaxSearchTimeInMks)) {
                     [self storeTOF:event];
                     continue;
                 }
                 
                 // Neutrons
-                BOOL isNeutron = (kNeutrons == event.eventId);
-                if (isNeutron && _isNewCycle && (deltaTime <= kNeutronMaxSearchTimeInMks)) {
+                if ((kNeutrons == event.eventId) && (deltaTime <= kNeutronMaxSearchTimeInMks)) {
                     _neutronsSummPerAct += 1;
                     continue;
                 }
                 
-                // Достигли конца последнего файла.
-                if (feof(file) && [[self.selectedFiles lastObject] isEqualTo:path] && _isNewCycle) {
-#warning TODO: [self updateNeutronsMultiplicity] ?
-                    [self closeCycle];
+                // End of last file.
+                if (feof(file) && [[self.selectedFiles lastObject] isEqualTo:path]) {
+                    [self actStoped];
                 }
             }
         }
@@ -248,7 +242,7 @@ typedef struct {
 }
 
 /**
- Метод проверяет находится ли осколок event, на соседних стрипах относительно первого осколка.
+ Метод проверяет находится ли осколок event на соседних стрипах относительно первого осколка.
  */
 - (BOOL)isNearToFirstFissionFront:(ISAEvent)event
 {
@@ -321,12 +315,23 @@ typedef struct {
     return 0;
 }
 
-- (void)closeCycle
+- (void)actStartedWithEvent:(ISAEvent)event
 {
-    // Выводим результаты для акта деления
+    [self storeFirstFissionFront:event];
+    [self analyzeOldFissions];
+    _isNewAct = YES;
+}
+
+- (void)actStoped
+{
+    [self updateNeutronsMultiplicity];
     [self logActResults];
-    
-    // Обнуляем все данные для акта
+    [self clearActInfo];
+    _isNewAct = NO;
+}
+
+- (void)clearActInfo
+{
     _neutronsSummPerAct = 0;
     [_fissionsFrontPerAct removeAllObjects];
     [_fissionsBackPerAct removeAllObjects];
@@ -334,8 +339,6 @@ typedef struct {
     [_tofPerAct removeAllObjects];
     [_fissionsWelPerAct removeAllObjects];
     _firstFissionInfo = nil;
-    
-    _isNewCycle = NO;
 }
 
 //TODO: вывод в виде таблицы
@@ -410,7 +413,7 @@ typedef struct {
  */
 - (BOOL)isValidEventIdForTimeCheck:(unsigned short)eventId
 {
-    return (kFFont1 == eventId || kFFont2 == eventId || kFFont3 == eventId || kNeutrons == eventId);
+    return (eventId <= kFWel2 || kGam1 == eventId || kNeutrons == eventId);
 }
 
 /**
