@@ -203,14 +203,17 @@ typedef struct {
     
     double energy = [self getFissionEnegry:event];
     NSDictionary *fissionInfo = @{@"encoder":@(encoder),
-                                  @"strip":@(strip_1_16),
+                                  @"strip_1_16":@(strip_1_16),
                                   @"channel":@(channel),
                                   @"energy":@(energy)};
     [_fissionsFrontPerAct addObject:fissionInfo];
     
     if (isFirst) {
+        unsigned short strip_1_48 = [self focalFissionStripConvertToFormat_1_48:strip_1_16 eventId:event.eventId];
+        NSMutableDictionary *extraInfo = [fissionInfo mutableCopy];
+        [extraInfo setObject:@(strip_1_48) forKey:@"strip_1_48"];
+        _firstFissionInfo = extraInfo;
         _firstFissionTime = event.param1;
-        _firstFissionInfo = fissionInfo;
     }
 }
 
@@ -221,7 +224,7 @@ typedef struct {
     unsigned short strip_1_16 = strip_0_15 + 1; // value from 1 to 16
     
     NSDictionary *fissionInfo = @{@"encoder":@(encoder),
-                                  @"strip":@(strip_1_16)};
+                                  @"strip_1_16":@(strip_1_16)};
     [_fissionsBackPerAct addObject:fissionInfo];
 }
 
@@ -245,32 +248,21 @@ typedef struct {
 }
 
 /**
- Метод проверяет находится ли осколок event, на соседних стрипах относительно первого осколка
+ Метод проверяет находится ли осколок event, на соседних стрипах относительно первого осколка.
  */
 - (BOOL)isNearToFirstFissionFront:(ISAEvent)event
 {
-    unsigned short encoder = [self fissionEncoderForEventId:event.eventId];
     unsigned short strip_0_15 = event.param2 >> 12;  // value from 0 to 15
     unsigned short strip_1_16 = strip_0_15 + 1; // value from 1 to 16
     
-    int encoderFirstFF = [[_firstFissionInfo objectForKey:@"encoder"] intValue];
-    int stripFirstFF = [[_firstFissionInfo objectForKey:@"strip"] intValue];
-    
-    if (encoder == encoderFirstFF) { // Должны быть на одном и том же стрипе!
-        return (strip_1_16 == stripFirstFF);
+    int strip_1_16_first_fission = [[_firstFissionInfo objectForKey:@"strip_1_16"] intValue];
+    if (strip_1_16 == strip_1_16_first_fission) { // совпадают
+        return YES;
     }
     
-#warning TODO: доработать, нужно искать только на +/-1 стрип в разные стороны от fission 1!
-    
-    if (encoder > encoderFirstFF) {
-        return (strip_1_16 == stripFirstFF || strip_1_16 == stripFirstFF + 1);
-    }
-    
-    if (encoder < encoderFirstFF) {
-        return (strip_1_16 == stripFirstFF || strip_1_16 == stripFirstFF - 1);
-    }
-    
-    return NO;
+    int strip_1_48 = [self focalFissionStripConvertToFormat_1_48:strip_1_16 eventId:event.eventId];
+    int strip_1_48_first_fission = [[_firstFissionInfo objectForKey:@"strip_1_48"] intValue];
+    return (abs(strip_1_48 - strip_1_48_first_fission) <= 1); // +/- 1 стрип
 }
 
 /**
@@ -352,7 +344,7 @@ typedef struct {
     double summFFron = 0;
     for (NSDictionary *fissionInfo in _fissionsFrontPerAct) {
         double energy = [[fissionInfo objectForKey:@"energy"] doubleValue];
-        printf("FFron%d.%d\t\t%f MeV", [[fissionInfo objectForKey:@"encoder"] intValue], [[fissionInfo objectForKey:@"strip"] intValue], energy);
+        printf("FFron%d.%d\t\t%f MeV", [[fissionInfo objectForKey:@"encoder"] intValue], [[fissionInfo objectForKey:@"strip_1_16"] intValue], energy);
         if (energy >= [_sMinEnergy doubleValue]) {
             printf(" (%d channel)", [[fissionInfo objectForKey:@"channel"] intValue]);
         }
@@ -376,7 +368,7 @@ typedef struct {
     }
     
     for (NSDictionary *fissionInfo in _fissionsBackPerAct) {
-        printf("FBack%d.%d\n", [[fissionInfo objectForKey:@"encoder"] intValue], [[fissionInfo objectForKey:@"strip"] intValue]);
+        printf("FBack%d.%d\n", [[fissionInfo objectForKey:@"encoder"] intValue], [[fissionInfo objectForKey:@"strip_1_16"] intValue]);
     }
     
     if ([_tofPerAct count]) {
@@ -397,19 +389,20 @@ typedef struct {
     }
 }
 
-#warning TODO: будет применяться при определении близжайших осколков в фокальном детекторе
 /**
- В фокальном детекторе, стрипы поочередно выводятся на 3 разных 16-канальных кодировщика.
+ В фокальном детекторе cтрипы подключены поочередно к трем 16-канальным кодировщикам:
+ | 1.1 | 2.1 | 3.1 | 1.2 | 2.2 | 3.2 | 1.3 ... (encoder.strip)
+ Метод переводит стрип из формата "кодировщик + стрип от 1 до 16" в формат "стрип от 1 до 48".
  */
-- (unsigned short)focalFissionStrip48Format:(unsigned short)strip16Format eventId:(unsigned short)eventId
+- (unsigned short)focalFissionStripConvertToFormat_1_48:(unsigned short)strip_1_16 eventId:(unsigned short)eventId
 {
-    int encoder = 0;
+    int encoder = 1;
     if (kFFont2 == eventId || kFBack2 == eventId) {
-        encoder = 1;
-    } else if (kFFont3 == eventId || kFBack3 == eventId) {
         encoder = 2;
+    } else if (kFFont3 == eventId || kFBack3 == eventId) {
+        encoder = 3;
     }
-    return (strip16Format * 3) + encoder;
+    return (strip_1_16 * 3) + (encoder - 1);
 }
 
 /**
@@ -459,9 +452,9 @@ typedef struct {
     [openPanel setAllowsMultipleSelection:YES];
     
     if (NSOKButton == [openPanel runModal]) {
-        if ([[openPanel URLs] count]) {
+//        if ([[openPanel URLs] count]) {
 //            printf("Selected files:\n");
-        }
+//        }
         for (NSURL *url in [openPanel URLs]) {
             NSString *path = [url path];
             
