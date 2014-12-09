@@ -67,7 +67,11 @@ static NSString * const kCoefficientB = @"kCoefficientB";
     NSNumber *nB = [value objectForKey:kCoefficientB];
     NSNumber *nA = [value objectForKey:kCoefficientA];
     if (nil == value || nil == nB || nil == nA) {
-        [NSException raise:@"No calibration for name!" format:@"%@", name];
+        nA = @(1);
+        nB = @(0);
+        
+        NSString *info = [NSString stringWithFormat:@"No calibration for name %@\n", name];
+        printf("%s", [info UTF8String]);
     }
     
     return [nB doubleValue] + [nA doubleValue] * (double)channel;

@@ -221,7 +221,6 @@ typedef struct {
     unsigned short channel = event.param2 & kFissionMask;
     unsigned short encoder = [self fissionEncoderForEventId:event.eventId];
     unsigned short strip_0_15 = event.param2 >> 12;  // value from 0 to 15
-    
     double energy = [self getFissionEnergy:event];
     NSDictionary *fissionInfo = @{@"encoder":@(encoder),
                                   @"strip_0_15":@(strip_0_15),
@@ -243,14 +242,10 @@ typedef struct {
 {
     unsigned short encoder = [self fissionEncoderForEventId:event.eventId];
     unsigned short strip_0_15 = event.param2 >> 12;  // value from 0 to 15
-    
-#warning TODO: exception - FBack1.2 no calibration!
-//    double energy = [self getFissionEnergy:event];
-    unsigned short channel = event.param2 & kFissionMask;
-    
+    double energy = [self getFissionEnergy:event];
     NSDictionary *fissionInfo = @{@"encoder":@(encoder),
                                   @"strip_0_15":@(strip_0_15),
-                                  @"channel":@(channel),
+                                  @"energy":@(energy),
                                   @"event_number":@(_currentEventNumber)};
     [_fissionsBackPerAct addObject:fissionInfo];
 }
@@ -403,7 +398,7 @@ typedef struct {
     int stripFBackChannelMax = -1;
     double maxFBackE = 0;
     for (NSDictionary *fissionInfo in _fissionsBackPerAct) {
-        double energy = [[fissionInfo objectForKey:@"channel"] intValue];
+        double energy = [[fissionInfo objectForKey:@"energy"] doubleValue];
         if (maxFBackE < energy) {
             maxFBackE = energy;
             
