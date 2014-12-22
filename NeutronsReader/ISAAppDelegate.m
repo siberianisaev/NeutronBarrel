@@ -5,6 +5,7 @@
 static int const kNeutronMaxSearchTimeInMks = 132; // from t(FF) to t(last neutron)
 static int const kGammaMaxSearchTimeInMks = 5; // from t(FF) to t(last gamma)
 static int const kTOFMaxSearchTimeInMks = 2; // from t(FF) (случайные генерации, а не отмеки рекойлов)
+static int const kFONMaxSearchTimeInMks = 1000000; // from t(FF) (в интервале <= 1 секунда)
 static int const kFissionsMaxSearchTimeInMks = 5; // from t(FF1) to t(FF2)
 static unsigned short kFissionMinEnergy = 20; // FBack or FFront MeV
 static unsigned short kFFont1 = 1;
@@ -18,9 +19,11 @@ static unsigned short kFWel2 = 8;
 static unsigned short kGam1 = 10; // Gamma-detector ID
 static unsigned short kTOF = 12;
 static unsigned short kNeutrons = 18;
+static unsigned short kFON = 24;
 static unsigned short kFissionMask = 0x0FFF;
 static unsigned short kGamMask = 0x1FFF;
 static unsigned short kTOFMask = 0x1FFF;
+static unsigned short kFONMask = 0xFFFF;
 static unsigned short kFissionMarker = 0; // !Recoil
 
 typedef struct {
@@ -43,6 +46,7 @@ typedef struct {
 @property (strong, nonatomic) NSMutableArray *fissionsWelPerAct;
 @property (strong, nonatomic) NSMutableArray *gammaPerAct;
 @property (strong, nonatomic) NSMutableArray *tofPerAct;
+@property (strong, nonatomic) NSNumber *fonPerAct;
 @property (strong, nonatomic) NSDictionary *firstFissionInfo; // информация о главном осколке в цикле
 @property (assign, nonatomic) unsigned short firstFissionTime; // время главного осколка в цикле
 @property (assign, nonatomic) int fissionBackSumm;
@@ -103,7 +107,7 @@ typedef struct {
         printf("Error opening file %s\n", resultsFileName);
         exit(1);
     }
-    fprintf(outputFile, "File\tEvent\tSumm(FFron)\tStrip(FFron)\tStrip(FBack)\tFWel\tNeutrons\tGamma\n\n");
+    fprintf(outputFile, "File\tEvent\tSumm(FFron)\tStrip(FFron)\tStrip(FBack)\tFWel\tNeutrons\tGamma\tFON\n\n");
     
     for (NSString *path in self.selectedFiles) {
         FILE *file = fopen([path UTF8String], "rb");
@@ -131,6 +135,11 @@ typedef struct {
                         // Запускаем новый цикл поиска, только если энергия осколка на лицевой стороне детектора выше минимальной
                         if ([self getFissionEnergy:event] >= [_sMinEnergy doubleValue]) {
                             [self actStartedWithEvent:event];
+                            
+                            // FON
+                            fpos_t position;
+                            fgetpos(file, &position);
+                            [self findFONEventFromPosition:position inFileAtPath:path];
                         } else {  // FFron пришедшие до первого
                             [self storePreviousFissionFront:event];
                         }
@@ -188,6 +197,38 @@ typedef struct {
     [self logTotalMultiplicity];
     
     [self.activity stopAnimation:self];
+}
+
+/**
+ Поиск первого события FON осуществляется с позиции файла где найден главный осколок.
+ Время поиска <= 1 секунды.
+ */
+- (void)findFONEventFromPosition:(fpos_t)position inFileAtPath:(NSString *)path
+{
+    FILE *file = fopen([path UTF8String], "rb");
+    if (file == NULL) {
+        exit(-1);
+    } else {
+        fseek(file, position, SEEK_CUR);
+        
+        while (!feof(file)) {
+            ISAEvent event;
+            fread(&event, sizeof(event), 1, file);
+#warning TODO: учитывать старшие разряды времени THi !
+//            double deltaTime = fabs(event.param1 - _firstFissionTime);
+//            if ((kFON == event.eventId) && (deltaTime <= kFONMaxSearchTimeInMks)) {
+            if (kFON == event.eventId) {
+                [self storeFON:event];
+                return;
+            }
+        }
+    }
+}
+
+- (void)storeFON:(ISAEvent)event
+{
+    unsigned short channel = event.param3 & kFONMask;
+    _fonPerAct = @(channel);
 }
 
 /**
@@ -365,6 +406,7 @@ typedef struct {
     [_tofPerAct removeAllObjects];
     [_fissionsWelPerAct removeAllObjects];
     _firstFissionInfo = nil;
+    _fonPerAct = nil;
 }
 
 - (void)logActResults:(FILE *)outputFile
@@ -410,7 +452,7 @@ typedef struct {
     
     int rowsMax = MAX(MAX(1, (int)_gammaPerAct.count), (int)_fissionsWelPerAct.count);
     for (int row = 0; row < rowsMax; row++) {
-        for (int column = 0; column < 8; column++) {
+        for (int column = 0; column < 9; column++) {
             switch (column) {
                 case 0:
                 {
@@ -476,12 +518,20 @@ typedef struct {
                     break;
                 }
                     
+                case 8:
+                {
+                    if (row == 0 && _fonPerAct) {
+                        fprintf(outputFile, "%hu", [_fonPerAct unsignedShortValue]);
+                    }
+                    break;
+                }
+                    
                 default:
                     break;
             }
 
             fprintf(outputFile, "\t");
-            if (column == 7) {
+            if (column == 8) {
                 fprintf(outputFile, "\n");
             }
         }
