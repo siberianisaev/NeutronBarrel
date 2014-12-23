@@ -55,6 +55,7 @@ typedef struct {
 @property (assign, nonatomic) BOOL isNewAct;
 @property (strong, nonatomic) ISACalibration *calibration;
 @property (strong, nonatomic) ISAEventStack *fissionsFrontNotInCycleStack; // осколки пришедшие до обнаружения главного осколка (стек нужен для возврата к нескольким предыдущем событиям по времени)
+@property (strong, nonatomic) ISAEventStack *gammaNotInCycleStack; // гамма-кванты пришедшие до обнаружения главного осколка (стек нужен для возврата к нескольким предыдущем событиям по времени)
 
 @end
 
@@ -100,6 +101,7 @@ typedef struct {
     _tofPerAct = [NSMutableArray array];
     _fissionsWelPerAct = [NSMutableArray array];
     _fissionsFrontNotInCycleStack = [ISAEventStack stack];
+    _gammaNotInCycleStack = [ISAEventStack stack];
     
     const char *resultsFileName = [self resultsFilePath];
     FILE *outputFile = fopen(resultsFileName, "w");
@@ -107,7 +109,7 @@ typedef struct {
         printf("Error opening file %s\n", resultsFileName);
         exit(1);
     }
-    fprintf(outputFile, "File\tEvent\tSumm(FFron)\tStrip(FFron)\tStrip(FBack)\tFWel\tNeutrons\tGamma\tFON\n\n");
+    fprintf(outputFile, "File\tEvent\tSumm(FFron)\tStrip(FFron)\tStrip(FBack)\tFWel\tFWelPos\tNeutrons\tGamma\tFON\n\n");
     
     for (NSString *path in self.selectedFiles) {
         FILE *file = fopen([path UTF8String], "rb");
@@ -127,6 +129,12 @@ typedef struct {
                 // Завершаем цикл если прошло слишком много времени, с момента запуска.
                 if (_isNewAct && (deltaTime > kNeutronMaxSearchTimeInMks) && [self isValidEventIdForTimeCheck:event.eventId]) {
                     [self actStoped:outputFile];
+                }
+                
+                // Gam1 Backward Search
+                if ((NO == _isNewAct) && (kGam1 == event.eventId)) {
+                    [self storePreviousGamma:event];
+                    continue;
                 }
                 
                 // FFron
@@ -252,6 +260,12 @@ typedef struct {
     [_fissionsFrontNotInCycleStack pushEvent:value];
 }
 
+- (void)storePreviousGamma:(ISAEvent)event
+{
+    NSValue *value = [NSValue valueWithBytes:&event objCType:@encode(ISAEvent)];
+    [_gammaNotInCycleStack pushEvent:value];
+}
+
 - (void)storeNextFissionFront:(ISAEvent)event
 {
     [self storeFissionFront:event isFirst:NO];
@@ -294,7 +308,12 @@ typedef struct {
 - (void)storeFissionWell:(ISAEvent)event
 {
     double energy = [self getFissionEnergy:event];
-    [_fissionsWelPerAct addObject:@(energy)];
+    unsigned short encoder = [self fissionEncoderForEventId:event.eventId];
+    unsigned short strip_0_15 = event.param2 >> 12;  // value from 0 to 15
+    NSDictionary *fissionInfo = @{@"encoder":@(encoder),
+                                  @"strip_0_15":@(strip_0_15),
+                                  @"energy":@(energy)};
+    [_fissionsWelPerAct addObject:fissionInfo];
 }
 
 - (void)storeGamma:(ISAEvent)event
@@ -348,6 +367,26 @@ typedef struct {
     [_fissionsFrontNotInCycleStack clear];
 }
 
+/**
+ Анализируем стек гамма-квантов с конца, если гамма-квант близкий по времени первому осколку (триггеру цикла), то сохраняем его в _gammaPerAct.
+ */
+- (void)analyzeOldGamma
+{
+    for (NSValue *value in [_gammaNotInCycleStack.events reverseObjectEnumerator]) {
+        ISAEvent event;
+        [value getValue:&event];
+
+#warning TODO: создать структуру для записи firstFissionTime в виде THi + TLo и уточнить обработку данных для old событий! (THi1 == THi2)
+        double deltaTime = fabs(event.param1 - _firstFissionTime);
+        if (deltaTime <= kGammaMaxSearchTimeInMks) {
+            [self storeGamma:event];
+        } else { // Далее в цикле пойдут слишком удаленные по времени события
+            break;
+        }
+    }
+    [_gammaNotInCycleStack clear];
+}
+
 - (double)getFissionEnergy:(ISAEvent)event
 {
     unsigned short channel = event.param2 & kFissionMask;
@@ -386,6 +425,7 @@ typedef struct {
 {
     [self storeFirstFissionFront:event];
     [self analyzeOldFissions];
+    [self analyzeOldGamma];
     _isNewAct = YES;
 }
 
@@ -452,7 +492,7 @@ typedef struct {
     
     int rowsMax = MAX(MAX(1, (int)_gammaPerAct.count), (int)_fissionsWelPerAct.count);
     for (int row = 0; row < rowsMax; row++) {
-        for (int column = 0; column < 9; column++) {
+        for (int column = 0; column < 10; column++) {
             switch (column) {
                 case 0:
                 {
@@ -497,12 +537,22 @@ typedef struct {
                 case 5:
                 {
                     if (row < (int)_fissionsWelPerAct.count) {
-                        fprintf(outputFile, "%4.7f", [[_fissionsWelPerAct objectAtIndex:row] doubleValue]);
+                        NSDictionary *fissionInfo = [_fissionsWelPerAct objectAtIndex:row];
+                        fprintf(outputFile, "%4.7f", [[fissionInfo objectForKey:@"energy"] doubleValue]);
+                    }
+                    break;
+                }
+                
+                case 6:
+                {
+                    if (row < (int)_fissionsWelPerAct.count) {
+                        NSDictionary *fissionInfo = [_fissionsWelPerAct objectAtIndex:row];
+                        fprintf(outputFile, "FWel%d.%d", [[fissionInfo objectForKey:@"encoder"] intValue], [[fissionInfo objectForKey:@"strip_0_15"] intValue]+1);
                     }
                     break;
                 }
                     
-                case 6:
+                case 7:
                 {
                     if (row == 0) {
                         fprintf(outputFile, "%2llu", _neutronsSummPerAct);
@@ -510,7 +560,7 @@ typedef struct {
                     break;
                 }
                     
-                case 7:
+                case 8:
                 {
                     if (row < (int)_gammaPerAct.count) {
                         fprintf(outputFile, "%4.7f", [[_gammaPerAct objectAtIndex:row] doubleValue]);
@@ -518,7 +568,7 @@ typedef struct {
                     break;
                 }
                     
-                case 8:
+                case 9:
                 {
                     if (row == 0 && _fonPerAct) {
                         fprintf(outputFile, "%hu", [_fonPerAct unsignedShortValue]);
@@ -531,7 +581,7 @@ typedef struct {
             }
 
             fprintf(outputFile, "\t");
-            if (column == 8) {
+            if (column == 9) {
                 fprintf(outputFile, "\n");
             }
         }
@@ -561,8 +611,8 @@ typedef struct {
     }
     
     if ([_fissionsWelPerAct count]) {
-        for (NSNumber *energy in _fissionsWelPerAct) {
-            printf("FWel\t\t%f MeV\n", [energy doubleValue]);
+        for (NSDictionary *fissionInfo in _fissionsWelPerAct) {
+            printf("FWel%d.%d\t\t%f MeV\n", [[fissionInfo objectForKey:@"encoder"] intValue], [[fissionInfo objectForKey:@"strip_0_15"] intValue]+1, [[fissionInfo objectForKey:@"energy"] doubleValue]);
         }
     }
     
