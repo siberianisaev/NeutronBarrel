@@ -5,7 +5,7 @@
 static int const kNeutronMaxSearchTimeInMks = 132; // from t(FF) to t(last neutron)
 static int const kGammaMaxSearchTimeInMks = 5; // from t(FF) to t(last gamma)
 static int const kTOFMaxSearchTimeInMks = 2; // from t(FF) (случайные генерации, а не отмеки рекойлов)
-static int const kFONMaxSearchTimeInMks = 1000000; // from t(FF) (в интервале <= 1 секунда)
+//static int const kFONMaxSearchTimeInMks = 1000000; // from t(FF) (в интервале <= 1 секунда)
 static int const kFissionsMaxSearchTimeInMks = 5; // from t(FF1) to t(FF2)
 static unsigned short kFissionMinEnergy = 20; // FBack or FFront MeV
 static unsigned short kFFont1 = 1;
@@ -20,10 +20,12 @@ static unsigned short kGam1 = 10; // Gamma-detector ID
 static unsigned short kTOF = 12;
 static unsigned short kNeutrons = 18;
 static unsigned short kFON = 24;
+static unsigned short kTriger = 25;
 static unsigned short kFissionMask = 0x0FFF;
 static unsigned short kGamMask = 0x1FFF;
 static unsigned short kTOFMask = 0x1FFF;
 static unsigned short kFONMask = 0xFFFF;
+static unsigned short kTrigerMask = 0xFFFF;
 static unsigned short kFissionMarker = 0; // !Recoil
 
 typedef struct {
@@ -47,6 +49,7 @@ typedef struct {
 @property (strong, nonatomic) NSMutableArray *gammaPerAct;
 @property (strong, nonatomic) NSMutableArray *tofPerAct;
 @property (strong, nonatomic) NSNumber *fonPerAct;
+@property (strong, nonatomic) NSNumber *trigerPerAct;
 @property (strong, nonatomic) NSDictionary *firstFissionInfo; // информация о главном осколке в цикле
 @property (assign, nonatomic) unsigned short firstFissionTime; // время главного осколка в цикле
 @property (assign, nonatomic) int fissionBackSumm;
@@ -109,7 +112,7 @@ typedef struct {
         printf("Error opening file %s\n", resultsFileName);
         exit(1);
     }
-    fprintf(outputFile, "File\tEvent\tSumm(FFron)\tStrip(FFron)\tStrip(FBack)\tFWel\tFWelPos\tNeutrons\tGamma\tFON\n\n");
+    fprintf(outputFile, "File\tEvent\tSumm(FFron)\tStrip(FFron)\tStrip(FBack)\tFWel\tFWelPos\tNeutrons\tGamma\tFON\tTriger\n\n");
     
     for (NSString *path in self.selectedFiles) {
         FILE *file = fopen([path UTF8String], "rb");
@@ -144,10 +147,12 @@ typedef struct {
                         if ([self getFissionEnergy:event] >= [_sMinEnergy doubleValue]) {
                             [self actStartedWithEvent:event];
                             
-                            // FON
                             fpos_t position;
                             fgetpos(file, &position);
+                            // FON
                             [self findFONEventFromPosition:position inFileAtPath:path];
+                            // Triger
+                            [self findTrigerEventFromPosition:position inFileAtPath:path];
                         } else {  // FFron пришедшие до первого
                             [self storePreviousFissionFront:event];
                         }
@@ -233,10 +238,42 @@ typedef struct {
     }
 }
 
+/**
+ Поиск первого события Triger осуществляется с позиции файла где найден главный осколок.
+ Время поиска <= 1 секунды.
+ */
+- (void)findTrigerEventFromPosition:(fpos_t)position inFileAtPath:(NSString *)path
+{
+    FILE *file = fopen([path UTF8String], "rb");
+    if (file == NULL) {
+        exit(-1);
+    } else {
+        fseek(file, position, SEEK_CUR);
+        
+        while (!feof(file)) {
+            ISAEvent event;
+            fread(&event, sizeof(event), 1, file);
+#warning TODO: учитывать старшие разряды времени THi !
+            //            double deltaTime = fabs(event.param1 - _firstFissionTime);
+            //            if ((kTriger == event.eventId) && (deltaTime <= kTrigerMaxSearchTimeInMks)) {
+            if (kTriger == event.eventId) {
+                [self storeTriger:event];
+                return;
+            }
+        }
+    }
+}
+
 - (void)storeFON:(ISAEvent)event
 {
     unsigned short channel = event.param3 & kFONMask;
     _fonPerAct = @(channel);
+}
+
+- (void)storeTriger:(ISAEvent)event
+{
+    unsigned short channel = event.param3 & kTrigerMask;
+    _trigerPerAct = @(channel);
 }
 
 /**
@@ -447,6 +484,7 @@ typedef struct {
     [_fissionsWelPerAct removeAllObjects];
     _firstFissionInfo = nil;
     _fonPerAct = nil;
+    _trigerPerAct = nil;
 }
 
 - (void)logActResults:(FILE *)outputFile
@@ -492,7 +530,7 @@ typedef struct {
     
     int rowsMax = MAX(MAX(1, (int)_gammaPerAct.count), (int)_fissionsWelPerAct.count);
     for (int row = 0; row < rowsMax; row++) {
-        for (int column = 0; column < 10; column++) {
+        for (int column = 0; column < 11; column++) {
             switch (column) {
                 case 0:
                 {
@@ -576,12 +614,20 @@ typedef struct {
                     break;
                 }
                     
+                case 10:
+                {
+                    if (row == 0 && _trigerPerAct) {
+                        fprintf(outputFile, "%hu", [_trigerPerAct unsignedShortValue]);
+                    }
+                    break;
+                }
+                    
                 default:
                     break;
             }
 
             fprintf(outputFile, "\t");
-            if (column == 9) {
+            if (column == 10) {
                 fprintf(outputFile, "\n");
             }
         }
