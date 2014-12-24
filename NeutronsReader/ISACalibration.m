@@ -7,6 +7,7 @@
 //
 
 #import "ISACalibration.h"
+#import "ISALogger.h"
 
 static NSString * const kName = @"kName";
 static NSString * const kCoefficientA = @"kCoefficientA";
@@ -32,7 +33,7 @@ static NSString * const kCoefficientB = @"kCoefficientB";
     self.data = [NSMutableDictionary dictionary];
     
     NSString *path = [url path];
-    printf("\nCALIBRATION\n----------\nLoad calibration from file: %s\n(B)\t\t(A)\t\t(Name)\n", [[path lastPathComponent] UTF8String]);
+    NSMutableString *sCalibration = [NSMutableString stringWithFormat:@"\nCALIBRATION\n----------\nLoad calibration from file: %s\n(B)\t\t(A)\t\t(Name)\n", [[path lastPathComponent] UTF8String]];
     
     NSError __autoreleasing *error = nil;
     NSString *content = [NSString stringWithContentsOfFile:path
@@ -50,12 +51,12 @@ static NSString * const kCoefficientB = @"kCoefficientB";
                 CGFloat b = [[components objectAtIndex:0] floatValue];
                 CGFloat a = [[components objectAtIndex:1] floatValue];
                 NSString *name = [components objectAtIndex:2];
-                printf("%.6f\t%.6f\t%s\n", b, a, [name UTF8String]);
+                [sCalibration appendFormat:@"%.6f\t%.6f\t%s\n", b, a, [name UTF8String]];
                 
                 [self.data setObject:@{kCoefficientB:@(b), kCoefficientA:@(a)} forKey:name];
             }
         }
-        printf("----------\n");
+        [ISALogger logCalibration:sCalibration];
     } else {
         NSLog(@"%@", error);
     }

@@ -1,6 +1,9 @@
 #import "ISAAppDelegate.h"
 #import "ISACalibration.h"
 #import "ISAEventStack.h"
+#import "ISAElectronicProtocol.h"
+#import "ISAFileManager.h"
+#import "ISALogger.h"
 
 static int const kNeutronMaxSearchTimeInMks = 132; // from t(FF) to t(last neutron)
 static int const kGammaMaxSearchTimeInMks = 5; // from t(FF) to t(last gamma)
@@ -8,25 +11,13 @@ static int const kTOFMaxSearchTimeInMks = 2; // from t(FF) (случайные �
 //static int const kFONMaxSearchTimeInMks = 1000000; // from t(FF) (в интервале <= 1 секунда)
 static int const kFissionsMaxSearchTimeInMks = 5; // from t(FF1) to t(FF2)
 static unsigned short kFissionMinEnergy = 20; // FBack or FFront MeV
-static unsigned short kFFont1 = 1;
-static unsigned short kFFont2 = 2;
-static unsigned short kFFont3 = 3;
-static unsigned short kFBack1 = 4;
-static unsigned short kFBack2 = 5;
-static unsigned short kFBack3 = 6;
-static unsigned short kFWel1 = 7;
-static unsigned short kFWel2 = 8;
-static unsigned short kGam1 = 10; // Gamma-detector ID
-static unsigned short kTOF = 12;
-static unsigned short kNeutrons = 18;
-static unsigned short kFON = 24;
-static unsigned short kTriger = 25;
-static unsigned short kFissionMask = 0x0FFF;
-static unsigned short kGamMask = 0x1FFF;
-static unsigned short kTOFMask = 0x1FFF;
-static unsigned short kFONMask = 0xFFFF;
-static unsigned short kTrigerMask = 0xFFFF;
-static unsigned short kFissionMarker = 0; // !Recoil
+
+static NSString * const kEncoder = @"encoder";
+static NSString * const kStrip0_15 = @"strip_0_15";
+static NSString * const kStrip1_48 = @"strip_1_48";
+static NSString * const kEnergy = @"energy";
+static NSString * const kChannel = @"channel";
+static NSString * const kEventNumber = @"event_number";
 
 typedef struct {
     unsigned short eventId;
@@ -79,20 +70,6 @@ typedef struct {
     _calibration = [ISACalibration calibrationWithUrl:url];
 }
 
-- (NSString *)desktopFolder
-{
-    NSArray *paths = NSSearchPathForDirectoriesInDomains (NSDesktopDirectory, NSUserDomainMask, YES);
-    NSString *desktopPath = [paths objectAtIndex:0];
-    return desktopPath;
-}
-
-- (const char *)resultsFilePath
-{
-    NSString *desktopPath = [self desktopFolder];
-    NSString *resultsPath = [desktopPath stringByAppendingPathComponent:@"results.txt"];
-    return [resultsPath UTF8String];
-}
-
 - (IBAction)start:(id)sender
 {
     [self.activity startAnimation:self];
@@ -106,7 +83,7 @@ typedef struct {
     _fissionsFrontNotInCycleStack = [ISAEventStack stack];
     _gammaNotInCycleStack = [ISAEventStack stack];
     
-    const char *resultsFileName = [self resultsFilePath];
+    const char *resultsFileName = [ISAFileManager resultsFilePath];
     FILE *outputFile = fopen(resultsFileName, "w");
     if (outputFile == NULL) {
         printf("Error opening file %s\n", resultsFileName);
@@ -135,7 +112,7 @@ typedef struct {
                 }
                 
                 // Gam1 Backward Search
-                if ((NO == _isNewAct) && (kGam1 == event.eventId)) {
+                if ((NO == _isNewAct) && (EventIdGamma1 == event.eventId)) {
                     [self storePreviousGamma:event];
                     continue;
                 }
@@ -180,19 +157,19 @@ typedef struct {
                 }
                 
                 // Gam1
-                if ((kGam1 == event.eventId) && (deltaTime <= kGammaMaxSearchTimeInMks)) {
+                if ((EventIdGamma1 == event.eventId) && (deltaTime <= kGammaMaxSearchTimeInMks)) {
                     [self storeGamma:event];
                     continue;
                 }
                 
                 // TOF
-                if ((kTOF == event.eventId) && (deltaTime <= kTOFMaxSearchTimeInMks)) {
+                if ((EventIdTOF == event.eventId) && (deltaTime <= kTOFMaxSearchTimeInMks)) {
                     [self storeTOF:event];
                     continue;
                 }
                 
                 // Neutrons
-                if ((kNeutrons == event.eventId) && (deltaTime <= kNeutronMaxSearchTimeInMks)) {
+                if ((EventIdNeutrons == event.eventId) && (deltaTime <= kNeutronMaxSearchTimeInMks)) {
                     _neutronsSummPerAct += 1;
                     continue;
                 }
@@ -207,7 +184,7 @@ typedef struct {
     }
     
     fclose(outputFile);
-    [self logTotalMultiplicity];
+    [ISALogger logMultiplicity:_neutronsMultiplicityTotal];
     
     [self.activity stopAnimation:self];
 }
@@ -230,7 +207,7 @@ typedef struct {
 #warning TODO: учитывать старшие разряды времени THi !
 //            double deltaTime = fabs(event.param1 - _firstFissionTime);
 //            if ((kFON == event.eventId) && (deltaTime <= kFONMaxSearchTimeInMks)) {
-            if (kFON == event.eventId) {
+            if (EventIdFON == event.eventId) {
                 [self storeFON:event];
                 return;
             }
@@ -256,7 +233,7 @@ typedef struct {
 #warning TODO: учитывать старшие разряды времени THi !
             //            double deltaTime = fabs(event.param1 - _firstFissionTime);
             //            if ((kTriger == event.eventId) && (deltaTime <= kTrigerMaxSearchTimeInMks)) {
-            if (kTriger == event.eventId) {
+            if (EventIdTrigger == event.eventId) {
                 [self storeTriger:event];
                 return;
             }
@@ -266,13 +243,13 @@ typedef struct {
 
 - (void)storeFON:(ISAEvent)event
 {
-    unsigned short channel = event.param3 & kFONMask;
+    unsigned short channel = event.param3 & MaskFON;
     _fonPerAct = @(channel);
 }
 
 - (void)storeTriger:(ISAEvent)event
 {
-    unsigned short channel = event.param3 & kTrigerMask;
+    unsigned short channel = event.param3 & MaskTrigger;
     _trigerPerAct = @(channel);
 }
 
@@ -310,21 +287,21 @@ typedef struct {
 
 - (void)storeFissionFront:(ISAEvent)event isFirst:(BOOL)isFirst
 {
-    unsigned short channel = event.param2 & kFissionMask;
+    unsigned short channel = event.param2 & MaskFission;
     unsigned short encoder = [self fissionEncoderForEventId:event.eventId];
     unsigned short strip_0_15 = event.param2 >> 12;  // value from 0 to 15
     double energy = [self getFissionEnergy:event];
-    NSDictionary *fissionInfo = @{@"encoder":@(encoder),
-                                  @"strip_0_15":@(strip_0_15),
-                                  @"channel":@(channel),
-                                  @"energy":@(energy),
-                                  @"event_number":@(_currentEventNumber)};
+    NSDictionary *fissionInfo = @{kEncoder:@(encoder),
+                                  kStrip0_15:@(strip_0_15),
+                                  kChannel:@(channel),
+                                  kEnergy:@(energy),
+                                  kEventNumber:@(_currentEventNumber)};
     [_fissionsFrontPerAct addObject:fissionInfo];
     
     if (isFirst) {
         unsigned short strip_1_48 = [self focalFissionStripConvertToFormat_1_48:strip_0_15 eventId:event.eventId];
         NSMutableDictionary *extraInfo = [fissionInfo mutableCopy];
-        [extraInfo setObject:@(strip_1_48) forKey:@"strip_1_48"];
+        [extraInfo setObject:@(strip_1_48) forKey:kStrip1_48];
         _firstFissionInfo = extraInfo;
         _firstFissionTime = event.param1;
     }
@@ -335,10 +312,10 @@ typedef struct {
     unsigned short encoder = [self fissionEncoderForEventId:event.eventId];
     unsigned short strip_0_15 = event.param2 >> 12;  // value from 0 to 15
     double energy = [self getFissionEnergy:event];
-    NSDictionary *fissionInfo = @{@"encoder":@(encoder),
-                                  @"strip_0_15":@(strip_0_15),
-                                  @"energy":@(energy),
-                                  @"event_number":@(_currentEventNumber)};
+    NSDictionary *fissionInfo = @{kEncoder:@(encoder),
+                                  kStrip0_15:@(strip_0_15),
+                                  kEnergy:@(energy),
+                                  kEventNumber:@(_currentEventNumber)};
     [_fissionsBackPerAct addObject:fissionInfo];
 }
 
@@ -347,22 +324,22 @@ typedef struct {
     double energy = [self getFissionEnergy:event];
     unsigned short encoder = [self fissionEncoderForEventId:event.eventId];
     unsigned short strip_0_15 = event.param2 >> 12;  // value from 0 to 15
-    NSDictionary *fissionInfo = @{@"encoder":@(encoder),
-                                  @"strip_0_15":@(strip_0_15),
-                                  @"energy":@(energy)};
+    NSDictionary *fissionInfo = @{kEncoder:@(encoder),
+                                  kStrip0_15:@(strip_0_15),
+                                  kEnergy:@(energy)};
     [_fissionsWelPerAct addObject:fissionInfo];
 }
 
 - (void)storeGamma:(ISAEvent)event
 {
-    unsigned short channel = event.param3 & kGamMask;
+    unsigned short channel = event.param3 & MaskGamma;
     double energy = [_calibration energyForAmplitude:channel ofEvent:@"Gam1"];
     [_gammaPerAct addObject:@(energy)];
 }
 
 - (void)storeTOF:(ISAEvent)event
 {
-    unsigned short channel = event.param3 & kTOFMask;
+    unsigned short channel = event.param3 & MaskTOF;
     [_tofPerAct addObject:@(channel)];
 }
 
@@ -373,13 +350,13 @@ typedef struct {
 {
     unsigned short strip_0_15 = event.param2 >> 12;  // value from 0 to 15
     
-    int strip_0_15_first_fission = [[_firstFissionInfo objectForKey:@"strip_0_15"] intValue];
+    int strip_0_15_first_fission = [[_firstFissionInfo objectForKey:kStrip0_15] intValue];
     if (strip_0_15 == strip_0_15_first_fission) { // совпадают
         return YES;
     }
     
     int strip_1_48 = [self focalFissionStripConvertToFormat_1_48:strip_0_15 eventId:event.eventId];
-    int strip_1_48_first_fission = [[_firstFissionInfo objectForKey:@"strip_1_48"] intValue];
+    int strip_1_48_first_fission = [[_firstFissionInfo objectForKey:kStrip1_48] intValue];
     return (abs(strip_1_48 - strip_1_48_first_fission) <= 1); // +/- 1 стрип
 }
 
@@ -426,15 +403,15 @@ typedef struct {
 
 - (double)getFissionEnergy:(ISAEvent)event
 {
-    unsigned short channel = event.param2 & kFissionMask;
+    unsigned short channel = event.param2 & MaskFission;
     unsigned short eventId = event.eventId;
     unsigned short strip_0_15 = event.param2 >> 12;  // value from 0 to 15
     unsigned short encoder = [self fissionEncoderForEventId:eventId];
     
     NSString *prefix = nil;
-    if (kFFont1 == eventId || kFFont2 == eventId || kFFont3 == eventId) {
+    if (EventIdFissionFront1 == eventId || EventIdFissionFront2 == eventId || EventIdFissionFront3 == eventId) {
         prefix = @"FFron";
-    } else if (kFBack1 == eventId || kFBack2 == eventId || kFBack3 == eventId) {
+    } else if (EventIdFissionBack1 == eventId || EventIdFissionBack2 == eventId || EventIdFissionBack3 == eventId) {
         prefix = @"FBack";
     } else {
         prefix = @"FWel";
@@ -446,13 +423,13 @@ typedef struct {
 
 - (unsigned short)fissionEncoderForEventId:(unsigned short)eventId
 {
-    if (kFFont1 == eventId || kFBack1 == eventId || kFWel1 == eventId) {
+    if (EventIdFissionFront1 == eventId || EventIdFissionBack1 == eventId || EventIdFissionWell1 == eventId) {
         return 1;
     }
-    if (kFFont2 == eventId || kFBack2 == eventId || kFWel2 == eventId) {
+    if (EventIdFissionFront2 == eventId || EventIdFissionBack2 == eventId || EventIdFissionWell2 == eventId) {
         return 2;
     }
-    if (kFFont3 == eventId || kFBack3 == eventId) {
+    if (EventIdFissionFront3 == eventId || EventIdFissionBack3 == eventId) {
         return 3;
     }
     return 0;
@@ -501,15 +478,15 @@ typedef struct {
     int stripFFronEMax = -1;
     double maxFFronE = 0;
     for (NSDictionary *fissionInfo in _fissionsFrontPerAct) {
-        double energy = [[fissionInfo objectForKey:@"energy"] doubleValue];
+        double energy = [[fissionInfo objectForKey:kEnergy] doubleValue];
         if (maxFFronE < energy) {
             maxFFronE = energy;
             
-            int strip_0_15 = [[fissionInfo objectForKey:@"strip_0_15"] intValue];
-            int encoder = [[fissionInfo objectForKey:@"encoder"] intValue];
+            int strip_0_15 = [[fissionInfo objectForKey:kStrip0_15] intValue];
+            int encoder = [[fissionInfo objectForKey:kEncoder] intValue];
             stripFFronEMax = [self focalFissionStripConvertToFormat_1_48:strip_0_15 encoder:encoder];
             
-            eventNumber = [[fissionInfo objectForKey:@"event_number"] unsignedLongLongValue];
+            eventNumber = [[fissionInfo objectForKey:kEventNumber] unsignedLongLongValue];
         }
         summFFronE += energy;
     }
@@ -518,12 +495,12 @@ typedef struct {
     int stripFBackChannelMax = -1;
     double maxFBackE = 0;
     for (NSDictionary *fissionInfo in _fissionsBackPerAct) {
-        double energy = [[fissionInfo objectForKey:@"energy"] doubleValue];
+        double energy = [[fissionInfo objectForKey:kEnergy] doubleValue];
         if (maxFBackE < energy) {
             maxFBackE = energy;
             
-            int strip_0_15 = [[fissionInfo objectForKey:@"strip_0_15"] intValue];
-            int encoder = [[fissionInfo objectForKey:@"encoder"] intValue];
+            int strip_0_15 = [[fissionInfo objectForKey:kStrip0_15] intValue];
+            int encoder = [[fissionInfo objectForKey:kEncoder] intValue];
             stripFBackChannelMax = [self focalFissionStripConvertToFormat_1_48:strip_0_15 encoder:encoder];
         }
     }
@@ -576,7 +553,7 @@ typedef struct {
                 {
                     if (row < (int)_fissionsWelPerAct.count) {
                         NSDictionary *fissionInfo = [_fissionsWelPerAct objectAtIndex:row];
-                        fprintf(outputFile, "%4.7f", [[fissionInfo objectForKey:@"energy"] doubleValue]);
+                        fprintf(outputFile, "%4.7f", [[fissionInfo objectForKey:kEnergy] doubleValue]);
                     }
                     break;
                 }
@@ -585,7 +562,7 @@ typedef struct {
                 {
                     if (row < (int)_fissionsWelPerAct.count) {
                         NSDictionary *fissionInfo = [_fissionsWelPerAct objectAtIndex:row];
-                        fprintf(outputFile, "FWel%d.%d", [[fissionInfo objectForKey:@"encoder"] intValue], [[fissionInfo objectForKey:@"strip_0_15"] intValue]+1);
+                        fprintf(outputFile, "FWel%d.%d", [[fissionInfo objectForKey:kEncoder] intValue], [[fissionInfo objectForKey:kStrip0_15] intValue]+1);
                     }
                     break;
                 }
@@ -638,10 +615,10 @@ typedef struct {
 {
     double summFFron = 0;
     for (NSDictionary *fissionInfo in _fissionsFrontPerAct) {
-        double energy = [[fissionInfo objectForKey:@"energy"] doubleValue];
-        printf("FFron%d.%d\t\t%f MeV", [[fissionInfo objectForKey:@"encoder"] intValue], [[fissionInfo objectForKey:@"strip_0_15"] intValue]+1, energy);
+        double energy = [[fissionInfo objectForKey:kEnergy] doubleValue];
+        printf("FFron%d.%d\t\t%f MeV", [[fissionInfo objectForKey:kEncoder] intValue], [[fissionInfo objectForKey:kStrip0_15] intValue]+1, energy);
         if (energy >= [_sMinEnergy doubleValue]) {
-            printf(" (%d channel)", [[fissionInfo objectForKey:@"channel"] intValue]);
+            printf(" (%d channel)", [[fissionInfo objectForKey:kChannel] intValue]);
         }
         printf("\n");
         summFFron += energy;
@@ -658,12 +635,12 @@ typedef struct {
     
     if ([_fissionsWelPerAct count]) {
         for (NSDictionary *fissionInfo in _fissionsWelPerAct) {
-            printf("FWel%d.%d\t\t%f MeV\n", [[fissionInfo objectForKey:@"encoder"] intValue], [[fissionInfo objectForKey:@"strip_0_15"] intValue]+1, [[fissionInfo objectForKey:@"energy"] doubleValue]);
+            printf("FWel%d.%d\t\t%f MeV\n", [[fissionInfo objectForKey:kEncoder] intValue], [[fissionInfo objectForKey:kStrip0_15] intValue]+1, [[fissionInfo objectForKey:kEnergy] doubleValue]);
         }
     }
     
     for (NSDictionary *fissionInfo in _fissionsBackPerAct) {
-        printf("FBack%d.%d\n", [[fissionInfo objectForKey:@"encoder"] intValue], [[fissionInfo objectForKey:@"strip_0_15"] intValue]+1);
+        printf("FBack%d.%d\n", [[fissionInfo objectForKey:kEncoder] intValue], [[fissionInfo objectForKey:kStrip0_15] intValue]+1);
     }
     
     if ([_tofPerAct count]) {
@@ -675,15 +652,6 @@ typedef struct {
     printf("\n");
 }
 
-- (void)logTotalMultiplicity
-{
-    printf("Neutrons multiplicity\n");
-    for (NSString *key in [_neutronsMultiplicityTotal.allKeys sortedArrayUsingSelector:@selector(compare:)]) {
-        NSNumber *value = [_neutronsMultiplicityTotal objectForKey:key];
-        printf("%d-x: %llu\n", [key intValue], [value unsignedLongLongValue]);
-    }
-}
-
 /**
  В фокальном детекторе cтрипы подключены поочередно к трем 16-канальным кодировщикам:
  | 1.0 | 2.0 | 3.0 | 1.1 | 2.1 | 3.1 | 1.1 ... (encoder.strip_0_15)
@@ -692,9 +660,9 @@ typedef struct {
 - (unsigned short)focalFissionStripConvertToFormat_1_48:(unsigned short)strip_0_15 eventId:(unsigned short)eventId
 {
     int encoder = 1;
-    if (kFFont2 == eventId || kFBack2 == eventId) {
+    if (EventIdFissionFront2 == eventId || EventIdFissionBack2 == eventId) {
         encoder = 2;
-    } else if (kFFont3 == eventId || kFBack3 == eventId) {
+    } else if (EventIdFissionFront3 == eventId || EventIdFissionBack3 == eventId) {
         encoder = 3;
     }
     return [self focalFissionStripConvertToFormat_1_48:strip_0_15 encoder:encoder];
@@ -710,7 +678,7 @@ typedef struct {
  */
 - (BOOL)isValidEventIdForTimeCheck:(unsigned short)eventId
 {
-    return (eventId <= kFWel2 || kGam1 == eventId || kNeutrons == eventId);
+    return (eventId <= EventIdFissionWell2 || EventIdGamma1 == eventId || EventIdNeutrons == eventId);
 }
 
 /**
@@ -727,21 +695,21 @@ typedef struct {
 {
     unsigned short eventId = event.eventId;
     unsigned short marker = [self getMarker:event.param3];
-    return (kFissionMarker == marker) && (kFFont1 == eventId || kFFont2 == eventId || kFFont3 == eventId);
+    return (kFissionMarker == marker) && (EventIdFissionFront1 == eventId || EventIdFissionFront2 == eventId || EventIdFissionFront3 == eventId);
 }
 
 - (BOOL)isFissionWel:(ISAEvent)event
 {
     unsigned short eventId = event.eventId;
     unsigned short marker = [self getMarker:event.param3];
-    return (kFissionMarker == marker) && (kFWel1 == eventId || kFWel2 == eventId);
+    return (kFissionMarker == marker) && (EventIdFissionWell1 == eventId || EventIdFissionWell2 == eventId);
 }
 
 - (BOOL)isFissionBack:(ISAEvent)event
 {
     unsigned short eventId = event.eventId;
     unsigned short marker = [self getMarker:event.param3];
-    return (kFissionMarker == marker) && (kFBack1 == eventId || kFBack2 == eventId || kFBack3 == eventId);
+    return (kFissionMarker == marker) && (EventIdFissionBack1 == eventId || EventIdFissionBack2 == eventId || EventIdFissionBack3 == eventId);
 }
 
 - (IBAction)select:(id)sender
@@ -752,9 +720,6 @@ typedef struct {
     [openPanel setAllowsMultipleSelection:YES];
     
     if (NSOKButton == [openPanel runModal]) {
-//        if ([[openPanel URLs] count]) {
-//            printf("Selected files:\n");
-//        }
         for (NSURL *url in [openPanel URLs]) {
             NSString *path = [url path];
             
@@ -765,15 +730,12 @@ typedef struct {
                 NSArray *dataFiles = [dirFiles filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"!(self ENDSWITH '.PRO') AND !(self ENDSWITH '.DS_Store')"]];
                 for (NSString *fileName in dataFiles) {
                     NSString *filePath = [path stringByAppendingPathComponent:fileName];
-//                    printf("\n%s", [filePath UTF8String]);
                     [self.selectedFiles addObject:filePath];
                 }
             } else {
-//                printf("\n%s", [path UTF8String]);
                 [self.selectedFiles addObject:path];
             }
         }
-//        printf("\n\n");
     }
 }
 
