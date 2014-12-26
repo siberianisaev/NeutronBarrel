@@ -8,8 +8,16 @@
 
 #import <Foundation/Foundation.h>
 
+extern int kDefaultFissionFrontMinEnergy;
+
 @interface ISAProcessor : NSObject
 
-#warning TODO: перенести сюда логику обработки данных из ISAAppDelegate
+@property (assign, nonatomic) double fissionFrontMinEnergy;
+
++ (ISAProcessor *)processor;
+
+- (void)processData;
+- (void)selectData;
+- (void)selectCalibration;
 
 @end

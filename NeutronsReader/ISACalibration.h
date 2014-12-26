@@ -10,7 +10,9 @@
 
 @interface ISACalibration : NSObject
 
-+ (instancetype)calibrationWithUrl:(NSURL *)url;
++ (instancetype)openCalibration;
++ (instancetype)defaultCalibration;
+
 - (double)energyForAmplitude:(unsigned short)channel ofEvent:(NSString *)name;
 
 @end

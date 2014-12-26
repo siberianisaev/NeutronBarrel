@@ -21,6 +21,29 @@ static NSString * const kCoefficientB = @"kCoefficientB";
 
 @implementation ISACalibration
 
++ (instancetype)openCalibration
+{
+    NSOpenPanel *openPanel = [NSOpenPanel openPanel];
+    [openPanel setCanChooseFiles:YES];
+    [openPanel setCanChooseDirectories:NO];
+    [openPanel setAllowsMultipleSelection:NO];
+    
+    if (NSOKButton == [openPanel runModal]) {
+        NSURL *url = openPanel.URLs.firstObject;
+        if (url) {
+            return [self calibrationWithUrl:url];
+        }
+    }
+    return nil;
+}
+
++ (instancetype)defaultCalibration
+{
+    NSString *path = [[NSBundle mainBundle] pathForResource:@"default" ofType:@"clb"];
+    NSURL *url = [NSURL fileURLWithPath:path];
+    return [ISACalibration calibrationWithUrl:url];
+}
+
 + (instancetype)calibrationWithUrl:(NSURL *)url
 {
     ISACalibration *calibration = [ISACalibration new];
