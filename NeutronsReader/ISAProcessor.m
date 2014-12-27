@@ -7,11 +7,8 @@
 //
 
 #import "ISAProcessor.h"
-#import "ISACalibration.h"
 #import "ISAEventStack.h"
 #import "ISAElectronicProtocol.h"
-#import "ISAFileManager.h"
-#import "ISALogger.h"
 
 static int const kNeutronMaxSearchTimeInMks = 132; // from t(FF) to t(last neutron)
 static int const kGammaMaxSearchTimeInMks = 5; // from t(FF) to t(last gamma)
@@ -36,7 +33,7 @@ typedef struct {
 
 @interface ISAProcessor ()
 
-@property (strong, nonatomic) ISACalibration *calibration;
+@property (strong, nonatomic) Calibration *calibration;
 @property (strong, nonatomic) NSMutableArray *selectedFiles;
 @property (strong, nonatomic) NSString *currentFileName;
 @property (assign, nonatomic) unsigned long long currentEventNumber;
@@ -75,7 +72,7 @@ typedef struct {
 {
     if (self = [super init]) {
 #warning TODO: загружать дефолтную только если не была добавлена с помощью Open Panel (nil)!
-        _calibration = [ISACalibration defaultCalibration];
+        _calibration = [Calibration defaultCalibration];
         _selectedFiles = [NSMutableArray array];
     }
     return self;
@@ -92,7 +89,7 @@ typedef struct {
     _fissionsFrontNotInCycleStack = [ISAEventStack stack];
     _gammaNotInCycleStack = [ISAEventStack stack];
     
-    const char *resultsFileName = [ISAFileManager resultsFilePath];
+    const char *resultsFileName = [FileManager resultsFilePath].UTF8String;
     FILE *outputFile = fopen(resultsFileName, "w");
     if (outputFile == NULL) {
         printf("Error opening file %s\n", resultsFileName);
@@ -193,7 +190,7 @@ typedef struct {
     }
     
     fclose(outputFile);
-    [ISALogger logMultiplicity:_neutronsMultiplicityTotal];
+    [Logger logMultiplicity:_neutronsMultiplicityTotal];
 }
 
 /**
@@ -340,7 +337,7 @@ typedef struct {
 - (void)storeGamma:(ISAEvent)event
 {
     unsigned short channel = event.param3 & MaskGamma;
-    double energy = [_calibration energyForAmplitude:channel ofEvent:@"Gam1"];
+    double energy = [_calibration energyForAmplitude:channel eventName:@"Gam1"];
     [_gammaPerAct addObject:@(energy)];
 }
 
@@ -425,7 +422,7 @@ typedef struct {
     }
     NSString *name = [NSString stringWithFormat:@"%@%d.%d", prefix, encoder, strip_0_15+1];
     
-    return [_calibration energyForAmplitude:channel ofEvent:name];
+    return [_calibration energyForAmplitude:channel eventName:name];
 }
 
 - (unsigned short)fissionEncoderForEventId:(unsigned short)eventId
@@ -748,7 +745,9 @@ typedef struct {
 
 - (void)selectCalibration
 {
-    self.calibration = [ISACalibration openCalibration];
+    [Calibration openCalibration:^(Calibration *calibration){
+         self.calibration = calibration;
+    }];
 }
 
 @end
