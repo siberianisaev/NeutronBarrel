@@ -21,6 +21,7 @@
 		78B6A55E193A3B3900C7E36A /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 78B6A55C193A3B3900C7E36A /* MainMenu.xib */; };
 		78B6A560193A3B3900C7E36A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 78B6A55F193A3B3900C7E36A /* Images.xcassets */; };
 		78FC512F1A5301A500FE5737 /* EventStack.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78FC512E1A5301A500FE5737 /* EventStack.swift */; };
+		78FC51311A530D0300FE5737 /* DataLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78FC51301A530D0300FE5737 /* DataLoader.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -49,6 +50,7 @@
 		78B6A55F193A3B3900C7E36A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		78B6A566193A3B3900C7E36A /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
 		78FC512E1A5301A500FE5737 /* EventStack.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EventStack.swift; sourceTree = "<group>"; };
+		78FC51301A530D0300FE5737 /* DataLoader.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DataLoader.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -109,6 +111,7 @@
 				651307131A4E94C500E33704 /* Logger.swift */,
 				651307111A4E94AB00E33704 /* Calibration.swift */,
 				78FC512E1A5301A500FE5737 /* EventStack.swift */,
+				78FC51301A530D0300FE5737 /* DataLoader.swift */,
 				78419AD21A4B37400087A551 /* ISAProcessor.h */,
 				78419AD31A4B37400087A551 /* ISAProcessor.m */,
 				78419ACF1A4B2A1B0087A551 /* ISAElectronicProtocol.h */,
@@ -210,6 +213,7 @@
 				651307141A4E94C500E33704 /* Logger.swift in Sources */,
 				6513070C1A4E911300E33704 /* FileManager.swift in Sources */,
 				78B6A554193A3B3900C7E36A /* main.m in Sources */,
+				78FC51311A530D0300FE5737 /* DataLoader.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

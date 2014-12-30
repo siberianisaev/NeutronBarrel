@@ -33,7 +33,7 @@ typedef struct {
 @interface ISAProcessor ()
 
 @property (strong, nonatomic) Calibration *calibration;
-@property (strong, nonatomic) NSMutableArray *selectedFiles;
+@property (strong, nonatomic) NSArray *selectedFiles;
 @property (strong, nonatomic) NSString *currentFileName;
 @property (assign, nonatomic) unsigned long long currentEventNumber;
 @property (strong, nonatomic) NSMutableDictionary *neutronsMultiplicityTotal;
@@ -72,7 +72,7 @@ typedef struct {
     if (self = [super init]) {
 #warning TODO: загружать дефолтную только если не была добавлена с помощью Open Panel (nil)!
         _calibration = [Calibration defaultCalibration];
-        _selectedFiles = [NSMutableArray array];
+        _selectedFiles = [NSArray array];
     }
     return self;
 }
@@ -717,29 +717,9 @@ typedef struct {
 
 - (void)selectData
 {
-    NSOpenPanel *openPanel = [NSOpenPanel openPanel];
-    [openPanel setCanChooseFiles:YES];
-    [openPanel setCanChooseDirectories:YES];
-    [openPanel setAllowsMultipleSelection:YES];
-    
-    if (NSOKButton == [openPanel runModal]) {
-        for (NSURL *url in openPanel.URLs) {
-            NSString *path = url.path;
-            
-            BOOL isDir = NO;
-            if ([[NSFileManager defaultManager] fileExistsAtPath:path isDirectory:&isDir] && isDir) {
-                NSArray *dirFiles = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:path error:nil];
-                // Исключаем файл протокола из выборки
-                NSArray *dataFiles = [dirFiles filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"!(self ENDSWITH '.PRO') AND !(self ENDSWITH '.DS_Store')"]];
-                for (NSString *fileName in dataFiles) {
-                    NSString *filePath = [path stringByAppendingPathComponent:fileName];
-                    [self.selectedFiles addObject:filePath];
-                }
-            } else {
-                [self.selectedFiles addObject:path];
-            }
-        }
-    }
+    [DataLoader load:^(NSArray *files){
+        self.selectedFiles = files;
+    }];
 }
 
 - (void)selectCalibration
