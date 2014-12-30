@@ -7,7 +7,6 @@
 //
 
 #import "ISAProcessor.h"
-#import "ISAEventStack.h"
 #import "ISAElectronicProtocol.h"
 
 static int const kNeutronMaxSearchTimeInMks = 132; // from t(FF) to t(last neutron)
@@ -51,8 +50,8 @@ typedef struct {
 @property (assign, nonatomic) int fissionWel;
 @property (assign, nonatomic) unsigned long long neutronsSummPerAct;
 @property (assign, nonatomic) BOOL isNewAct;
-@property (strong, nonatomic) ISAEventStack *fissionsFrontNotInCycleStack; // осколки пришедшие до обнаружения главного осколка (стек нужен для возврата к нескольким предыдущем событиям по времени)
-@property (strong, nonatomic) ISAEventStack *gammaNotInCycleStack; // гамма-кванты пришедшие до обнаружения главного осколка (стек нужен для возврата к нескольким предыдущем событиям по времени)
+@property (strong, nonatomic) EventStack *fissionsFrontNotInCycleStack; // осколки пришедшие до обнаружения главного осколка (стек нужен для возврата к нескольким предыдущем событиям по времени)
+@property (strong, nonatomic) EventStack *gammaNotInCycleStack; // гамма-кванты пришедшие до обнаружения главного осколка (стек нужен для возврата к нескольким предыдущем событиям по времени)
 
 @end
 
@@ -86,8 +85,8 @@ typedef struct {
     _gammaPerAct = [NSMutableArray array];
     _tofPerAct = [NSMutableArray array];
     _fissionsWelPerAct = [NSMutableArray array];
-    _fissionsFrontNotInCycleStack = [ISAEventStack stack];
-    _gammaNotInCycleStack = [ISAEventStack stack];
+    _fissionsFrontNotInCycleStack = [EventStack new];
+    _gammaNotInCycleStack = [EventStack new];
     
     const char *resultsFileName = [FileManager resultsFilePath].UTF8String;
     FILE *outputFile = fopen(resultsFileName, "w");
