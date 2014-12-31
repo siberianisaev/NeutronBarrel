@@ -21,15 +21,13 @@ class Logger: NSObject {
         }
     }
     
-    class func logMultiplicity(info: AnyObject?) {
-        if let info = info as? [Int: AnyObject] {
-            var string = "Neutrons multiplicity\n"
-            let sortedKeys = info.keys.array.sorted { $0.0 < $1.0 }
-            for key in sortedKeys {
-                string += "\(key)-x: \(info[key]!)\n"
-            }
-            self.logString(string, path: FileManager.multiplicityFilePath())
+    class func logMultiplicity(info: [Int: Int]) {
+        var string = "Neutrons multiplicity\n"
+        let sortedKeys = info.keys.array.sorted { $0.0 < $1.0 }
+        for key in sortedKeys {
+            string += "\(key)-x: \(info[key]!)\n"
         }
+        self.logString(string, path: FileManager.multiplicityFilePath())
     }
 
     class func logCalibration(string: String) {
