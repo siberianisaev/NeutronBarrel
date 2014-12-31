@@ -632,7 +632,7 @@ typedef struct {
     
     if ([_gammaPerAct count]) {
         for (NSNumber *energy in _gammaPerAct) {
-            printf("Gam1\t\t%f MeV\n", [energy doubleValue]);
+            printf("Gam1\t\t%f keV\n", [energy doubleValue]);
         }
     }
     
