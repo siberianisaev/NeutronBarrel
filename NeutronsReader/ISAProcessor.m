@@ -50,6 +50,7 @@ typedef struct {
 @property (assign, nonatomic) int fissionWel;
 @property (assign, nonatomic) unsigned long long neutronsSummPerAct;
 @property (assign, nonatomic) BOOL isNewAct;
+@property (assign, nonatomic) FILE *file;
 @property (strong, nonatomic) EventStack *fissionsFrontNotInCycleStack; // осколки пришедшие до обнаружения главного осколка (стек нужен для возврата к нескольким предыдущем событиям по времени)
 @property (strong, nonatomic) EventStack *gammaNotInCycleStack; // гамма-кванты пришедшие до обнаружения главного осколка (стек нужен для возврата к нескольким предыдущем событиям по времени)
 
@@ -97,16 +98,17 @@ typedef struct {
     fprintf(outputFile, "File\tEvent\tSumm(FFron)\tStrip(FFron)\tStrip(FBack)\tFWel\tFWelPos\tNeutrons\tGamma\tFON\tTriger\n\n");
     
     for (NSString *path in self.selectedFiles) {
-        FILE *file = fopen([path UTF8String], "rb");
+        _file = fopen([path UTF8String], "rb");
         _currentFileName = [path lastPathComponent];
         _currentEventNumber = 0;
         printf("\nFile: %s\n\n", [_currentFileName UTF8String]);
-        if (file == NULL) {
+        if (_file == NULL) {
             exit(-1);
         } else {
-            while (!feof(file)) {
+            setvbuf(_file, NULL, _IONBF, 0); // disable buffering
+            while (!feof(_file)) {
                 ISAEvent event;
-                fread(&event, sizeof(event), 1, file);
+                fread(&event, sizeof(event), 1, _file);
                 _currentEventNumber += 1;
                 
                 double deltaTime = fabs(event.param1 - _firstFissionTime);
@@ -130,11 +132,12 @@ typedef struct {
                             [self actStartedWithEvent:event];
                             
                             fpos_t position;
-                            fgetpos(file, &position);
+                            fgetpos(_file, &position);
                             // FON
-                            [self findFONEventFromPosition:position inFileAtPath:path];
+                            [self findFONEvent];
                             // Triger
-                            [self findTrigerEventFromPosition:position inFileAtPath:path];
+                            [self findTrigerEvent];
+                            fseek(_file, position, SEEK_SET);
                         } else {  // FFron пришедшие до первого
                             [self storePreviousFissionFront:event];
                         }
@@ -180,12 +183,12 @@ typedef struct {
                 }
                 
                 // End of last file.
-                if (feof(file) && [[self.selectedFiles lastObject] isEqualTo:path]) {
+                if (feof(_file) && [[self.selectedFiles lastObject] isEqualTo:path]) {
                     [self actStoped:outputFile];
                 }
             }
         }
-        fclose(file);
+        fclose(_file);
     }
     
     fclose(outputFile);
@@ -196,24 +199,17 @@ typedef struct {
  Поиск первого события FON осуществляется с позиции файла где найден главный осколок.
  Время поиска <= 1 секунды.
  */
-- (void)findFONEventFromPosition:(fpos_t)position inFileAtPath:(NSString *)path
+- (void)findFONEvent
 {
-    FILE *file = fopen([path UTF8String], "rb");
-    if (file == NULL) {
-        exit(-1);
-    } else {
-        fseek(file, position, SEEK_CUR);
-        
-        while (!feof(file)) {
-            ISAEvent event;
-            fread(&event, sizeof(event), 1, file);
+    while (!feof(_file)) {
+        ISAEvent event;
+        fread(&event, sizeof(event), 1, _file);
 #warning TODO: учитывать старшие разряды времени THi !
-            //            double deltaTime = fabs(event.param1 - _firstFissionTime);
-            //            if ((kFON == event.eventId) && (deltaTime <= kFONMaxSearchTimeInMks)) {
-            if (EventIdFON == event.eventId) {
-                [self storeFON:event];
-                return;
-            }
+        //            double deltaTime = fabs(event.param1 - _firstFissionTime);
+        //            if ((kFON == event.eventId) && (deltaTime <= kFONMaxSearchTimeInMks)) {
+        if (EventIdFON == event.eventId) {
+            [self storeFON:event];
+            return;
         }
     }
 }
@@ -222,24 +218,17 @@ typedef struct {
  Поиск первого события Triger осуществляется с позиции файла где найден главный осколок.
  Время поиска <= 1 секунды.
  */
-- (void)findTrigerEventFromPosition:(fpos_t)position inFileAtPath:(NSString *)path
+- (void)findTrigerEvent
 {
-    FILE *file = fopen([path UTF8String], "rb");
-    if (file == NULL) {
-        exit(-1);
-    } else {
-        fseek(file, position, SEEK_CUR);
-        
-        while (!feof(file)) {
-            ISAEvent event;
-            fread(&event, sizeof(event), 1, file);
+    while (!feof(_file)) {
+        ISAEvent event;
+        fread(&event, sizeof(event), 1, _file);
 #warning TODO: учитывать старшие разряды времени THi !
-            //            double deltaTime = fabs(event.param1 - _firstFissionTime);
-            //            if ((kTriger == event.eventId) && (deltaTime <= kTrigerMaxSearchTimeInMks)) {
-            if (EventIdTrigger == event.eventId) {
-                [self storeTriger:event];
-                return;
-            }
+        //            double deltaTime = fabs(event.param1 - _firstFissionTime);
+        //            if ((kTriger == event.eventId) && (deltaTime <= kTrigerMaxSearchTimeInMks)) {
+        if (EventIdTrigger == event.eventId) {
+            [self storeTriger:event];
+            return;
         }
     }
 }
