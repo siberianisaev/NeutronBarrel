@@ -8,13 +8,11 @@
 
 #import <Foundation/Foundation.h>
 
-extern int kDefaultFissionFrontMinEnergy;
-
 @interface ISAProcessor : NSObject
 
 @property (assign, nonatomic) double fissionFrontMinEnergy;
 
-+ (ISAProcessor *)processor;
++ (ISAProcessor *)sharedProcessor;
 
 - (void)processData;
 - (void)selectData;

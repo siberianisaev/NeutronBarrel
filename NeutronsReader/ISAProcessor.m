@@ -14,7 +14,6 @@ static int const kGammaMaxSearchTimeInMks = 5; // from t(FF) to t(last gamma)
 static int const kTOFMaxSearchTimeInMks = 2; // from t(FF) (случайные генерации, а не отмеки рекойлов)
 static int const kFONMaxSearchTimeInMks = 1000000; // from t(FF) (в интервале <= 1 секунда)
 static int const kFissionsMaxSearchTimeInMks = 5; // from t(FF1) to t(FF2)
-int kDefaultFissionFrontMinEnergy = 20; // FBack or FFront MeV
 
 static NSString * const kEncoder = @"encoder";
 static NSString * const kStrip0_15 = @"strip_0_15";
@@ -58,7 +57,7 @@ typedef struct {
 
 @implementation ISAProcessor
 
-+ (ISAProcessor *)processor
++ (ISAProcessor *)sharedProcessor
 {
     static ISAProcessor *sharedInstance = nil;
     static dispatch_once_t onceToken;

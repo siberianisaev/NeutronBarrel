@@ -11,13 +11,12 @@
 		651307121A4E94AB00E33704 /* Calibration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 651307111A4E94AB00E33704 /* Calibration.swift */; };
 		651307141A4E94C500E33704 /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 651307131A4E94C500E33704 /* Logger.swift */; };
 		65E46E001A25AA7C00FA28DB /* default.clb in Resources */ = {isa = PBXBuildFile; fileRef = 65E46DFF1A25AA7C00FA28DB /* default.clb */; };
+		780BC3A61A5EF99700EDEECE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 780BC3A51A5EF99700EDEECE /* AppDelegate.swift */; };
 		78419AD11A4B2A1B0087A551 /* ISAElectronicProtocol.m in Sources */ = {isa = PBXBuildFile; fileRef = 78419AD01A4B2A1B0087A551 /* ISAElectronicProtocol.m */; };
 		78419AD41A4B37400087A551 /* ISAProcessor.m in Sources */ = {isa = PBXBuildFile; fileRef = 78419AD31A4B37400087A551 /* ISAProcessor.m */; };
 		78B6A548193A3B3900C7E36A /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 78B6A547193A3B3900C7E36A /* Cocoa.framework */; };
 		78B6A552193A3B3900C7E36A /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 78B6A550193A3B3900C7E36A /* InfoPlist.strings */; };
-		78B6A554193A3B3900C7E36A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 78B6A553193A3B3900C7E36A /* main.m */; };
 		78B6A558193A3B3900C7E36A /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = 78B6A556193A3B3900C7E36A /* Credits.rtf */; };
-		78B6A55B193A3B3900C7E36A /* ISAAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 78B6A55A193A3B3900C7E36A /* ISAAppDelegate.m */; };
 		78B6A55E193A3B3900C7E36A /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 78B6A55C193A3B3900C7E36A /* MainMenu.xib */; };
 		78B6A560193A3B3900C7E36A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 78B6A55F193A3B3900C7E36A /* Images.xcassets */; };
 		78FC512F1A5301A500FE5737 /* EventStack.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78FC512E1A5301A500FE5737 /* EventStack.swift */; };
@@ -30,6 +29,7 @@
 		651307111A4E94AB00E33704 /* Calibration.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Calibration.swift; sourceTree = "<group>"; };
 		651307131A4E94C500E33704 /* Logger.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
 		65E46DFF1A25AA7C00FA28DB /* default.clb */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = default.clb; sourceTree = "<group>"; };
+		780BC3A51A5EF99700EDEECE /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		78419ACF1A4B2A1B0087A551 /* ISAElectronicProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ISAElectronicProtocol.h; sourceTree = "<group>"; };
 		78419AD01A4B2A1B0087A551 /* ISAElectronicProtocol.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ISAElectronicProtocol.m; sourceTree = "<group>"; };
 		78419AD21A4B37400087A551 /* ISAProcessor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ISAProcessor.h; sourceTree = "<group>"; };
@@ -41,11 +41,8 @@
 		78B6A54C193A3B3900C7E36A /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		78B6A54F193A3B3900C7E36A /* NeutronsReader-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "NeutronsReader-Info.plist"; sourceTree = "<group>"; };
 		78B6A551193A3B3900C7E36A /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
-		78B6A553193A3B3900C7E36A /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		78B6A555193A3B3900C7E36A /* NeutronsReader-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NeutronsReader-Prefix.pch"; sourceTree = "<group>"; };
 		78B6A557193A3B3900C7E36A /* en */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; name = en; path = en.lproj/Credits.rtf; sourceTree = "<group>"; };
-		78B6A559193A3B3900C7E36A /* ISAAppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ISAAppDelegate.h; sourceTree = "<group>"; };
-		78B6A55A193A3B3900C7E36A /* ISAAppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ISAAppDelegate.m; sourceTree = "<group>"; };
 		78B6A55D193A3B3900C7E36A /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/MainMenu.xib; sourceTree = "<group>"; };
 		78B6A55F193A3B3900C7E36A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		78B6A566193A3B3900C7E36A /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
@@ -105,8 +102,7 @@
 		78B6A54D193A3B3900C7E36A /* NeutronsReader */ = {
 			isa = PBXGroup;
 			children = (
-				78B6A559193A3B3900C7E36A /* ISAAppDelegate.h */,
-				78B6A55A193A3B3900C7E36A /* ISAAppDelegate.m */,
+				780BC3A51A5EF99700EDEECE /* AppDelegate.swift */,
 				6513070B1A4E911300E33704 /* FileManager.swift */,
 				651307131A4E94C500E33704 /* Logger.swift */,
 				651307111A4E94AB00E33704 /* Calibration.swift */,
@@ -129,7 +125,6 @@
 			children = (
 				78B6A54F193A3B3900C7E36A /* NeutronsReader-Info.plist */,
 				78B6A550193A3B3900C7E36A /* InfoPlist.strings */,
-				78B6A553193A3B3900C7E36A /* main.m */,
 				78B6A555193A3B3900C7E36A /* NeutronsReader-Prefix.pch */,
 				6513070D1A4E92CD00E33704 /* NeutronsReader-Bridging-Header.h */,
 				78B6A556193A3B3900C7E36A /* Credits.rtf */,
@@ -206,13 +201,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				78419AD41A4B37400087A551 /* ISAProcessor.m in Sources */,
-				78B6A55B193A3B3900C7E36A /* ISAAppDelegate.m in Sources */,
 				78FC512F1A5301A500FE5737 /* EventStack.swift in Sources */,
 				78419AD11A4B2A1B0087A551 /* ISAElectronicProtocol.m in Sources */,
 				651307121A4E94AB00E33704 /* Calibration.swift in Sources */,
 				651307141A4E94C500E33704 /* Logger.swift in Sources */,
 				6513070C1A4E911300E33704 /* FileManager.swift in Sources */,
-				78B6A554193A3B3900C7E36A /* main.m in Sources */,
+				780BC3A61A5EF99700EDEECE /* AppDelegate.swift in Sources */,
 				78FC51311A530D0300FE5737 /* DataLoader.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
