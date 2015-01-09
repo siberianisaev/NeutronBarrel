@@ -7,13 +7,17 @@
 //
 
 #import "ISAProcessor.h"
-#import "ISAElectronicProtocol.h"
 
 static int const kNeutronMaxSearchTimeInMks = 132; // from t(FF) to t(last neutron)
 static int const kGammaMaxSearchTimeInMks = 5; // from t(FF) to t(last gamma)
 static int const kTOFMaxSearchTimeInMks = 2; // from t(FF) (случайные генерации, а не отмеки рекойлов)
 static int const kFONMaxSearchTimeInMks = 1000000; // from t(FF) (в интервале <= 1 секунда)
 static int const kFissionsMaxSearchTimeInMks = 5; // from t(FF1) to t(FF2)
+
+/**
+ Маркер отличающий осколок (0) от рекойла (1).
+ */
+static unsigned short kFissionMarker = 0;
 
 static NSString * const kEncoder = @"encoder";
 static NSString * const kStrip0_15 = @"strip_0_15";
@@ -28,6 +32,30 @@ typedef struct {
     unsigned short param2;
     unsigned short param3;
 } ISAEvent;
+
+typedef NS_ENUM(unsigned short, EventId) {
+    EventIdFissionFront1 = 1,
+    EventIdFissionFront2 = 2,
+    EventIdFissionFront3 = 3,
+    EventIdFissionBack1 = 4,
+    EventIdFissionBack2 = 5,
+    EventIdFissionBack3 = 6,
+    EventIdFissionWell1 = 7,
+    EventIdFissionWell2 = 8,
+    EventIdGamma1 = 10,
+    EventIdTOF = 12,
+    EventIdNeutrons = 18,
+    EventIdFON = 24,
+    EventIdTrigger = 25
+};
+
+typedef NS_ENUM(unsigned short, Mask) {
+    MaskFission = 0x0FFF,
+    MaskGamma = 0x1FFF,
+    MaskTOF = 0x1FFF,
+    MaskFON = 0xFFFF,
+    MaskTrigger = 0xFFFF
+};
 
 @interface ISAProcessor ()
 
@@ -100,7 +128,7 @@ typedef struct {
         _file = fopen([path UTF8String], "rb");
         _currentFileName = [path lastPathComponent];
         _currentEventNumber = 0;
-        printf("\nFile: %s\n\n", [_currentFileName UTF8String]);
+        printf("Processed %s\n", [_currentFileName UTF8String]);
         if (_file == NULL) {
             exit(-1);
         } else {
@@ -457,12 +485,6 @@ typedef struct {
 
 - (void)logActResults:(FILE *)outputFile
 {
-    [self logActResultsToFile:outputFile];
-    [self logActResultsToConsole];
-}
-
-- (void)logActResultsToFile:(FILE *)outputFile
-{
     // FFRON
     unsigned long long eventNumber = NAN;
     double summFFronE = 0;
@@ -496,151 +518,101 @@ typedef struct {
         }
     }
     
+    NSMutableString *result = [NSMutableString string];
+    int columnsCount = 10;
     int rowsMax = MAX(MAX(1, (int)_gammaPerAct.count), (int)_fissionsWelPerAct.count);
     for (int row = 0; row < rowsMax; row++) {
-        for (int column = 0; column < 11; column++) {
+        for (int column = 0; column <= columnsCount; column++) {
             switch (column) {
                 case 0:
                 {
                     if (row == 0) {
-                        fprintf(outputFile, "%s", [_currentFileName UTF8String]);
+                        [result appendString:_currentFileName];
                     }
                     break;
                 }
-                    
                 case 1:
                 {
                     if (row == 0) {
-                        fprintf(outputFile, "%7.llu", eventNumber);
+                        [result appendFormat:@"%7.llu", eventNumber];
                     }
                     break;
                 }
-                    
                 case 2:
                 {
                     if (row == 0) {
-                        fprintf(outputFile, "%4.7f", summFFronE);
+                        [result appendFormat:@"%4.7f", summFFronE];
                     }
                     break;
                 }
-                    
                 case 3:
                 {
                     if (row == 0 && stripFFronEMax > 0) {
-                        fprintf(outputFile, "%2d", stripFFronEMax);
+                        [result appendFormat:@"%2d", stripFFronEMax];
                     }
                     break;
                 }
-                    
                 case 4:
                 {
                     if (row == 0 && stripFBackChannelMax > 0) {
-                        fprintf(outputFile, "%2d", stripFBackChannelMax);
+                        [result appendFormat:@"%2d", stripFBackChannelMax];
                     }
                     break;
                 }
-                    
                 case 5:
                 {
                     if (row < (int)_fissionsWelPerAct.count) {
                         NSDictionary *fissionInfo = [_fissionsWelPerAct objectAtIndex:row];
-                        fprintf(outputFile, "%4.7f", [[fissionInfo objectForKey:kEnergy] doubleValue]);
+                        [result appendFormat:@"%4.7f", [[fissionInfo objectForKey:kEnergy] doubleValue]];
                     }
                     break;
                 }
-                    
                 case 6:
                 {
                     if (row < (int)_fissionsWelPerAct.count) {
                         NSDictionary *fissionInfo = [_fissionsWelPerAct objectAtIndex:row];
-                        fprintf(outputFile, "FWel%d.%d", [[fissionInfo objectForKey:kEncoder] intValue], [[fissionInfo objectForKey:kStrip0_15] intValue]+1);
+                        [result appendFormat:@"FWel%d.%d", [[fissionInfo objectForKey:kEncoder] intValue], [[fissionInfo objectForKey:kStrip0_15] intValue]+1];
                     }
                     break;
                 }
-                    
                 case 7:
                 {
                     if (row == 0) {
-                        fprintf(outputFile, "%2llu", _neutronsSummPerAct);
+                        [result appendFormat:@"%2llu", _neutronsSummPerAct];
                     }
                     break;
                 }
-                    
                 case 8:
                 {
                     if (row < (int)_gammaPerAct.count) {
-                        fprintf(outputFile, "%4.7f", [[_gammaPerAct objectAtIndex:row] doubleValue]);
+                        [result appendFormat:@"%4.7f", [[_gammaPerAct objectAtIndex:row] doubleValue]];
                     }
                     break;
                 }
-                    
                 case 9:
                 {
                     if (row == 0 && _fonPerAct) {
-                        fprintf(outputFile, "%hu", [_fonPerAct unsignedShortValue]);
+                        [result appendFormat:@"%hu", [_fonPerAct unsignedShortValue]];
                     }
                     break;
                 }
-                    
                 case 10:
                 {
                     if (row == 0 && _trigerPerAct) {
-                        fprintf(outputFile, "%hu", [_trigerPerAct unsignedShortValue]);
+                        [result appendFormat:@"%hu", [_trigerPerAct unsignedShortValue]];
                     }
                     break;
                 }
-                    
                 default:
                     break;
             }
-            
-            fprintf(outputFile, "\t");
-            if (column == 10) {
-                fprintf(outputFile, "\n");
+            [result appendString:@"\t"];
+            if (column == columnsCount) {
+                [result appendString:@"\n"];
             }
         }
     }
-}
-
-- (void)logActResultsToConsole
-{
-    double summFFron = 0;
-    for (NSDictionary *fissionInfo in _fissionsFrontPerAct) {
-        double energy = [[fissionInfo objectForKey:kEnergy] doubleValue];
-        printf("FFron%d.%d\t\t%f MeV", [[fissionInfo objectForKey:kEncoder] intValue], [[fissionInfo objectForKey:kStrip0_15] intValue]+1, energy);
-        if (energy >= self.fissionFrontMinEnergy) {
-            printf(" (%d channel)", [[fissionInfo objectForKey:kChannel] intValue]);
-        }
-        printf("\n");
-        summFFron += energy;
-    }
-    printf("∑FFron\t\t%f MeV\n", summFFron);
-    
-    printf("Neutrons\t%llu\n", _neutronsSummPerAct);
-    
-    if ([_gammaPerAct count]) {
-        for (NSNumber *energy in _gammaPerAct) {
-            printf("Gam1\t\t%f keV\n", [energy doubleValue]);
-        }
-    }
-    
-    if ([_fissionsWelPerAct count]) {
-        for (NSDictionary *fissionInfo in _fissionsWelPerAct) {
-            printf("FWel%d.%d\t\t%f MeV\n", [[fissionInfo objectForKey:kEncoder] intValue], [[fissionInfo objectForKey:kStrip0_15] intValue]+1, [[fissionInfo objectForKey:kEnergy] doubleValue]);
-        }
-    }
-    
-    for (NSDictionary *fissionInfo in _fissionsBackPerAct) {
-        printf("FBack%d.%d\n", [[fissionInfo objectForKey:kEncoder] intValue], [[fissionInfo objectForKey:kStrip0_15] intValue]+1);
-    }
-    
-    if ([_tofPerAct count]) {
-        for (NSNumber *channel in _tofPerAct) {
-            printf("TOF\t\t%d channel\n", [channel intValue]);
-        }
-    }
-    
-    printf("\n");
+    fprintf(outputFile, "%s", [result UTF8String]);
 }
 
 /**
