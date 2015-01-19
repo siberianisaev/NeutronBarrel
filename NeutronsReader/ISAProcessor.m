@@ -40,13 +40,13 @@ typedef NS_ENUM(unsigned short, EventId) {
     EventIdFissionBack1 = 4,
     EventIdFissionBack2 = 5,
     EventIdFissionBack3 = 6,
-    EventIdFissionWell1 = 7,
-    EventIdFissionWell2 = 8,
-    EventIdGamma1 = 10,
-    EventIdTOF = 12,
-    EventIdNeutrons = 18,
-    EventIdFON = 24,
-    EventIdTrigger = 25
+    EventIdFissionWell1 = 13,
+    EventIdFissionWell2 = 14,
+    EventIdGamma1 = 15,
+    EventIdTOF = 17,
+    EventIdNeutrons = 23,
+    EventIdFON = 29,
+    EventIdTrigger = 30
 };
 
 typedef NS_ENUM(unsigned short, Mask) {
