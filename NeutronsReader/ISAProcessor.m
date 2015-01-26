@@ -75,8 +75,9 @@ typedef NS_ENUM(unsigned short, Mask) {
 @property (strong, nonatomic) NSMutableArray *tofPerAct;
 @property (strong, nonatomic) NSNumber *fonPerAct;
 @property (strong, nonatomic) NSNumber *trigerPerAct;
-@property (strong, nonatomic) NSNumber *tofForRecoilPerAct;
+@property (strong, nonatomic) NSNumber *tofForRecoilPerAct; // не настоящий TOF (случайные совпадения)
 @property (strong, nonatomic) NSDictionary *recoilFrontInfo;
+@property (strong, nonatomic) NSDictionary *tofRealInfo;
 @property (strong, nonatomic) NSDictionary *firstFissionInfo; // информация о главном осколке в цикле
 @property (assign, nonatomic) unsigned short firstFissionTime; // время главного осколка в цикле
 @property (assign, nonatomic) int fissionBackSumm;
@@ -128,7 +129,7 @@ typedef NS_ENUM(unsigned short, Mask) {
         printf("Error opening file %s\n", resultsFileName);
         exit(1);
     }
-    fprintf(outputFile, "File\tEvent\tE(RFron)\tdT(RFron-FFron)\tSumm(FFron)\tStrip(FFron)\tStrip(FBack)\tFWel\tFWelPos\tNeutrons\tGamma\tFON\tTriger\n\n");
+    fprintf(outputFile, "File\tEvent\tE(RFron)\tdT(RFron-FFron)\tTOF\tdT(TOF-RFRon)\tSumm(FFron)\tStrip(FFron)\tStrip(FBack)\tFWel\tFWelPos\tNeutrons\tGamma\tFON\tTriger\n\n");
     
     for (NSString *path in self.selectedFiles) {
         _file = fopen([path UTF8String], "rb");
@@ -244,7 +245,8 @@ typedef NS_ENUM(unsigned short, Mask) {
         
         ISAEvent event;
         fread(&event, sizeof(event), 1, _file);
-        double deltaTime = fabs(event.param1 - _firstFissionTime);
+        unsigned short recoilTime = event.param1;
+        double deltaTime = fabs(recoilTime - _firstFissionTime);
         if (deltaTime <= kRecoilMaxSearchTimeInMks) {
             if ([self isRecoilFront:event]) {
                 NSDictionary *firstFissionInfo = [_fissionsFrontPerAct firstObject];
@@ -259,7 +261,7 @@ typedef NS_ENUM(unsigned short, Mask) {
                 }
                 
                 [self storeRecoil:event deltaTime:deltaTime];
-#warning TODO: find TOF +/- 10 mks
+                [self findTOFForRecoilTime:recoilTime];
                 return;
             }
         } else {
@@ -273,6 +275,57 @@ typedef NS_ENUM(unsigned short, Mask) {
     double energy = [self getRecoilEnergy:event];
     _recoilFrontInfo = @{kEnergy:@(energy),
                          kDeltaTime:@(deltaTime)};
+}
+
+/**
+ Real TOF for Recoil.
+ */
+- (void)findTOFForRecoilTime:(unsigned short)recoilTime
+{
+    fpos_t initial;
+    fgetpos(_file, &initial);
+    
+    // 1. Ищем в направлении до -10 mks от T(Recoil)
+    fpos_t current = initial;
+    while (current > -1) {
+        current -= sizeof(ISAEvent);
+        fseek(_file, current, SEEK_SET);
+        
+        ISAEvent event;
+        fread(&event, sizeof(event), 1, _file);
+        double deltaTime = fabs(event.param1 - recoilTime);
+        if (deltaTime <= kTOFForRecoilMaxSearchTimeInMks) {
+            if (EventIdTOF == event.eventId) {
+                [self storeRealTOF:event deltaTime:deltaTime];
+                return;
+            }
+        } else {
+            return;
+        }
+    }
+    
+    // 2. Ищем в направлении до +10 mks от T(Recoil)
+    fseek(_file, initial, SEEK_SET);
+    while (!feof(_file)) {
+        ISAEvent event;
+        fread(&event, sizeof(event), 1, _file);
+        double deltaTime = fabs(event.param1 - recoilTime);
+        if (deltaTime <= kTOFForRecoilMaxSearchTimeInMks) {
+            if (EventIdTOF == event.eventId) {
+                [self storeRealTOF:event deltaTime:deltaTime];
+                return;
+            }
+        } else {
+            return;
+        }
+    }
+}
+
+- (void)storeRealTOF:(ISAEvent)event deltaTime:(double)deltaTime
+{
+    unsigned short channel = event.param3 & MaskTOF;
+    _tofRealInfo = @{kChannel: @(channel),
+                     kDeltaTime:@(deltaTime)};
 }
 
 /**
@@ -546,6 +599,7 @@ typedef NS_ENUM(unsigned short, Mask) {
     _fonPerAct = nil;
     _trigerPerAct = nil;
     _recoilFrontInfo = nil;
+    _tofRealInfo = nil;
 }
 
 - (void)logActResults:(FILE *)outputFile
@@ -584,7 +638,7 @@ typedef NS_ENUM(unsigned short, Mask) {
     }
     
     NSMutableString *result = [NSMutableString string];
-    int columnsCount = 12;
+    int columnsCount = 14;
     int rowsMax = MAX(MAX(1, (int)_gammaPerAct.count), (int)_fissionsWelPerAct.count);
     for (int row = 0; row < rowsMax; row++) {
         for (int column = 0; column <= columnsCount; column++) {
@@ -621,26 +675,42 @@ typedef NS_ENUM(unsigned short, Mask) {
                 }
                 case 4:
                 {
+                    NSNumber *tof = [_tofRealInfo valueForKey:kChannel];
+                    if (row == 0 && tof) {
+                        [result appendFormat:@"%hu", [tof unsignedShortValue]];
+                    }
+                    break;
+                }
+                case 5:
+                {
+                    NSNumber *deltaTimeTOFRecoil = [_tofRealInfo valueForKey:kDeltaTime];
+                    if (row == 0 && deltaTimeTOFRecoil) {
+                        [result appendFormat:@"%6llu", (unsigned long long)[deltaTimeTOFRecoil unsignedLongLongValue]];
+                    }
+                    break;
+                }
+                case 6:
+                {
                     if (row == 0) {
                         [result appendFormat:@"%4.7f", summFFronE];
                     }
                     break;
                 }
-                case 5:
+                case 7:
                 {
                     if (row == 0 && stripFFronEMax > 0) {
                         [result appendFormat:@"%2d", stripFFronEMax];
                     }
                     break;
                 }
-                case 6:
+                case 8:
                 {
                     if (row == 0 && stripFBackChannelMax > 0) {
                         [result appendFormat:@"%2d", stripFBackChannelMax];
                     }
                     break;
                 }
-                case 7:
+                case 9:
                 {
                     if (row < (int)_fissionsWelPerAct.count) {
                         NSDictionary *fissionInfo = [_fissionsWelPerAct objectAtIndex:row];
@@ -648,7 +718,7 @@ typedef NS_ENUM(unsigned short, Mask) {
                     }
                     break;
                 }
-                case 8:
+                case 10:
                 {
                     if (row < (int)_fissionsWelPerAct.count) {
                         NSDictionary *fissionInfo = [_fissionsWelPerAct objectAtIndex:row];
@@ -656,28 +726,28 @@ typedef NS_ENUM(unsigned short, Mask) {
                     }
                     break;
                 }
-                case 9:
+                case 11:
                 {
                     if (row == 0) {
                         [result appendFormat:@"%2llu", _neutronsSummPerAct];
                     }
                     break;
                 }
-                case 10:
+                case 12:
                 {
                     if (row < (int)_gammaPerAct.count) {
                         [result appendFormat:@"%4.7f", [[_gammaPerAct objectAtIndex:row] doubleValue]];
                     }
                     break;
                 }
-                case 11:
+                case 13:
                 {
                     if (row == 0 && _fonPerAct) {
                         [result appendFormat:@"%hu", [_fonPerAct unsignedShortValue]];
                     }
                     break;
                 }
-                case 12:
+                case 14:
                 {
                     if (row == 0 && _trigerPerAct) {
                         [result appendFormat:@"%hu", [_trigerPerAct unsignedShortValue]];
