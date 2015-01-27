@@ -300,7 +300,7 @@ typedef NS_ENUM(unsigned short, Mask) {
                 return;
             }
         } else {
-            return;
+            break;
         }
     }
     
