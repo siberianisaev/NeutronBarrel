@@ -560,7 +560,7 @@ typedef NS_ENUM(unsigned short, Mask) {
     } else if (EventIdFissionDaughterBack1 == eventId || EventIdFissionDaughterBack2 == eventId || EventIdFissionDaughterBack3 == eventId) {
         detector = @"FdBk";
     } else {
-        detector = @"Wel";
+        detector = @"FWel";
     }
     NSString *name = [NSString stringWithFormat:@"%@%d.%d", detector, encoder, strip_0_15+1];
     
