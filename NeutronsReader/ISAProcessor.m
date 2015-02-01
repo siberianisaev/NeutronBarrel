@@ -10,10 +10,10 @@
 
 static int const kTOFForRecoilMaxSearchTimeInMks = 10; // +/- from t(Recoil)
 static int const kRecoilMaxSearchTimeInMks = 400; // from t(FF) to t(Recoil) - backward search
+static int const kRecoilDaughterMaxSearchTimeInMks = 40;
 static int const kNeutronMaxSearchTimeInMks = 132; // from t(FF) to t(last neutron)
 static int const kGammaMaxSearchTimeInMks = 5; // from t(FF) to t(last gamma)
 static int const kTOFMaxSearchTimeInMks = 2; // from t(FF) (случайные генерации, а не отмеки рекойлов)
-static int const kFONMaxSearchTimeInMks = 1000000; // from t(FF) (в интервале <= 1 секунда)
 static int const kFissionsMaxSearchTimeInMks = 5; // from t(FF1) to t(FF2)
 
 /**
@@ -44,13 +44,19 @@ typedef NS_ENUM(unsigned short, EventId) {
     EventIdFissionBack1 = 4,
     EventIdFissionBack2 = 5,
     EventIdFissionBack3 = 6,
+    EventIdFissionDaughterFront1 = 7,
+    EventIdFissionDaughterFront2 = 8,
+    EventIdFissionDaughterFront3 = 9,
+    EventIdFissionDaughterBack1 = 10,
+    EventIdFissionDaughterBack2 = 11,
+    EventIdFissionDaughterBack3 = 12,
     EventIdFissionWell1 = 13,
     EventIdFissionWell2 = 14,
     EventIdGamma1 = 15,
     EventIdTOF = 17,
     EventIdNeutrons = 23,
     EventIdFON = 29,
-    EventIdTrigger = 30
+    EventIdRecoilSpecial = 30
 };
 
 typedef NS_ENUM(unsigned short, Mask) {
@@ -58,7 +64,8 @@ typedef NS_ENUM(unsigned short, Mask) {
     MaskGamma = 0x1FFF,
     MaskTOF = 0x1FFF,
     MaskFON = 0xFFFF,
-    MaskTrigger = 0xFFFF
+    MaskRecoil = 0x1FFF,
+    MaskRecoilSpecial = 0xFFFF
 };
 
 @interface ISAProcessor ()
@@ -74,7 +81,7 @@ typedef NS_ENUM(unsigned short, Mask) {
 @property (strong, nonatomic) NSMutableArray *gammaPerAct;
 @property (strong, nonatomic) NSMutableArray *tofPerAct;
 @property (strong, nonatomic) NSNumber *fonPerAct;
-@property (strong, nonatomic) NSNumber *trigerPerAct;
+@property (strong, nonatomic) NSNumber *recoilSpecialPerAct;
 @property (strong, nonatomic) NSNumber *tofForRecoilPerAct; // не настоящий TOF (случайные совпадения)
 @property (strong, nonatomic) NSDictionary *recoilFrontInfo;
 @property (strong, nonatomic) NSDictionary *tofRealInfo;
@@ -129,7 +136,7 @@ typedef NS_ENUM(unsigned short, Mask) {
         printf("Error opening file %s\n", resultsFileName);
         exit(1);
     }
-    fprintf(outputFile, "File\tEvent\tE(RFron)\tdT(RFron-FFron)\tTOF\tdT(TOF-RFRon)\tSumm(FFron)\tStrip(FFron)\tStrip(FBack)\tFWel\tFWelPos\tNeutrons\tGamma\tFON\tTriger\n\n");
+    fprintf(outputFile, "File\tEvent\tE(RFron)\tdT(RFron-FFron)\tTOF\tdT(TOF-RFRon)\tSumm(FFron)\tStrip(FFron)\tStrip(FBack)\tFWel\tFWelPos\tNeutrons\tGamma\tFON\tRecoil(Special)\n\n");
     
     for (NSString *path in self.selectedFiles) {
         _file = fopen([path UTF8String], "rb");
@@ -159,7 +166,8 @@ typedef NS_ENUM(unsigned short, Mask) {
                 }
                 
                 // FFron
-                if ([self isFissionFront:event]) {
+                BOOL isFissionDaughterFront = [self isFissionDaughterFront:event];
+                if ([self isFissionFront:event] || isFissionDaughterFront) {
                     if (NO == _isNewAct) {
                         // Запускаем новый цикл поиска, только если энергия осколка на лицевой стороне детектора выше минимальной
                         if ([self getFissionEnergy:event] >= self.fissionFrontMinEnergy) {
@@ -168,11 +176,12 @@ typedef NS_ENUM(unsigned short, Mask) {
                             fpos_t position;
                             fgetpos(_file, &position);
                             // Recoil
-                            [self findRecoil];
+                            int maxSearchTime = isFissionDaughterFront ? kRecoilDaughterMaxSearchTimeInMks : kRecoilMaxSearchTimeInMks;
+                            [self findRecoil:maxSearchTime];
                             // FON
                             [self findFONEvent];
-                            // Triger
-                            [self findTrigerEvent];
+                            // Recoil Special
+                            [self findRecoilSpecialEvent];
                             fseek(_file, position, SEEK_SET);
                         } else {  // FFron пришедшие до первого
                             [self storePreviousFissionFront:event];
@@ -233,9 +242,8 @@ typedef NS_ENUM(unsigned short, Mask) {
 
 /**
  Поиск рекойла осуществляется с позиции файла где найден главный осколок (возвращаемся назад по времени).
- Время поиска <= 400 мкс.
  */
-- (void)findRecoil
+- (void)findRecoil:(int)maxSearchTime
 {
     fpos_t current;
     fgetpos(_file, &current);
@@ -247,11 +255,11 @@ typedef NS_ENUM(unsigned short, Mask) {
         fread(&event, sizeof(event), 1, _file);
         unsigned short recoilTime = event.param1;
         double deltaTime = fabs(recoilTime - _firstFissionTime);
-        if (deltaTime <= kRecoilMaxSearchTimeInMks) {
+        if (deltaTime <= maxSearchTime) {
             if ([self isRecoilFront:event]) {
                 NSDictionary *firstFissionInfo = [_fissionsFrontPerAct firstObject];
-                unsigned short encoder = [self fissionEncoderForEventId:event.eventId]; // Кодировщик определяется так же как для Fission
-                if (encoder != [[firstFissionInfo valueForKey:kEncoder] integerValue]) { // Один и тот же кодировщик
+                unsigned short encoder = [self fissionOrRecoilEncoderForEventId:event.eventId];
+                if (encoder != [[firstFissionInfo valueForKey:kEncoder] integerValue]) { // Соответсвуют кодировщики
                     continue;
                 }
                 
@@ -348,10 +356,9 @@ typedef NS_ENUM(unsigned short, Mask) {
 }
 
 /**
- Поиск первого события Triger осуществляется с позиции файла где найден главный осколок.
- Время поиска <= 1 секунды.
+ Поиск первого события Recoil Special осуществляется с позиции файла где найден главный осколок.
  */
-- (void)findTrigerEvent
+- (void)findRecoilSpecialEvent
 {
     while (!feof(_file)) {
         ISAEvent event;
@@ -359,8 +366,8 @@ typedef NS_ENUM(unsigned short, Mask) {
 #warning TODO: учитывать старшие разряды времени THi !
         //            double deltaTime = fabs(event.param1 - _firstFissionTime);
         //            if ((kTriger == event.eventId) && (deltaTime <= kTrigerMaxSearchTimeInMks)) {
-        if (EventIdTrigger == event.eventId) {
-            [self storeTriger:event];
+        if (EventIdRecoilSpecial == event.eventId) {
+            [self storeRecoilSpecial:event];
             return;
         }
     }
@@ -372,10 +379,10 @@ typedef NS_ENUM(unsigned short, Mask) {
     _fonPerAct = @(channel);
 }
 
-- (void)storeTriger:(ISAEvent)event
+- (void)storeRecoilSpecial:(ISAEvent)event
 {
-    unsigned short channel = event.param3 & MaskTrigger;
-    _trigerPerAct = @(channel);
+    unsigned short channel = event.param3 & MaskRecoilSpecial;
+    _recoilSpecialPerAct = @(channel);
 }
 
 /**
@@ -413,7 +420,7 @@ typedef NS_ENUM(unsigned short, Mask) {
 - (void)storeFissionFront:(ISAEvent)event isFirst:(BOOL)isFirst
 {
     unsigned short channel = event.param2 & MaskFission;
-    unsigned short encoder = [self fissionEncoderForEventId:event.eventId];
+    unsigned short encoder = [self fissionOrRecoilEncoderForEventId:event.eventId];
     unsigned short strip_0_15 = event.param2 >> 12;  // value from 0 to 15
     double energy = [self getFissionEnergy:event];
     NSDictionary *fissionInfo = @{kEncoder:@(encoder),
@@ -434,7 +441,7 @@ typedef NS_ENUM(unsigned short, Mask) {
 
 - (void)storeFissionBack:(ISAEvent)event
 {
-    unsigned short encoder = [self fissionEncoderForEventId:event.eventId];
+    unsigned short encoder = [self fissionOrRecoilEncoderForEventId:event.eventId];
     unsigned short strip_0_15 = event.param2 >> 12;  // value from 0 to 15
     double energy = [self getFissionEnergy:event];
     NSDictionary *fissionInfo = @{kEncoder:@(encoder),
@@ -447,7 +454,7 @@ typedef NS_ENUM(unsigned short, Mask) {
 - (void)storeFissionWell:(ISAEvent)event
 {
     double energy = [self getFissionEnergy:event];
-    unsigned short encoder = [self fissionEncoderForEventId:event.eventId];
+    unsigned short encoder = [self fissionOrRecoilEncoderForEventId:event.eventId];
     unsigned short strip_0_15 = event.param2 >> 12;  // value from 0 to 15
     NSDictionary *fissionInfo = @{kEncoder:@(encoder),
                                   kStrip0_15:@(strip_0_15),
@@ -538,34 +545,37 @@ typedef NS_ENUM(unsigned short, Mask) {
 
 - (double)getFissionOrRecoilEnergy:(ISAEvent)event isFission:(BOOL)isFission
 {
-    unsigned short channel = event.param2 & MaskFission;
+    unsigned short channel = isFission ? (event.param2 & MaskFission) : (event.param3 & MaskRecoil);
     unsigned short eventId = event.eventId;
     unsigned short strip_0_15 = event.param2 >> 12;  // value from 0 to 15
-    unsigned short encoder = [self fissionEncoderForEventId:eventId];
+    unsigned short encoder = [self fissionOrRecoilEncoderForEventId:eventId];
     
-    NSString *sFissionOrRecoil = isFission ? @"F" : @"R";
     NSString *detector = nil;
     if (EventIdFissionFront1 == eventId || EventIdFissionFront2 == eventId || EventIdFissionFront3 == eventId) {
-        detector = @"Fron";
+        detector = isFission ? @"FFron" : @"RFron";
     } else if (EventIdFissionBack1 == eventId || EventIdFissionBack2 == eventId || EventIdFissionBack3 == eventId) {
-        detector = @"Back";
+        detector = isFission ? @"FBack" : @"RBack";
+    } else if (EventIdFissionDaughterFront1 == eventId || EventIdFissionDaughterFront2 == eventId || EventIdFissionDaughterFront3 == eventId) {
+        detector = @"FdFr";
+    } else if (EventIdFissionDaughterBack1 == eventId || EventIdFissionDaughterBack2 == eventId || EventIdFissionDaughterBack3 == eventId) {
+        detector = @"FdBk";
     } else {
         detector = @"Wel";
     }
-    NSString *name = [NSString stringWithFormat:@"%@%@%d.%d", sFissionOrRecoil, detector, encoder, strip_0_15+1];
+    NSString *name = [NSString stringWithFormat:@"%@%d.%d", detector, encoder, strip_0_15+1];
     
     return [_calibration energyForAmplitude:channel eventName:name];
 }
 
-- (unsigned short)fissionEncoderForEventId:(unsigned short)eventId
+- (unsigned short)fissionOrRecoilEncoderForEventId:(unsigned short)eventId
 {
-    if (EventIdFissionFront1 == eventId || EventIdFissionBack1 == eventId || EventIdFissionWell1 == eventId) {
+    if (EventIdFissionFront1 == eventId || EventIdFissionBack1 == eventId || EventIdFissionDaughterFront1 == eventId || EventIdFissionDaughterBack1 == eventId ||  EventIdFissionWell1 == eventId) {
         return 1;
     }
-    if (EventIdFissionFront2 == eventId || EventIdFissionBack2 == eventId || EventIdFissionWell2 == eventId) {
+    if (EventIdFissionFront2 == eventId || EventIdFissionBack2 == eventId || EventIdFissionDaughterFront2 == eventId || EventIdFissionDaughterBack2 == eventId ||  EventIdFissionWell2 == eventId) {
         return 2;
     }
-    if (EventIdFissionFront3 == eventId || EventIdFissionBack3 == eventId) {
+    if (EventIdFissionFront3 == eventId || EventIdFissionBack3 == eventId || EventIdFissionDaughterFront3 == eventId || EventIdFissionDaughterBack3 == eventId) {
         return 3;
     }
     return 0;
@@ -597,7 +607,7 @@ typedef NS_ENUM(unsigned short, Mask) {
     [_fissionsWelPerAct removeAllObjects];
     _firstFissionInfo = nil;
     _fonPerAct = nil;
-    _trigerPerAct = nil;
+    _recoilSpecialPerAct = nil;
     _recoilFrontInfo = nil;
     _tofRealInfo = nil;
 }
@@ -749,8 +759,8 @@ typedef NS_ENUM(unsigned short, Mask) {
                 }
                 case 14:
                 {
-                    if (row == 0 && _trigerPerAct) {
-                        [result appendFormat:@"%hu", [_trigerPerAct unsignedShortValue]];
+                    if (row == 0 && _recoilSpecialPerAct) {
+                        [result appendFormat:@"%hu", [_recoilSpecialPerAct unsignedShortValue]];
                     }
                     break;
                 }
@@ -812,6 +822,13 @@ typedef NS_ENUM(unsigned short, Mask) {
     return (kFissionMarker == marker) && (EventIdFissionFront1 == eventId || EventIdFissionFront2 == eventId || EventIdFissionFront3 == eventId);
 }
 
+- (BOOL)isFissionDaughterFront:(ISAEvent)event
+{
+    unsigned short eventId = event.eventId;
+    unsigned short marker = [self getMarker:event.param3];
+    return (kFissionMarker == marker) && (EventIdFissionDaughterFront1 == eventId || EventIdFissionDaughterFront2 == eventId || EventIdFissionDaughterFront3 == eventId);
+}
+
 - (BOOL)isFissionWel:(ISAEvent)event
 {
     unsigned short eventId = event.eventId;
@@ -823,7 +840,8 @@ typedef NS_ENUM(unsigned short, Mask) {
 {
     unsigned short eventId = event.eventId;
     unsigned short marker = [self getMarker:event.param3];
-    return (kFissionMarker == marker) && (EventIdFissionBack1 == eventId || EventIdFissionBack2 == eventId || EventIdFissionBack3 == eventId);
+    return (kFissionMarker == marker) && (EventIdFissionBack1 == eventId || EventIdFissionBack2 == eventId || EventIdFissionBack3 == eventId ||
+                                          EventIdFissionDaughterBack1 == eventId || EventIdFissionDaughterBack2 == eventId || EventIdFissionDaughterBack3 == eventId);
 }
 
 - (BOOL)isRecoilFront:(ISAEvent)event
