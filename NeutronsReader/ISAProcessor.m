@@ -9,8 +9,7 @@
 #import "ISAProcessor.h"
 
 static int const kTOFForRecoilMaxSearchTimeInMks = 10; // +/- from t(Recoil)
-static int const kRecoilMaxSearchTimeInMks = 400; // from t(FF) to t(Recoil) - backward search
-static int const kRecoilDaughterMaxSearchTimeInMks = 40;
+static int const kRecoilMaxSearchTimeInMks = 1000; // from t(FF) to t(Recoil) - backward search
 static int const kNeutronMaxSearchTimeInMks = 132; // from t(FF) to t(last neutron)
 static int const kGammaMaxSearchTimeInMks = 5; // from t(FF) to t(last gamma)
 static int const kTOFMaxSearchTimeInMks = 2; // from t(FF) (случайные генерации, а не отмеки рекойлов)
@@ -166,8 +165,7 @@ typedef NS_ENUM(unsigned short, Mask) {
                 }
                 
                 // FFron
-                BOOL isFissionDaughterFront = [self isFissionDaughterFront:event];
-                if ([self isFissionFront:event] || isFissionDaughterFront) {
+                if ([self isFissionFront:event]) {
                     if (NO == _isNewAct) {
                         // Запускаем новый цикл поиска, только если энергия осколка на лицевой стороне детектора выше минимальной
                         if ([self getFissionEnergy:event] >= self.fissionFrontMinEnergy) {
@@ -176,8 +174,7 @@ typedef NS_ENUM(unsigned short, Mask) {
                             fpos_t position;
                             fgetpos(_file, &position);
                             // Recoil
-                            int maxSearchTime = isFissionDaughterFront ? kRecoilDaughterMaxSearchTimeInMks : kRecoilMaxSearchTimeInMks;
-                            [self findRecoil:maxSearchTime];
+                            [self findRecoil];
                             // FON
                             [self findFONEvent];
                             // Recoil Special
@@ -243,7 +240,7 @@ typedef NS_ENUM(unsigned short, Mask) {
 /**
  Поиск рекойла осуществляется с позиции файла где найден главный осколок (возвращаемся назад по времени).
  */
-- (void)findRecoil:(int)maxSearchTime
+- (void)findRecoil
 {
     fpos_t current;
     fgetpos(_file, &current);
@@ -255,7 +252,7 @@ typedef NS_ENUM(unsigned short, Mask) {
         fread(&event, sizeof(event), 1, _file);
         unsigned short recoilTime = event.param1;
         double deltaTime = fabs(recoilTime - _firstFissionTime);
-        if (deltaTime <= maxSearchTime) {
+        if (deltaTime <= kRecoilMaxSearchTimeInMks) {
             if ([self isRecoilFront:event]) {
                 NSDictionary *firstFissionInfo = [_fissionsFrontPerAct firstObject];
                 unsigned short encoder = [self fissionOrRecoilEncoderForEventId:event.eventId];
@@ -819,14 +816,7 @@ typedef NS_ENUM(unsigned short, Mask) {
 {
     unsigned short eventId = event.eventId;
     unsigned short marker = [self getMarker:event.param3];
-    return (kFissionMarker == marker) && (EventIdFissionFront1 == eventId || EventIdFissionFront2 == eventId || EventIdFissionFront3 == eventId);
-}
-
-- (BOOL)isFissionDaughterFront:(ISAEvent)event
-{
-    unsigned short eventId = event.eventId;
-    unsigned short marker = [self getMarker:event.param3];
-    return (kFissionMarker == marker) && (EventIdFissionDaughterFront1 == eventId || EventIdFissionDaughterFront2 == eventId || EventIdFissionDaughterFront3 == eventId);
+    return (kFissionMarker == marker) && (EventIdFissionFront1 == eventId || EventIdFissionFront2 == eventId || EventIdFissionFront3 == eventId || EventIdFissionDaughterFront1 == eventId || EventIdFissionDaughterFront2 == eventId || EventIdFissionDaughterFront3 == eventId);
 }
 
 - (BOOL)isFissionWel:(ISAEvent)event
