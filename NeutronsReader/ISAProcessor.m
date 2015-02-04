@@ -149,6 +149,10 @@ typedef NS_ENUM(unsigned short, Mask) {
             while (!feof(_file)) {
                 ISAEvent event;
                 fread(&event, sizeof(event), 1, _file);
+                if (ferror(_file)) {
+                    printf("\nERROR while reading file %s\n", [_currentFileName UTF8String]);
+                    exit(-1);
+                }
                 _currentEventNumber += 1;
                 
                 double deltaTime = fabs(event.param1 - _firstFissionTime);
