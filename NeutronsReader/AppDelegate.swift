@@ -14,6 +14,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     @IBOutlet weak var window: NSWindow!
     @IBOutlet weak var activity: NSProgressIndicator!
     var sMinEnergy: NSString = NSString(format: "%d", 20) // Default focal fission min energy (MeV)
+    var sMinRecoilTime: NSString = NSString(format: "%d", 0) // mks
+    var sMaxRecoilTime: NSString = NSString(format: "%d", 1000) // mks
+    var onlyWithFBack: Bool = false
     
     func applicationDidFinishLaunching(aNotification: NSNotification) {
         // Insert code here to initialize your application
@@ -24,11 +27,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
     
     @IBAction func start(sender: AnyObject?) {
-        self.activity?.startAnimation(self)
+        activity?.startAnimation(self)
         let processor = ISAProcessor.sharedProcessor();
-        processor.fissionFrontMinEnergy = self.sMinEnergy.doubleValue
+        processor.fissionFrontMinEnergy = sMinEnergy.doubleValue
+        processor.recoilMinTime = sMinRecoilTime.doubleValue
+        processor.recoilMaxTime = sMaxRecoilTime.doubleValue
+        processor.onlyWithFBack = onlyWithFBack
         processor.processData()
-        self.activity?.stopAnimation(self)
+        activity?.stopAnimation(self)
     }
     
     @IBAction func selectData(sender: AnyObject?) {

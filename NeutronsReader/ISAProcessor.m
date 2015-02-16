@@ -9,7 +9,6 @@
 #import "ISAProcessor.h"
 
 static int const kTOFForRecoilMaxSearchTimeInMks = 10; // +/- from t(Recoil)
-static int const kRecoilMaxSearchTimeInMks = 1000; // from t(FF) to t(Recoil) - backward search
 static int const kNeutronMaxSearchTimeInMks = 132; // from t(FF) to t(last neutron)
 static int const kGammaMaxSearchTimeInMks = 5; // from t(FF) to t(last gamma)
 static int const kTOFMaxSearchTimeInMks = 2; // from t(FF) (случайные генерации, а не отмеки рекойлов)
@@ -256,7 +255,9 @@ typedef NS_ENUM(unsigned short, Mask) {
         fread(&event, sizeof(event), 1, _file);
         unsigned short recoilTime = event.param1;
         double deltaTime = fabs(recoilTime - _firstFissionTime);
-        if (deltaTime <= kRecoilMaxSearchTimeInMks) {
+        if (deltaTime < _recoilMinTime) {
+            continue;
+        } else if (deltaTime <= _recoilMaxTime) {
             if ([self isRecoilFront:event]) {
                 NSDictionary *firstFissionInfo = [_fissionsFrontPerAct firstObject];
                 unsigned short encoder = [self fissionOrRecoilEncoderForEventId:event.eventId];
@@ -615,6 +616,11 @@ typedef NS_ENUM(unsigned short, Mask) {
 
 - (void)logActResults:(FILE *)outputFile
 {
+    //TODO: изменить алгоритм поиска, если сразу после FFront не найдет FBack, то запускать следующий цикл поиска.
+    if (_onlyWithFBack && 0 == _fissionsBackPerAct.count) {
+        return;
+    }
+    
     // FFRON
     unsigned long long eventNumber = NAN;
     double summFFronE = 0;
