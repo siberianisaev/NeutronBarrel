@@ -53,6 +53,7 @@ typedef NS_ENUM(unsigned short, EventId) {
     EventIdGamma1 = 15,
     EventIdTOF = 17,
     EventIdNeutrons = 23,
+    EventIdCycleTime = 24,
     EventIdFON = 29,
     EventIdRecoilSpecial = 30
 };
@@ -92,6 +93,7 @@ typedef NS_ENUM(unsigned short, Mask) {
 @property (assign, nonatomic) FILE *file;
 @property (strong, nonatomic) EventStack *fissionsFrontNotInCycleStack; // осколки пришедшие до обнаружения главного осколка (стек нужен для возврата к нескольким предыдущем событиям по времени)
 @property (strong, nonatomic) EventStack *gammaNotInCycleStack; // гамма-кванты пришедшие до обнаружения главного осколка (стек нужен для возврата к нескольким предыдущем событиям по времени)
+@property (assign, nonatomic) ISAEvent mainCycleTimeEvent;
 
 @end
 
@@ -152,6 +154,11 @@ typedef NS_ENUM(unsigned short, Mask) {
                     printf("\nERROR while reading file %s\n", [_currentFileName UTF8String]);
                     exit(-1);
                 }
+                
+                if (event.eventId == EventIdCycleTime) {
+                    _mainCycleTimeEvent = event;
+                }
+                
                 _currentEventNumber += 1;
                 
                 double deltaTime = fabs(event.param1 - _firstFissionTime);
@@ -241,39 +248,65 @@ typedef NS_ENUM(unsigned short, Mask) {
 }
 
 /**
+ У осколков/рекойлов записывается только время относительно начала нового счетчика времени (счетчик обновляется каждые 0xFFFF мкс).
+ Для вычисления времени от запуска файла используем время цикла (id #24).
+ */
+- (long long)time:(unsigned short)relativeTime cycleEvent:(ISAEvent)cycleEvent
+{
+    return (((long long)cycleEvent.param3 << 16) + cycleEvent.param1) + relativeTime;
+}
+
+/**
  Поиск рекойла осуществляется с позиции файла где найден главный осколок (возвращаемся назад по времени).
  */
 - (void)findRecoil
 {
+    long long fissionTime = [self time:_firstFissionTime cycleEvent:_mainCycleTimeEvent];
+    ISAEvent cycleEvent = _mainCycleTimeEvent;
+    
     fpos_t current;
     fgetpos(_file, &current);
+//TODO: работает в пределах одного файла!
     while (current > -1) {
         current -= sizeof(ISAEvent);
         fseek(_file, current, SEEK_SET);
         
         ISAEvent event;
         fread(&event, sizeof(event), 1, _file);
-        unsigned short recoilTime = event.param1;
-        double deltaTime = fabs(recoilTime - _firstFissionTime);
+        
+        if (event.eventId == EventIdCycleTime) { // Откатились по времени к предыдущему циклу!
+            cycleEvent = event;
+        }
+        
+        if (NO == [self isRecoilFront:event]) {
+            continue;
+        }
+        
+        long long recoilTime = [self time:event.param1 cycleEvent:cycleEvent];
+        long double deltaTime = fabsl(recoilTime - fissionTime);
         if (deltaTime < _recoilMinTime) {
             continue;
         } else if (deltaTime <= _recoilMaxTime) {
-            if ([self isRecoilFront:event]) {
-                NSDictionary *firstFissionInfo = [_fissionsFrontPerAct firstObject];
-                unsigned short encoder = [self fissionOrRecoilEncoderForEventId:event.eventId];
-                if (encoder != [[firstFissionInfo valueForKey:kEncoder] integerValue]) { // Соответсвуют кодировщики
-                    continue;
-                }
-                
-                unsigned short strip_0_15 = event.param2 >> 12;  // value from 0 to 15
-                if (strip_0_15 != [[firstFissionInfo valueForKey:kStrip0_15] integerValue]) { // На одном стрипе
-                    continue;
-                }
-                
-                [self storeRecoil:event deltaTime:deltaTime];
-                [self findTOFForRecoilTime:recoilTime];
-                return;
+#warning TODO: вынести в настройки!
+            double energy = [self getRecoilEnergy:event];
+            if (energy < 0.5 || energy > 20) {
+                continue;
             }
+            
+            NSDictionary *firstFissionInfo = [_fissionsFrontPerAct firstObject];
+            unsigned short encoder = [self fissionOrRecoilEncoderForEventId:event.eventId];
+            if (encoder != [[firstFissionInfo valueForKey:kEncoder] integerValue]) { // Соответсвуют кодировщики
+                continue;
+            }
+            
+            unsigned short strip_0_15 = event.param2 >> 12;  // value from 0 to 15
+            if (strip_0_15 != [[firstFissionInfo valueForKey:kStrip0_15] integerValue]) { // На одном стрипе
+                continue;
+            }
+            
+            [self storeRecoil:event deltaTime:deltaTime];
+            [self findTOFForRecoilTime:recoilTime];
+            return;
         } else {
             return;
         }
