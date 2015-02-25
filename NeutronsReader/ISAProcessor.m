@@ -185,6 +185,23 @@ typedef NS_ENUM(unsigned short, Mask) {
                             
                             fpos_t position;
                             fgetpos(_file, &position);
+                            
+                            // FBack
+                            [self findFissionBack];
+                            fseek(_file, position, SEEK_SET);
+                            if (_onlyWithFissionBack && 0 == _fissionsBackPerAct.count) {
+                                [self refresh];
+                                continue;
+                            }
+                            
+                            // Gamma
+                            [self findGamma];
+                            fseek(_file, position, SEEK_SET);
+                            if (_onlyWithGamma && 0 == _gammaPerAct.count) {
+                                [self refresh];
+                                continue;
+                            }
+                            
                             // Recoil
                             [self findRecoil];
                             // FON
@@ -206,21 +223,9 @@ typedef NS_ENUM(unsigned short, Mask) {
                     continue;
                 }
                 
-                // FBack
-                if ([self isFissionBack:event] && (deltaTime <= kFissionsMaxSearchTimeInMks)) {
-                    [self storeFissionBack:event];
-                    continue;
-                }
-                
                 // FWel
                 if ([self isFissionWel:event] && (deltaTime <= kFissionsMaxSearchTimeInMks)) {
                     [self storeFissionWell:event];
-                    continue;
-                }
-                
-                // Gam1
-                if ((EventIdGamma1 == event.eventId) && (deltaTime <= kGammaMaxSearchTimeInMks)) {
-                    [self storeGamma:event];
                     continue;
                 }
                 
@@ -247,6 +252,67 @@ typedef NS_ENUM(unsigned short, Mask) {
     
     fclose(outputFile);
     [Logger logMultiplicity:_neutronsMultiplicityTotal];
+}
+
+/**
+ Ищем в направлении от T(Fission Front).
+ */
+- (void)findFissionBack
+{
+    while (!feof(_file)) {
+        ISAEvent event;
+        fread(&event, sizeof(event), 1, _file);
+        
+        if (NO == [self isFissionBack:event]) {
+            continue;
+        }
+        
+        double deltaTime = fabs(event.param1 - _firstFissionTime);
+        if (deltaTime <= kFissionsMaxSearchTimeInMks) {
+            [self storeFissionBack:event];
+        }
+        return;
+    }
+}
+
+- (void)storeFissionBack:(ISAEvent)event
+{
+    unsigned short encoder = [self fissionOrRecoilEncoderForEventId:event.eventId];
+    unsigned short strip_0_15 = event.param2 >> 12;  // value from 0 to 15
+    double energy = [self getFissionEnergy:event];
+    NSDictionary *fissionInfo = @{kEncoder:@(encoder),
+                                  kStrip0_15:@(strip_0_15),
+                                  kEnergy:@(energy),
+                                  kEventNumber:@(_currentEventNumber)};
+    [_fissionsBackPerAct addObject:fissionInfo];
+}
+
+/**
+ Ищем в направлении от T(Fission Front).
+ */
+- (void)findGamma
+{
+    while (!feof(_file)) {
+        ISAEvent event;
+        fread(&event, sizeof(event), 1, _file);
+        
+        if (EventIdGamma1 != event.eventId) {
+            continue;
+        }
+        
+        double deltaTime = fabs(event.param1 - _firstFissionTime);
+        if (deltaTime <= kGammaMaxSearchTimeInMks) {
+            [self storeGamma:event];
+        }
+        return;
+    }
+}
+
+- (void)storeGamma:(ISAEvent)event
+{
+    unsigned short channel = event.param3 & MaskGamma;
+    double energy = [_calibration energyForAmplitude:channel eventName:@"Gam1"];
+    [_gammaPerAct addObject:@(energy)];
 }
 
 /**
@@ -481,18 +547,6 @@ typedef NS_ENUM(unsigned short, Mask) {
     }
 }
 
-- (void)storeFissionBack:(ISAEvent)event
-{
-    unsigned short encoder = [self fissionOrRecoilEncoderForEventId:event.eventId];
-    unsigned short strip_0_15 = event.param2 >> 12;  // value from 0 to 15
-    double energy = [self getFissionEnergy:event];
-    NSDictionary *fissionInfo = @{kEncoder:@(encoder),
-                                  kStrip0_15:@(strip_0_15),
-                                  kEnergy:@(energy),
-                                  kEventNumber:@(_currentEventNumber)};
-    [_fissionsBackPerAct addObject:fissionInfo];
-}
-
 - (void)storeFissionWell:(ISAEvent)event
 {
     double energy = [self getFissionEnergy:event];
@@ -502,13 +556,6 @@ typedef NS_ENUM(unsigned short, Mask) {
                                   kStrip0_15:@(strip_0_15),
                                   kEnergy:@(energy)};
     [_fissionsWelPerAct addObject:fissionInfo];
-}
-
-- (void)storeGamma:(ISAEvent)event
-{
-    unsigned short channel = event.param3 & MaskGamma;
-    double energy = [_calibration energyForAmplitude:channel eventName:@"Gam1"];
-    [_gammaPerAct addObject:@(energy)];
 }
 
 - (void)storeTOF:(ISAEvent)event
@@ -635,6 +682,11 @@ typedef NS_ENUM(unsigned short, Mask) {
 {
     [self updateNeutronsMultiplicity];
     [self logActResults:outputFile];
+    [self refresh];
+}
+
+- (void)refresh
+{
     [self clearActInfo];
     _isNewAct = NO;
 }
@@ -656,15 +708,6 @@ typedef NS_ENUM(unsigned short, Mask) {
 
 - (void)logActResults:(FILE *)outputFile
 {
-#warning TODO: Оптимизация алгоритма поиска - если сразу после FFront не найдет FBack, то запускать следующий цикл поиска (если _onlyWithFissionBack == true).
-    if (_onlyWithFissionBack && 0 == _fissionsBackPerAct.count) {
-        return;
-    }
-#warning TODO: Оптимизация алгоритма поиска - если получена информация об отсутствии хотябы одного гамма-кванта, то сразу запускать следующий цикл поиска (если _onlyWithGamma == true).
-    if (_onlyWithGamma && 0 == _gammaPerAct.count) {
-        return;
-    }
-    
     // FFRON
     unsigned long long eventNumber = NAN;
     double summFFronE = 0;
