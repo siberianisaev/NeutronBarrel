@@ -278,7 +278,7 @@ typedef NS_ENUM(unsigned short, Mask) {
             cycleEvent = event;
         }
         
-        if (NO == [self isRecoilFront:event]) {
+        if (NO == [self isValidEventIdForTimeCheck:event.eventId]) {
             continue;
         }
         
@@ -287,6 +287,10 @@ typedef NS_ENUM(unsigned short, Mask) {
         if (deltaTime < _recoilMinTime) {
             continue;
         } else if (deltaTime <= _recoilMaxTime) {
+            if (NO == [self isRecoilFront:event]) {
+                continue;
+            }
+            
 #warning TODO: вынести в настройки!
             double energy = [self getRecoilEnergy:event];
             if (energy < 0.5 || energy > 20) {
