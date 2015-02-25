@@ -13,7 +13,8 @@
 @property (assign, nonatomic) double fissionFrontMinEnergy;
 @property (assign, nonatomic) double recoilMinTime;
 @property (assign, nonatomic) double recoilMaxTime;
-@property (assign, nonatomic) BOOL onlyWithFBack;
+@property (assign, nonatomic) BOOL onlyWithFissionBack;
+@property (assign, nonatomic) BOOL onlyWithGamma;
 
 + (ISAProcessor *)sharedProcessor;
 

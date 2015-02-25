@@ -672,7 +672,7 @@
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
             <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
             <rect key="contentRect" x="335" y="390" width="480" height="360"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="1440" height="877"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="1920" height="1057"/>
             <view key="contentView" id="EiT-Mj-1SZ">
                 <rect key="frame" x="0.0" y="0.0" width="480" height="360"/>
                 <autoresizingMask key="autoresizingMask"/>
@@ -802,18 +802,28 @@
                         <font key="titleFont" metaFont="system"/>
                     </box>
                     <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="mtQ-S3-wYH">
-                        <rect key="frame" x="212" y="251" width="151" height="18"/>
-                        <buttonCell key="cell" type="check" title="Only with FBack" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="6IZ-MM-Yol">
+                        <rect key="frame" x="212" y="251" width="200" height="18"/>
+                        <buttonCell key="cell" type="check" title="Only with Fission Back" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="6IZ-MM-Yol">
                             <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                             <font key="font" metaFont="system"/>
                         </buttonCell>
                         <connections>
-                            <binding destination="Voe-Tx-rLC" name="value" keyPath="self.onlyWithFBack" id="cZO-C9-csc"/>
+                            <binding destination="Voe-Tx-rLC" name="value" keyPath="self.onlyWithFissionBack" id="p74-Fh-dCM"/>
+                        </connections>
+                    </button>
+                    <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="0iN-ES-PsF">
+                        <rect key="frame" x="212" y="231" width="200" height="18"/>
+                        <buttonCell key="cell" type="check" title="Only with Gamma" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="qqL-ji-47x">
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                            <font key="font" metaFont="system"/>
+                        </buttonCell>
+                        <connections>
+                            <binding destination="Voe-Tx-rLC" name="value" keyPath="self.onlyWithGamma" id="sEx-3p-CDn"/>
                         </connections>
                     </button>
                 </subviews>
             </view>
-            <point key="canvasLocation" x="692" y="334"/>
+            <point key="canvasLocation" x="653" y="426"/>
         </window>
         <userDefaultsController representsSharedInstance="YES" id="aAU-rt-5o7"/>
     </objects>

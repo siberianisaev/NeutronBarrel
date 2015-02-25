@@ -16,7 +16,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var sMinEnergy: NSString = NSString(format: "%d", 20) // Default focal fission min energy (MeV)
     var sMinRecoilTime: NSString = NSString(format: "%d", 0) // mks
     var sMaxRecoilTime: NSString = NSString(format: "%d", 1000) // mks
-    var onlyWithFBack: Bool = false
+    var onlyWithFissionBack: Bool = false
+    var onlyWithGamma: Bool = false
     
     func applicationDidFinishLaunching(aNotification: NSNotification) {
         // Insert code here to initialize your application
@@ -32,7 +33,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         processor.fissionFrontMinEnergy = sMinEnergy.doubleValue
         processor.recoilMinTime = sMinRecoilTime.doubleValue
         processor.recoilMaxTime = sMaxRecoilTime.doubleValue
-        processor.onlyWithFBack = onlyWithFBack
+        processor.onlyWithFissionBack = onlyWithFissionBack
+        processor.onlyWithGamma = onlyWithGamma
         processor.processData()
         activity?.stopAnimation(self)
     }

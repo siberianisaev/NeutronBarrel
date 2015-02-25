@@ -74,6 +74,8 @@ typedef NS_ENUM(unsigned short, Mask) {
 @property (strong, nonatomic) NSString *currentFileName;
 @property (assign, nonatomic) unsigned long long currentEventNumber;
 @property (strong, nonatomic) NSMutableDictionary *neutronsMultiplicityTotal;
+@property (strong, nonatomic) NSMutableArray *recoilsFrontPerAct;
+@property (strong, nonatomic) NSMutableArray *tofRealPerAct;
 @property (strong, nonatomic) NSMutableArray *fissionsFrontPerAct;
 @property (strong, nonatomic) NSMutableArray *fissionsBackPerAct;
 @property (strong, nonatomic) NSMutableArray *fissionsWelPerAct;
@@ -82,8 +84,6 @@ typedef NS_ENUM(unsigned short, Mask) {
 @property (strong, nonatomic) NSNumber *fonPerAct;
 @property (strong, nonatomic) NSNumber *recoilSpecialPerAct;
 @property (strong, nonatomic) NSNumber *tofForRecoilPerAct; // не настоящий TOF (случайные совпадения)
-@property (strong, nonatomic) NSDictionary *recoilFrontInfo;
-@property (strong, nonatomic) NSDictionary *tofRealInfo;
 @property (strong, nonatomic) NSDictionary *firstFissionInfo; // информация о главном осколке в цикле
 @property (assign, nonatomic) unsigned short firstFissionTime; // время главного осколка в цикле
 @property (assign, nonatomic) int fissionBackSumm;
@@ -122,6 +122,8 @@ typedef NS_ENUM(unsigned short, Mask) {
 - (void)processData
 {
     _neutronsMultiplicityTotal = [NSMutableDictionary dictionary];
+    _recoilsFrontPerAct = [NSMutableArray array];
+    _tofRealPerAct = [NSMutableArray array];
     _fissionsFrontPerAct = [NSMutableArray array];
     _fissionsBackPerAct = [NSMutableArray array];
     _gammaPerAct = [NSMutableArray array];
@@ -310,7 +312,6 @@ typedef NS_ENUM(unsigned short, Mask) {
             
             [self storeRecoil:event deltaTime:deltaTime];
             [self findTOFForRecoilTime:recoilTime];
-            return;
         } else {
             return;
         }
@@ -320,8 +321,9 @@ typedef NS_ENUM(unsigned short, Mask) {
 - (void)storeRecoil:(ISAEvent)event deltaTime:(unsigned long long)deltaTime
 {
     double energy = [self getRecoilEnergy:event];
-    _recoilFrontInfo = @{kEnergy:@(energy),
-                         kDeltaTime:@(deltaTime)};
+    NSDictionary *info = @{kEnergy:@(energy),
+                           kDeltaTime:@(deltaTime)};
+    [_recoilsFrontPerAct addObject:info];
 }
 
 /**
@@ -371,8 +373,9 @@ typedef NS_ENUM(unsigned short, Mask) {
 - (void)storeRealTOF:(ISAEvent)event deltaTime:(double)deltaTime
 {
     unsigned short channel = event.param3 & MaskTOF;
-    _tofRealInfo = @{kChannel: @(channel),
-                     kDeltaTime:@(deltaTime)};
+    NSDictionary *info = @{kChannel: @(channel),
+                           kDeltaTime:@(deltaTime)};
+    [_tofRealPerAct addObject:info];
 }
 
 /**
@@ -644,17 +647,21 @@ typedef NS_ENUM(unsigned short, Mask) {
     [_gammaPerAct removeAllObjects];
     [_tofPerAct removeAllObjects];
     [_fissionsWelPerAct removeAllObjects];
+    [_recoilsFrontPerAct removeAllObjects];
+    [_tofRealPerAct removeAllObjects];
     _firstFissionInfo = nil;
     _fonPerAct = nil;
     _recoilSpecialPerAct = nil;
-    _recoilFrontInfo = nil;
-    _tofRealInfo = nil;
 }
 
 - (void)logActResults:(FILE *)outputFile
 {
-    //TODO: изменить алгоритм поиска, если сразу после FFront не найдет FBack, то запускать следующий цикл поиска.
-    if (_onlyWithFBack && 0 == _fissionsBackPerAct.count) {
+#warning TODO: Оптимизация алгоритма поиска - если сразу после FFront не найдет FBack, то запускать следующий цикл поиска (если _onlyWithFissionBack == true).
+    if (_onlyWithFissionBack && 0 == _fissionsBackPerAct.count) {
+        return;
+    }
+#warning TODO: Оптимизация алгоритма поиска - если получена информация об отсутствии хотябы одного гамма-кванта, то сразу запускать следующий цикл поиска (если _onlyWithGamma == true).
+    if (_onlyWithGamma && 0 == _gammaPerAct.count) {
         return;
     }
     
@@ -693,7 +700,7 @@ typedef NS_ENUM(unsigned short, Mask) {
     
     NSMutableString *result = [NSMutableString string];
     int columnsCount = 14;
-    int rowsMax = MAX(MAX(1, (int)_gammaPerAct.count), (int)_fissionsWelPerAct.count);
+    int rowsMax = MAX(MAX(MAX(1, (int)_gammaPerAct.count), (int)_fissionsWelPerAct.count), (int)_recoilsFrontPerAct.count);
     for (int row = 0; row < rowsMax; row++) {
         for (int column = 0; column <= columnsCount; column++) {
             switch (column) {
@@ -713,33 +720,41 @@ typedef NS_ENUM(unsigned short, Mask) {
                 }
                 case 2:
                 {
-                    NSNumber *recoilEnergy = [_recoilFrontInfo valueForKey:kEnergy];
-                    if (row == 0 && recoilEnergy) {
-                        [result appendFormat:@"%4.7f", [recoilEnergy doubleValue]];
+                    if (row < (int)_recoilsFrontPerAct.count) {
+                        NSNumber *recoilEnergy = [[_recoilsFrontPerAct objectAtIndex:row] valueForKey:kEnergy];
+                        if (recoilEnergy) {
+                            [result appendFormat:@"%4.7f", [recoilEnergy doubleValue]];
+                        }
                     }
                     break;
                 }
                 case 3:
                 {
-                    NSNumber *deltaTimeRecoilFission = [_recoilFrontInfo valueForKey:kDeltaTime];
-                    if (row == 0 && deltaTimeRecoilFission) {
-                        [result appendFormat:@"%6llu", (unsigned long long)[deltaTimeRecoilFission unsignedLongLongValue]];
+                    if (row < (int)_recoilsFrontPerAct.count) {
+                        NSNumber *deltaTimeRecoilFission = [[_recoilsFrontPerAct objectAtIndex:row] valueForKey:kDeltaTime];
+                        if (deltaTimeRecoilFission) {
+                            [result appendFormat:@"%6llu", (unsigned long long)[deltaTimeRecoilFission unsignedLongLongValue]];
+                        }
                     }
                     break;
                 }
                 case 4:
                 {
-                    NSNumber *tof = [_tofRealInfo valueForKey:kChannel];
-                    if (row == 0 && tof) {
-                        [result appendFormat:@"%hu", [tof unsignedShortValue]];
+                    if (row < (int)_tofRealPerAct.count) {
+                        NSNumber *tof = [[_tofRealPerAct objectAtIndex:row] valueForKey:kChannel];
+                        if (row == 0 && tof) {
+                            [result appendFormat:@"%hu", [tof unsignedShortValue]];
+                        }
                     }
                     break;
                 }
                 case 5:
                 {
-                    NSNumber *deltaTimeTOFRecoil = [_tofRealInfo valueForKey:kDeltaTime];
-                    if (row == 0 && deltaTimeTOFRecoil) {
-                        [result appendFormat:@"%6llu", (unsigned long long)[deltaTimeTOFRecoil unsignedLongLongValue]];
+                    if (row < (int)_tofRealPerAct.count) {
+                        NSNumber *deltaTimeTOFRecoil = [[_tofRealPerAct objectAtIndex:row] valueForKey:kDeltaTime];
+                        if (row == 0 && deltaTimeTOFRecoil) {
+                            [result appendFormat:@"%6llu", (unsigned long long)[deltaTimeTOFRecoil unsignedLongLongValue]];
+                        }
                     }
                     break;
                 }
