@@ -187,7 +187,7 @@ typedef NS_ENUM(unsigned short, Mask) {
                             fgetpos(_file, &position);
                             
                             // FBack
-                            [self findFissionBack];
+                            [self findFissionsBack];
                             fseek(_file, position, SEEK_SET);
                             if (_onlyWithFissionBack && 0 == _fissionsBackPerAct.count) {
                                 [self refresh];
@@ -255,9 +255,9 @@ typedef NS_ENUM(unsigned short, Mask) {
 }
 
 /**
- Ищем в направлении от T(Fission Front).
+ Ищем все FBack в окне <= kFissionsMaxSearchTimeInMks относительно времени FFron.
  */
-- (void)findFissionBack
+- (void)findFissionsBack
 {
     while (!feof(_file)) {
         ISAEvent event;
@@ -270,8 +270,9 @@ typedef NS_ENUM(unsigned short, Mask) {
         double deltaTime = fabs(event.param1 - _firstFissionTime);
         if (deltaTime <= kFissionsMaxSearchTimeInMks) {
             [self storeFissionBack:event];
+        } else {
+            return;
         }
-        return;
     }
 }
 
@@ -288,7 +289,7 @@ typedef NS_ENUM(unsigned short, Mask) {
 }
 
 /**
- Ищем в направлении от T(Fission Front).
+ Ищем все Gam1 в окне <= kGammaMaxSearchTimeInMks относительно времени FFron.
  */
 - (void)findGamma
 {
@@ -303,8 +304,9 @@ typedef NS_ENUM(unsigned short, Mask) {
         double deltaTime = fabs(event.param1 - _firstFissionTime);
         if (deltaTime <= kGammaMaxSearchTimeInMks) {
             [self storeGamma:event];
+        } else {
+            return;
         }
-        return;
     }
 }
 
