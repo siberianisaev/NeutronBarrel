@@ -11,10 +11,13 @@
 @interface ISAProcessor : NSObject
 
 @property (assign, nonatomic) double fissionFrontMinEnergy;
+@property (assign, nonatomic) double minTOFChannel;
 @property (assign, nonatomic) double recoilMinTime;
 @property (assign, nonatomic) double recoilMaxTime;
-@property (assign, nonatomic) BOOL onlyWithFissionBack;
-@property (assign, nonatomic) BOOL onlyWithGamma;
+@property (assign, nonatomic) double fissionMaxTime;
+@property (assign, nonatomic) BOOL requiredFissionBack;
+@property (assign, nonatomic) BOOL requiredGamma;
+@property (assign, nonatomic) BOOL requiredTOF;
 
 + (ISAProcessor *)sharedProcessor;
 

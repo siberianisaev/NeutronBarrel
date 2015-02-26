@@ -13,11 +13,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     
     @IBOutlet weak var window: NSWindow!
     @IBOutlet weak var activity: NSProgressIndicator!
-    var sMinEnergy: NSString = NSString(format: "%d", 20) // Default focal fission min energy (MeV)
+    var sMinEnergy: NSString = NSString(format: "%d", 20) // MeV
+    var sMinTOFChannel: NSString = NSString(format: "%d", 0) // channel
     var sMinRecoilTime: NSString = NSString(format: "%d", 0) // mks
     var sMaxRecoilTime: NSString = NSString(format: "%d", 1000) // mks
-    var onlyWithFissionBack: Bool = false
-    var onlyWithGamma: Bool = false
+    var sMaxFissionTime: NSString = NSString(format: "%d", 5) // mks
+    var requiredFissionBack: Bool = true
+    var requiredGamma: Bool = true
+    var requiredTOF: Bool = false
     
     func applicationDidFinishLaunching(aNotification: NSNotification) {
         // Insert code here to initialize your application
@@ -31,10 +34,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         activity?.startAnimation(self)
         let processor = ISAProcessor.sharedProcessor();
         processor.fissionFrontMinEnergy = sMinEnergy.doubleValue
+        processor.minTOFChannel = sMinTOFChannel.doubleValue
         processor.recoilMinTime = sMinRecoilTime.doubleValue
         processor.recoilMaxTime = sMaxRecoilTime.doubleValue
-        processor.onlyWithFissionBack = onlyWithFissionBack
-        processor.onlyWithGamma = onlyWithGamma
+        processor.fissionMaxTime = sMaxFissionTime.doubleValue
+        processor.requiredFissionBack = requiredFissionBack
+        processor.requiredGamma = requiredGamma
+        processor.requiredTOF = requiredTOF
         processor.processData()
         activity?.stopAnimation(self)
     }
