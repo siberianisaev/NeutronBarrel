@@ -378,8 +378,10 @@ typedef NS_ENUM(unsigned short, Mask) {
                 continue;
             }
             
-            [self storeRecoil:event deltaTime:deltaTime];
-            [self findTOFForRecoilTime:recoilTime];
+            // Сохраняем рекойл только если к нему найден TOF
+            if ([self findTOFForRecoilTime:recoilTime]) {
+                [self storeRecoil:event deltaTime:deltaTime];
+            }
         } else {
             return;
         }
@@ -397,7 +399,7 @@ typedef NS_ENUM(unsigned short, Mask) {
 /**
  Real TOF for Recoil.
  */
-- (void)findTOFForRecoilTime:(unsigned short)recoilTime
+- (BOOL)findTOFForRecoilTime:(unsigned short)recoilTime
 {
     fpos_t initial;
     fgetpos(_file, &initial);
@@ -414,7 +416,7 @@ typedef NS_ENUM(unsigned short, Mask) {
         if (deltaTime <= kTOFForRecoilMaxSearchTimeInMks) {
             if (EventIdTOF == event.eventId) {
                 [self storeRealTOF:event deltaTime:deltaTime];
-                return;
+                return YES;
             }
         } else {
             break;
@@ -430,18 +432,20 @@ typedef NS_ENUM(unsigned short, Mask) {
         if (deltaTime <= kTOFForRecoilMaxSearchTimeInMks) {
             if (EventIdTOF == event.eventId) {
                 [self storeRealTOF:event deltaTime:deltaTime];
-                return;
+                return YES;
             }
         } else {
-            return;
+            return NO;
         }
     }
+    
+    return NO;
 }
 
 - (void)storeRealTOF:(ISAEvent)event deltaTime:(double)deltaTime
 {
     unsigned short channel = event.param3 & MaskTOF;
-    NSDictionary *info = @{kChannel: @(channel),
+    NSDictionary *info = @{kChannel:@(channel),
                            kDeltaTime:@(deltaTime)};
     [_tofRealPerAct addObject:info];
 }
@@ -710,6 +714,12 @@ typedef NS_ENUM(unsigned short, Mask) {
 
 - (void)logActResults:(FILE *)outputFile
 {
+#warning TODO: доработать основной цикл поиска, сейчас неправильно будет определяться множественность нейтронов при выставленных флагах!
+    if ((_onlyWithFissionBack && 0 == _fissionsBackPerAct.count) ||
+        (_onlyWithGamma && 0 == _gammaPerAct.count)) {
+        return;
+    }
+    
     // FFRON
     unsigned long long eventNumber = NAN;
     double summFFronE = 0;
@@ -787,7 +797,7 @@ typedef NS_ENUM(unsigned short, Mask) {
                 {
                     if (row < (int)_tofRealPerAct.count) {
                         NSNumber *tof = [[_tofRealPerAct objectAtIndex:row] valueForKey:kChannel];
-                        if (row == 0 && tof) {
+                        if (tof) {
                             [result appendFormat:@"%hu", [tof unsignedShortValue]];
                         }
                     }
@@ -797,7 +807,7 @@ typedef NS_ENUM(unsigned short, Mask) {
                 {
                     if (row < (int)_tofRealPerAct.count) {
                         NSNumber *deltaTimeTOFRecoil = [[_tofRealPerAct objectAtIndex:row] valueForKey:kDeltaTime];
-                        if (row == 0 && deltaTimeTOFRecoil) {
+                        if (deltaTimeTOFRecoil) {
                             [result appendFormat:@"%6llu", (unsigned long long)[deltaTimeTOFRecoil unsignedLongLongValue]];
                         }
                     }
