@@ -8,7 +8,8 @@
 
 #import "ISAProcessor.h"
 
-static int const kTOFForRecoilMaxSearchTimeInMks = 10; // +/- from t(Recoil)
+#warning TODO: вынести в настройки
+static int const kTOFForRecoilMaxSearchTimeInMks = 4; // +/- from t(Recoil)
 static int const kNeutronMaxSearchTimeInMks = 132; // from t(FF) to t(last neutron)
 static int const kGammaMaxSearchTimeInMks = 5; // from t(FF) to t(last gamma)
 static int const kTOFMaxSearchTimeInMks = 2; // from t(FF) (случайные генерации, а не отмеки рекойлов)
@@ -363,7 +364,7 @@ typedef NS_ENUM(unsigned short, Mask) {
             
 #warning TODO: вынести в настройки!
             double energy = [self getRecoilEnergy:event];
-            if (energy < 0.5 || energy > 20) {
+            if (energy < 2 || energy > 20) {
                 continue;
             }
             
@@ -414,7 +415,7 @@ typedef NS_ENUM(unsigned short, Mask) {
         fread(&event, sizeof(event), 1, _file);
         double deltaTime = fabs(event.param1 - recoilTime);
         if (deltaTime <= kTOFForRecoilMaxSearchTimeInMks) {
-            if (EventIdTOF == event.eventId) {
+            if (EventIdTOF == event.eventId && [self validTOFChannel:event]) {
                 [self storeRealTOF:event deltaTime:deltaTime];
                 return YES;
             }
@@ -430,7 +431,7 @@ typedef NS_ENUM(unsigned short, Mask) {
         fread(&event, sizeof(event), 1, _file);
         double deltaTime = fabs(event.param1 - recoilTime);
         if (deltaTime <= kTOFForRecoilMaxSearchTimeInMks) {
-            if (EventIdTOF == event.eventId) {
+            if (EventIdTOF == event.eventId && [self validTOFChannel:event]) {
                 [self storeRealTOF:event deltaTime:deltaTime];
                 return YES;
             }
@@ -440,6 +441,13 @@ typedef NS_ENUM(unsigned short, Mask) {
     }
     
     return NO;
+}
+
+#warning TODO: вывести в настройки
+- (BOOL)validTOFChannel:(ISAEvent)event
+{
+    unsigned short channel = event.param3 & MaskTOF;
+    return (channel >= 5000);
 }
 
 - (void)storeRealTOF:(ISAEvent)event deltaTime:(double)deltaTime
