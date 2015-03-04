@@ -8,10 +8,6 @@
 
 #import "ISAProcessor.h"
 
-#warning TODO: вынести в настройки
-static int const kTOFForRecoilMaxSearchTimeInMks = 4; // +/- from t(Recoil)
-static int const kNeutronMaxSearchTimeInMks = 132; // from t(FF) to t(last neutron)
-static int const kGammaMaxSearchTimeInMks = 5; // from t(FF) to t(last gamma)
 static int const kTOFMaxSearchTimeInMks = 2; // from t(FF) (случайные генерации, а не отмеки рекойлов)
 
 /**
@@ -166,7 +162,7 @@ typedef NS_ENUM(unsigned short, Mask) {
                 double deltaTime = fabs(event.param1 - _firstFissionTime);
                 
                 // Завершаем цикл если прошло слишком много времени, с момента запуска.
-                if (_isNewAct && (deltaTime > kNeutronMaxSearchTimeInMks) && [self isValidEventIdForTimeCheck:event.eventId]) {
+                if (_isNewAct && (deltaTime > _maxNeutronTime) && [self isValidEventIdForTimeCheck:event.eventId]) {
                     [self actStoped:outputFile];
                 }
                 
@@ -236,7 +232,7 @@ typedef NS_ENUM(unsigned short, Mask) {
                 }
                 
                 // Neutrons
-                if ((EventIdNeutrons == event.eventId) && (deltaTime <= kNeutronMaxSearchTimeInMks)) {
+                if ((EventIdNeutrons == event.eventId) && (deltaTime <= _maxNeutronTime)) {
                     _neutronsSummPerAct += 1;
                     continue;
                 }
@@ -302,7 +298,7 @@ typedef NS_ENUM(unsigned short, Mask) {
         }
         
         double deltaTime = fabs(event.param1 - _firstFissionTime);
-        if (deltaTime <= kGammaMaxSearchTimeInMks) {
+        if (deltaTime <= _maxGammaTime) {
             [self storeGamma:event];
         } else {
             return;
@@ -361,9 +357,8 @@ typedef NS_ENUM(unsigned short, Mask) {
                 continue;
             }
             
-#warning TODO: вынести в настройки!
             double energy = [self getRecoilEnergy:event];
-            if (energy < 1 || energy > 20) {
+            if (energy < _recoilFrontMinEnergy || energy > _recoilFrontMaxEnergy) {
                 continue;
             }
             
@@ -422,8 +417,7 @@ typedef NS_ENUM(unsigned short, Mask) {
         }
         
         double deltaTime = fabs(event.param1 - timeRecoilFront);
-#warning TODO: отдельная константа для врмени поиска Recoil Back
-        if (deltaTime <= _fissionMaxTime) {
+        if (deltaTime <= _recoilBackMaxTime) {
             if (_requiredFissionBack) {
                 NSDictionary *fissionBackInfo = [self fissionBackWithMaxEnergyInAct];
                 if (fissionBackInfo) {
@@ -467,7 +461,7 @@ typedef NS_ENUM(unsigned short, Mask) {
         ISAEvent event;
         fread(&event, sizeof(event), 1, _file);
         double deltaTime = fabs(event.param1 - recoilTime);
-        if (deltaTime <= kTOFForRecoilMaxSearchTimeInMks) {
+        if (deltaTime <= _maxTOFTime) {
             if (EventIdTOF == event.eventId && [self validTOFChannel:event]) {
                 [self storeRealTOF:event deltaTime:deltaTime];
                 return YES;
@@ -483,7 +477,7 @@ typedef NS_ENUM(unsigned short, Mask) {
         ISAEvent event;
         fread(&event, sizeof(event), 1, _file);
         double deltaTime = fabs(event.param1 - recoilTime);
-        if (deltaTime <= kTOFForRecoilMaxSearchTimeInMks) {
+        if (deltaTime <= _maxTOFTime) {
             if (EventIdTOF == event.eventId && [self validTOFChannel:event]) {
                 [self storeRealTOF:event deltaTime:deltaTime];
                 return YES;
@@ -647,6 +641,7 @@ typedef NS_ENUM(unsigned short, Mask) {
     return (abs(strip_1_48 - strip_1_48_first_fission) <= 1); // +/- 1 стрип
 }
 
+#warning TODO: отказаться от стека! Возвращаться назад по времени!
 /**
  Анализируем стек осколков с конца, если осколок близкий по времени и по позиции первому осколку (триггеру цикла), то сохраняем его в _fissionsFrontPerAct.
  */
@@ -668,6 +663,7 @@ typedef NS_ENUM(unsigned short, Mask) {
     [_fissionsFrontNotInCycleStack clear];
 }
 
+#warning TODO: отказаться от стека! Возвращаться назад по времени в findGamma!
 /**
  Анализируем стек гамма-квантов с конца, если гамма-квант близкий по времени первому осколку (триггеру цикла), то сохраняем его в _gammaPerAct.
  */
@@ -679,7 +675,7 @@ typedef NS_ENUM(unsigned short, Mask) {
         
 #warning TODO: создать структуру для записи firstFissionTime в виде THi + TLo и уточнить обработку данных для old событий! (THi1 == THi2)
         double deltaTime = fabs(event.param1 - _firstFissionTime);
-        if (deltaTime <= kGammaMaxSearchTimeInMks) {
+        if (deltaTime <= _maxGammaTime) {
             [self storeGamma:event];
         } else { // Далее в цикле пойдут слишком удаленные по времени события
             break;
