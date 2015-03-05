@@ -79,7 +79,6 @@ typedef NS_ENUM(unsigned short, Mask) {
 @property (strong, nonatomic) NSMutableArray *tofPerAct;
 @property (strong, nonatomic) NSNumber *fonPerAct;
 @property (strong, nonatomic) NSNumber *recoilSpecialPerAct;
-@property (strong, nonatomic) NSNumber *tofForRecoilPerAct; // не настоящий TOF (случайные совпадения)
 @property (strong, nonatomic) NSDictionary *firstFissionInfo; // информация о главном осколке в цикле
 @property (assign, nonatomic) unsigned short firstFissionTime; // время главного осколка в цикле
 @property (assign, nonatomic) int fissionBackSumm;
@@ -88,7 +87,6 @@ typedef NS_ENUM(unsigned short, Mask) {
 @property (assign, nonatomic) BOOL isNewAct;
 @property (assign, nonatomic) FILE *file;
 @property (strong, nonatomic) EventStack *fissionsFrontNotInCycleStack; // осколки пришедшие до обнаружения главного осколка (стек нужен для возврата к нескольким предыдущем событиям по времени)
-@property (strong, nonatomic) EventStack *gammaNotInCycleStack; // гамма-кванты пришедшие до обнаружения главного осколка (стек нужен для возврата к нескольким предыдущем событиям по времени)
 @property (assign, nonatomic) ISAEvent mainCycleTimeEvent;
 
 @end
@@ -126,7 +124,6 @@ typedef NS_ENUM(unsigned short, Mask) {
     _tofPerAct = [NSMutableArray array];
     _fissionsWelPerAct = [NSMutableArray array];
     _fissionsFrontNotInCycleStack = [EventStack new];
-    _gammaNotInCycleStack = [EventStack new];
     
     const char *resultsFileName = [FileManager resultsFilePath].UTF8String;
     FILE *outputFile = fopen(resultsFileName, "w");
@@ -162,14 +159,8 @@ typedef NS_ENUM(unsigned short, Mask) {
                 double deltaTime = fabs(event.param1 - _firstFissionTime);
                 
                 // Завершаем цикл если прошло слишком много времени, с момента запуска.
-                if (_isNewAct && (deltaTime > _maxNeutronTime) && [self isValidEventIdForTimeCheck:event.eventId]) {
+                if (_isNewAct && [self isValidEventIdForTimeCheck:event.eventId] && (deltaTime > _maxNeutronTime)) {
                     [self actStoped:outputFile];
-                }
-                
-                // Gam1 Backward Search
-                if ((NO == _isNewAct) && (EventIdGamma1 == event.eventId)) {
-                    [self storePreviousGamma:event];
-                    continue;
                 }
                 
                 // FFron
@@ -200,8 +191,12 @@ typedef NS_ENUM(unsigned short, Mask) {
                             
                             // Recoil
                             [self findRecoil];
+                            fseek(_file, position, SEEK_SET);
+                            
                             // FON
                             [self findFONEvent];
+                            fseek(_file, position, SEEK_SET);
+                            
                             // Recoil Special
                             [self findRecoilSpecialEvent];
                             fseek(_file, position, SEEK_SET);
@@ -285,10 +280,37 @@ typedef NS_ENUM(unsigned short, Mask) {
 }
 
 /**
- Ищем все Gam1 в окне <= kGammaMaxSearchTimeInMks относительно времени FFron.
+ Ищем ВСЕ! Gam1 в окне до _maxGammaTime относительно времени Fission Front (в двух направлениях).
  */
 - (void)findGamma
 {
+    fpos_t initial;
+    fgetpos(_file, &initial);
+    
+    // 1. Ищем в направлении до -_maxGammaTime mks от T(Fission Front)
+    fpos_t current = initial;
+    while (current > -1) {
+        current -= sizeof(ISAEvent);
+        fseek(_file, current, SEEK_SET);
+        
+        ISAEvent event;
+        fread(&event, sizeof(event), 1, _file);
+        
+        if (EventIdGamma1 != event.eventId) {
+            continue;
+        }
+        
+        double deltaTime = fabs(event.param1 - _firstFissionTime);
+        if (deltaTime <= _maxGammaTime) {
+            [self storeGamma:event];
+        } else {
+            break;
+        }
+    }
+    
+    fseek(_file, current, SEEK_SET);
+    
+    // 2. Ищем в направлении до +_maxGammaTime mks от T(Fission Front)
     while (!feof(_file)) {
         ISAEvent event;
         fread(&event, sizeof(event), 1, _file);
@@ -471,8 +493,9 @@ typedef NS_ENUM(unsigned short, Mask) {
         }
     }
     
-    // 2. Ищем в направлении до +10 mks от T(Recoil)
     fseek(_file, initial, SEEK_SET);
+    
+    // 2. Ищем в направлении до +10 mks от T(Recoil)
     while (!feof(_file)) {
         ISAEvent event;
         fread(&event, sizeof(event), 1, _file);
@@ -574,12 +597,6 @@ typedef NS_ENUM(unsigned short, Mask) {
     [_fissionsFrontNotInCycleStack pushEvent:value];
 }
 
-- (void)storePreviousGamma:(ISAEvent)event
-{
-    NSValue *value = [NSValue valueWithBytes:&event objCType:@encode(ISAEvent)];
-    [_gammaNotInCycleStack pushEvent:value];
-}
-
 - (void)storeNextFissionFront:(ISAEvent)event
 {
     [self storeFissionFront:event isFirst:NO];
@@ -663,27 +680,6 @@ typedef NS_ENUM(unsigned short, Mask) {
     [_fissionsFrontNotInCycleStack clear];
 }
 
-#warning TODO: отказаться от стека! Возвращаться назад по времени в findGamma!
-/**
- Анализируем стек гамма-квантов с конца, если гамма-квант близкий по времени первому осколку (триггеру цикла), то сохраняем его в _gammaPerAct.
- */
-- (void)analyzeOldGamma
-{
-    for (NSValue *value in [_gammaNotInCycleStack.events reverseObjectEnumerator]) {
-        ISAEvent event;
-        [value getValue:&event];
-        
-#warning TODO: создать структуру для записи firstFissionTime в виде THi + TLo и уточнить обработку данных для old событий! (THi1 == THi2)
-        double deltaTime = fabs(event.param1 - _firstFissionTime);
-        if (deltaTime <= _maxGammaTime) {
-            [self storeGamma:event];
-        } else { // Далее в цикле пойдут слишком удаленные по времени события
-            break;
-        }
-    }
-    [_gammaNotInCycleStack clear];
-}
-
 - (double)getFissionEnergy:(ISAEvent)event
 {
     return [self getFissionOrRecoilEnergy:event isFission:YES];
@@ -736,7 +732,6 @@ typedef NS_ENUM(unsigned short, Mask) {
 {
     [self storeFirstFissionFront:event];
     [self analyzeOldFissions];
-    [self analyzeOldGamma];
     _isNewAct = YES;
 }
 
