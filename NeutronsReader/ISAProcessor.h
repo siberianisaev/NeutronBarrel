@@ -27,7 +27,7 @@
 
 + (ISAProcessor *)sharedProcessor;
 
-- (void)processData;
+- (void)processDataWithCompletion:(void (^)(void))completion;
 - (void)selectData;
 - (void)selectCalibration;
 

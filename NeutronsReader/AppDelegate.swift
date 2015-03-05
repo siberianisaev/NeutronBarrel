@@ -54,8 +54,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         processor.requiredFissionBack = requiredFissionBack
         processor.requiredGamma = requiredGamma
         processor.requiredTOF = requiredTOF
-        processor.processData()
-        activity?.stopAnimation(self)
+        processor.processDataWithCompletion({ [unowned self] in
+            println("Done!")
+            self.activity?.stopAnimation(self)
+        })
     }
     
     @IBAction func selectData(sender: AnyObject?) {

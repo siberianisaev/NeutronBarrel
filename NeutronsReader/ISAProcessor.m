@@ -8,8 +8,6 @@
 
 #import "ISAProcessor.h"
 
-static int const kTOFMaxSearchTimeInMks = 2; // from t(FF) (случайные генерации, а не отмеки рекойлов)
-
 /**
  Маркер отличающий осколок (0) от рекойла (4), записывается в первые 3 бита param3.
  */
@@ -76,7 +74,7 @@ typedef NS_ENUM(unsigned short, Mask) {
 @property (strong, nonatomic) NSMutableArray *fissionsBackPerAct;
 @property (strong, nonatomic) NSMutableArray *fissionsWelPerAct;
 @property (strong, nonatomic) NSMutableArray *gammaPerAct;
-@property (strong, nonatomic) NSMutableArray *tofPerAct;
+@property (strong, nonatomic) NSMutableArray *tofGenerationsPerAct;
 @property (strong, nonatomic) NSNumber *fonPerAct;
 @property (strong, nonatomic) NSNumber *recoilSpecialPerAct;
 @property (strong, nonatomic) NSDictionary *firstFissionInfo; // информация о главном осколке в цикле
@@ -113,6 +111,16 @@ typedef NS_ENUM(unsigned short, Mask) {
     return self;
 }
 
+- (void)processDataWithCompletion:(void (^)(void))completion
+{
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        [self processData];
+        if (completion) {
+            completion();
+        }
+    });
+}
+
 - (void)processData
 {
     _neutronsMultiplicityTotal = [NSMutableDictionary dictionary];
@@ -121,7 +129,7 @@ typedef NS_ENUM(unsigned short, Mask) {
     _fissionsFrontPerAct = [NSMutableArray array];
     _fissionsBackPerAct = [NSMutableArray array];
     _gammaPerAct = [NSMutableArray array];
-    _tofPerAct = [NSMutableArray array];
+    _tofGenerationsPerAct = [NSMutableArray array];
     _fissionsWelPerAct = [NSMutableArray array];
     _fissionsFrontNotInCycleStack = [EventStack new];
     
@@ -159,7 +167,7 @@ typedef NS_ENUM(unsigned short, Mask) {
                 double deltaTime = fabs(event.param1 - _firstFissionTime);
                 
                 // Завершаем цикл если прошло слишком много времени, с момента запуска.
-                if (_isNewAct && [self isValidEventIdForTimeCheck:event.eventId] && (deltaTime > _maxNeutronTime)) {
+                if (_isNewAct && (deltaTime > _maxNeutronTime) && [self isValidEventIdForTimeCheck:event.eventId]) {
                     [self actStoped:outputFile];
                 }
                 
@@ -173,8 +181,8 @@ typedef NS_ENUM(unsigned short, Mask) {
                             fpos_t position;
                             fgetpos(_file, &position);
                             
-                            // FBack
-                            [self findFissionsBack];
+                            // FBack & FWel & FFron
+                            [self findFissions];
                             fseek(_file, position, SEEK_SET);
                             if (_requiredFissionBack && 0 == _fissionsBackPerAct.count) {
                                 [self refresh];
@@ -193,6 +201,10 @@ typedef NS_ENUM(unsigned short, Mask) {
                             [self findRecoil];
                             fseek(_file, position, SEEK_SET);
                             
+                            // Neutrons
+                            [self findNeutrons];
+                            fseek(_file, position, SEEK_SET);
+                            
                             // FON
                             [self findFONEvent];
                             fseek(_file, position, SEEK_SET);
@@ -200,40 +212,20 @@ typedef NS_ENUM(unsigned short, Mask) {
                             // Recoil Special
                             [self findRecoilSpecialEvent];
                             fseek(_file, position, SEEK_SET);
+                            
+                            // TOF Generations
+                            [self findTOFGenerations];
+                            fseek(_file, position, SEEK_SET);
                         } else {  // FFron пришедшие до первого
                             [self storePreviousFissionFront:event];
                         }
-                    } else if (deltaTime <= _fissionMaxTime && [self isNearToFirstFissionFront:event]) { // FFron пришедшие после первого
-                        [self storeNextFissionFront:event];
                     }
                     
                     continue;
                 }
                 
-                if (NO == _isNewAct) {
-                    continue;
-                }
-                
-                // FWel
-                if ([self isFissionWel:event] && (deltaTime <= _fissionMaxTime)) {
-                    [self storeFissionWell:event];
-                    continue;
-                }
-                
-                // TOF
-                if ((EventIdTOF == event.eventId) && (deltaTime <= kTOFMaxSearchTimeInMks)) {
-                    [self storeTOF:event];
-                    continue;
-                }
-                
-                // Neutrons
-                if ((EventIdNeutrons == event.eventId) && (deltaTime <= _maxNeutronTime)) {
-                    _neutronsSummPerAct += 1;
-                    continue;
-                }
-                
                 // End of last file.
-                if (feof(_file) && [[self.selectedFiles lastObject] isEqualTo:path]) {
+                if (_isNewAct && feof(_file) && [[self.selectedFiles lastObject] isEqualTo:path]) {
                     [self actStoped:outputFile];
                 }
             }
@@ -246,23 +238,71 @@ typedef NS_ENUM(unsigned short, Mask) {
 }
 
 /**
- Ищем все FBack в окне <= kFissionsMaxSearchTimeInMks относительно времени FFron.
+ Ищем все Neutrons в окне <= _maxNeutronTime относительно времени FFron.
  */
-- (void)findFissionsBack
+- (void)findNeutrons
 {
     while (!feof(_file)) {
         ISAEvent event;
         fread(&event, sizeof(event), 1, _file);
         
-        if (NO == [self isFissionBack:event]) {
-            continue;
+        if (EventIdNeutrons == event.eventId) {
+            double deltaTime = fabs(event.param1 - _firstFissionTime);
+            if (deltaTime <= _maxNeutronTime) {
+                _neutronsSummPerAct += 1;
+            } else {
+                return;
+            }
         }
+    }
+}
+
+static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные генерации, а не отмеки рекойлов)
+/**
+ Ищем первый TOF (случайные генерации) FBack и FWel в окне <= _fissionMaxTime относительно времени FFron.
+ */
+- (void)findTOFGenerations
+{
+    while (!feof(_file)) {
+        ISAEvent event;
+        fread(&event, sizeof(event), 1, _file);
         
-        double deltaTime = fabs(event.param1 - _firstFissionTime);
-        if (deltaTime <= _fissionMaxTime) {
-            [self storeFissionBack:event];
-        } else {
-            return;
+        if (EventIdTOF == event.eventId) {
+            double deltaTime = fabs(event.param1 - _firstFissionTime);
+            if (deltaTime <= kTOFGenerationsMaxTime) {
+                [self storeTOFGenerations:event];
+            } else {
+                return;
+            }
+        }
+    }
+}
+
+/**
+ Ищем все FBack/FWel/FFron в окне <= _fissionMaxTime относительно времени FFron.
+ */
+- (void)findFissions
+{
+    while (!feof(_file)) {
+        ISAEvent event;
+        fread(&event, sizeof(event), 1, _file);
+        
+        BOOL isBack = [self isFissionBack:event];
+        BOOL isWel = [self isFissionWel:event];
+        BOOL isFron = [self isFissionFront:event];
+        if (isBack || isWel || isFron) {
+            double deltaTime = fabs(event.param1 - _firstFissionTime);
+            if (deltaTime <= _fissionMaxTime) {
+                if (isBack) {
+                    [self storeFissionBack:event];
+                } else if (isWel) {
+                    [self storeFissionWell:event];
+                } else if (isFron && [self isNearToFirstFissionFront:event]) { // FFron пришедшие после первого
+                    [self storeNextFissionFront:event];
+                }
+            } else {
+                return;
+            }
         }
     }
 }
@@ -296,15 +336,13 @@ typedef NS_ENUM(unsigned short, Mask) {
         ISAEvent event;
         fread(&event, sizeof(event), 1, _file);
         
-        if (EventIdGamma1 != event.eventId) {
-            continue;
-        }
-        
-        double deltaTime = fabs(event.param1 - _firstFissionTime);
-        if (deltaTime <= _maxGammaTime) {
-            [self storeGamma:event];
-        } else {
-            break;
+        if (EventIdGamma1 == event.eventId) {
+            double deltaTime = fabs(event.param1 - _firstFissionTime);
+            if (deltaTime <= _maxGammaTime) {
+                [self storeGamma:event];
+            } else {
+                break;
+            }
         }
     }
     
@@ -315,15 +353,13 @@ typedef NS_ENUM(unsigned short, Mask) {
         ISAEvent event;
         fread(&event, sizeof(event), 1, _file);
         
-        if (EventIdGamma1 != event.eventId) {
-            continue;
-        }
-        
-        double deltaTime = fabs(event.param1 - _firstFissionTime);
-        if (deltaTime <= _maxGammaTime) {
-            [self storeGamma:event];
-        } else {
-            return;
+        if (EventIdGamma1 == event.eventId) {
+            double deltaTime = fabs(event.param1 - _firstFissionTime);
+            if (deltaTime <= _maxGammaTime) {
+                [self storeGamma:event];
+            } else {
+                return;
+            }
         }
     }
 }
@@ -397,13 +433,11 @@ typedef NS_ENUM(unsigned short, Mask) {
             
             // Сохраняем рекойл только если к нему найден Recoil Back
             BOOL isRecoilBackFounded = [self findRecoilBack:event.param1];
-#warning TODO: проверить что в других местах возвращаемся на прежнее место!
             fseek(_file, current, SEEK_SET);
             if (!isRecoilBackFounded) {
                 continue;
             }
             
-            // Сохраняем рекойл только если к нему найден TOF
             BOOL isTOFFounded = [self findTOFForRecoilTime:recoilTime];
             fseek(_file, current, SEEK_SET);
             if (_requiredTOF && !isTOFFounded) {
@@ -426,7 +460,7 @@ typedef NS_ENUM(unsigned short, Mask) {
 }
 
 /**
- Ищем все Recoil Back в окне <= kFissionsMaxSearchTimeInMks относительно времени Recoil Front.
+ Ищем Recoil Back в окне <= kFissionsMaxSearchTimeInMks относительно времени Recoil Front.
  */
 - (BOOL)findRecoilBack:(unsigned short)timeRecoilFront
 {
@@ -482,14 +516,16 @@ typedef NS_ENUM(unsigned short, Mask) {
         
         ISAEvent event;
         fread(&event, sizeof(event), 1, _file);
-        double deltaTime = fabs(event.param1 - recoilTime);
-        if (deltaTime <= _maxTOFTime) {
-            if (EventIdTOF == event.eventId && [self validTOFChannel:event]) {
-                [self storeRealTOF:event deltaTime:deltaTime];
-                return YES;
+        if (EventIdTOF == event.eventId) {
+            double deltaTime = fabs(event.param1 - recoilTime);
+            if (deltaTime <= _maxTOFTime) {
+                if ([self validTOFChannel:event]) {
+                    [self storeRealTOF:event deltaTime:deltaTime];
+                    return YES;
+                }
+            } else {
+                break;
             }
-        } else {
-            break;
         }
     }
     
@@ -499,14 +535,16 @@ typedef NS_ENUM(unsigned short, Mask) {
     while (!feof(_file)) {
         ISAEvent event;
         fread(&event, sizeof(event), 1, _file);
-        double deltaTime = fabs(event.param1 - recoilTime);
-        if (deltaTime <= _maxTOFTime) {
-            if (EventIdTOF == event.eventId && [self validTOFChannel:event]) {
-                [self storeRealTOF:event deltaTime:deltaTime];
-                return YES;
+        if (EventIdTOF == event.eventId) {
+            double deltaTime = fabs(event.param1 - recoilTime);
+            if (deltaTime <= _maxTOFTime) {
+                if ([self validTOFChannel:event]) {
+                    [self storeRealTOF:event deltaTime:deltaTime];
+                    return YES;
+                }
+            } else {
+                return NO;
             }
-        } else {
-            return NO;
         }
     }
     
@@ -635,10 +673,10 @@ typedef NS_ENUM(unsigned short, Mask) {
     [_fissionsWelPerAct addObject:fissionInfo];
 }
 
-- (void)storeTOF:(ISAEvent)event
+- (void)storeTOFGenerations:(ISAEvent)event
 {
     unsigned short channel = event.param3 & MaskTOF;
-    [_tofPerAct addObject:@(channel)];
+    [_tofGenerationsPerAct addObject:@(channel)];
 }
 
 /**
@@ -754,7 +792,7 @@ typedef NS_ENUM(unsigned short, Mask) {
     [_fissionsFrontPerAct removeAllObjects];
     [_fissionsBackPerAct removeAllObjects];
     [_gammaPerAct removeAllObjects];
-    [_tofPerAct removeAllObjects];
+    [_tofGenerationsPerAct removeAllObjects];
     [_fissionsWelPerAct removeAllObjects];
     [_recoilsFrontPerAct removeAllObjects];
     [_tofRealPerAct removeAllObjects];
