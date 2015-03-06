@@ -346,7 +346,7 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
         }
     }
     
-    fseek(_file, current, SEEK_SET);
+    fseek(_file, initial, SEEK_SET);
     
     // 2. Ищем в направлении до +_maxGammaTime mks от T(Fission Front)
     while (!feof(_file)) {
