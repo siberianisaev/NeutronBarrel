@@ -24,8 +24,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var sMaxTOFTime: NSString = NSString(format: "%d", 4) // mks
     var sMaxGammaTime: NSString = NSString(format: "%d", 5) // mks
     var sMaxNeutronTime: NSString = NSString(format: "%d", 132) // mks
-    var requiredFissionBack: Bool = true
-    var requiredGamma: Bool = true
+    var requiredFissionBack: Bool = false
+    var requiredGamma: Bool = false
     var requiredTOF: Bool = false
     
     func applicationDidFinishLaunching(aNotification: NSNotification) {

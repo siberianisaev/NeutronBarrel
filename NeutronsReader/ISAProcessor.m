@@ -64,9 +64,8 @@ typedef NS_ENUM(unsigned short, Mask) {
 @interface ISAProcessor ()
 
 @property (strong, nonatomic) Calibration *calibration;
-@property (strong, nonatomic) NSArray *selectedFiles;
+@property (strong, nonatomic) NSArray *files;
 @property (strong, nonatomic) NSString *currentFileName;
-@property (assign, nonatomic) unsigned long long currentEventNumber;
 @property (strong, nonatomic) NSMutableDictionary *neutronsMultiplicityTotal;
 @property (strong, nonatomic) NSMutableArray *recoilsFrontPerAct;
 @property (strong, nonatomic) NSMutableArray *tofRealPerAct;
@@ -79,12 +78,8 @@ typedef NS_ENUM(unsigned short, Mask) {
 @property (strong, nonatomic) NSNumber *recoilSpecialPerAct;
 @property (strong, nonatomic) NSDictionary *firstFissionInfo; // информация о главном осколке в цикле
 @property (assign, nonatomic) unsigned short firstFissionTime; // время главного осколка в цикле
-@property (assign, nonatomic) int fissionBackSumm;
-@property (assign, nonatomic) int fissionWel;
 @property (assign, nonatomic) unsigned long long neutronsSummPerAct;
-@property (assign, nonatomic) BOOL isNewAct;
 @property (assign, nonatomic) FILE *file;
-@property (strong, nonatomic) EventStack *fissionsFrontNotInCycleStack; // осколки пришедшие до обнаружения главного осколка (стек нужен для возврата к нескольким предыдущем событиям по времени)
 @property (assign, nonatomic) ISAEvent mainCycleTimeEvent;
 
 @end
@@ -104,9 +99,8 @@ typedef NS_ENUM(unsigned short, Mask) {
 - (id)init
 {
     if (self = [super init]) {
-#warning TODO: загружать дефолтную только если не была добавлена с помощью Open Panel (nil)!
         _calibration = [Calibration defaultCalibration];
-        _selectedFiles = [NSArray array];
+        _files = [NSArray array];
     }
     return self;
 }
@@ -131,7 +125,6 @@ typedef NS_ENUM(unsigned short, Mask) {
     _gammaPerAct = [NSMutableArray array];
     _tofGenerationsPerAct = [NSMutableArray array];
     _fissionsWelPerAct = [NSMutableArray array];
-    _fissionsFrontNotInCycleStack = [EventStack new];
     
     const char *resultsFileName = [FileManager resultsFilePath].UTF8String;
     FILE *outputFile = fopen(resultsFileName, "w");
@@ -141,10 +134,9 @@ typedef NS_ENUM(unsigned short, Mask) {
     }
     fprintf(outputFile, "File\tEvent\tE(RFron)\tdT(RFron-FFron)\tTOF\tdT(TOF-RFRon)\tSumm(FFron)\tStrip(FFron)\tStrip(FBack)\tFWel\tFWelPos\tNeutrons\tGamma\tFON\tRecoil(Special)\n\n");
     
-    for (NSString *path in self.selectedFiles) {
+    for (NSString *path in _files) {
         _file = fopen([path UTF8String], "rb");
         _currentFileName = [path lastPathComponent];
-        _currentEventNumber = 0;
         printf("Processed %s\n", [_currentFileName UTF8String]);
         if (_file == NULL) {
             exit(-1);
@@ -162,71 +154,46 @@ typedef NS_ENUM(unsigned short, Mask) {
                     _mainCycleTimeEvent = event;
                 }
                 
-                _currentEventNumber += 1;
-                
-                double deltaTime = fabs(event.param1 - _firstFissionTime);
-                
-                // Завершаем цикл если прошло слишком много времени, с момента запуска.
-                if (_isNewAct && (deltaTime > _maxNeutronTime) && [self isValidEventIdForTimeCheck:event.eventId]) {
-                    [self actStoped:outputFile];
-                }
-                
                 // FFron
-                if ([self isFissionFront:event]) {
-                    if (NO == _isNewAct) {
-                        // Запускаем новый цикл поиска, только если энергия осколка на лицевой стороне детектора выше минимальной
-                        if ([self getFissionEnergy:event] >= self.fissionFrontMinEnergy) {
-                            [self actStartedWithEvent:event];
-                            
-                            fpos_t position;
-                            fgetpos(_file, &position);
-                            
-                            // FBack & FWel & FFron
-                            [self findFissions];
-                            fseek(_file, position, SEEK_SET);
-                            if (_requiredFissionBack && 0 == _fissionsBackPerAct.count) {
-                                [self refresh];
-                                continue;
-                            }
-                            
-                            // Gamma
-                            [self findGamma];
-                            fseek(_file, position, SEEK_SET);
-                            if (_requiredGamma && 0 == _gammaPerAct.count) {
-                                [self refresh];
-                                continue;
-                            }
-                            
-                            // Recoil
-                            [self findRecoil];
-                            fseek(_file, position, SEEK_SET);
-                            
-                            // Neutrons
-                            [self findNeutrons];
-                            fseek(_file, position, SEEK_SET);
-                            
-                            // FON
-                            [self findFONEvent];
-                            fseek(_file, position, SEEK_SET);
-                            
-                            // Recoil Special
-                            [self findRecoilSpecialEvent];
-                            fseek(_file, position, SEEK_SET);
-                            
-                            // TOF Generations
-                            [self findTOFGenerations];
-                            fseek(_file, position, SEEK_SET);
-                        } else {  // FFron пришедшие до первого
-                            [self storePreviousFissionFront:event];
-                        }
+                if ([self isFissionFront:event] && ([self getFissionEnergy:event] >= _fissionFrontMinEnergy)) {
+                    // Запускаем новый цикл поиска, только если энергия осколка на лицевой стороне детектора выше минимальной
+                    [self storeFirstFissionFront:event];
+                    
+                    fpos_t position;
+                    fgetpos(_file, &position);
+                    
+                    // Gamma
+                    [self findGamma];
+                    fseek(_file, position, SEEK_SET);
+                    if (_requiredGamma && 0 == _gammaPerAct.count) {
+                        [self clearActInfo];
+                        continue;
                     }
                     
-                    continue;
-                }
-                
-                // End of last file.
-                if (_isNewAct && feof(_file) && [[self.selectedFiles lastObject] isEqualTo:path]) {
-                    [self actStoped:outputFile];
+                    // Recoil
+                    [self findRecoil];
+                    fseek(_file, position, SEEK_SET);
+                    
+                    // Neutrons
+                    [self findNeutrons];
+                    fseek(_file, position, SEEK_SET);
+                    
+                    // FON & Recoil Special && TOF Generations
+                    [self findFONEvents];
+                    fseek(_file, position, SEEK_SET);
+                    
+                    // Важно: после поиска всех фиженов не делаем репозиционирование в потоке!
+                    // FBack & FWel & FFron
+                    [self findFissions];
+                    if (_requiredFissionBack && 0 == _fissionsBackPerAct.count) {
+                        [self clearActInfo];
+                        continue;
+                    }
+                    
+                    // Завершили поиск корреляций
+                    [self updateNeutronsMultiplicity];
+                    [self logActResults:outputFile];
+                    [self clearActInfo];
                 }
             }
         }
@@ -257,35 +224,53 @@ typedef NS_ENUM(unsigned short, Mask) {
     }
 }
 
-static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные генерации, а не отмеки рекойлов)
 /**
- Ищем первый TOF (случайные генерации) FBack и FWel в окне <= _fissionMaxTime относительно времени FFron.
+ Ищем все FBack/FWel/FFron в окне <= _fissionMaxTime относительно времени FFron.
+ В обратном направлении ищем только все FFron.
+ 
+ Важно: _mainCycleTimeEvent обновляется при поиске в прямом направлении, 
+ так как эта часть относится к основному циклу и после поиска не производится репозиционирование потока!
  */
-- (void)findTOFGenerations
+- (void)findFissions
 {
+    fpos_t initial;
+    fgetpos(_file, &initial);
+    
+    // 1. Ищем в направлении до -_fissionMaxTime mks от T(Fission First)
+    fpos_t current = initial;
+    while (current > -1) {
+        current -= sizeof(ISAEvent);
+        fseek(_file, current, SEEK_SET);
+        
+        ISAEvent event;
+        fread(&event, sizeof(event), 1, _file);
+        
+//TODO: не учитывается EventIdCycleTime (допустимо пока _fissionMaxTime несколько микросекунд)
+        
+        if ([self isFissionFront:event]) {
+            double deltaTime = fabs(event.param1 - _firstFissionTime);
+            if (deltaTime <= _fissionMaxTime) {
+                if ([self isNearToFirstFissionFront:event]) {
+                    [self storeNextFissionFront:event];
+                }
+            } else {
+                break;
+            }
+        }
+    }
+    
+    fseek(_file, initial, SEEK_SET);
+    
+    // 2. Ищем в направлении до +_fissionMaxTime mks от T(Fission First)
     while (!feof(_file)) {
         ISAEvent event;
         fread(&event, sizeof(event), 1, _file);
         
-        if (EventIdTOF == event.eventId) {
-            double deltaTime = fabs(event.param1 - _firstFissionTime);
-            if (deltaTime <= kTOFGenerationsMaxTime) {
-                [self storeTOFGenerations:event];
-            } else {
-                return;
-            }
+        if (event.eventId == EventIdCycleTime) {
+            _mainCycleTimeEvent = event;
         }
-    }
-}
-
-/**
- Ищем все FBack/FWel/FFron в окне <= _fissionMaxTime относительно времени FFron.
- */
-- (void)findFissions
-{
-    while (!feof(_file)) {
-        ISAEvent event;
-        fread(&event, sizeof(event), 1, _file);
+        
+//TODO: не учитывается EventIdCycleTime (допустимо пока _fissionMaxTime несколько микросекунд)
         
         BOOL isBack = [self isFissionBack:event];
         BOOL isWel = [self isFissionWel:event];
@@ -307,6 +292,13 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
     }
 }
 
+- (unsigned long long)eventNumber
+{
+    fpos_t eventNumber;
+    fgetpos(_file, &eventNumber);
+    return (unsigned long long)eventNumber/sizeof(ISAEvent);
+}
+
 - (void)storeFissionBack:(ISAEvent)event
 {
     unsigned short encoder = [self fissionOrRecoilEncoderForEventId:event.eventId];
@@ -315,7 +307,7 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
     NSDictionary *fissionInfo = @{kEncoder:@(encoder),
                                   kStrip0_15:@(strip_0_15),
                                   kEnergy:@(energy),
-                                  kEventNumber:@(_currentEventNumber)};
+                                  kEventNumber:@([self eventNumber])};
     [_fissionsBackPerAct addObject:fissionInfo];
 }
 
@@ -565,38 +557,43 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
     [_tofRealPerAct addObject:info];
 }
 
+static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные генерации, а не отмеки рекойлов)
 /**
- Поиск первого события FON осуществляется с позиции файла где найден главный осколок.
- Время поиска <= 1 секунды.
+ Поиск первых событий FON, Recoil Special, TOF (случайные генерации) осуществляется с позиции файла где найден главный осколок.
  */
-- (void)findFONEvent
+- (void)findFONEvents
 {
+    BOOL fonFound = NO;
+    BOOL recoilFound = NO;
+    BOOL tofFound = NO;
+    
     while (!feof(_file)) {
         ISAEvent event;
         fread(&event, sizeof(event), 1, _file);
-#warning TODO: учитывать старшие разряды времени THi !
-        //            double deltaTime = fabs(event.param1 - _firstFissionTime);
-        //            if ((kFON == event.eventId) && (deltaTime <= kFONMaxSearchTimeInMks)) {
+        
         if (EventIdFON == event.eventId) {
-            [self storeFON:event];
-            return;
+            if (!fonFound) {
+                [self storeFON:event];
+                fonFound = YES;
+            }
+        } else if (EventIdRecoilSpecial == event.eventId) {
+            if (!recoilFound) {
+                [self storeRecoilSpecial:event];
+                recoilFound = YES;
+            }
+        } else if (EventIdTOF == event.eventId) {
+            if (!tofFound) {
+                double deltaTime = fabs(event.param1 - _firstFissionTime);
+                if (deltaTime <= kTOFGenerationsMaxTime) {
+                    [self storeTOFGenerations:event];
+                }
+                tofFound = YES;
+            }
+        } else {
+            continue;
         }
-    }
-}
-
-/**
- Поиск первого события Recoil Special осуществляется с позиции файла где найден главный осколок.
- */
-- (void)findRecoilSpecialEvent
-{
-    while (!feof(_file)) {
-        ISAEvent event;
-        fread(&event, sizeof(event), 1, _file);
-#warning TODO: учитывать старшие разряды времени THi !
-        //            double deltaTime = fabs(event.param1 - _firstFissionTime);
-        //            if ((kTriger == event.eventId) && (deltaTime <= kTrigerMaxSearchTimeInMks)) {
-        if (EventIdRecoilSpecial == event.eventId) {
-            [self storeRecoilSpecial:event];
+        
+        if (fonFound && recoilFound && tofFound) {
             return;
         }
     }
@@ -629,12 +626,6 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
     [self storeFissionFront:event isFirst:YES];
 }
 
-- (void)storePreviousFissionFront:(ISAEvent)event
-{
-    NSValue *value = [NSValue valueWithBytes:&event objCType:@encode(ISAEvent)];
-    [_fissionsFrontNotInCycleStack pushEvent:value];
-}
-
 - (void)storeNextFissionFront:(ISAEvent)event
 {
     [self storeFissionFront:event isFirst:NO];
@@ -650,7 +641,7 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
                                   kStrip0_15:@(strip_0_15),
                                   kChannel:@(channel),
                                   kEnergy:@(energy),
-                                  kEventNumber:@(_currentEventNumber)};
+                                  kEventNumber:@([self eventNumber])};
     [_fissionsFrontPerAct addObject:fissionInfo];
     
     if (isFirst) {
@@ -694,28 +685,6 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
     int strip_1_48 = [self focalFissionStripConvertToFormat_1_48:strip_0_15 eventId:event.eventId];
     int strip_1_48_first_fission = [[_firstFissionInfo objectForKey:kStrip1_48] intValue];
     return (abs(strip_1_48 - strip_1_48_first_fission) <= 1); // +/- 1 стрип
-}
-
-#warning TODO: отказаться от стека! Возвращаться назад по времени!
-/**
- Анализируем стек осколков с конца, если осколок близкий по времени и по позиции первому осколку (триггеру цикла), то сохраняем его в _fissionsFrontPerAct.
- */
-- (void)analyzeOldFissions
-{
-    for (NSValue *value in [_fissionsFrontNotInCycleStack.events reverseObjectEnumerator]) {
-        ISAEvent event;
-        [value getValue:&event];
-        
-        double deltaTime = fabs(event.param1 - _firstFissionTime);
-        if (deltaTime <= _fissionMaxTime) {
-            if ([self isNearToFirstFissionFront:event]) {
-                [self storeNextFissionFront:event];
-            }
-        } else { // Далее в цикле пойдут слишком удаленные по времени события
-            break;
-        }
-    }
-    [_fissionsFrontNotInCycleStack clear];
 }
 
 - (double)getFissionEnergy:(ISAEvent)event
@@ -766,26 +735,6 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
     return 0;
 }
 
-- (void)actStartedWithEvent:(ISAEvent)event
-{
-    [self storeFirstFissionFront:event];
-    [self analyzeOldFissions];
-    _isNewAct = YES;
-}
-
-- (void)actStoped:(FILE *)outputFile
-{
-    [self updateNeutronsMultiplicity];
-    [self logActResults:outputFile];
-    [self refresh];
-}
-
-- (void)refresh
-{
-    [self clearActInfo];
-    _isNewAct = NO;
-}
-
 - (void)clearActInfo
 {
     _neutronsSummPerAct = 0;
@@ -818,12 +767,6 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
 
 - (void)logActResults:(FILE *)outputFile
 {
-#warning TODO: доработать основной цикл поиска, сейчас неправильно будет определяться множественность нейтронов при выставленных флагах!
-    if ((_requiredFissionBack && 0 == _fissionsBackPerAct.count) ||
-        (_requiredGamma && 0 == _gammaPerAct.count)) {
-        return;
-    }
-    
     // FFRON
     unsigned long long eventNumber = NAN;
     double summFFronE = 0;
@@ -1067,14 +1010,14 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
 - (void)selectData
 {
     [DataLoader load:^(NSArray *files){
-        self.selectedFiles = files;
+        _files = files;
     }];
 }
 
 - (void)selectCalibration
 {
     [Calibration openCalibration:^(Calibration *calibration){
-         self.calibration = calibration;
+         _calibration = calibration;
     }];
 }
 
