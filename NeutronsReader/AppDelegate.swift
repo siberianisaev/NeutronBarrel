@@ -25,6 +25,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var sMaxGammaTime: NSString = NSString(format: "%d", 5) // mks
     var sMaxNeutronTime: NSString = NSString(format: "%d", 132) // mks
     var requiredFissionBack: Bool = false
+    var requiredRecoil: Bool = false
     var requiredGamma: Bool = false
     var requiredTOF: Bool = false
     
@@ -52,6 +53,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         processor.maxGammaTime = sMaxGammaTime.doubleValue
         processor.maxNeutronTime = sMaxNeutronTime.doubleValue
         processor.requiredFissionBack = requiredFissionBack
+        processor.requiredRecoil = requiredRecoil
         processor.requiredGamma = requiredGamma
         processor.requiredTOF = requiredTOF
         processor.processDataWithCompletion({ [unowned self] in

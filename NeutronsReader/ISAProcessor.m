@@ -162,6 +162,22 @@ typedef NS_ENUM(unsigned short, Mask) {
                     fpos_t position;
                     fgetpos(_file, &position);
                     
+                    // FBack
+                    [self findFissionsBack];
+                    fseek(_file, position, SEEK_SET);
+                    if (_requiredFissionBack && 0 == _fissionsBackPerAct.count) {
+                        [self clearActInfo];
+                        continue;
+                    }
+                    
+                    // Recoil (Ищем рекойлы только после поиска всех FBack!)
+                    [self findRecoil];
+                    fseek(_file, position, SEEK_SET);
+                    if (_requiredRecoil && 0 == _recoilsFrontPerAct.count) {
+                        [self clearActInfo];
+                        continue;
+                    }
+                    
                     // Gamma
                     [self findGamma];
                     fseek(_file, position, SEEK_SET);
@@ -169,10 +185,6 @@ typedef NS_ENUM(unsigned short, Mask) {
                         [self clearActInfo];
                         continue;
                     }
-                    
-                    // Recoil
-                    [self findRecoil];
-                    fseek(_file, position, SEEK_SET);
                     
                     // Neutrons
                     [self findNeutrons];
@@ -182,13 +194,9 @@ typedef NS_ENUM(unsigned short, Mask) {
                     [self findFONEvents];
                     fseek(_file, position, SEEK_SET);
                     
-                    // Важно: после поиска всех фиженов не делаем репозиционирование в потоке!
-                    // FBack & FWel & FFron
-                    [self findFissions];
-                    if (_requiredFissionBack && 0 == _fissionsBackPerAct.count) {
-                        [self clearActInfo];
-                        continue;
-                    }
+                    // Важно: тут не делаем репозиционирование в потоке после поиска!
+                    // FWel & FFron
+                    [self findFissionsFronAndWel];
                     
                     // Завершили поиск корреляций
                     [self updateNeutronsMultiplicity];
@@ -225,13 +233,35 @@ typedef NS_ENUM(unsigned short, Mask) {
 }
 
 /**
- Ищем все FBack/FWel/FFron в окне <= _fissionMaxTime относительно времени FFron.
+ Ищем все FBack в окне <= _fissionMaxTime относительно времени FFron.
+ */
+- (void)findFissionsBack
+{
+    while (!feof(_file)) {
+        ISAEvent event;
+        fread(&event, sizeof(event), 1, _file);
+        
+        //TODO: не учитывается EventIdCycleTime (допустимо пока _fissionMaxTime несколько микросекунд)
+        
+        if ([self isFissionBack:event]) {
+            double deltaTime = fabs(event.param1 - _firstFissionTime);
+            if (deltaTime <= _fissionMaxTime) {
+                [self storeFissionBack:event];
+            } else {
+                return;
+            }
+        }
+    }
+}
+
+/**
+ Ищем все FWel/FFron в окне <= _fissionMaxTime относительно времени FFron.
  В обратном направлении ищем только все FFron.
  
  Важно: _mainCycleTimeEvent обновляется при поиске в прямом направлении, 
  так как эта часть относится к основному циклу и после поиска не производится репозиционирование потока!
  */
-- (void)findFissions
+- (void)findFissionsFronAndWel
 {
     fpos_t initial;
     fgetpos(_file, &initial);
@@ -272,15 +302,12 @@ typedef NS_ENUM(unsigned short, Mask) {
         
 //TODO: не учитывается EventIdCycleTime (допустимо пока _fissionMaxTime несколько микросекунд)
         
-        BOOL isBack = [self isFissionBack:event];
         BOOL isWel = [self isFissionWel:event];
         BOOL isFron = [self isFissionFront:event];
-        if (isBack || isWel || isFron) {
+        if (isWel || isFron) {
             double deltaTime = fabs(event.param1 - _firstFissionTime);
             if (deltaTime <= _fissionMaxTime) {
-                if (isBack) {
-                    [self storeFissionBack:event];
-                } else if (isWel) {
+                if (isWel) {
                     [self storeFissionWell:event];
                 } else if (isFron && [self isNearToFirstFissionFront:event]) { // FFron пришедшие после первого
                     [self storeNextFissionFront:event];

@@ -738,7 +738,7 @@
                     </textField>
                     <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="mtQ-S3-wYH">
                         <rect key="frame" x="314" y="84" width="200" height="18"/>
-                        <buttonCell key="cell" type="check" title="Fission Back" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="6IZ-MM-Yol">
+                        <buttonCell key="cell" type="check" title="Fission Back" bezelStyle="regularSquare" imagePosition="left" inset="2" id="6IZ-MM-Yol">
                             <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                             <font key="font" metaFont="system"/>
                         </buttonCell>
@@ -746,24 +746,24 @@
                             <binding destination="Voe-Tx-rLC" name="value" keyPath="self.requiredFissionBack" id="GRL-Hz-maR"/>
                         </connections>
                     </button>
-                    <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="0iN-ES-PsF">
+                    <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="9vQ-Df-vN2">
                         <rect key="frame" x="314" y="64" width="200" height="18"/>
-                        <buttonCell key="cell" type="check" title="Gamma" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="qqL-ji-47x">
+                        <buttonCell key="cell" type="check" title="Recoil" bezelStyle="regularSquare" imagePosition="left" inset="2" id="x2H-vR-TKc">
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                            <font key="font" metaFont="system"/>
+                        </buttonCell>
+                        <connections>
+                            <binding destination="Voe-Tx-rLC" name="value" keyPath="self.requiredRecoil" id="c7J-nE-YLK"/>
+                        </connections>
+                    </button>
+                    <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="0iN-ES-PsF">
+                        <rect key="frame" x="314" y="44" width="200" height="18"/>
+                        <buttonCell key="cell" type="check" title="Gamma" bezelStyle="regularSquare" imagePosition="left" inset="2" id="qqL-ji-47x">
                             <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                             <font key="font" metaFont="system"/>
                         </buttonCell>
                         <connections>
                             <binding destination="Voe-Tx-rLC" name="value" keyPath="self.requiredGamma" id="b7b-Fl-bme"/>
-                        </connections>
-                    </button>
-                    <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="OHD-zt-nZY">
-                        <rect key="frame" x="314" y="44" width="200" height="18"/>
-                        <buttonCell key="cell" type="check" title="TOF" bezelStyle="regularSquare" imagePosition="left" inset="2" id="GGR-AH-hxy">
-                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                            <font key="font" metaFont="system"/>
-                        </buttonCell>
-                        <connections>
-                            <binding destination="Voe-Tx-rLC" name="value" keyPath="self.requiredTOF" id="djV-Fc-5vS"/>
                         </connections>
                     </button>
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Fgx-6p-3Nq">
@@ -1033,6 +1033,16 @@
                             <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>
                     </textField>
+                    <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="OHD-zt-nZY">
+                        <rect key="frame" x="314" y="24" width="200" height="18"/>
+                        <buttonCell key="cell" type="check" title="TOF" bezelStyle="regularSquare" imagePosition="left" inset="2" id="GGR-AH-hxy">
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                            <font key="font" metaFont="system"/>
+                        </buttonCell>
+                        <connections>
+                            <binding destination="Voe-Tx-rLC" name="value" keyPath="self.requiredTOF" id="djV-Fc-5vS"/>
+                        </connections>
+                    </button>
                 </subviews>
             </view>
             <point key="canvasLocation" x="491.5" y="424.5"/>
