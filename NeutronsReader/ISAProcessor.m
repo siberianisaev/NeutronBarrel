@@ -162,6 +162,14 @@ typedef NS_ENUM(unsigned short, Mask) {
                     fpos_t position;
                     fgetpos(_file, &position);
                     
+                    // Gamma
+                    [self findGamma];
+                    fseek(_file, position, SEEK_SET);
+                    if (_requiredGamma && 0 == _gammaPerAct.count) {
+                        [self clearActInfo];
+                        continue;
+                    }
+                    
                     // FBack
                     [self findFissionsBack];
                     fseek(_file, position, SEEK_SET);
@@ -174,14 +182,6 @@ typedef NS_ENUM(unsigned short, Mask) {
                     [self findRecoil];
                     fseek(_file, position, SEEK_SET);
                     if (_requiredRecoil && 0 == _recoilsFrontPerAct.count) {
-                        [self clearActInfo];
-                        continue;
-                    }
-                    
-                    // Gamma
-                    [self findGamma];
-                    fseek(_file, position, SEEK_SET);
-                    if (_requiredGamma && 0 == _gammaPerAct.count) {
                         [self clearActInfo];
                         continue;
                     }
