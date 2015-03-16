@@ -21,6 +21,7 @@
 @property (assign, nonatomic) double maxTOFTime;
 @property (assign, nonatomic) double maxGammaTime;
 @property (assign, nonatomic) double maxNeutronTime;
+@property (assign, nonatomic) BOOL summarizeFissionsFront;
 @property (assign, nonatomic) BOOL requiredFissionBack;
 @property (assign, nonatomic) BOOL requiredRecoil;
 @property (assign, nonatomic) BOOL requiredGamma;

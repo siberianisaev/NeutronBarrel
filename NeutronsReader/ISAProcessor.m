@@ -132,7 +132,9 @@ typedef NS_ENUM(unsigned short, Mask) {
         printf("Error opening file %s\n", resultsFileName);
         exit(1);
     }
-    fprintf(outputFile, "File\tEvent\tE(RFron)\tdT(RFron-FFron)\tTOF\tdT(TOF-RFRon)\tSumm(FFron)\tStrip(FFron)\tStrip(FBack)\tFWel\tFWelPos\tNeutrons\tGamma\tFON\tRecoil(Special)\n\n");
+    
+    NSString *sFFRontTitle = _summarizeFissionsFront ? @"Summ(FFron)" : @"FFron";
+    fprintf(outputFile, "File\tEvent\tE(RFron)\tdT(RFron-FFron)\tTOF\tdT(TOF-RFRon)\t%s\tStrip(FFron)\tStrip(FBack)\tFWel\tFWelPos\tNeutrons\tGamma\tFON\tRecoil(Special)\n\n", sFFRontTitle.UTF8String);
     
     for (NSString *path in _files) {
         _file = fopen([path UTF8String], "rb");
@@ -194,9 +196,18 @@ typedef NS_ENUM(unsigned short, Mask) {
                     [self findFONEvents];
                     fseek(_file, position, SEEK_SET);
                     
-                    // Важно: тут не делаем репозиционирование в потоке после поиска!
-                    // FWel & FFron
-                    [self findFissionsFronAndWel];
+                    // FWel
+                    [self findFissionsWel];
+                    fseek(_file, position, SEEK_SET);
+                    
+                    /*
+                     ВАЖНО: тут не делаем репозиционирование в потоке после поиска!
+                     Этот подцикл поиска всегда должен быть последним!
+                     */
+                    // Summ(FFron)
+                    if (_summarizeFissionsFront) {
+                        [self findFissionsFron];
+                    }
                     
                     // Завершили поиск корреляций
                     [self updateNeutronsMultiplicity];
@@ -255,13 +266,12 @@ typedef NS_ENUM(unsigned short, Mask) {
 }
 
 /**
- Ищем все FWel/FFron в окне <= _fissionMaxTime относительно времени FFron.
- В обратном направлении ищем только все FFron.
+ Ищем все FFron в окне <= _fissionMaxTime относительно времени T(Fission First).
  
- Важно: _mainCycleTimeEvent обновляется при поиске в прямом направлении, 
+ Важно: _mainCycleTimeEvent обновляется при поиске в прямом направлении,
  так как эта часть относится к основному циклу и после поиска не производится репозиционирование потока!
  */
-- (void)findFissionsFronAndWel
+- (void)findFissionsFron
 {
     fpos_t initial;
     fgetpos(_file, &initial);
@@ -275,7 +285,7 @@ typedef NS_ENUM(unsigned short, Mask) {
         ISAEvent event;
         fread(&event, sizeof(event), 1, _file);
         
-//TODO: не учитывается EventIdCycleTime (допустимо пока _fissionMaxTime несколько микросекунд)
+        //TODO: не учитывается EventIdCycleTime (допустимо пока _fissionMaxTime несколько микросекунд)
         
         if ([self isFissionFront:event]) {
             double deltaTime = fabs(event.param1 - _firstFissionTime);
@@ -300,18 +310,37 @@ typedef NS_ENUM(unsigned short, Mask) {
             _mainCycleTimeEvent = event;
         }
         
-//TODO: не учитывается EventIdCycleTime (допустимо пока _fissionMaxTime несколько микросекунд)
+        //TODO: не учитывается EventIdCycleTime (допустимо пока _fissionMaxTime несколько микросекунд)
         
-        BOOL isWel = [self isFissionWel:event];
-        BOOL isFron = [self isFissionFront:event];
-        if (isWel || isFron) {
+        if ([self isFissionFront:event]) {
             double deltaTime = fabs(event.param1 - _firstFissionTime);
             if (deltaTime <= _fissionMaxTime) {
-                if (isWel) {
-                    [self storeFissionWell:event];
-                } else if (isFron && [self isNearToFirstFissionFront:event]) { // FFron пришедшие после первого
+                if ([self isNearToFirstFissionFront:event]) { // FFron пришедшие после первого
                     [self storeNextFissionFront:event];
                 }
+            } else {
+                return;
+            }
+        }
+    }
+}
+
+/**
+ Ищем все FWel в направлении до +_fissionMaxTime относительно времени T(Fission First).
+ */
+- (void)findFissionsWel
+{
+    while (!feof(_file)) {
+        ISAEvent event;
+        fread(&event, sizeof(event), 1, _file);
+        
+//TODO: не учитывается EventIdCycleTime (допустимо пока _fissionMaxTime несколько микросекунд)
+        
+#warning TODO: оптимизация циклов поиска, deltaTime проверять у всех типов событий где есть время
+        if ([self isFissionWel:event]) {
+            double deltaTime = fabs(event.param1 - _firstFissionTime);
+            if (deltaTime <= _fissionMaxTime) {
+                [self storeFissionWell:event];
             } else {
                 return;
             }
