@@ -232,10 +232,13 @@ typedef NS_ENUM(unsigned short, Mask) {
         ISAEvent event;
         fread(&event, sizeof(event), 1, _file);
         
-        if (EventIdNeutrons == event.eventId) {
+#warning TODO: не учитывается EventIdCycleTime
+        if ([self isValidEventIdForTimeCheck:event.eventId]) {
             double deltaTime = fabs(event.param1 - _firstFissionTime);
             if (deltaTime <= _maxNeutronTime) {
-                _neutronsSummPerAct += 1;
+                if (EventIdNeutrons == event.eventId) {
+                    _neutronsSummPerAct += 1;
+                }
             } else {
                 return;
             }
@@ -252,12 +255,13 @@ typedef NS_ENUM(unsigned short, Mask) {
         ISAEvent event;
         fread(&event, sizeof(event), 1, _file);
         
-        //TODO: не учитывается EventIdCycleTime (допустимо пока _fissionMaxTime несколько микросекунд)
-        
-        if ([self isFissionBack:event]) {
+#warning TODO: не учитывается EventIdCycleTime
+        if ([self isValidEventIdForTimeCheck:event.eventId]) {
             double deltaTime = fabs(event.param1 - _firstFissionTime);
             if (deltaTime <= _fissionMaxTime) {
-                [self storeFissionBack:event];
+                if ([self isFissionBack:event]) {
+                    [self storeFissionBack:event];
+                }
             } else {
                 return;
             }
@@ -285,12 +289,11 @@ typedef NS_ENUM(unsigned short, Mask) {
         ISAEvent event;
         fread(&event, sizeof(event), 1, _file);
         
-        //TODO: не учитывается EventIdCycleTime (допустимо пока _fissionMaxTime несколько микросекунд)
-        
-        if ([self isFissionFront:event]) {
+#warning TODO: не учитывается EventIdCycleTime
+        if ([self isValidEventIdForTimeCheck:event.eventId]) {
             double deltaTime = fabs(event.param1 - _firstFissionTime);
             if (deltaTime <= _fissionMaxTime) {
-                if ([self isFissionNearToFirstFissionFront:event]) {
+                if ([self isFissionFront:event] && [self isFissionNearToFirstFissionFront:event]) {
                     [self storeNextFissionFront:event];
                 }
             } else {
@@ -310,12 +313,11 @@ typedef NS_ENUM(unsigned short, Mask) {
             _mainCycleTimeEvent = event;
         }
         
-        //TODO: не учитывается EventIdCycleTime (допустимо пока _fissionMaxTime несколько микросекунд)
-        
-        if ([self isFissionFront:event]) {
+#warning TODO: не учитывается EventIdCycleTime
+        if ([self isValidEventIdForTimeCheck:event.eventId]) {
             double deltaTime = fabs(event.param1 - _firstFissionTime);
             if (deltaTime <= _fissionMaxTime) {
-                if ([self isFissionNearToFirstFissionFront:event]) { // FFron пришедшие после первого
+                if ([self isFissionFront:event] && [self isFissionNearToFirstFissionFront:event]) { // FFron пришедшие после первого
                     [self storeNextFissionFront:event];
                 }
             } else {
@@ -334,13 +336,13 @@ typedef NS_ENUM(unsigned short, Mask) {
         ISAEvent event;
         fread(&event, sizeof(event), 1, _file);
         
-//TODO: не учитывается EventIdCycleTime (допустимо пока _fissionMaxTime несколько микросекунд)
-        
-#warning TODO: оптимизация циклов поиска, deltaTime проверять у всех типов событий где есть время
-        if ([self isFissionWel:event]) {
+#warning TODO: не учитывается EventIdCycleTime
+        if ([self isValidEventIdForTimeCheck:event.eventId]) {
             double deltaTime = fabs(event.param1 - _firstFissionTime);
             if (deltaTime <= _fissionMaxTime) {
-                [self storeFissionWell:event];
+                if ([self isFissionWel:event]) {
+                    [self storeFissionWell:event];
+                }
             } else {
                 return;
             }
@@ -384,10 +386,13 @@ typedef NS_ENUM(unsigned short, Mask) {
         ISAEvent event;
         fread(&event, sizeof(event), 1, _file);
         
-        if (EventIdGamma1 == event.eventId) {
+#warning TODO: не учитывается EventIdCycleTime
+        if ([self isValidEventIdForTimeCheck:event.eventId]) {
             double deltaTime = fabs(event.param1 - _firstFissionTime);
             if (deltaTime <= _maxGammaTime) {
-                [self storeGamma:event];
+                if (EventIdGamma1 == event.eventId) {
+                    [self storeGamma:event];
+                }
             } else {
                 break;
             }
@@ -401,10 +406,13 @@ typedef NS_ENUM(unsigned short, Mask) {
         ISAEvent event;
         fread(&event, sizeof(event), 1, _file);
         
-        if (EventIdGamma1 == event.eventId) {
+#warning TODO: не учитывается EventIdCycleTime
+        if ([self isValidEventIdForTimeCheck:event.eventId]) {
             double deltaTime = fabs(event.param1 - _firstFissionTime);
             if (deltaTime <= _maxGammaTime) {
-                [self storeGamma:event];
+                if (EventIdGamma1 == event.eventId) {
+                    [self storeGamma:event];
+                }
             } else {
                 return;
             }
@@ -509,31 +517,33 @@ typedef NS_ENUM(unsigned short, Mask) {
         ISAEvent event;
         fread(&event, sizeof(event), 1, _file);
         
-        if (NO == [self isRecoilBack:event]) {
+        if (NO == [self isValidEventIdForTimeCheck:event.eventId]) {
             continue;
         }
         
         double deltaTime = fabs(event.param1 - timeRecoilFront);
         if (deltaTime <= _recoilBackMaxTime) {
-            if (_requiredFissionBack) {
-                NSDictionary *fissionBackInfo = [self fissionBackWithMaxEnergyInAct];
-                if (fissionBackInfo) {
-                    unsigned short encoder = [self fissionOrRecoilEncoderForEventId:event.eventId];
-                    if (encoder != [[fissionBackInfo objectForKey:kEncoder] intValue]) { // Соответствуют кодировщики
-                        continue;
+            if ([self isRecoilBack:event]) {
+                if (_requiredFissionBack) {
+                    NSDictionary *fissionBackInfo = [self fissionBackWithMaxEnergyInAct];
+                    if (fissionBackInfo) {
+                        unsigned short encoder = [self fissionOrRecoilEncoderForEventId:event.eventId];
+                        if (encoder != [[fissionBackInfo objectForKey:kEncoder] intValue]) { // Соответствуют кодировщики
+                            continue;
+                        }
+                        
+                        unsigned short strip_0_15 = event.param2 >> 12;  // value from 0 to 15
+                        if (strip_0_15 != [[fissionBackInfo objectForKey:kStrip0_15] intValue]) { // На одном стрипе
+                            continue;
+                        }
+                        
+                        return YES;
                     }
-                    
-                    unsigned short strip_0_15 = event.param2 >> 12;  // value from 0 to 15
-                    if (strip_0_15 != [[fissionBackInfo objectForKey:kStrip0_15] intValue]) { // На одном стрипе
-                        continue;
-                    }
-                    
-                    return YES;
+                    return NO;
                 }
-                return NO;
+                
+                return YES;
             }
-            
-            return YES;
         } else {
             return NO;
         }
@@ -557,10 +567,11 @@ typedef NS_ENUM(unsigned short, Mask) {
         
         ISAEvent event;
         fread(&event, sizeof(event), 1, _file);
-        if (EventIdTOF == event.eventId) {
+        
+        if ([self isValidEventIdForTimeCheck:event.eventId]) {
             double deltaTime = fabs(event.param1 - recoilTime);
             if (deltaTime <= _maxTOFTime) {
-                if ([self validTOFChannel:event]) {
+                if (EventIdTOF == event.eventId && [self validTOFChannel:event]) {
                     [self storeRealTOF:event deltaTime:deltaTime];
                     return YES;
                 }
@@ -576,10 +587,11 @@ typedef NS_ENUM(unsigned short, Mask) {
     while (!feof(_file)) {
         ISAEvent event;
         fread(&event, sizeof(event), 1, _file);
-        if (EventIdTOF == event.eventId) {
+        
+        if ([self isValidEventIdForTimeCheck:event.eventId]) {
             double deltaTime = fabs(event.param1 - recoilTime);
             if (deltaTime <= _maxTOFTime) {
-                if ([self validTOFChannel:event]) {
+                if (EventIdTOF == event.eventId && [self validTOFChannel:event]) {
                     [self storeRealTOF:event deltaTime:deltaTime];
                     return YES;
                 }
@@ -632,6 +644,7 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
             }
         } else if (EventIdTOF == event.eventId) {
             if (!tofFound) {
+#warning TODO: не учитывается EventIdCycleTime
                 double deltaTime = fabs(event.param1 - _firstFissionTime);
                 if (deltaTime <= kTOFGenerationsMaxTime) {
                     [self storeTOFGenerations:event];
