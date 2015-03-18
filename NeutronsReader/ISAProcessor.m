@@ -290,7 +290,7 @@ typedef NS_ENUM(unsigned short, Mask) {
         if ([self isFissionFront:event]) {
             double deltaTime = fabs(event.param1 - _firstFissionTime);
             if (deltaTime <= _fissionMaxTime) {
-                if ([self isNearToFirstFissionFront:event]) {
+                if ([self isFissionNearToFirstFissionFront:event]) {
                     [self storeNextFissionFront:event];
                 }
             } else {
@@ -315,7 +315,7 @@ typedef NS_ENUM(unsigned short, Mask) {
         if ([self isFissionFront:event]) {
             double deltaTime = fabs(event.param1 - _firstFissionTime);
             if (deltaTime <= _fissionMaxTime) {
-                if ([self isNearToFirstFissionFront:event]) { // FFron пришедшие после первого
+                if ([self isFissionNearToFirstFissionFront:event]) { // FFron пришедшие после первого
                     [self storeNextFissionFront:event];
                 }
             } else {
@@ -468,14 +468,7 @@ typedef NS_ENUM(unsigned short, Mask) {
                 continue;
             }
             
-            NSDictionary *firstFissionInfo = [_fissionsFrontPerAct firstObject];
-            unsigned short encoder = [self fissionOrRecoilEncoderForEventId:event.eventId];
-            if (encoder != [[firstFissionInfo valueForKey:kEncoder] integerValue]) { // Соответствуют кодировщики
-                continue;
-            }
-            
-            unsigned short strip_0_15 = event.param2 >> 12;  // value from 0 to 15
-            if (strip_0_15 != [[firstFissionInfo valueForKey:kStrip0_15] integerValue]) { // На одном стрипе
+            if (NO == [self isRecoilNearToFirstFissionFront:event]) {
                 continue;
             }
             
@@ -701,7 +694,7 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
     [_fissionsFrontPerAct addObject:fissionInfo];
     
     if (isFirst) {
-        unsigned short strip_1_48 = [self focalFissionStripConvertToFormat_1_48:strip_0_15 eventId:event.eventId];
+        unsigned short strip_1_48 = [self focalFissionOrRecoilStripConvertToFormat_1_48:strip_0_15 eventId:event.eventId];
         NSMutableDictionary *extraInfo = [fissionInfo mutableCopy];
         [extraInfo setObject:@(strip_1_48) forKey:kStrip1_48];
         _firstFissionInfo = extraInfo;
@@ -727,18 +720,29 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
 }
 
 /**
+ Метод проверяет находится ли рекоил event на близких стрипах (_maxDeltaStrips) относительно первого осколка.
+ */
+- (BOOL)isRecoilNearToFirstFissionFront:(ISAEvent)event
+{
+    unsigned short strip_0_15 = event.param2 >> 12;
+    int strip_1_48 = [self focalFissionOrRecoilStripConvertToFormat_1_48:strip_0_15 eventId:event.eventId];
+    int strip_1_48_first_fission = [[_firstFissionInfo objectForKey:kStrip1_48] intValue];
+    return (abs(strip_1_48 - strip_1_48_first_fission) <= _maxDeltaStrips);
+}
+
+/**
  Метод проверяет находится ли осколок event на соседних стрипах относительно первого осколка.
  */
-- (BOOL)isNearToFirstFissionFront:(ISAEvent)event
+- (BOOL)isFissionNearToFirstFissionFront:(ISAEvent)event
 {
-    unsigned short strip_0_15 = event.param2 >> 12;  // value from 0 to 15
+    unsigned short strip_0_15 = event.param2 >> 12;
     
     int strip_0_15_first_fission = [[_firstFissionInfo objectForKey:kStrip0_15] intValue];
     if (strip_0_15 == strip_0_15_first_fission) { // совпадают
         return YES;
     }
     
-    int strip_1_48 = [self focalFissionStripConvertToFormat_1_48:strip_0_15 eventId:event.eventId];
+    int strip_1_48 = [self focalFissionOrRecoilStripConvertToFormat_1_48:strip_0_15 eventId:event.eventId];
     int strip_1_48_first_fission = [[_firstFissionInfo objectForKey:kStrip1_48] intValue];
     return (abs(strip_1_48 - strip_1_48_first_fission) <= 1); // +/- 1 стрип
 }
@@ -835,7 +839,7 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
             
             int strip_0_15 = [[fissionInfo objectForKey:kStrip0_15] intValue];
             int encoder = [[fissionInfo objectForKey:kEncoder] intValue];
-            stripFFronEMax = [self focalFissionStripConvertToFormat_1_48:strip_0_15 encoder:encoder];
+            stripFFronEMax = [self focalFissionOrRecoilStripConvertToFormat_1_48:strip_0_15 encoder:encoder];
             
             eventNumber = [[fissionInfo objectForKey:kEventNumber] unsignedLongLongValue];
         }
@@ -848,7 +852,7 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
     if (fissionBackInfo) {
         int strip_0_15 = [[fissionBackInfo objectForKey:kStrip0_15] intValue];
         int encoder = [[fissionBackInfo objectForKey:kEncoder] intValue];
-        stripFBackChannelMax = [self focalFissionStripConvertToFormat_1_48:strip_0_15 encoder:encoder];
+        stripFBackChannelMax = [self focalFissionOrRecoilStripConvertToFormat_1_48:strip_0_15 encoder:encoder];
     }
     
     NSMutableString *result = [NSMutableString string];
@@ -993,18 +997,13 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
  | 1.0 | 2.0 | 3.0 | 1.1 | 2.1 | 3.1 | 1.1 ... (encoder.strip_0_15)
  Метод переводит стрип из формата "кодировщик + стрип от 0 до 15" в формат "стрип от 1 до 48".
  */
-- (unsigned short)focalFissionStripConvertToFormat_1_48:(unsigned short)strip_0_15 eventId:(unsigned short)eventId
+- (unsigned short)focalFissionOrRecoilStripConvertToFormat_1_48:(unsigned short)strip_0_15 eventId:(unsigned short)eventId
 {
-    int encoder = 1;
-    if (EventIdFissionFront2 == eventId || EventIdFissionBack2 == eventId) {
-        encoder = 2;
-    } else if (EventIdFissionFront3 == eventId || EventIdFissionBack3 == eventId) {
-        encoder = 3;
-    }
-    return [self focalFissionStripConvertToFormat_1_48:strip_0_15 encoder:encoder];
+    int encoder = [self fissionOrRecoilEncoderForEventId:eventId];
+    return [self focalFissionOrRecoilStripConvertToFormat_1_48:strip_0_15 encoder:encoder];
 }
 
-- (unsigned short)focalFissionStripConvertToFormat_1_48:(unsigned short)strip_0_15 encoder:(unsigned short)encoder
+- (unsigned short)focalFissionOrRecoilStripConvertToFormat_1_48:(unsigned short)strip_0_15 encoder:(unsigned short)encoder
 {
     return (strip_0_15 * 3) + (encoder - 1) + 1;
 }
