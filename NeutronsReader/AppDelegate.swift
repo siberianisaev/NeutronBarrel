@@ -25,7 +25,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var sMaxTOFTime: NSString = NSString(format: "%d", 4) // mks
     var sMaxGammaTime: NSString = NSString(format: "%d", 5) // mks
     var sMaxNeutronTime: NSString = NSString(format: "%d", 132) // mks
-    var sMaxDeltaStrips: NSString = NSString(format: "%d", 0)
+    var sMaxRecoilFrontDeltaStrips: NSString = NSString(format: "%d", 0)
+    var sMaxRecoilBackDeltaStrips: NSString = NSString(format: "%d", 0)
     var summarizeFissionsFront: Bool = false
     var requiredFissionBack: Bool = false
     var requiredRecoil: Bool = false
@@ -56,7 +57,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         processor.maxTOFTime = sMaxTOFTime.doubleValue
         processor.maxGammaTime = sMaxGammaTime.doubleValue
         processor.maxNeutronTime = sMaxNeutronTime.doubleValue
-        processor.maxDeltaStrips = sMaxDeltaStrips.intValue
+        processor.recoilFrontMaxDeltaStrips = sMaxRecoilFrontDeltaStrips.intValue
+        processor.recoilBackMaxDeltaStrips = sMaxRecoilBackDeltaStrips.intValue
         processor.summarizeFissionsFront = summarizeFissionsFront
         processor.requiredFissionBack = requiredFissionBack
         processor.requiredRecoil = requiredRecoil

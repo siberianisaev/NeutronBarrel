@@ -480,7 +480,7 @@ typedef NS_ENUM(unsigned short, Mask) {
                 continue;
             }
             
-            if (NO == [self isRecoilNearToFirstFissionFront:event]) {
+            if (NO == [self isRecoilFrontNearToFirstFissionFront:event]) {
                 continue;
             }
             
@@ -529,23 +529,8 @@ typedef NS_ENUM(unsigned short, Mask) {
         if (deltaTime <= _recoilBackMaxTime) {
             if ([self isRecoilBack:event]) {
                 if (_requiredFissionBack) {
-                    NSDictionary *fissionBackInfo = [self fissionBackWithMaxEnergyInAct];
-                    if (fissionBackInfo) {
-                        unsigned short encoder = [self fissionOrRecoilEncoderForEventId:event.eventId];
-                        if (encoder != [[fissionBackInfo objectForKey:kEncoder] intValue]) { // Соответствуют кодировщики
-                            continue;
-                        }
-                        
-                        unsigned short strip_0_15 = event.param2 >> 12;  // value from 0 to 15
-                        if (strip_0_15 != [[fissionBackInfo objectForKey:kStrip0_15] intValue]) { // На одном стрипе
-                            continue;
-                        }
-                        
-                        return YES;
-                    }
-                    return NO;
+                    return [self isRecoilBackNearToFissionBack:event];
                 }
-                
                 return YES;
             }
         } else {
@@ -737,14 +722,33 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
 }
 
 /**
- Метод проверяет находится ли рекоил event на близких стрипах (_maxDeltaStrips) относительно первого осколка.
+ Метод проверяет находится ли рекоил event на близких стрипах (_recoilFrontMaxDeltaStrips) относительно первого осколка.
  */
-- (BOOL)isRecoilNearToFirstFissionFront:(ISAEvent)event
+- (BOOL)isRecoilFrontNearToFirstFissionFront:(ISAEvent)event
 {
     unsigned short strip_0_15 = event.param2 >> 12;
     int strip_1_48 = [self focalFissionOrRecoilStripConvertToFormat_1_48:strip_0_15 eventId:event.eventId];
     int strip_1_48_first_fission = [[_firstFissionInfo objectForKey:kStrip1_48] intValue];
-    return (abs(strip_1_48 - strip_1_48_first_fission) <= _maxDeltaStrips);
+    return (abs(strip_1_48 - strip_1_48_first_fission) <= _recoilFrontMaxDeltaStrips);
+}
+
+/**
+ Метод проверяет находится ли рекоил event на близких стрипах (_recoilBackMaxDeltaStrips) относительно заднего осколка с макимальной энергией.
+ */
+- (BOOL)isRecoilBackNearToFissionBack:(ISAEvent)event
+{
+    NSDictionary *fissionBackInfo = [self fissionBackWithMaxEnergyInAct];
+    if (fissionBackInfo) {
+        unsigned short strip_0_15 = event.param2 >> 12;
+        int strip_1_48 = [self focalFissionOrRecoilStripConvertToFormat_1_48:strip_0_15 eventId:event.eventId];
+        
+        int strip_0_15_back_fission = [[fissionBackInfo objectForKey:kStrip0_15] intValue];
+        int encoder_back_fission = [[fissionBackInfo objectForKey:kEncoder] intValue];
+        int strip_1_48_back_fission = [self focalFissionOrRecoilStripConvertToFormat_1_48:strip_0_15_back_fission encoder:encoder_back_fission];
+        
+        return (abs(strip_1_48 - strip_1_48_back_fission) <= _recoilBackMaxDeltaStrips);
+    }
+    return NO;
 }
 
 /**
