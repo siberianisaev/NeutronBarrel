@@ -1034,7 +1034,7 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
  */
 - (BOOL)isValidEventIdForTimeCheck:(unsigned short)eventId
 {
-    return (eventId <= EventIdFissionWell2 || EventIdGamma1 == eventId || EventIdNeutrons == eventId);
+    return (eventId <= EventIdFissionWell2 || EventIdTOF == eventId || EventIdGamma1 == eventId || EventIdNeutrons == eventId);
 }
 
 /**
