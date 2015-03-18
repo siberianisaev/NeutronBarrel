@@ -561,7 +561,7 @@ typedef NS_ENUM(unsigned short, Mask) {
             double deltaTime = fabs(event.param1 - recoilTime);
             if (deltaTime <= _maxTOFTime) {
                 if (EventIdTOF == event.eventId && [self validTOFChannel:event]) {
-                    [self storeRealTOF:event deltaTime:deltaTime];
+                    [self storeRealTOF:event deltaTime:-deltaTime];
                     return YES;
                 }
             } else {
