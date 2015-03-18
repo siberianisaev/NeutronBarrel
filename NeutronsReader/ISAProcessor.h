@@ -11,6 +11,7 @@
 @interface ISAProcessor : NSObject
 
 @property (assign, nonatomic) double fissionFrontMinEnergy;
+@property (assign, nonatomic) double fissionFrontMaxEnergy;
 @property (assign, nonatomic) double recoilFrontMinEnergy;
 @property (assign, nonatomic) double recoilFrontMaxEnergy;
 @property (assign, nonatomic) double minTOFChannel;

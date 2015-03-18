@@ -157,8 +157,12 @@ typedef NS_ENUM(unsigned short, Mask) {
                 }
                 
                 // FFron
-                if ([self isFissionFront:event] && ([self getFissionEnergy:event] >= _fissionFrontMinEnergy)) {
+                if ([self isFissionFront:event]) {
                     // Запускаем новый цикл поиска, только если энергия осколка на лицевой стороне детектора выше минимальной
+                    double energy = [self getFissionEnergy:event];
+                    if (energy < _fissionFrontMinEnergy || energy > _fissionFrontMaxEnergy) {
+                        continue;
+                    }                    
                     [self storeFirstFissionFront:event];
                     
                     fpos_t position;

@@ -14,6 +14,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     @IBOutlet weak var window: NSWindow!
     @IBOutlet weak var activity: NSProgressIndicator!
     var sMinFissionEnergy: NSString = NSString(format: "%d", 20) // MeV
+    var sMaxFissionEnergy: NSString = NSString(format: "%d", 200) // MeV
     var sMinRecoilEnergy: NSString = NSString(format: "%d", 1) // MeV
     var sMaxRecoilEnergy: NSString = NSString(format: "%d", 20) // MeV
     var sMinTOFChannel: NSString = NSString(format: "%d", 0) // channel
@@ -44,6 +45,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         activity?.startAnimation(self)
         let processor = ISAProcessor.sharedProcessor();
         processor.fissionFrontMinEnergy = sMinFissionEnergy.doubleValue
+        processor.fissionFrontMaxEnergy = sMaxFissionEnergy.doubleValue
         processor.recoilFrontMinEnergy = sMinRecoilEnergy.doubleValue
         processor.recoilFrontMaxEnergy = sMaxRecoilEnergy.doubleValue
         processor.minTOFChannel = sMinTOFChannel.doubleValue
