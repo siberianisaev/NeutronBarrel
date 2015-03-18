@@ -9,10 +9,11 @@
 import Cocoa
 
 @NSApplicationMain
-class AppDelegate: NSObject, NSApplicationDelegate {
+class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     
     @IBOutlet weak var window: NSWindow!
     @IBOutlet weak var activity: NSProgressIndicator!
+    @IBOutlet weak var progressIndicator: NSProgressIndicator!
     var sMinFissionEnergy: NSString = NSString(format: "%d", 20) // MeV
     var sMaxFissionEnergy: NSString = NSString(format: "%d", 200) // MeV
     var sMinRecoilEnergy: NSString = NSString(format: "%d", 1) // MeV
@@ -44,6 +45,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 //TODO: добавить возможность остановить поиск
     @IBAction func start(sender: AnyObject?) {
         activity?.startAnimation(self)
+        progressIndicator?.startAnimation(self)
+        
         let processor = ISAProcessor.sharedProcessor();
         processor.fissionFrontMinEnergy = sMinFissionEnergy.doubleValue
         processor.fissionFrontMaxEnergy = sMaxFissionEnergy.doubleValue
@@ -64,9 +67,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         processor.requiredRecoil = requiredRecoil
         processor.requiredGamma = requiredGamma
         processor.requiredTOF = requiredTOF
+        processor.delegate = self
         processor.processDataWithCompletion({ [unowned self] in
             println("Done!")
             self.activity?.stopAnimation(self)
+            self.progressIndicator?.doubleValue = 0.0
+            self.progressIndicator?.stopAnimation(self)
         })
     }
     
@@ -76,6 +82,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     
     @IBAction func selectCalibration(sender: AnyObject?) {
         ISAProcessor.sharedProcessor().selectCalibration()
+    }
+    
+    // MARK: - ProcessorDelegate
+    
+    func incrementProgress(delta: Double) {
+        progressIndicator?.incrementBy(delta)
     }
     
 }

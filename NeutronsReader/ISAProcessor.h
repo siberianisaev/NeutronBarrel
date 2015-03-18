@@ -8,6 +8,13 @@
 
 #import <Foundation/Foundation.h>
 
+@protocol ProcessorDelegate <NSObject>
+
+@optional
+- (void)incrementProgress:(double)delta;
+
+@end
+
 @interface ISAProcessor : NSObject
 
 @property (assign, nonatomic) double fissionFrontMinEnergy;
@@ -29,6 +36,7 @@
 @property (assign, nonatomic) BOOL requiredRecoil;
 @property (assign, nonatomic) BOOL requiredGamma;
 @property (assign, nonatomic) BOOL requiredTOF;
+@property (weak, nonatomic) id <ProcessorDelegate> delegate;
 
 + (ISAProcessor *)sharedProcessor;
 

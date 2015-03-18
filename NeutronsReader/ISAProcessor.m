@@ -136,6 +136,9 @@ typedef NS_ENUM(unsigned short, Mask) {
     NSString *sFFRontTitle = _summarizeFissionsFront ? @"Summ(FFron)" : @"FFron";
     fprintf(outputFile, "File\tEvent\tE(RFron)\tdT(RFron-FFron)\tTOF\tdT(TOF-RFRon)\t%s\tStrip(FFron)\tStrip(FBack)\tFWel\tFWelPos\tNeutrons\tGamma\tFON\tRecoil(Special)\n\n", sFFRontTitle.UTF8String);
     
+    [self updateProgress:LDBL_EPSILON]; // Show progress indicator
+    const double progressForOneFile = 100.0 / _files.count;
+    
     for (NSString *path in _files) {
         _file = fopen([path UTF8String], "rb");
         _currentFileName = [path lastPathComponent];
@@ -221,10 +224,19 @@ typedef NS_ENUM(unsigned short, Mask) {
             }
         }
         fclose(_file);
+        
+        [self updateProgress:progressForOneFile];
     }
     
     fclose(outputFile);
     [Logger logMultiplicity:_neutronsMultiplicityTotal];
+}
+
+- (void)updateProgress:(double)progress
+{
+    if ([_delegate respondsToSelector:@selector(incrementProgress:)]) {
+        [_delegate incrementProgress:progress];
+    }
 }
 
 /**
