@@ -25,22 +25,44 @@ class DataLoader: NSObject {
                     if let path = (URL as? NSURL)?.path  {
                         var isDirectory: ObjCBool = false
                         if fm.fileExistsAtPath(path, isDirectory: &isDirectory) && isDirectory {
-                            //TODO: использовать файл протокола для уточнения данных
-                            let predicate = NSPredicate(format: "!(self ENDSWITH '.PRO') AND !(self ENDSWITH '.DS_Store')")
-                            var error: NSError? = nil
-                            if let files = (fm.contentsOfDirectoryAtPath(path, error: &error)? as NSArray?)?.filteredArrayUsingPredicate(predicate!) {
-                                for fileName in files {
-                                    selected.append(path.stringByAppendingPathComponent(fileName as String))
-                                }
-                            }
+                            selected += self.recursiveGetFilesFromDirectory(path)
                         } else {
                             selected.append(path)
                         }
                     }
                 }
+                
+                //TODO: использовать файл протокола для уточнения данных
+                selected = selected.filter() { false == $0.hasSuffix(".PRO") && false == $0.hasSuffix(".DS_Store") }
                 onFinish(selected)
             }
         }
+    }
+    
+    /**
+    Метод рекурсивно обходит папки вложенные в directoryPath и возвращает все файлы в ней содержащиеся.
+    */
+    class func recursiveGetFilesFromDirectory(directoryPath: String) -> [String] {
+        var results = [String]()
+        
+        var error: NSError? = nil
+        let fm = NSFileManager.defaultManager()
+        if let fileNames = (fm.contentsOfDirectoryAtPath(directoryPath, error: &error) as? [NSString]) {
+            for fileName in fileNames {
+                let path = directoryPath.stringByAppendingPathComponent(fileName)
+                
+                var isDirectory: ObjCBool = false
+                if fm.fileExistsAtPath(path, isDirectory: &isDirectory) {
+                    if isDirectory {
+                        results += recursiveGetFilesFromDirectory(path)
+                    } else {
+                        results.append(path)
+                    }
+                }
+            }
+        }
+        
+        return results
     }
     
 }

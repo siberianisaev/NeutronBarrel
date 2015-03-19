@@ -117,6 +117,18 @@ typedef NS_ENUM(unsigned short, Mask) {
 
 - (void)processData
 {
+    if (0 == _files.count) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            NSAlert *alert = [[NSAlert alloc] init];
+            [alert setMessageText:@"Error"];
+            [alert setInformativeText:@"Please select some data files to start analysis!"];
+            [alert addButtonWithTitle:@"OK"];
+            [alert setAlertStyle:NSWarningAlertStyle];
+            [alert runModal];
+        });
+        return;
+    }
+    
     _neutronsMultiplicityTotal = [NSMutableDictionary dictionary];
     _recoilsFrontPerAct = [NSMutableArray array];
     _tofRealPerAct = [NSMutableArray array];
