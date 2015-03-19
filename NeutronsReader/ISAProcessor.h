@@ -32,7 +32,7 @@
 @property (assign, nonatomic) int recoilFrontMaxDeltaStrips;
 @property (assign, nonatomic) int recoilBackMaxDeltaStrips;
 @property (assign, nonatomic) BOOL summarizeFissionsFront;
-@property (assign, nonatomic) BOOL requiredFissionBack;
+@property (assign, nonatomic) BOOL requiredFissionRecoilBack;
 @property (assign, nonatomic) BOOL requiredRecoil;
 @property (assign, nonatomic) BOOL requiredGamma;
 @property (assign, nonatomic) BOOL requiredTOF;

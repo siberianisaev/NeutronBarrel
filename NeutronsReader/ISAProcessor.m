@@ -194,7 +194,7 @@ typedef NS_ENUM(unsigned short, Mask) {
                     // FBack
                     [self findFissionsBack];
                     fseek(_file, position, SEEK_SET);
-                    if (_requiredFissionBack && 0 == _fissionsBackPerAct.count) {
+                    if (_requiredFissionRecoilBack && 0 == _fissionsBackPerAct.count) {
                         [self clearActInfo];
                         continue;
                     }
@@ -552,7 +552,7 @@ typedef NS_ENUM(unsigned short, Mask) {
         double deltaTime = fabs(event.param1 - timeRecoilFront);
         if (deltaTime <= _recoilBackMaxTime) {
             if ([self isRecoilBack:event]) {
-                if (_requiredFissionBack) {
+                if (_requiredFissionRecoilBack) {
                     return [self isRecoilBackNearToFissionBack:event];
                 }
                 return YES;

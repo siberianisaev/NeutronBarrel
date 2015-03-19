@@ -13,6 +13,7 @@
 		65E46E001A25AA7C00FA28DB /* default.clb in Resources */ = {isa = PBXBuildFile; fileRef = 65E46DFF1A25AA7C00FA28DB /* default.clb */; };
 		780BC3A61A5EF99700EDEECE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 780BC3A51A5EF99700EDEECE /* AppDelegate.swift */; };
 		78419AD41A4B37400087A551 /* ISAProcessor.m in Sources */ = {isa = PBXBuildFile; fileRef = 78419AD31A4B37400087A551 /* ISAProcessor.m */; };
+		784B0B891ABB13F80041FA66 /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 784B0B881ABB13F80041FA66 /* Settings.swift */; };
 		78B6A548193A3B3900C7E36A /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 78B6A547193A3B3900C7E36A /* Cocoa.framework */; };
 		78B6A55E193A3B3900C7E36A /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 78B6A55C193A3B3900C7E36A /* MainMenu.xib */; };
 		78B6A560193A3B3900C7E36A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 78B6A55F193A3B3900C7E36A /* Images.xcassets */; };
@@ -29,6 +30,7 @@
 		780BC3A51A5EF99700EDEECE /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		78419AD21A4B37400087A551 /* ISAProcessor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ISAProcessor.h; sourceTree = "<group>"; };
 		78419AD31A4B37400087A551 /* ISAProcessor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ISAProcessor.m; sourceTree = "<group>"; };
+		784B0B881ABB13F80041FA66 /* Settings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
 		78B6A544193A3B3900C7E36A /* NeutronsReader.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NeutronsReader.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		78B6A547193A3B3900C7E36A /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		78B6A54A193A3B3900C7E36A /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
@@ -109,6 +111,7 @@
 				651307111A4E94AB00E33704 /* Calibration.swift */,
 				78FC512E1A5301A500FE5737 /* EventStack.swift */,
 				78FC51301A530D0300FE5737 /* DataLoader.swift */,
+				784B0B881ABB13F80041FA66 /* Settings.swift */,
 				78419AD21A4B37400087A551 /* ISAProcessor.h */,
 				78419AD31A4B37400087A551 /* ISAProcessor.m */,
 				780BC43E1A604AE000EDEECE /* Resources */,
@@ -195,6 +198,7 @@
 			files = (
 				78419AD41A4B37400087A551 /* ISAProcessor.m in Sources */,
 				78FC512F1A5301A500FE5737 /* EventStack.swift in Sources */,
+				784B0B891ABB13F80041FA66 /* Settings.swift in Sources */,
 				651307121A4E94AB00E33704 /* Calibration.swift in Sources */,
 				651307141A4E94C500E33704 /* Logger.swift in Sources */,
 				6513070C1A4E911300E33704 /* FileManager.swift in Sources */,

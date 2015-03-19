@@ -752,12 +752,12 @@
                     </textField>
                     <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="mtQ-S3-wYH">
                         <rect key="frame" x="594" y="344" width="200" height="18"/>
-                        <buttonCell key="cell" type="check" title="Fission Back" bezelStyle="regularSquare" imagePosition="left" inset="2" id="6IZ-MM-Yol">
+                        <buttonCell key="cell" type="check" title="Back for Fission/Recoil" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="6IZ-MM-Yol">
                             <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                             <font key="font" metaFont="system"/>
                         </buttonCell>
                         <connections>
-                            <binding destination="Voe-Tx-rLC" name="value" keyPath="self.requiredFissionBack" id="GRL-Hz-maR"/>
+                            <binding destination="Voe-Tx-rLC" name="value" keyPath="self.requiredFissionRecoilBack" id="bhU-I7-l1j"/>
                         </connections>
                     </button>
                     <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="9vQ-Df-vN2">

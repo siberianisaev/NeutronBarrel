@@ -17,32 +17,36 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBOutlet weak var labelTotalTime: NSTextField!
     private var totalTime: NSTimeInterval = 0
     private var timer: NSTimer?
-    var sMinFissionEnergy: NSString = NSString(format: "%d", 20) // MeV
-    var sMaxFissionEnergy: NSString = NSString(format: "%d", 200) // MeV
-    var sMinRecoilEnergy: NSString = NSString(format: "%d", 1) // MeV
-    var sMaxRecoilEnergy: NSString = NSString(format: "%d", 20) // MeV
-    var sMinTOFChannel: NSString = NSString(format: "%d", 0) // channel
-    var sMinRecoilTime: NSString = NSString(format: "%d", 0) // mks
-    var sMaxRecoilTime: NSString = NSString(format: "%d", 1000) // mks
-    var sMaxRecoilBackTime: NSString = NSString(format: "%d", 5) // mks
-    var sMaxFissionTime: NSString = NSString(format: "%d", 5) // mks
-    var sMaxTOFTime: NSString = NSString(format: "%d", 4) // mks
-    var sMaxGammaTime: NSString = NSString(format: "%d", 5) // mks
-    var sMaxNeutronTime: NSString = NSString(format: "%d", 132) // mks
-    var sMaxRecoilFrontDeltaStrips: NSString = NSString(format: "%d", 0)
-    var sMaxRecoilBackDeltaStrips: NSString = NSString(format: "%d", 0)
-    var summarizeFissionsFront: Bool = false
-    var requiredFissionBack: Bool = false
-    var requiredRecoil: Bool = false
-    var requiredGamma: Bool = false
-    var requiredTOF: Bool = false
+    var sMinFissionEnergy: NSString = NSString(format: "%d", Settings.getIntSetting(.MinFissionEnergy)) // MeV
+    var sMaxFissionEnergy: NSString = NSString(format: "%d", Settings.getIntSetting(.MaxFissionEnergy)) // MeV
+    var sMinRecoilEnergy: NSString = NSString(format: "%d", Settings.getIntSetting(.MinRecoilEnergy)) // MeV
+    var sMaxRecoilEnergy: NSString = NSString(format: "%d", Settings.getIntSetting(.MaxRecoilEnergy)) // MeV
+    var sMinTOFChannel: NSString = NSString(format: "%d", Settings.getIntSetting(.MinTOFChannel)) // channel
+    var sMinRecoilTime: NSString = NSString(format: "%d", Settings.getIntSetting(.MinRecoilTime)) // mks
+    var sMaxRecoilTime: NSString = NSString(format: "%d", Settings.getIntSetting(.MaxRecoilTime)) // mks
+    var sMaxRecoilBackTime: NSString = NSString(format: "%d", Settings.getIntSetting(.MaxRecoilBackTime)) // mks
+    var sMaxFissionTime: NSString = NSString(format: "%d", Settings.getIntSetting(.MaxFissionTime)) // mks
+    var sMaxTOFTime: NSString = NSString(format: "%d", Settings.getIntSetting(.MaxTOFTime)) // mks
+    var sMaxGammaTime: NSString = NSString(format: "%d", Settings.getIntSetting(.MaxGammaTime)) // mks
+    var sMaxNeutronTime: NSString = NSString(format: "%d", Settings.getIntSetting(.MaxNeutronTime)) // mks
+    var sMaxRecoilFrontDeltaStrips: NSString = NSString(format: "%d", Settings.getIntSetting(.MaxRecoilFrontDeltaStrips))
+    var sMaxRecoilBackDeltaStrips: NSString = NSString(format: "%d", Settings.getIntSetting(.MaxRecoilBackDeltaStrips))
+    var summarizeFissionsFront: Bool = Settings.getBoolSetting(.SummarizeFissionsFront)
+    var requiredFissionRecoilBack: Bool = Settings.getBoolSetting(.RequiredFissionRecoilBack)
+    var requiredRecoil: Bool = Settings.getBoolSetting(.RequiredRecoil)
+    var requiredGamma: Bool = Settings.getBoolSetting(.RequiredGamma)
+    var requiredTOF: Bool = Settings.getBoolSetting(.RequiredTOF)
     
     func applicationDidFinishLaunching(aNotification: NSNotification) {
         // Insert code here to initialize your application
     }
     
+    func applicationShouldTerminateAfterLastWindowClosed(sender: NSApplication) -> Bool {
+        return true
+    }
+    
     func applicationWillTerminate(aNotification: NSNotification) {
-        // Insert code here to tear down your application
+        saveSettings()
     }
     
 //TODO: добавить возможность остановить поиск
@@ -67,7 +71,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         processor.recoilFrontMaxDeltaStrips = sMaxRecoilFrontDeltaStrips.intValue
         processor.recoilBackMaxDeltaStrips = sMaxRecoilBackDeltaStrips.intValue
         processor.summarizeFissionsFront = summarizeFissionsFront
-        processor.requiredFissionBack = requiredFissionBack
+        processor.requiredFissionRecoilBack = requiredFissionRecoilBack
         processor.requiredRecoil = requiredRecoil
         processor.requiredGamma = requiredGamma
         processor.requiredTOF = requiredTOF
@@ -118,6 +122,30 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     
     private func stopTimer() {
         timer?.invalidate()
+    }
+    
+    // MARK: - Settings
+    
+    private func saveSettings() {
+        Settings.setObject(sMinFissionEnergy.integerValue, forSetting: .MinFissionEnergy)
+        Settings.setObject(sMaxFissionEnergy.integerValue, forSetting: .MaxFissionEnergy)
+        Settings.setObject(sMinRecoilEnergy.integerValue, forSetting: .MinRecoilEnergy)
+        Settings.setObject(sMaxRecoilEnergy.integerValue, forSetting: .MaxRecoilEnergy)
+        Settings.setObject(sMinTOFChannel.integerValue, forSetting: .MinTOFChannel)
+        Settings.setObject(sMinRecoilTime.integerValue, forSetting: .MinRecoilTime)
+        Settings.setObject(sMaxRecoilTime.integerValue, forSetting: .MaxRecoilTime)
+        Settings.setObject(sMaxRecoilBackTime.integerValue, forSetting: .MaxRecoilBackTime)
+        Settings.setObject(sMaxFissionTime.integerValue, forSetting: .MaxFissionTime)
+        Settings.setObject(sMaxTOFTime.integerValue, forSetting: .MaxTOFTime)
+        Settings.setObject(sMaxGammaTime.integerValue, forSetting: .MaxGammaTime)
+        Settings.setObject(sMaxNeutronTime.integerValue, forSetting: .MaxNeutronTime)
+        Settings.setObject(sMaxRecoilFrontDeltaStrips.integerValue, forSetting: .MaxRecoilFrontDeltaStrips)
+        Settings.setObject(sMaxRecoilBackDeltaStrips.integerValue, forSetting: .MaxRecoilBackDeltaStrips)
+        Settings.setObject(summarizeFissionsFront, forSetting: .SummarizeFissionsFront)
+        Settings.setObject(requiredFissionRecoilBack, forSetting: .RequiredFissionRecoilBack)
+        Settings.setObject(requiredRecoil, forSetting: .RequiredRecoil)
+        Settings.setObject(requiredGamma, forSetting: .RequiredGamma)
+        Settings.setObject(requiredTOF, forSetting: .RequiredTOF)
     }
     
 }
