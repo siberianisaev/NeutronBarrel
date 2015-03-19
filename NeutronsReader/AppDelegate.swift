@@ -14,6 +14,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBOutlet weak var window: NSWindow!
     @IBOutlet weak var activity: NSProgressIndicator!
     @IBOutlet weak var progressIndicator: NSProgressIndicator!
+    @IBOutlet weak var labelTotalTime: NSTextField!
+    private var totalTime: NSTimeInterval = 0
+    private var timer: NSTimer?
     var sMinFissionEnergy: NSString = NSString(format: "%d", 20) // MeV
     var sMaxFissionEnergy: NSString = NSString(format: "%d", 200) // MeV
     var sMinRecoilEnergy: NSString = NSString(format: "%d", 1) // MeV
@@ -46,6 +49,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBAction func start(sender: AnyObject?) {
         activity?.startAnimation(self)
         progressIndicator?.startAnimation(self)
+        startTimer()
         
         let processor = ISAProcessor.sharedProcessor();
         processor.fissionFrontMinEnergy = sMinFissionEnergy.doubleValue
@@ -73,6 +77,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             self.activity?.stopAnimation(self)
             self.progressIndicator?.doubleValue = 0.0
             self.progressIndicator?.stopAnimation(self)
+            self.stopTimer()
         })
     }
     
@@ -88,6 +93,31 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     
     func incrementProgress(delta: Double) {
         progressIndicator?.incrementBy(delta)
+    }
+    
+    // MARK: - Timer
+    
+    private func startTimer() {
+        totalTime = 0
+        timer = NSTimer.scheduledTimerWithTimeInterval(1, target: self, selector: "incrementTotalTime", userInfo: nil, repeats: true)
+        labelTotalTime?.stringValue = ""
+        labelTotalTime?.hidden = false
+    }
+    
+    private func stringTotalTime() -> String {
+        let seconds = Int(totalTime % 60)
+        let minutes = Int((totalTime / 60) % 60)
+        let hours = Int(totalTime / 3600)
+        return NSString(format: "%02d:%02d:%02d", hours, minutes, seconds)
+    }
+    
+    func incrementTotalTime() {
+        totalTime++
+        labelTotalTime?.stringValue = stringTotalTime()
+    }
+    
+    private func stopTimer() {
+        timer?.invalidate()
     }
     
 }
