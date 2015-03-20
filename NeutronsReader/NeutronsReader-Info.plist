@@ -10,6 +10,8 @@
 	<string></string>
 	<key>CFBundleIdentifier</key>
 	<string>ru.jinr.AndreyIsaev.${PRODUCT_NAME:rfc1034identifier}</string>
+	<key>CFBundleVersionGitSHA</key>
+	<string>CFBundleVersionGitSHA</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>

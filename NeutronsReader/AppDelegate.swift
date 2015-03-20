@@ -14,6 +14,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBOutlet weak var window: NSWindow!
     @IBOutlet weak var activity: NSProgressIndicator!
     @IBOutlet weak var progressIndicator: NSProgressIndicator!
+    @IBOutlet weak var labelVersion: NSTextField!
     @IBOutlet weak var labelTotalTime: NSTextField!
     @IBOutlet weak var labelProcessingFileName: NSTextField!
     private var totalTime: NSTimeInterval = 0
@@ -39,7 +40,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     var requiredTOF: Bool = Settings.getBoolSetting(.RequiredTOF)
     
     func applicationDidFinishLaunching(aNotification: NSNotification) {
-        // Insert code here to initialize your application
+        showAppVersion()
     }
     
     func applicationShouldTerminateAfterLastWindowClosed(sender: NSApplication) -> Bool {
@@ -153,6 +154,26 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         Settings.setObject(requiredRecoil, forSetting: .RequiredRecoil)
         Settings.setObject(requiredGamma, forSetting: .RequiredGamma)
         Settings.setObject(requiredTOF, forSetting: .RequiredTOF)
+    }
+    
+    // MARK: - App Version
+    
+    private func infoPlistStringForKey(key: String) -> String? {
+        return NSBundle.mainBundle().infoDictionary![key] as String?
+    }
+    
+    private func showAppVersion() {
+        var string = ""
+        if let version = infoPlistStringForKey("CFBundleShortVersionString") {
+            string += "Version " + version
+        }
+        if let build = infoPlistStringForKey("CFBundleVersion") {
+            string += " (" + build + ")."
+        }
+        if let gitSHA = infoPlistStringForKey("CFBundleVersionGitSHA") {
+            string += " Git SHA " + gitSHA
+        }
+        labelVersion?.stringValue = string
     }
     
 }
