@@ -937,7 +937,7 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
                     if (row < (int)_recoilsFrontPerAct.count) {
                         NSNumber *deltaTimeRecoilFission = [[_recoilsFrontPerAct objectAtIndex:row] valueForKey:kDeltaTime];
                         if (deltaTimeRecoilFission) {
-                            field = [NSString stringWithFormat:@"%llu", (long long)[deltaTimeRecoilFission longLongValue]];
+                            field = [NSString stringWithFormat:@"%lld", (long long)[deltaTimeRecoilFission longLongValue]];
                         }
                     }
                     break;
@@ -957,7 +957,7 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
                     if (row < (int)_tofRealPerAct.count) {
                         NSNumber *deltaTimeTOFRecoil = [[_tofRealPerAct objectAtIndex:row] valueForKey:kDeltaTime];
                         if (deltaTimeTOFRecoil) {
-                            field = [NSString stringWithFormat:@"%llu", (long long)[deltaTimeTOFRecoil longLongValue]];
+                            field = [NSString stringWithFormat:@"%lld", (long long)[deltaTimeTOFRecoil longLongValue]];
                         }
                     }
                     break;
