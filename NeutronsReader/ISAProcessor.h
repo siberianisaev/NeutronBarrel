@@ -10,8 +10,8 @@
 
 @protocol ProcessorDelegate <NSObject>
 
-@optional
 - (void)incrementProgress:(double)delta;
+- (void)startProcessingFile:(NSString *)fileName;
 
 @end
 

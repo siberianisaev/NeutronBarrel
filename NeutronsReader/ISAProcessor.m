@@ -143,13 +143,13 @@ typedef NS_ENUM(unsigned short, Mask) {
     
     [self createResultsHeader];
     
-    [self updateProgress:LDBL_EPSILON]; // Show progress indicator
+    [_delegate incrementProgress:LDBL_EPSILON]; // Show progress indicator
     const double progressForOneFile = 100.0 / _files.count;
     
     for (NSString *path in _files) {
         _file = fopen([path UTF8String], "rb");
-        _currentFileName = [path lastPathComponent];
-        printf("Processed %s\n", [_currentFileName UTF8String]);
+        [_delegate startProcessingFile:path.lastPathComponent];
+        
         if (_file == NULL) {
             exit(-1);
         } else {
@@ -232,17 +232,10 @@ typedef NS_ENUM(unsigned short, Mask) {
         }
         fclose(_file);
         
-        [self updateProgress:progressForOneFile];
+        [_delegate incrementProgress:progressForOneFile];
     }
     
     [Logger logMultiplicity:_neutronsMultiplicityTotal];
-}
-
-- (void)updateProgress:(double)progress
-{
-    if ([_delegate respondsToSelector:@selector(incrementProgress:)]) {
-        [_delegate incrementProgress:progress];
-    }
 }
 
 /**

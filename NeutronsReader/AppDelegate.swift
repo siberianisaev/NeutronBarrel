@@ -15,6 +15,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBOutlet weak var activity: NSProgressIndicator!
     @IBOutlet weak var progressIndicator: NSProgressIndicator!
     @IBOutlet weak var labelTotalTime: NSTextField!
+    @IBOutlet weak var labelProcessingFileName: NSTextField!
     private var totalTime: NSTimeInterval = 0
     private var timer: NSTimer?
     var sMinFissionEnergy: NSString = NSString(format: "%d", Settings.getIntSetting(.MinFissionEnergy)) // MeV
@@ -77,7 +78,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         processor.requiredTOF = requiredTOF
         processor.delegate = self
         processor.processDataWithCompletion({ [unowned self] in
-            println("Done!")
             self.activity?.stopAnimation(self)
             self.progressIndicator?.doubleValue = 0.0
             self.progressIndicator?.stopAnimation(self)
@@ -99,6 +99,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         progressIndicator?.incrementBy(delta)
     }
     
+    func startProcessingFile(fileName: String) {
+        labelProcessingFileName?.stringValue = fileName
+    }
+    
     // MARK: - Timer
     
     private func startTimer() {
@@ -106,6 +110,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         timer = NSTimer.scheduledTimerWithTimeInterval(1, target: self, selector: "incrementTotalTime", userInfo: nil, repeats: true)
         labelTotalTime?.stringValue = ""
         labelTotalTime?.hidden = false
+        labelProcessingFileName?.stringValue = ""
+        labelProcessingFileName?.hidden = false
     }
     
     private func stringTotalTime() -> String {
@@ -122,6 +128,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     
     private func stopTimer() {
         timer?.invalidate()
+        labelProcessingFileName?.hidden = true
     }
     
     // MARK: - Settings
