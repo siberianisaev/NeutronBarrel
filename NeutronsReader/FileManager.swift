@@ -20,7 +20,7 @@ class FileManager: NSObject {
     }
     
     class func resultsFilePath() -> String? {
-        return self.desktopFilePathWithName("results.txt")
+        return self.desktopFilePathWithName("results.csv")
     }
     
     class func logsFilePath() -> String? {

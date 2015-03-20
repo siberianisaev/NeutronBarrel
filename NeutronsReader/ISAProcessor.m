@@ -7,6 +7,7 @@
 //
 
 #import "ISAProcessor.h"
+#import "CHCSVParser.h"
 
 /**
  Маркер отличающий осколок (0) от рекойла (4), записывается в первые 3 бита param3.
@@ -63,6 +64,7 @@ typedef NS_ENUM(unsigned short, Mask) {
 
 @interface ISAProcessor ()
 
+@property (strong, nonatomic) CHCSVWriter *cvsWriter;
 @property (strong, nonatomic) Calibration *calibration;
 @property (strong, nonatomic) NSArray *files;
 @property (strong, nonatomic) NSString *currentFileName;
@@ -129,6 +131,7 @@ typedef NS_ENUM(unsigned short, Mask) {
         return;
     }
     
+    _cvsWriter = [[CHCSVWriter alloc] initForWritingToCSVFile:[FileManager resultsFilePath]];
     _neutronsMultiplicityTotal = [NSMutableDictionary dictionary];
     _recoilsFrontPerAct = [NSMutableArray array];
     _tofRealPerAct = [NSMutableArray array];
@@ -138,15 +141,7 @@ typedef NS_ENUM(unsigned short, Mask) {
     _tofGenerationsPerAct = [NSMutableArray array];
     _fissionsWelPerAct = [NSMutableArray array];
     
-    const char *resultsFileName = [FileManager resultsFilePath].UTF8String;
-    FILE *outputFile = fopen(resultsFileName, "w");
-    if (outputFile == NULL) {
-        printf("Error opening file %s\n", resultsFileName);
-        exit(1);
-    }
-    
-    NSString *sFFRontTitle = _summarizeFissionsFront ? @"Summ(FFron)" : @"FFron";
-    fprintf(outputFile, "File\tEvent\tE(RFron)\tdT(RFron-FFron)\tTOF\tdT(TOF-RFRon)\t%s\tStrip(FFron)\tStrip(FBack)\tFWel\tFWelPos\tNeutrons\tGamma\tFON\tRecoil(Special)\n\n", sFFRontTitle.UTF8String);
+    [self createResultsHeader];
     
     [self updateProgress:LDBL_EPSILON]; // Show progress indicator
     const double progressForOneFile = 100.0 / _files.count;
@@ -230,7 +225,7 @@ typedef NS_ENUM(unsigned short, Mask) {
                     
                     // Завершили поиск корреляций
                     [self updateNeutronsMultiplicity];
-                    [self logActResults:outputFile];
+                    [self logActResults];
                     [self clearActInfo];
                 }
             }
@@ -240,7 +235,6 @@ typedef NS_ENUM(unsigned short, Mask) {
         [self updateProgress:progressForOneFile];
     }
     
-    fclose(outputFile);
     [Logger logMultiplicity:_neutronsMultiplicityTotal];
 }
 
@@ -870,7 +864,15 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
     return fission;
 }
 
-- (void)logActResults:(FILE *)outputFile
+- (void)createResultsHeader
+{
+    NSString *header = [NSString stringWithFormat:@"File,Event,E(RFron),dT(RFron-FFron),TOF,dT(TOF-RFRon),%@,Strip(FFron),Strip(FBack),FWel,FWelPos,Neutrons,Gamma,FON,Recoil(Special)", (_summarizeFissionsFront ? @"Summ(FFron)" : @"FFron")];
+    NSArray *components = [header componentsSeparatedByString:@","];
+    [_cvsWriter writeLineOfFields:components];
+    [_cvsWriter finishLine]; // +1 line padding
+}
+
+- (void)logActResults
 {
     // FFRON
     unsigned long long eventNumber = NAN;
@@ -900,23 +902,23 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
         stripFBackChannelMax = [self focalFissionOrRecoilStripConvertToFormat_1_48:strip_0_15 encoder:encoder];
     }
     
-    NSMutableString *result = [NSMutableString string];
     int columnsCount = 14;
     int rowsMax = MAX(MAX(MAX(1, (int)_gammaPerAct.count), (int)_fissionsWelPerAct.count), (int)_recoilsFrontPerAct.count);
     for (int row = 0; row < rowsMax; row++) {
         for (int column = 0; column <= columnsCount; column++) {
+            NSString *field = @"";
             switch (column) {
                 case 0:
                 {
                     if (row == 0) {
-                        [result appendString:_currentFileName];
+                        field = _currentFileName;
                     }
                     break;
                 }
                 case 1:
                 {
                     if (row == 0) {
-                        [result appendFormat:@"%7.llu", eventNumber];
+                        field = [NSString stringWithFormat:@"%llu", eventNumber];
                     }
                     break;
                 }
@@ -925,7 +927,7 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
                     if (row < (int)_recoilsFrontPerAct.count) {
                         NSNumber *recoilEnergy = [[_recoilsFrontPerAct objectAtIndex:row] valueForKey:kEnergy];
                         if (recoilEnergy) {
-                            [result appendFormat:@"%4.7f", [recoilEnergy doubleValue]];
+                            field = [NSString stringWithFormat:@"%.7f", [recoilEnergy doubleValue]];
                         }
                     }
                     break;
@@ -935,7 +937,7 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
                     if (row < (int)_recoilsFrontPerAct.count) {
                         NSNumber *deltaTimeRecoilFission = [[_recoilsFrontPerAct objectAtIndex:row] valueForKey:kDeltaTime];
                         if (deltaTimeRecoilFission) {
-                            [result appendFormat:@"%6llu", (unsigned long long)[deltaTimeRecoilFission unsignedLongLongValue]];
+                            field = [NSString stringWithFormat:@"%llu", (unsigned long long)[deltaTimeRecoilFission unsignedLongLongValue]];
                         }
                     }
                     break;
@@ -945,7 +947,7 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
                     if (row < (int)_tofRealPerAct.count) {
                         NSNumber *tof = [[_tofRealPerAct objectAtIndex:row] valueForKey:kChannel];
                         if (tof) {
-                            [result appendFormat:@"%hu", [tof unsignedShortValue]];
+                            field = [NSString stringWithFormat:@"%hu", [tof unsignedShortValue]];
                         }
                     }
                     break;
@@ -955,7 +957,7 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
                     if (row < (int)_tofRealPerAct.count) {
                         NSNumber *deltaTimeTOFRecoil = [[_tofRealPerAct objectAtIndex:row] valueForKey:kDeltaTime];
                         if (deltaTimeTOFRecoil) {
-                            [result appendFormat:@"%6llu", (unsigned long long)[deltaTimeTOFRecoil unsignedLongLongValue]];
+                            field = [NSString stringWithFormat:@"%llu", (unsigned long long)[deltaTimeTOFRecoil unsignedLongLongValue]];
                         }
                     }
                     break;
@@ -963,21 +965,21 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
                 case 6:
                 {
                     if (row == 0) {
-                        [result appendFormat:@"%4.7f", summFFronE];
+                        field = [NSString stringWithFormat:@"%.7f", summFFronE];
                     }
                     break;
                 }
                 case 7:
                 {
                     if (row == 0 && stripFFronEMax > 0) {
-                        [result appendFormat:@"%2d", stripFFronEMax];
+                        field = [NSString stringWithFormat:@"%d", stripFFronEMax];
                     }
                     break;
                 }
                 case 8:
                 {
                     if (row == 0 && stripFBackChannelMax > 0) {
-                        [result appendFormat:@"%2d", stripFBackChannelMax];
+                        field = [NSString stringWithFormat:@"%d", stripFBackChannelMax];
                     }
                     break;
                 }
@@ -985,7 +987,7 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
                 {
                     if (row < (int)_fissionsWelPerAct.count) {
                         NSDictionary *fissionInfo = [_fissionsWelPerAct objectAtIndex:row];
-                        [result appendFormat:@"%4.7f", [[fissionInfo objectForKey:kEnergy] doubleValue]];
+                        field = [NSString stringWithFormat:@"%.7f", [[fissionInfo objectForKey:kEnergy] doubleValue]];
                     }
                     break;
                 }
@@ -993,48 +995,45 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
                 {
                     if (row < (int)_fissionsWelPerAct.count) {
                         NSDictionary *fissionInfo = [_fissionsWelPerAct objectAtIndex:row];
-                        [result appendFormat:@"FWel%d.%d", [[fissionInfo objectForKey:kEncoder] intValue], [[fissionInfo objectForKey:kStrip0_15] intValue]+1];
+                        field = [NSString stringWithFormat:@"FWel%d.%d", [[fissionInfo objectForKey:kEncoder] intValue], [[fissionInfo objectForKey:kStrip0_15] intValue]+1];
                     }
                     break;
                 }
                 case 11:
                 {
                     if (row == 0) {
-                        [result appendFormat:@"%2llu", _neutronsSummPerAct];
+                        field = [NSString stringWithFormat:@"%llu", _neutronsSummPerAct];
                     }
                     break;
                 }
                 case 12:
                 {
                     if (row < (int)_gammaPerAct.count) {
-                        [result appendFormat:@"%4.7f", [[_gammaPerAct objectAtIndex:row] doubleValue]];
+                        field = [NSString stringWithFormat:@"%.7f", [[_gammaPerAct objectAtIndex:row] doubleValue]];
                     }
                     break;
                 }
                 case 13:
                 {
                     if (row == 0 && _fonPerAct) {
-                        [result appendFormat:@"%hu", [_fonPerAct unsignedShortValue]];
+                        field = [NSString stringWithFormat:@"%hu", [_fonPerAct unsignedShortValue]];
                     }
                     break;
                 }
                 case 14:
                 {
                     if (row == 0 && _recoilSpecialPerAct) {
-                        [result appendFormat:@"%hu", [_recoilSpecialPerAct unsignedShortValue]];
+                        field = [NSString stringWithFormat:@"%hu", [_recoilSpecialPerAct unsignedShortValue]];
                     }
                     break;
                 }
                 default:
                     break;
             }
-            [result appendString:@"\t"];
-            if (column == columnsCount) {
-                [result appendString:@"\n"];
-            }
+            [_cvsWriter writeField:field];
         }
+        [_cvsWriter finishLine];
     }
-    fprintf(outputFile, "%s", [result UTF8String]);
 }
 
 /**
