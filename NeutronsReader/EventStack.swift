@@ -8,7 +8,6 @@
 
 import Foundation
 
-@objc
 class EventStack: NSObject {
     
     private var data = [NSValue]()

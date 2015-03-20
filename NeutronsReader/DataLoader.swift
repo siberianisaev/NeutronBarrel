@@ -9,7 +9,6 @@
 import Foundation
 import AppKit
 
-@objc
 class DataLoader: NSObject {
     
     class func load(onFinish: (([String]) -> ())) {

@@ -8,10 +8,33 @@
 
 import Foundation
 
-@objc
 class Logger: NSObject {
+    private var resultsCSVWriter: CHCSVWriter!
+    private var timeStamp: String?
     
-    private class func logString(string: String, path: String?) {
+    override init() {
+        super.init()
+        timeStamp = TimeStamp.createTimeStamp()
+        resultsCSVWriter = CHCSVWriter(forWritingToCSVFile: FileManager.resultsFilePath(timeStamp))
+    }
+    
+    func writeLineOfFields(fields: [String]?) {
+        if let fields = fields {
+            resultsCSVWriter.writeLineOfFields(fields)
+        }
+    }
+    
+    func writeField(field: String?) {
+        if let field = field {
+            resultsCSVWriter.writeField(field)
+        }
+    }
+    
+    func finishLine() {
+        resultsCSVWriter.finishLine()
+    }
+    
+    private func logString(string: String, path: String?) {
         if let path = path {
             var error: NSError?
             string.writeToFile(path, atomically: false, encoding: NSUTF8StringEncoding, error: &error)
@@ -21,17 +44,17 @@ class Logger: NSObject {
         }
     }
     
-    class func logMultiplicity(info: [Int: Int]) {
-        var string = "Neutrons multiplicity\n"
+    func logMultiplicity(info: [Int: Int]) {
+        var string = "Multiplicity\tCount\n"
         let sortedKeys = info.keys.array.sorted { $0.0 < $1.0 }
         for key in sortedKeys {
-            string += "\(key)-x: \(info[key]!)\n"
+            string += "\(key)\t\(info[key]!)\n"
         }
-        self.logString(string, path: FileManager.multiplicityFilePath())
+        self.logString(string, path: FileManager.multiplicityFilePath(timeStamp))
     }
 
-    class func logCalibration(string: String) {
-        self.logString(string, path: FileManager.calibrationFilePath())
+    func logCalibration(string: String) {
+        self.logString(string, path: FileManager.calibrationFilePath(timeStamp))
     }
     
 }

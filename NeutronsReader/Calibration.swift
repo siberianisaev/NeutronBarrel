@@ -9,7 +9,6 @@
 import Foundation
 import AppKit
 
-@objc
 class Calibration: NSObject {
     
     private var kName: String {
@@ -25,6 +24,7 @@ class Calibration: NSObject {
     }
     
     private var data = [String: [String: Float]]()
+    var stringValue: String?
     
     class func openCalibration(onFinish: ((Calibration?) -> ())) {
         let panel = NSOpenPanel()
@@ -73,7 +73,7 @@ class Calibration: NSObject {
                         }
                     }
                     
-                    Logger.logCalibration(string)
+                    stringValue = string
                 }
             } else {
                 println("Error load calibration from file at path \(path): \(error)")

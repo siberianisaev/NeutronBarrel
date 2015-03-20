@@ -7,7 +7,6 @@
 //
 
 #import "ISAProcessor.h"
-#import "CHCSVParser.h"
 
 /**
  Маркер отличающий осколок (0) от рекойла (4), записывается в первые 3 бита param3.
@@ -64,7 +63,7 @@ typedef NS_ENUM(unsigned short, Mask) {
 
 @interface ISAProcessor ()
 
-@property (strong, nonatomic) CHCSVWriter *cvsWriter;
+@property (strong, nonatomic) Logger *logger;
 @property (strong, nonatomic) Calibration *calibration;
 @property (strong, nonatomic) NSArray *files;
 @property (strong, nonatomic) NSString *currentFileName;
@@ -131,7 +130,6 @@ typedef NS_ENUM(unsigned short, Mask) {
         return;
     }
     
-    _cvsWriter = [[CHCSVWriter alloc] initForWritingToCSVFile:[FileManager resultsFilePath]];
     _neutronsMultiplicityTotal = [NSMutableDictionary dictionary];
     _recoilsFrontPerAct = [NSMutableArray array];
     _tofRealPerAct = [NSMutableArray array];
@@ -141,7 +139,9 @@ typedef NS_ENUM(unsigned short, Mask) {
     _tofGenerationsPerAct = [NSMutableArray array];
     _fissionsWelPerAct = [NSMutableArray array];
     
-    [self createResultsHeader];
+    _logger = [[Logger alloc] init];
+    [self logCalibration];
+    [self logResultsHeader];
     
     [_delegate incrementProgress:LDBL_EPSILON]; // Show progress indicator
     const double progressForOneFile = 100.0 / _files.count;
@@ -235,7 +235,7 @@ typedef NS_ENUM(unsigned short, Mask) {
         [_delegate incrementProgress:progressForOneFile];
     }
     
-    [Logger logMultiplicity:_neutronsMultiplicityTotal];
+    [_logger logMultiplicity:_neutronsMultiplicityTotal];
 }
 
 /**
@@ -857,12 +857,17 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
     return fission;
 }
 
-- (void)createResultsHeader
+- (void)logCalibration
+{
+    [_logger logCalibration:_calibration.stringValue];
+}
+
+- (void)logResultsHeader
 {
     NSString *header = [NSString stringWithFormat:@"File,Event,E(RFron),dT(RFron-FFron),TOF,dT(TOF-RFRon),%@,Strip(FFron),Strip(FBack),FWel,FWelPos,Neutrons,Gamma,FON,Recoil(Special)", (_summarizeFissionsFront ? @"Summ(FFron)" : @"FFron")];
     NSArray *components = [header componentsSeparatedByString:@","];
-    [_cvsWriter writeLineOfFields:components];
-    [_cvsWriter finishLine]; // +1 line padding
+    [_logger writeLineOfFields:components];
+    [_logger finishLine]; // +1 line padding
 }
 
 - (void)logActResults
@@ -1023,9 +1028,9 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
                 default:
                     break;
             }
-            [_cvsWriter writeField:field];
+            [_logger writeField:field];
         }
-        [_cvsWriter finishLine];
+        [_logger finishLine];
     }
 }
 

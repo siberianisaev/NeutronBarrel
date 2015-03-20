@@ -8,31 +8,40 @@
 
 import Foundation
 
-@objc
 class FileManager: NSObject {
     
     private class func desktopFolder() -> String? {
         return NSSearchPathForDirectoriesInDomains(.DesktopDirectory, .UserDomainMask, true)[0] as? String
     }
     
-    private class func desktopFilePathWithName(fileName: String) -> String? {
-        return self.desktopFolder()?.stringByAppendingPathComponent(fileName)
+    private class func createIfNeedsDirectoryAtPath(path: String?) {
+        if let path = path {
+            let fm = NSFileManager.defaultManager()
+            if false == fm.fileExistsAtPath(path) {
+                fm.createDirectoryAtPath(path, withIntermediateDirectories: false, attributes: nil, error: nil)
+            }
+        }
     }
     
-    class func resultsFilePath() -> String? {
-        return self.desktopFilePathWithName("results.csv")
+    private class func desktopFilePathWithName(fileName: String, timeStamp: String?) -> String? {
+        var path = self.desktopFolder()
+        if let timeStamp = timeStamp {
+            path = path?.stringByAppendingPathComponent(timeStamp)
+            createIfNeedsDirectoryAtPath(path)
+        }
+        return path?.stringByAppendingPathComponent(fileName)
     }
     
-    class func logsFilePath() -> String? {
-        return self.desktopFilePathWithName("logs.txt")
+    class func resultsFilePath(timeStamp: String?) -> String? {
+        return self.desktopFilePathWithName("results.csv", timeStamp: timeStamp)
     }
     
-    class func multiplicityFilePath() -> String? {
-        return self.desktopFilePathWithName("multiplicity.txt")
+    class func multiplicityFilePath(timeStamp: String?) -> String? {
+        return self.desktopFilePathWithName("multiplicity.txt", timeStamp: timeStamp)
     }
     
-    class func calibrationFilePath() -> String? {
-        return self.desktopFilePathWithName("calibration.txt")
+    class func calibrationFilePath(timeStamp: String?) -> String? {
+        return self.desktopFilePathWithName("calibration.txt", timeStamp: timeStamp)
     }
     
 }
