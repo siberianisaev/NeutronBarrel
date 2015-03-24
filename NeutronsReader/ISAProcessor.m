@@ -148,7 +148,8 @@ typedef NS_ENUM(unsigned short, Mask) {
     
     for (NSString *path in _files) {
         _file = fopen([path UTF8String], "rb");
-        [_delegate startProcessingFile:path.lastPathComponent];
+        _currentFileName = path.lastPathComponent;
+        [_delegate startProcessingFile:_currentFileName];
         
         if (_file == NULL) {
             exit(-1);

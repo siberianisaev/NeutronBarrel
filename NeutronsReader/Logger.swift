@@ -9,25 +9,21 @@
 import Foundation
 
 class Logger: NSObject {
-    private var resultsCSVWriter: CHCSVWriter!
+    private var resultsCSVWriter: CSVWriter!
     private var timeStamp: String?
     
     override init() {
         super.init()
         timeStamp = TimeStamp.createTimeStamp()
-        resultsCSVWriter = CHCSVWriter(forWritingToCSVFile: FileManager.resultsFilePath(timeStamp))
+        resultsCSVWriter = CSVWriter(path: FileManager.resultsFilePath(timeStamp))
     }
     
     func writeLineOfFields(fields: [String]?) {
-        if let fields = fields {
-            resultsCSVWriter.writeLineOfFields(fields)
-        }
+        resultsCSVWriter.writeLineOfFields(fields)
     }
     
     func writeField(field: String?) {
-        if let field = field {
-            resultsCSVWriter.writeField(field)
-        }
+        resultsCSVWriter.writeField(field)
     }
     
     func finishLine() {
