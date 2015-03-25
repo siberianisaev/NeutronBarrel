@@ -10,6 +10,8 @@
 		6513070C1A4E911300E33704 /* FileManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6513070B1A4E911300E33704 /* FileManager.swift */; };
 		651307121A4E94AB00E33704 /* Calibration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 651307111A4E94AB00E33704 /* Calibration.swift */; };
 		651307141A4E94C500E33704 /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 651307131A4E94C500E33704 /* Logger.swift */; };
+		659447111AC2B055004C39F9 /* Processor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 659447101AC2B055004C39F9 /* Processor.swift */; };
+		659447131AC2B142004C39F9 /* Event.swift in Sources */ = {isa = PBXBuildFile; fileRef = 659447121AC2B142004C39F9 /* Event.swift */; };
 		65E46E001A25AA7C00FA28DB /* default.clb in Resources */ = {isa = PBXBuildFile; fileRef = 65E46DFF1A25AA7C00FA28DB /* default.clb */; };
 		780BC3A61A5EF99700EDEECE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 780BC3A51A5EF99700EDEECE /* AppDelegate.swift */; };
 		784150C91ABCC76200831384 /* TimeStamp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 784150C81ABCC76200831384 /* TimeStamp.swift */; };
@@ -28,6 +30,8 @@
 		6513070D1A4E92CD00E33704 /* NeutronsReader-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NeutronsReader-Bridging-Header.h"; sourceTree = "<group>"; };
 		651307111A4E94AB00E33704 /* Calibration.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Calibration.swift; sourceTree = "<group>"; };
 		651307131A4E94C500E33704 /* Logger.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
+		659447101AC2B055004C39F9 /* Processor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Processor.swift; sourceTree = "<group>"; };
+		659447121AC2B142004C39F9 /* Event.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Event.swift; sourceTree = "<group>"; };
 		65E46DFF1A25AA7C00FA28DB /* default.clb */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = default.clb; sourceTree = "<group>"; };
 		780BC3A51A5EF99700EDEECE /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		784150C81ABCC76200831384 /* TimeStamp.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TimeStamp.swift; sourceTree = "<group>"; };
@@ -60,6 +64,17 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		659447141AC2B15C004C39F9 /* TODO: transition to swift */ = {
+			isa = PBXGroup;
+			children = (
+				78419AD21A4B37400087A551 /* ISAProcessor.h */,
+				78419AD31A4B37400087A551 /* ISAProcessor.m */,
+				659447101AC2B055004C39F9 /* Processor.swift */,
+				659447121AC2B142004C39F9 /* Event.swift */,
+			);
+			name = "TODO: transition to swift";
+			sourceTree = "<group>";
+		};
 		780BC43E1A604AE000EDEECE /* Resources */ = {
 			isa = PBXGroup;
 			children = (
@@ -118,8 +133,7 @@
 				78FC512E1A5301A500FE5737 /* EventStack.swift */,
 				78FC51301A530D0300FE5737 /* DataLoader.swift */,
 				784B0B881ABB13F80041FA66 /* Settings.swift */,
-				78419AD21A4B37400087A551 /* ISAProcessor.h */,
-				78419AD31A4B37400087A551 /* ISAProcessor.m */,
+				659447141AC2B15C004C39F9 /* TODO: transition to swift */,
 				780BC43E1A604AE000EDEECE /* Resources */,
 				78B6A54E193A3B3900C7E36A /* Supporting Files */,
 			);
@@ -222,7 +236,9 @@
 			files = (
 				78419AD41A4B37400087A551 /* ISAProcessor.m in Sources */,
 				78FC512F1A5301A500FE5737 /* EventStack.swift in Sources */,
+				659447111AC2B055004C39F9 /* Processor.swift in Sources */,
 				784B0B891ABB13F80041FA66 /* Settings.swift in Sources */,
+				659447131AC2B142004C39F9 /* Event.swift in Sources */,
 				651307121A4E94AB00E33704 /* Calibration.swift in Sources */,
 				784150DA1AC184C400831384 /* CSVWriter.swift in Sources */,
 				651307141A4E94C500E33704 /* Logger.swift in Sources */,
