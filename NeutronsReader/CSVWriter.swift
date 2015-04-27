@@ -31,10 +31,10 @@ class CSVWriter: NSObject {
             let delimiterString = ","
             delimiter = delimiterString.dataUsingEncoding(NSUTF8StringEncoding, allowLossyConversion: true)
             
-            var ic = NSCharacterSet.newlineCharacterSet().mutableCopy() as NSMutableCharacterSet
+            var ic = NSCharacterSet.newlineCharacterSet().mutableCopy() as! NSMutableCharacterSet
             ic.addCharactersInString(delimiterString)
             ic.addCharactersInString("\"")
-            illegalCharacters = ic.copy() as NSCharacterSet
+            illegalCharacters = ic.copy() as! NSCharacterSet
         }
     }
     
@@ -82,7 +82,7 @@ class CSVWriter: NSObject {
             // surround in double quotes
             string = "\"\(string)\""
         }
-        writeString(string)
+        writeString(string as String)
         currentField++
     }
 

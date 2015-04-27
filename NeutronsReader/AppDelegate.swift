@@ -119,7 +119,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         let seconds = Int(totalTime % 60)
         let minutes = Int((totalTime / 60) % 60)
         let hours = Int(totalTime / 3600)
-        return NSString(format: "%02d:%02d:%02d", hours, minutes, seconds)
+        return String(format: "%02d:%02d:%02d", hours, minutes, seconds)
     }
     
     func incrementTotalTime() {
@@ -159,7 +159,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     // MARK: - App Version
     
     private func infoPlistStringForKey(key: String) -> String? {
-        return NSBundle.mainBundle().infoDictionary![key] as String?
+        return NSBundle.mainBundle().infoDictionary![key] as? String
     }
     
     private func showAppVersion() {

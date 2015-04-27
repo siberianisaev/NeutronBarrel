@@ -45,14 +45,14 @@ class Settings {
     }
     
     class func getIntSetting(setting: Setting) -> Int {
-        if let object = (getSetting(setting) as Int?) {
+        if let object = (getSetting(setting) as? Int) {
             return object
         }
         return 0
     }
     
     class func getBoolSetting(setting: Setting) -> Bool {
-        if let object = (getSetting(setting) as Bool?) {
+        if let object = (getSetting(setting) as? Bool) {
             return object
         }
         return false

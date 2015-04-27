@@ -46,7 +46,7 @@ class DataLoader: NSObject {
         
         var error: NSError? = nil
         let fm = NSFileManager.defaultManager()
-        if let fileNames = (fm.contentsOfDirectoryAtPath(directoryPath, error: &error) as? [NSString]) {
+        if let fileNames = (fm.contentsOfDirectoryAtPath(directoryPath, error: &error) as? [String]) {
             for fileName in fileNames {
                 let path = directoryPath.stringByAppendingPathComponent(fileName)
                 

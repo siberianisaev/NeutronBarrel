@@ -67,8 +67,8 @@ class Calibration: NSObject {
                         if 3 == components.count {
                             let b = (components[0] as NSString).floatValue
                             let a = (components[1] as NSString).floatValue
-                            let name = components[2] as NSString
-                            string += NSString(format: "%.6f\t%.6f\t%@\n", b, a, name)
+                            let name = components[2] as String
+                            string += NSString(format: "%.6f\t%.6f\t%@\n", b, a, name) as String
                             self.data[name] = [kCoefficientB: b, kCoefficientA: a];
                         }
                     }
