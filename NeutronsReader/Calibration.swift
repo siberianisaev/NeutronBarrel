@@ -54,29 +54,27 @@ class Calibration: NSObject {
         self.data.removeAll(keepCapacity: true)
     
         if let path = URL?.path {
-            var error: NSError?
-            var content = String(contentsOfFile: path, encoding: NSUTF8StringEncoding, error: &error)
-            if nil == error {
-                if let content = content?.stringByReplacingOccurrencesOfString("\r", withString: "") {
-                    var string = "\nCALIBRATION\n----------\nLoad calibration from file: \(path.lastPathComponent)\n(B)\t\t(A)\t\t(Name)\n"
-                    
-                    let setSpaces = NSCharacterSet.whitespaceCharacterSet()
-                    let setLines = NSCharacterSet.newlineCharacterSet()
-                    for line in content.componentsSeparatedByCharactersInSet(setLines) {
-                        let components = line.componentsSeparatedByCharactersInSet(setSpaces).filter() { $0 != "" }
-                        if 3 == components.count {
-                            let b = (components[0] as NSString).floatValue
-                            let a = (components[1] as NSString).floatValue
-                            let name = components[2] as String
-                            string += NSString(format: "%.6f\t%.6f\t%@\n", b, a, name) as String
-                            self.data[name] = [kCoefficientB: b, kCoefficientA: a];
-                        }
+            do {
+                var content = try String(contentsOfFile: path, encoding: NSUTF8StringEncoding)
+                content = content.stringByReplacingOccurrencesOfString("\r", withString: "")
+                var string = "\nCALIBRATION\n----------\nLoad calibration from file: \((path as NSString).lastPathComponent)\n(B)\t\t(A)\t\t(Name)\n"
+                
+                let setSpaces = NSCharacterSet.whitespaceCharacterSet()
+                let setLines = NSCharacterSet.newlineCharacterSet()
+                for line in content.componentsSeparatedByCharactersInSet(setLines) {
+                    let components = line.componentsSeparatedByCharactersInSet(setSpaces).filter() { $0 != "" }
+                    if 3 == components.count {
+                        let b = (components[0] as NSString).floatValue
+                        let a = (components[1] as NSString).floatValue
+                        let name = components[2] as String
+                        string += NSString(format: "%.6f\t%.6f\t%@\n", b, a, name) as String
+                        self.data[name] = [kCoefficientB: b, kCoefficientA: a];
                     }
-                    
-                    stringValue = string
                 }
-            } else {
-                println("Error load calibration from file at path \(path): \(error)")
+                
+                stringValue = string
+            } catch {
+                print("Error load calibration from file at path \(path): \(error)")
             }
         }
     }
@@ -90,7 +88,7 @@ class Calibration: NSObject {
             }
         }
         
-        println("No calibration for name \(eventName)")
+        print("No calibration for name \(eventName)")
         return channel
     }
     

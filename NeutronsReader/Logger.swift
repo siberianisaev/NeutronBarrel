@@ -32,17 +32,19 @@ class Logger: NSObject {
     
     private func logString(string: String, path: String?) {
         if let path = path {
-            var error: NSError?
-            string.writeToFile(path, atomically: false, encoding: NSUTF8StringEncoding, error: &error)
-            if let error = error {
-                println("Error writing to file \(path): \(error)")
+            do {
+                try string.writeToFile(path, atomically: false, encoding: NSUTF8StringEncoding)
+            } catch {
+                print("Error writing to file \(path): \(error)")
             }
         }
     }
     
     func logMultiplicity(info: [Int: Int]) {
         var string = "Multiplicity\tCount\n"
-        let sortedKeys = info.keys.array.sorted { $0.0 < $1.0 }
+        let sortedKeys = Array(info.keys).sort({ (i1: Int, i2: Int) -> Bool in
+            return i1 < i2
+        })
         for key in sortedKeys {
             string += "\(key)\t\(info[key]!)\n"
         }

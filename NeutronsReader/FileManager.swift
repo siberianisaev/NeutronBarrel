@@ -10,15 +10,19 @@ import Foundation
 
 class FileManager: NSObject {
     
-    private class func desktopFolder() -> String? {
-        return NSSearchPathForDirectoriesInDomains(.DesktopDirectory, .UserDomainMask, true)[0] as? String
+    private class func desktopFolder() -> NSString? {
+        return NSSearchPathForDirectoriesInDomains(.DesktopDirectory, .UserDomainMask, true).first
     }
     
     private class func createIfNeedsDirectoryAtPath(path: String?) {
         if let path = path {
             let fm = NSFileManager.defaultManager()
             if false == fm.fileExistsAtPath(path) {
-                fm.createDirectoryAtPath(path, withIntermediateDirectories: false, attributes: nil, error: nil)
+                do {
+                    try fm.createDirectoryAtPath(path, withIntermediateDirectories: false, attributes: nil)
+                } catch {
+                    print(error)
+                }
             }
         }
     }
@@ -27,7 +31,7 @@ class FileManager: NSObject {
         var path = self.desktopFolder()
         if let timeStamp = timeStamp {
             path = path?.stringByAppendingPathComponent(timeStamp)
-            createIfNeedsDirectoryAtPath(path)
+            createIfNeedsDirectoryAtPath(path as? String)
         }
         return path?.stringByAppendingPathComponent(fileName)
     }

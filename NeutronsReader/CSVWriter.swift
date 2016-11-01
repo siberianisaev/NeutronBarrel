@@ -31,7 +31,7 @@ class CSVWriter: NSObject {
             let delimiterString = ","
             delimiter = delimiterString.dataUsingEncoding(NSUTF8StringEncoding, allowLossyConversion: true)
             
-            var ic = NSCharacterSet.newlineCharacterSet().mutableCopy() as! NSMutableCharacterSet
+            let ic = NSCharacterSet.newlineCharacterSet().mutableCopy() as! NSMutableCharacterSet
             ic.addCharactersInString(delimiterString)
             ic.addCharactersInString("\"")
             illegalCharacters = ic.copy() as! NSCharacterSet
@@ -50,7 +50,7 @@ class CSVWriter: NSObject {
     }
     
     private func writeString(string: String) {
-        var stringData = string.dataUsingEncoding(encoding, allowLossyConversion: true)!
+        let stringData = string.dataUsingEncoding(encoding, allowLossyConversion: true)!
         writeData(stringData)
     }
     
