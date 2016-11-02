@@ -10,7 +10,7 @@ import Foundation
 
 class EventStack: NSObject {
     
-    private var data = [NSValue]()
+    fileprivate var data = [NSValue]()
     var maxSize: UInt = 5
     
     func events() -> [NSValue] {
@@ -18,17 +18,17 @@ class EventStack: NSObject {
         return data
     }
     
-    func pushEvent(eventValue: NSValue?) {
+    func pushEvent(_ eventValue: NSValue?) {
         if let eventValue = eventValue {
             if (self.data.count > Int(self.maxSize)) {
-                self.data.removeAtIndex(0)
+                self.data.remove(at: 0)
             }
             self.data.append(eventValue)
         }
     }
     
     func clear() {
-        self.data.removeAll(keepCapacity: false)
+        self.data.removeAll(keepingCapacity: false)
     }
     
 }

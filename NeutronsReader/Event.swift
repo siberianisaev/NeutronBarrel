@@ -9,31 +9,31 @@
 import Foundation
 
 enum EventId: Int {
-    case FissionFront1 = 1
-    case FissionFront2 = 2
-    case FissionFront3 = 3
-    case FissionBack1 = 4
-    case FissionBack2 = 5
-    case FissionBack3 = 6
-    case FissionDaughterFront1 = 7
-    case FissionDaughterFront2 = 8
-    case FissionDaughterFront3 = 9
-    case FissionDaughterBack1 = 10
-    case FissionDaughterBack2 = 11
-    case FissionDaughterBack3 = 12
-    case FissionWell1 = 13
-    case FissionWell2 = 14
-    case Gamma1 = 15
-    case TOF = 17
-    case Neutrons = 23
-    case CycleTime = 24
-    case FON = 29
-    case RecoilSpecial = 30
+    case fissionFront1 = 1
+    case fissionFront2 = 2
+    case fissionFront3 = 3
+    case fissionBack1 = 4
+    case fissionBack2 = 5
+    case fissionBack3 = 6
+    case fissionDaughterFront1 = 7
+    case fissionDaughterFront2 = 8
+    case fissionDaughterFront3 = 9
+    case fissionDaughterBack1 = 10
+    case fissionDaughterBack2 = 11
+    case fissionDaughterBack3 = 12
+    case fissionWell1 = 13
+    case fissionWell2 = 14
+    case gamma1 = 15
+    case tof = 17
+    case neutrons = 23
+    case cycleTime = 24
+    case fon = 29
+    case recoilSpecial = 30
 }
 
 enum Mask: Int {
-    case Fission, FON, RecoilSpecial = 0x0FFF
-    case Gamma, TOF, Recoil = 0x1FFF
+    case fission, fon, recoilSpecial = 0x0FFF
+    case gamma, tof, recoil = 0x1FFF
 }
 
 struct Event {
@@ -62,35 +62,35 @@ struct Event {
     
     func isFissionFront() -> Bool {
         return isFissionMarkerPresent() &&
-            (EventId.FissionFront1 == rawEventId || EventId.FissionFront2 == rawEventId || EventId.FissionFront3 == rawEventId ||
-                EventId.FissionDaughterFront1 == rawEventId || EventId.FissionDaughterFront2 == rawEventId || EventId.FissionDaughterFront3 == rawEventId)
+            (EventId.fissionFront1 == rawEventId || EventId.fissionFront2 == rawEventId || EventId.fissionFront3 == rawEventId ||
+                EventId.fissionDaughterFront1 == rawEventId || EventId.fissionDaughterFront2 == rawEventId || EventId.fissionDaughterFront3 == rawEventId)
     }
     
     func isFissionWel() -> Bool {
         return isFissionMarkerPresent() &&
-            (EventId.FissionWell1 == rawEventId || EventId.FissionWell2 == rawEventId)
+            (EventId.fissionWell1 == rawEventId || EventId.fissionWell2 == rawEventId)
     }
     
     func isFissionBack() -> Bool {
         return isFissionMarkerPresent() &&
-            (EventId.FissionBack1 == rawEventId || EventId.FissionBack2 == rawEventId || EventId.FissionBack3 == rawEventId
-                || EventId.FissionDaughterBack1 == rawEventId || EventId.FissionDaughterBack2 == rawEventId || EventId.FissionDaughterBack3 == rawEventId)
+            (EventId.fissionBack1 == rawEventId || EventId.fissionBack2 == rawEventId || EventId.fissionBack3 == rawEventId
+                || EventId.fissionDaughterBack1 == rawEventId || EventId.fissionDaughterBack2 == rawEventId || EventId.fissionDaughterBack3 == rawEventId)
     }
     
     func isRecoilFront() -> Bool {
         return isRecoilMarkerPresent() &&
-            (EventId.FissionFront1 == rawEventId || EventId.FissionFront2 == rawEventId || EventId.FissionFront3 == rawEventId)
+            (EventId.fissionFront1 == rawEventId || EventId.fissionFront2 == rawEventId || EventId.fissionFront3 == rawEventId)
     }
     
     func isRecoilBack() -> Bool {
         return isRecoilMarkerPresent() &&
-            (EventId.FissionBack1 == rawEventId || EventId.FissionBack2 == rawEventId || EventId.FissionBack3 == rawEventId)
+            (EventId.fissionBack1 == rawEventId || EventId.fissionBack2 == rawEventId || EventId.fissionBack3 == rawEventId)
     }
     
     /**
     Не у всех событий в базе, вторые 16 бит слова отводятся под время.
     */
     func isValidEventForTimeCheck() -> Bool {
-        return (eventId <= CUnsignedShort(EventId.FissionWell2.rawValue) || EventId.TOF == rawEventId || EventId.Gamma1 == rawEventId || EventId.Neutrons == rawEventId);
+        return (eventId <= CUnsignedShort(EventId.fissionWell2.rawValue) || EventId.tof == rawEventId || EventId.gamma1 == rawEventId || EventId.neutrons == rawEventId);
     }
 }

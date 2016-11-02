@@ -37,30 +37,30 @@ class Settings {
         }
     }
     
-    class func setObject(object: AnyObject?, forSetting setting: Setting) {
-        if let object: AnyObject = object {
+    class func setObject(_ object: Any?, forSetting setting: Setting) {
+        if let object = object {
             let key = setting.key()
-            NSUserDefaults.standardUserDefaults().setObject(object, forKey: key)
+            UserDefaults.standard.set(object, forKey: key)
         }
     }
     
-    class func getIntSetting(setting: Setting) -> Int {
+    class func getIntSetting(_ setting: Setting) -> Int {
         if let object = (getSetting(setting) as? Int) {
             return object
         }
         return 0
     }
     
-    class func getBoolSetting(setting: Setting) -> Bool {
+    class func getBoolSetting(_ setting: Setting) -> Bool {
         if let object = (getSetting(setting) as? Bool) {
             return object
         }
         return false
     }
     
-    private class func getSetting(setting: Setting) -> AnyObject? {
+    fileprivate class func getSetting(_ setting: Setting) -> Any? {
         let key = setting.key()
-        if let object: AnyObject = NSUserDefaults.standardUserDefaults().objectForKey(key) {
+        if let object = UserDefaults.standard.object(forKey: key) {
             return object
         }
         

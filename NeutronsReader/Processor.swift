@@ -25,44 +25,44 @@ class Processor {
     var requiredGamma: Bool = false
     var requiredTOF: Bool = false
     
-    private var calibration = Calibration.defaultCalibration()
-    private var selectedFiles = [String]()
-    private var neutronsSummPerAct: Int = 0
-    private var neutronsMultiplicityTotal = [Int: CUnsignedLongLong]()
-    private var recoilsFrontPerAct = [AnyObject]()
-    private var tofRealPerAct = [AnyObject]()
-    private var fissionsFrontPerAct = [AnyObject]()
-    private var fissionsBackPerAct = [AnyObject]()
-    private var fissionsWelPerAct = [AnyObject]()
-    private var gammaPerAct = [AnyObject]()
-    private var tofGenerationsPerAct = [AnyObject]()
-    private var fonPerAct: CUnsignedShort?
-    private var recoilSpecialPerAct: CUnsignedShort?
-    private var firstFissionInfo = [String: AnyObject]() // информация о главном осколке в цикле
-    private var firstFissionTime: CUnsignedShort = 0 // время главного осколка в цикле
-    private var isNewAct: Bool = false
-    private var currentEventNumber: CUnsignedLongLong = 0
-    private var mainCycleTimeEvent: Event?
+    fileprivate var calibration = Calibration.defaultCalibration()
+    fileprivate var selectedFiles = [String]()
+    fileprivate var neutronsSummPerAct: Int = 0
+    fileprivate var neutronsMultiplicityTotal = [Int: CUnsignedLongLong]()
+    fileprivate var recoilsFrontPerAct = [AnyObject]()
+    fileprivate var tofRealPerAct = [AnyObject]()
+    fileprivate var fissionsFrontPerAct = [AnyObject]()
+    fileprivate var fissionsBackPerAct = [AnyObject]()
+    fileprivate var fissionsWelPerAct = [AnyObject]()
+    fileprivate var gammaPerAct = [AnyObject]()
+    fileprivate var tofGenerationsPerAct = [AnyObject]()
+    fileprivate var fonPerAct: CUnsignedShort?
+    fileprivate var recoilSpecialPerAct: CUnsignedShort?
+    fileprivate var firstFissionInfo = [String: AnyObject]() // информация о главном осколке в цикле
+    fileprivate var firstFissionTime: CUnsignedShort = 0 // время главного осколка в цикле
+    fileprivate var isNewAct: Bool = false
+    fileprivate var currentEventNumber: CUnsignedLongLong = 0
+    fileprivate var mainCycleTimeEvent: Event?
     
-    private var kEncoder: String {
+    fileprivate var kEncoder: String {
         return "encoder"
     }
-    private var kStrip0_15: String {
+    fileprivate var kStrip0_15: String {
         return "strip_0_15"
     }
-    private var kStrip1_48: String {
+    fileprivate var kStrip1_48: String {
         return "strip_1_48"
     }
-    private var kEnergy: String {
+    fileprivate var kEnergy: String {
         return "energy"
     }
-    private var kDeltaTime: String {
+    fileprivate var kDeltaTime: String {
         return "delta_time"
     }
-    private var kChannel: String {
+    fileprivate var kChannel: String {
         return "channel"
     }
-    private var kEventNumber: String {
+    fileprivate var kEventNumber: String {
         return "event_number"
     }
     
@@ -73,8 +73,8 @@ class Processor {
         return Static.sharedInstance
     }
     
-    func processDataWithCompletion(completion: (() -> ())?) {
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)) { () -> Void in
+    func processDataWithCompletion(_ completion: (() -> ())?) {
+        DispatchQueue.global(priority: DispatchQueue.GlobalQueuePriority.default).async { () -> Void in
             self.processData()
             completion?()
         }
@@ -97,7 +97,7 @@ class Processor {
     // MARK: - Private
     // TODO: implementation
     
-    private func processData() {
+    fileprivate func processData() {
         
     }
 }

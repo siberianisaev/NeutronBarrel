@@ -11,10 +11,10 @@ import Foundation
 class TimeStamp: NSObject {
     
     class func createTimeStamp() -> String? {
-        let calendar = NSCalendar.currentCalendar()
-        let components = calendar.components([.Year, .Month, .Day, .Hour, .Minute, .Second], fromDate: NSDate())
-        var sMonth = NSDateFormatter().monthSymbols[components.month - 1] as! NSString
-        return String(format: "%d_%@_%d_%02d-%02d-%02d", components.year, sMonth, components.day, components.hour, components.minute, components.second)
+        let calendar = Calendar.current
+        let components = (calendar as NSCalendar).components([.year, .month, .day, .hour, .minute, .second], from: Date())
+        let sMonth = DateFormatter().monthSymbols[components.month! - 1] as NSString
+        return String(format: "%d_%@_%d_%02d-%02d-%02d", components.year!, sMonth, components.day!, components.hour!, components.minute!, components.second!)
     }
     
 }

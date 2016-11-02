@@ -11,58 +11,58 @@ import AppKit
 
 class Calibration: NSObject {
     
-    private var kName: String {
+    fileprivate var kName: String {
         return "kName"
     }
     
-    private var kCoefficientA: String {
+    fileprivate var kCoefficientA: String {
         return "kCoefficientA"
     }
     
-    private var kCoefficientB: String {
+    fileprivate var kCoefficientB: String {
         return "kCoefficientB"
     }
     
-    private var data = [String: [String: Float]]()
+    fileprivate var data = [String: [String: Float]]()
     var stringValue: String?
     
-    class func openCalibration(onFinish: ((Calibration?) -> ())) {
+    class func openCalibration(_ onFinish: @escaping ((Calibration?) -> ())) {
         let panel = NSOpenPanel()
         panel.canChooseDirectories = false
         panel.canChooseFiles = true
         panel.allowsMultipleSelection = false
-        panel.beginWithCompletionHandler { (result) -> Void in
+        panel.begin { (result) -> Void in
             if result == NSFileHandlingPanelOKButton {
-                onFinish(self.calibrationWithUrl(panel.URL))
+                onFinish(self.calibrationWithUrl(panel.url))
             }
         }
     }
     
     class func defaultCalibration() -> Calibration {
-        let path = NSBundle.mainBundle().pathForResource("default", ofType: "clb")
-        let URL = NSURL(fileURLWithPath: path!)
+        let path = Bundle.main.path(forResource: "default", ofType: "clb")
+        let URL = Foundation.URL(fileURLWithPath: path!)
         return self.calibrationWithUrl(URL)
     }
     
-    private class func calibrationWithUrl(URL: NSURL?) -> Calibration {
+    fileprivate class func calibrationWithUrl(_ URL: Foundation.URL?) -> Calibration {
         let calibration = Calibration()
         calibration.load(URL)
         return calibration
     }
     
-    private func load(URL: NSURL?) {
-        self.data.removeAll(keepCapacity: true)
+    fileprivate func load(_ URL: Foundation.URL?) {
+        self.data.removeAll(keepingCapacity: true)
     
         if let path = URL?.path {
             do {
-                var content = try String(contentsOfFile: path, encoding: NSUTF8StringEncoding)
-                content = content.stringByReplacingOccurrencesOfString("\r", withString: "")
+                var content = try String(contentsOfFile: path, encoding: String.Encoding.utf8)
+                content = content.replacingOccurrences(of: "\r", with: "")
                 var string = "\nCALIBRATION\n----------\nLoad calibration from file: \((path as NSString).lastPathComponent)\n(B)\t\t(A)\t\t(Name)\n"
                 
-                let setSpaces = NSCharacterSet.whitespaceCharacterSet()
-                let setLines = NSCharacterSet.newlineCharacterSet()
-                for line in content.componentsSeparatedByCharactersInSet(setLines) {
-                    let components = line.componentsSeparatedByCharactersInSet(setSpaces).filter() { $0 != "" }
+                let setSpaces = CharacterSet.whitespaces
+                let setLines = CharacterSet.newlines
+                for line in content.components(separatedBy: setLines) {
+                    let components = line.components(separatedBy: setSpaces).filter() { $0 != "" }
                     if 3 == components.count {
                         let b = (components[0] as NSString).floatValue
                         let a = (components[1] as NSString).floatValue
@@ -79,7 +79,7 @@ class Calibration: NSObject {
         }
     }
     
-    func energyForAmplitude(channel: Double, eventName: String) -> Double {
+    func energyForAmplitude(_ channel: Double, eventName: String) -> Double {
         if let value = self.data[eventName] {
             let nB = value[self.kCoefficientB]
             let nA = value[self.kCoefficientA]

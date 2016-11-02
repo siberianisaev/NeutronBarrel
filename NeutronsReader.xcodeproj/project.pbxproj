@@ -182,6 +182,11 @@
 				LastSwiftUpdateCheck = 0730;
 				LastUpgradeCheck = 0510;
 				ORGANIZATIONNAME = "Andrey Isaev";
+				TargetAttributes = {
+					78B6A543193A3B3900C7E36A = {
+						LastSwiftMigration = 0810;
+					};
+				};
 			};
 			buildConfigurationList = 78B6A53F193A3B3800C7E36A /* Build configuration list for PBXProject "NeutronsReader" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -355,6 +360,7 @@
 				PRODUCT_NAME = NeutronsReader;
 				SWIFT_OBJC_BRIDGING_HEADER = "NeutronsReader/NeutronsReader-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 3.0;
 				WRAPPER_EXTENSION = app;
 			};
 			name = Debug;
@@ -372,6 +378,7 @@
 				PRODUCT_MODULE_NAME = NeutronsReader;
 				PRODUCT_NAME = NeutronsReader;
 				SWIFT_OBJC_BRIDGING_HEADER = "NeutronsReader/NeutronsReader-Bridging-Header.h";
+				SWIFT_VERSION = 3.0;
 				WRAPPER_EXTENSION = app;
 			};
 			name = Release;

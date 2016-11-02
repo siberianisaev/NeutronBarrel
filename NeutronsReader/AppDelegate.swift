@@ -17,8 +17,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBOutlet weak var labelVersion: NSTextField!
     @IBOutlet weak var labelTotalTime: NSTextField!
     @IBOutlet weak var labelProcessingFileName: NSTextField!
-    private var totalTime: NSTimeInterval = 0
-    private var timer: NSTimer?
+    fileprivate var totalTime: TimeInterval = 0
+    fileprivate var timer: Timer?
     var sMinFissionEnergy: NSString = NSString(format: "%d", Settings.getIntSetting(.MinFissionEnergy)) // MeV
     var sMaxFissionEnergy: NSString = NSString(format: "%d", Settings.getIntSetting(.MaxFissionEnergy)) // MeV
     var sMinRecoilEnergy: NSString = NSString(format: "%d", Settings.getIntSetting(.MinRecoilEnergy)) // MeV
@@ -39,46 +39,46 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     var requiredGamma: Bool = Settings.getBoolSetting(.RequiredGamma)
     var requiredTOF: Bool = Settings.getBoolSetting(.RequiredTOF)
     
-    func applicationDidFinishLaunching(aNotification: NSNotification) {
+    func applicationDidFinishLaunching(_ aNotification: Notification) {
         showAppVersion()
     }
     
-    func applicationShouldTerminateAfterLastWindowClosed(sender: NSApplication) -> Bool {
+    func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
         return true
     }
     
-    func applicationWillTerminate(aNotification: NSNotification) {
+    func applicationWillTerminate(_ aNotification: Notification) {
         saveSettings()
     }
     
 //TODO: добавить возможность остановить поиск
-    @IBAction func start(sender: AnyObject?) {
+    @IBAction func start(_ sender: AnyObject?) {
         activity?.startAnimation(self)
         progressIndicator?.startAnimation(self)
         startTimer()
         
-        let processor = ISAProcessor.sharedProcessor();
-        processor.fissionFrontMinEnergy = sMinFissionEnergy.doubleValue
-        processor.fissionFrontMaxEnergy = sMaxFissionEnergy.doubleValue
-        processor.recoilFrontMinEnergy = sMinRecoilEnergy.doubleValue
-        processor.recoilFrontMaxEnergy = sMaxRecoilEnergy.doubleValue
-        processor.minTOFChannel = sMinTOFChannel.doubleValue
-        processor.recoilMinTime = sMinRecoilTime.doubleValue
-        processor.recoilMaxTime = sMaxRecoilTime.doubleValue
-        processor.recoilBackMaxTime = sMaxRecoilBackTime.doubleValue
-        processor.fissionMaxTime = sMaxFissionTime.doubleValue
-        processor.maxTOFTime = sMaxTOFTime.doubleValue
-        processor.maxGammaTime = sMaxGammaTime.doubleValue
-        processor.maxNeutronTime = sMaxNeutronTime.doubleValue
-        processor.recoilFrontMaxDeltaStrips = sMaxRecoilFrontDeltaStrips.intValue
-        processor.recoilBackMaxDeltaStrips = sMaxRecoilBackDeltaStrips.intValue
-        processor.summarizeFissionsFront = summarizeFissionsFront
-        processor.requiredFissionRecoilBack = requiredFissionRecoilBack
-        processor.requiredRecoil = requiredRecoil
-        processor.requiredGamma = requiredGamma
-        processor.requiredTOF = requiredTOF
-        processor.delegate = self
-        processor.processDataWithCompletion({ [unowned self] in
+        let processor = ISAProcessor.shared();
+        processor?.fissionFrontMinEnergy = sMinFissionEnergy.doubleValue
+        processor?.fissionFrontMaxEnergy = sMaxFissionEnergy.doubleValue
+        processor?.recoilFrontMinEnergy = sMinRecoilEnergy.doubleValue
+        processor?.recoilFrontMaxEnergy = sMaxRecoilEnergy.doubleValue
+        processor?.minTOFChannel = sMinTOFChannel.doubleValue
+        processor?.recoilMinTime = sMinRecoilTime.doubleValue
+        processor?.recoilMaxTime = sMaxRecoilTime.doubleValue
+        processor?.recoilBackMaxTime = sMaxRecoilBackTime.doubleValue
+        processor?.fissionMaxTime = sMaxFissionTime.doubleValue
+        processor?.maxTOFTime = sMaxTOFTime.doubleValue
+        processor?.maxGammaTime = sMaxGammaTime.doubleValue
+        processor?.maxNeutronTime = sMaxNeutronTime.doubleValue
+        processor?.recoilFrontMaxDeltaStrips = sMaxRecoilFrontDeltaStrips.intValue
+        processor?.recoilBackMaxDeltaStrips = sMaxRecoilBackDeltaStrips.intValue
+        processor?.summarizeFissionsFront = summarizeFissionsFront
+        processor?.requiredFissionRecoilBack = requiredFissionRecoilBack
+        processor?.requiredRecoil = requiredRecoil
+        processor?.requiredGamma = requiredGamma
+        processor?.requiredTOF = requiredTOF
+        processor?.delegate = self
+        processor?.processData(completion: { [unowned self] in
             self.activity?.stopAnimation(self)
             self.progressIndicator?.doubleValue = 0.0
             self.progressIndicator?.stopAnimation(self)
@@ -86,55 +86,55 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         })
     }
     
-    @IBAction func selectData(sender: AnyObject?) {
-        ISAProcessor.sharedProcessor().selectData()
+    @IBAction func selectData(_ sender: AnyObject?) {
+        ISAProcessor.shared().selectData()
     }
     
-    @IBAction func selectCalibration(sender: AnyObject?) {
-        ISAProcessor.sharedProcessor().selectCalibration()
+    @IBAction func selectCalibration(_ sender: AnyObject?) {
+        ISAProcessor.shared().selectCalibration()
     }
     
     // MARK: - ProcessorDelegate
     
-    func incrementProgress(delta: Double) {
-        progressIndicator?.incrementBy(delta)
+    func incrementProgress(_ delta: Double) {
+        progressIndicator?.increment(by: delta)
     }
     
-    func startProcessingFile(fileName: String) {
+    func startProcessingFile(_ fileName: String) {
         labelProcessingFileName?.stringValue = fileName
     }
     
     // MARK: - Timer
     
-    private func startTimer() {
+    fileprivate func startTimer() {
         totalTime = 0
-        timer = NSTimer.scheduledTimerWithTimeInterval(1, target: self, selector: "incrementTotalTime", userInfo: nil, repeats: true)
+        timer = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(AppDelegate.incrementTotalTime), userInfo: nil, repeats: true)
         labelTotalTime?.stringValue = ""
-        labelTotalTime?.hidden = false
+        labelTotalTime?.isHidden = false
         labelProcessingFileName?.stringValue = ""
-        labelProcessingFileName?.hidden = false
+        labelProcessingFileName?.isHidden = false
     }
     
-    private func stringTotalTime() -> String {
-        let seconds = Int(totalTime % 60)
-        let minutes = Int((totalTime / 60) % 60)
+    fileprivate func stringTotalTime() -> String {
+        let seconds = Int(totalTime.truncatingRemainder(dividingBy: 60))
+        let minutes = Int((totalTime / 60).truncatingRemainder(dividingBy: 60))
         let hours = Int(totalTime / 3600)
         return String(format: "%02d:%02d:%02d", hours, minutes, seconds)
     }
     
     func incrementTotalTime() {
-        totalTime++
+        totalTime += 1
         labelTotalTime?.stringValue = stringTotalTime()
     }
     
-    private func stopTimer() {
+    fileprivate func stopTimer() {
         timer?.invalidate()
-        labelProcessingFileName?.hidden = true
+        labelProcessingFileName?.isHidden = true
     }
     
     // MARK: - Settings
     
-    private func saveSettings() {
+    fileprivate func saveSettings() {
         Settings.setObject(sMinFissionEnergy.integerValue, forSetting: .MinFissionEnergy)
         Settings.setObject(sMaxFissionEnergy.integerValue, forSetting: .MaxFissionEnergy)
         Settings.setObject(sMinRecoilEnergy.integerValue, forSetting: .MinRecoilEnergy)
@@ -158,11 +158,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     
     // MARK: - App Version
     
-    private func infoPlistStringForKey(key: String) -> String? {
-        return NSBundle.mainBundle().infoDictionary![key] as? String
+    fileprivate func infoPlistStringForKey(_ key: String) -> String? {
+        return Bundle.main.infoDictionary![key] as? String
     }
     
-    private func showAppVersion() {
+    fileprivate func showAppVersion() {
         var string = ""
         if let version = infoPlistStringForKey("CFBundleShortVersionString") {
             string += "Version " + version

@@ -11,23 +11,22 @@ import AppKit
 
 class DataLoader: NSObject {
     
-    class func load(onFinish: (([String]) -> ())) {
+    class func load(_ onFinish: @escaping (([String]) -> ())) {
         let panel = NSOpenPanel()
         panel.canChooseDirectories = true
         panel.canChooseFiles = true
         panel.allowsMultipleSelection = true
-        panel.beginWithCompletionHandler { (result) -> Void in
+        panel.begin { (result) -> Void in
             if result == NSFileHandlingPanelOKButton {
                 var selected = [String]()
-                let fm = NSFileManager.defaultManager()
-                for URL in panel.URLs {
-                    if let path = URL.path  {
-                        var isDirectory: ObjCBool = false
-                        if fm.fileExistsAtPath(path, isDirectory: &isDirectory) && isDirectory {
-                            selected += self.recursiveGetFilesFromDirectory(path)
-                        } else {
-                            selected.append(path)
-                        }
+                let fm = Foundation.FileManager.default
+                for URL in panel.urls {
+                    let path = URL.path
+                    var isDirectory : ObjCBool = false
+                    if fm.fileExists(atPath: path, isDirectory:&isDirectory) && isDirectory.boolValue {
+                        selected += recursiveGetFilesFromDirectory(path)
+                    } else {
+                        selected.append(path)
                     }
                 }
                 
@@ -41,18 +40,18 @@ class DataLoader: NSObject {
     /**
     Метод рекурсивно обходит папки вложенные в directoryPath и возвращает все файлы в ней содержащиеся.
     */
-    class func recursiveGetFilesFromDirectory(directoryPath: String) -> [String] {
+    class func recursiveGetFilesFromDirectory(_ directoryPath: String) -> [String] {
         var results = [String]()
         
-        let fm = NSFileManager.defaultManager()
+        let fm = Foundation.FileManager.default
         do {
-            let fileNames = try fm.contentsOfDirectoryAtPath(directoryPath)
+            let fileNames = try fm.contentsOfDirectory(atPath: directoryPath)
             for fileName in fileNames {
-                let path = (directoryPath as NSString).stringByAppendingPathComponent(fileName)
+                let path = (directoryPath as NSString).appendingPathComponent(fileName)
                 
                 var isDirectory: ObjCBool = false
-                if fm.fileExistsAtPath(path, isDirectory: &isDirectory) {
-                    if isDirectory {
+                if fm.fileExists(atPath: path, isDirectory: &isDirectory) {
+                    if isDirectory.boolValue {
                         results += recursiveGetFilesFromDirectory(path)
                     } else {
                         results.append(path)

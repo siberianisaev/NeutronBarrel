@@ -10,31 +10,31 @@ import Foundation
 
 class CSVWriter: NSObject {
     
-    private var stream: NSOutputStream!
-    private var encoding: NSStringEncoding!
-    private var delimiter: NSData!
-    private var illegalCharacters: NSCharacterSet!
-    private var currentLine: UInt = 0
-    private var currentField: UInt = 0
+    fileprivate var stream: OutputStream!
+    fileprivate var encoding: String.Encoding!
+    fileprivate var delimiter: Data!
+    fileprivate var illegalCharacters: CharacterSet!
+    fileprivate var currentLine: UInt = 0
+    fileprivate var currentField: UInt = 0
     
     init(path: String?) {
         super.init()
         
         if let path = path {
-            encoding = NSUTF8StringEncoding
+            encoding = String.Encoding.utf8
             
-            stream = NSOutputStream(toFileAtPath: path, append: false)
-            if stream.streamStatus == .NotOpen {
+            stream = OutputStream(toFileAtPath: path, append: false)
+            if stream.streamStatus == .notOpen {
                 stream.open()
             }
             
             let delimiterString = ","
-            delimiter = delimiterString.dataUsingEncoding(NSUTF8StringEncoding, allowLossyConversion: true)
+            delimiter = delimiterString.data(using: String.Encoding.utf8, allowLossyConversion: true)
             
-            let ic = NSCharacterSet.newlineCharacterSet().mutableCopy() as! NSMutableCharacterSet
-            ic.addCharactersInString(delimiterString)
-            ic.addCharactersInString("\"")
-            illegalCharacters = ic.copy() as! NSCharacterSet
+            let ic = (CharacterSet.newlines as NSCharacterSet).mutableCopy() as! NSMutableCharacterSet
+            ic.addCharacters(in: delimiterString)
+            ic.addCharacters(in: "\"")
+            illegalCharacters = ic.copy() as! CharacterSet
         }
     }
     
@@ -43,18 +43,18 @@ class CSVWriter: NSObject {
         stream = nil
     }
     
-    private func writeData(data: NSData) {
-        if data.length > 0 {
-            stream.write(UnsafePointer<UInt8>(data.bytes), maxLength: data.length)
+    fileprivate func writeData(_ data: Data) {
+        if data.count > 0 {
+            stream.write((data as NSData).bytes.bindMemory(to: UInt8.self, capacity: data.count), maxLength: data.count)
         }
     }
     
-    private func writeString(string: String) {
-        let stringData = string.dataUsingEncoding(encoding, allowLossyConversion: true)!
+    fileprivate func writeString(_ string: String) {
+        let stringData = string.data(using: encoding, allowLossyConversion: true)!
         writeData(stringData)
     }
     
-    private func finishLineIfNecessary() {
+    fileprivate func finishLineIfNecessary() {
         if currentField != 0 {
             finishLine()
         }
@@ -63,30 +63,30 @@ class CSVWriter: NSObject {
     func finishLine() {
         writeString("\n")
         currentField = 0
-        currentLine++
+        currentLine += 1
     }
     
-    func writeField(field: AnyObject?) {
+    func writeField(_ field: AnyObject?) {
         if currentField > 0 {
             writeData(delimiter)
         }
     
         var string: NSString = ""
         if let field: AnyObject = field {
-            string = field.description
+            string = field.description as NSString
         }
     
-        if string.rangeOfCharacterFromSet(illegalCharacters).location != NSNotFound {
+        if string.rangeOfCharacter(from: illegalCharacters).location != NSNotFound {
             // replace double quotes with double double quotes
-            string = string.stringByReplacingOccurrencesOfString("\"", withString:"\"\"")
+            string = string.replacingOccurrences(of: "\"", with:"\"\"") as NSString
             // surround in double quotes
-            string = "\"\(string)\""
+            string = "\"\(string)\"" as NSString
         }
         writeString(string as String)
-        currentField++
+        currentField += 1
     }
 
-    func writeLineOfFields(fields: [AnyObject]?) {
+    func writeLineOfFields(_ fields: [AnyObject]?) {
         finishLineIfNecessary()
     
         if let fields = fields {
