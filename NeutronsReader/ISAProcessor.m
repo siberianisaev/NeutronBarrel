@@ -248,9 +248,9 @@ typedef NS_ENUM(unsigned short, Mask) {
         ISAEvent event;
         fread(&event, sizeof(event), 1, _file);
         
-#warning TODO: не учитывается EventIdCycleTime
+//#warning TODO: не учитывается EventIdCycleTime
         if ([self isValidEventIdForTimeCheck:event.eventId]) {
-            double deltaTime = fabs((int)event.param1 - _firstFissionTime);
+            double deltaTime = fabs((double)event.param1 - _firstFissionTime);
             if (deltaTime <= _maxNeutronTime) {
                 if (EventIdNeutrons == event.eventId) {
                     _neutronsSummPerAct += 1;
@@ -271,9 +271,9 @@ typedef NS_ENUM(unsigned short, Mask) {
         ISAEvent event;
         fread(&event, sizeof(event), 1, _file);
         
-#warning TODO: не учитывается EventIdCycleTime
+//#warning TODO: не учитывается EventIdCycleTime
         if ([self isValidEventIdForTimeCheck:event.eventId]) {
-            double deltaTime = fabs((int)event.param1 - _firstFissionTime);
+            double deltaTime = fabs((double)event.param1 - _firstFissionTime);
             if (deltaTime <= _fissionMaxTime) {
                 if ([self isFissionBack:event]) {
                     [self storeFissionBack:event];
@@ -305,9 +305,9 @@ typedef NS_ENUM(unsigned short, Mask) {
         ISAEvent event;
         fread(&event, sizeof(event), 1, _file);
         
-#warning TODO: не учитывается EventIdCycleTime
+//#warning TODO: не учитывается EventIdCycleTime
         if ([self isValidEventIdForTimeCheck:event.eventId]) {
-            double deltaTime = fabs((int)event.param1 - _firstFissionTime);
+            double deltaTime = fabs((double)event.param1 - _firstFissionTime);
             if (deltaTime <= _fissionMaxTime) {
                 if ([self isFissionFront:event] && [self isFissionNearToFirstFissionFront:event]) {
                     [self storeNextFissionFront:event];
@@ -329,9 +329,9 @@ typedef NS_ENUM(unsigned short, Mask) {
             _mainCycleTimeEvent = event;
         }
         
-#warning TODO: не учитывается EventIdCycleTime
+//#warning TODO: не учитывается EventIdCycleTime
         if ([self isValidEventIdForTimeCheck:event.eventId]) {
-            double deltaTime = fabs((int)event.param1 - _firstFissionTime);
+            double deltaTime = fabs((double)event.param1 - _firstFissionTime);
             if (deltaTime <= _fissionMaxTime) {
                 if ([self isFissionFront:event] && [self isFissionNearToFirstFissionFront:event]) { // FFron пришедшие после первого
                     [self storeNextFissionFront:event];
@@ -352,9 +352,9 @@ typedef NS_ENUM(unsigned short, Mask) {
         ISAEvent event;
         fread(&event, sizeof(event), 1, _file);
         
-#warning TODO: не учитывается EventIdCycleTime
+//#warning TODO: не учитывается EventIdCycleTime
         if ([self isValidEventIdForTimeCheck:event.eventId]) {
-            double deltaTime = fabs((int)event.param1 - _firstFissionTime);
+            double deltaTime = fabs((double)event.param1 - _firstFissionTime);
             if (deltaTime <= _fissionMaxTime) {
                 if ([self isFissionWel:event]) {
                     [self storeFissionWell:event];
@@ -402,9 +402,9 @@ typedef NS_ENUM(unsigned short, Mask) {
         ISAEvent event;
         fread(&event, sizeof(event), 1, _file);
         
-#warning TODO: не учитывается EventIdCycleTime
+//#warning TODO: не учитывается EventIdCycleTime
         if ([self isValidEventIdForTimeCheck:event.eventId]) {
-            double deltaTime = fabs((int)event.param1 - _firstFissionTime);
+            double deltaTime = fabs((double)event.param1 - _firstFissionTime);
             if (deltaTime <= _maxGammaTime) {
                 if (EventIdGamma1 == event.eventId) {
                     [self storeGamma:event];
@@ -422,9 +422,9 @@ typedef NS_ENUM(unsigned short, Mask) {
         ISAEvent event;
         fread(&event, sizeof(event), 1, _file);
         
-#warning TODO: не учитывается EventIdCycleTime
+//#warning TODO: не учитывается EventIdCycleTime
         if ([self isValidEventIdForTimeCheck:event.eventId]) {
-            double deltaTime = fabs((int)event.param1 - _firstFissionTime);
+            double deltaTime = fabs((double)event.param1 - _firstFissionTime);
             if (deltaTime <= _maxGammaTime) {
                 if (EventIdGamma1 == event.eventId) {
                     [self storeGamma:event];
@@ -479,7 +479,7 @@ typedef NS_ENUM(unsigned short, Mask) {
         }
         
         long long recoilTime = [self time:event.param1 cycleEvent:cycleEvent];
-        long double deltaTime = fabsl(recoilTime - fissionTime);
+        long double deltaTime = llabs((long long)recoilTime - fissionTime);
         if (deltaTime < _recoilMinTime) {
             continue;
         } else if (deltaTime <= _recoilMaxTime) {
@@ -537,7 +537,7 @@ typedef NS_ENUM(unsigned short, Mask) {
             continue;
         }
         
-        double deltaTime = fabs((int)event.param1 - timeRecoilFront);
+        double deltaTime = fabs((double)event.param1 - timeRecoilFront);
         if (deltaTime <= _recoilBackMaxTime) {
             if ([self isRecoilBack:event]) {
                 if (_requiredFissionRecoilBack) {
@@ -570,7 +570,7 @@ typedef NS_ENUM(unsigned short, Mask) {
         fread(&event, sizeof(event), 1, _file);
         
         if ([self isValidEventIdForTimeCheck:event.eventId]) {
-            double deltaTime = fabs((int)event.param1 - recoilTime);
+            double deltaTime = fabs((double)event.param1 - recoilTime);
             if (deltaTime <= _maxTOFTime) {
                 if (EventIdTOF == event.eventId && [self validTOFChannel:event]) {
                     [self storeRealTOF:event deltaTime:-deltaTime];
@@ -590,7 +590,7 @@ typedef NS_ENUM(unsigned short, Mask) {
         fread(&event, sizeof(event), 1, _file);
         
         if ([self isValidEventIdForTimeCheck:event.eventId]) {
-            double deltaTime = fabs((int)event.param1 - recoilTime);
+            double deltaTime = fabs((double)event.param1 - recoilTime);
             if (deltaTime <= _maxTOFTime) {
                 if (EventIdTOF == event.eventId && [self validTOFChannel:event]) {
                     [self storeRealTOF:event deltaTime:deltaTime];
@@ -645,8 +645,8 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
             }
         } else if (EventIdTOF == event.eventId) {
             if (!tofFound) {
-#warning TODO: не учитывается EventIdCycleTime
-                double deltaTime = fabs((int)event.param1 - _firstFissionTime);
+//#warning TODO: не учитывается EventIdCycleTime
+                double deltaTime = fabs((double)event.param1 - _firstFissionTime);
                 if (deltaTime <= kTOFGenerationsMaxTime) {
                     [self storeTOFGenerations:event];
                 }
