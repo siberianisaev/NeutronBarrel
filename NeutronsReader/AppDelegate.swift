@@ -110,7 +110,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     // MARK: - ProcessorDelegate
     
     func incrementProgress(_ delta: Double) {
-        progressIndicator?.increment(by: delta)
+        DispatchQueue.main.async { [weak self] in
+            self?.progressIndicator?.increment(by: delta)
+        }
     }
     
     func startProcessingFile(_ fileName: String) {

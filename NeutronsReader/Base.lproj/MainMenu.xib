@@ -672,14 +672,14 @@
                     </menu>
                 </menuItem>
             </items>
-            <point key="canvasLocation" x="321" y="100"/>
+            <point key="canvasLocation" x="45" y="76"/>
         </menu>
         <window title="NeutronsReader" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" animationBehavior="default" id="QvC-M9-y7g">
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
             <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
             <rect key="contentRect" x="335" y="390" width="820" height="435"/>
             <rect key="screenRect" x="0.0" y="0.0" width="1920" height="1057"/>
-            <value key="minSize" type="size" width="861" height="450"/>
+            <value key="minSize" type="size" width="820" height="435"/>
             <view key="contentView" id="EiT-Mj-1SZ">
                 <rect key="frame" x="0.0" y="0.0" width="820" height="435"/>
                 <autoresizingMask key="autoresizingMask"/>
@@ -866,7 +866,7 @@
                         </connections>
                     </button>
                     <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="9vQ-Df-vN2">
-                        <rect key="frame" x="634" y="347" width="200" height="18"/>
+                        <rect key="frame" x="634" y="347" width="162" height="18"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <buttonCell key="cell" type="check" title="Recoil" bezelStyle="regularSquare" imagePosition="left" inset="2" id="x2H-vR-TKc">
                             <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
@@ -877,7 +877,7 @@
                         </connections>
                     </button>
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Fgx-6p-3Nq">
-                        <rect key="frame" x="636" y="394" width="227" height="25"/>
+                        <rect key="frame" x="636" y="394" width="147" height="25"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Required" id="aP8-MM-MYk">
                             <font key="font" size="15" name="HelveticaNeue-Bold"/>
@@ -1133,7 +1133,7 @@
                         </connections>
                     </textField>
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="XJP-ub-WAV">
-                        <rect key="frame" x="634" y="50" width="222" height="17"/>
+                        <rect key="frame" x="634" y="50" width="162" height="17"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Time max, mks" id="1s4-CC-jkb">
                             <font key="font" metaFont="system"/>
@@ -1169,7 +1169,7 @@
                         </connections>
                     </button>
                     <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="0iN-ES-PsF">
-                        <rect key="frame" x="634" y="171" width="162" height="18"/>
+                        <rect key="frame" x="634" y="171" width="149" height="18"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <buttonCell key="cell" type="check" title="Gamma required" bezelStyle="regularSquare" imagePosition="left" inset="2" id="qqL-ji-47x">
                             <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
