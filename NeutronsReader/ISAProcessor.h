@@ -8,6 +8,12 @@
 
 #import <Foundation/Foundation.h>
 
+typedef NS_ENUM(NSInteger, SearchType) {
+    SearchTypeFission,
+    SearchTypeAlpha,
+    SearchTypeRecoil
+};
+
 @protocol ProcessorDelegate <NSObject>
 
 - (void)incrementProgress:(double)delta;
@@ -17,26 +23,29 @@
 
 @interface ISAProcessor : NSObject
 
-@property (assign, nonatomic) double fissionFrontMinEnergy;
-@property (assign, nonatomic) double fissionFrontMaxEnergy;
+@property (assign, nonatomic) double alphaFrontMinEnergy;
+@property (assign, nonatomic) double alphaFrontMaxEnergy;
+@property (assign, nonatomic) double fissionAlphaFrontMinEnergy;
+@property (assign, nonatomic) double fissionAlphaFrontMaxEnergy;
 @property (assign, nonatomic) double recoilFrontMinEnergy;
 @property (assign, nonatomic) double recoilFrontMaxEnergy;
 @property (assign, nonatomic) double minTOFChannel;
 @property (assign, nonatomic) double recoilMinTime;
 @property (assign, nonatomic) double recoilMaxTime;
 @property (assign, nonatomic) double recoilBackMaxTime;
-@property (assign, nonatomic) double fissionMaxTime;
+@property (assign, nonatomic) double fissionAlphaMaxTime;
 @property (assign, nonatomic) double maxTOFTime;
 @property (assign, nonatomic) double maxGammaTime;
 @property (assign, nonatomic) double maxNeutronTime;
 @property (assign, nonatomic) int recoilFrontMaxDeltaStrips;
 @property (assign, nonatomic) int recoilBackMaxDeltaStrips;
-@property (assign, nonatomic) BOOL summarizeFissionsFront;
+@property (assign, nonatomic) BOOL summarizeFissionsAlphaFront;
 @property (assign, nonatomic) BOOL requiredFissionRecoilBack;
 @property (assign, nonatomic) BOOL requiredRecoil;
 @property (assign, nonatomic) BOOL requiredGamma;
 @property (assign, nonatomic) BOOL requiredTOF;
 @property (assign, nonatomic) BOOL searchNeutrons;
+@property (assign, nonatomic) SearchType startParticleType;
 @property (weak, nonatomic) id <ProcessorDelegate> delegate;
 
 + (ISAProcessor *)sharedProcessor;

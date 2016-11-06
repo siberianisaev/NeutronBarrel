@@ -39,6 +39,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     var requiredGamma: Bool = Settings.getBoolSetting(.RequiredGamma)
     var requiredTOF: Bool = Settings.getBoolSetting(.RequiredTOF)
     var searchNeutrons: Bool = Settings.getBoolSetting(.SearchNeutrons)
+    @IBOutlet weak var fissionAlphaControl: NSSegmentedControl!
     
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         showAppVersion()
@@ -56,29 +57,37 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBAction func start(_ sender: AnyObject?) {
         activity?.startAnimation(self)
         progressIndicator?.startAnimation(self)
+        fissionAlphaControl?.isEnabled = false
         startTimer()
         
         let processor = ISAProcessor.shared();
-        processor?.fissionFrontMinEnergy = sMinFissionEnergy.doubleValue
-        processor?.fissionFrontMaxEnergy = sMaxFissionEnergy.doubleValue
+        
+        processor?.startParticleType = fissionAlphaControl.selectedSegment == 0 ? .fission : .alpha
+        processor?.fissionAlphaFrontMinEnergy = sMinFissionEnergy.doubleValue
+        processor?.fissionAlphaFrontMaxEnergy = sMaxFissionEnergy.doubleValue
+        processor?.fissionAlphaMaxTime = sMaxFissionTime.doubleValue
+        processor?.summarizeFissionsAlphaFront = summarizeFissionsFront
+        
+        processor?.recoilFrontMaxDeltaStrips = sMaxRecoilFrontDeltaStrips.intValue
+        processor?.recoilBackMaxDeltaStrips = sMaxRecoilBackDeltaStrips.intValue
+        processor?.requiredFissionRecoilBack = requiredFissionRecoilBack
+        processor?.requiredRecoil = requiredRecoil
         processor?.recoilFrontMinEnergy = sMinRecoilEnergy.doubleValue
         processor?.recoilFrontMaxEnergy = sMaxRecoilEnergy.doubleValue
-        processor?.minTOFChannel = sMinTOFChannel.doubleValue
         processor?.recoilMinTime = sMinRecoilTime.doubleValue
         processor?.recoilMaxTime = sMaxRecoilTime.doubleValue
         processor?.recoilBackMaxTime = sMaxRecoilBackTime.doubleValue
-        processor?.fissionMaxTime = sMaxFissionTime.doubleValue
+        
+        processor?.minTOFChannel = sMinTOFChannel.doubleValue
         processor?.maxTOFTime = sMaxTOFTime.doubleValue
-        processor?.maxGammaTime = sMaxGammaTime.doubleValue
-        processor?.maxNeutronTime = sMaxNeutronTime.doubleValue
-        processor?.recoilFrontMaxDeltaStrips = sMaxRecoilFrontDeltaStrips.intValue
-        processor?.recoilBackMaxDeltaStrips = sMaxRecoilBackDeltaStrips.intValue
-        processor?.summarizeFissionsFront = summarizeFissionsFront
-        processor?.requiredFissionRecoilBack = requiredFissionRecoilBack
-        processor?.requiredRecoil = requiredRecoil
-        processor?.requiredGamma = requiredGamma
         processor?.requiredTOF = requiredTOF
+        
+        processor?.maxGammaTime = sMaxGammaTime.doubleValue
+        processor?.requiredGamma = requiredGamma
+        
         processor?.searchNeutrons = searchNeutrons
+        processor?.maxNeutronTime = sMaxNeutronTime.doubleValue
+        
         processor?.delegate = self
         processor?.processData(completion: { [unowned self] in
             self.activity?.stopAnimation(self)
