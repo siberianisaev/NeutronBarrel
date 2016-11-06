@@ -31,7 +31,8 @@ class Settings {
         RequiredRecoil = "RequiredRecoil",
         RequiredGamma = "RequiredGamma",
         RequiredTOF = "RequiredTOF",
-        SearchNeutrons = "SearchNeutrons"
+        SearchNeutrons = "SearchNeutrons",
+        SearchType = "SearchType"
         
         func key() -> String {
             return "Setting.\(self.rawValue)"
@@ -43,6 +44,13 @@ class Settings {
             let key = setting.key()
             UserDefaults.standard.set(object, forKey: key)
         }
+    }
+    
+    class func getDoubleSetting(_ setting: Setting) -> Double {
+        if let object = (getSetting(setting) as? Double) {
+            return object
+        }
+        return 0
     }
     
     class func getIntSetting(_ setting: Setting) -> Int {
@@ -106,6 +114,8 @@ class Settings {
             return false
         case .SearchNeutrons:
             return true
+        case .SearchType:
+            return 0
         }
     }
     

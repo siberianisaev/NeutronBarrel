@@ -19,10 +19,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBOutlet weak var labelProcessingFileName: NSTextField!
     fileprivate var totalTime: TimeInterval = 0
     fileprivate var timer: Timer?
-    var sMinFissionEnergy: NSString = NSString(format: "%d", Settings.getIntSetting(.MinFissionEnergy)) // MeV
-    var sMaxFissionEnergy: NSString = NSString(format: "%d", Settings.getIntSetting(.MaxFissionEnergy)) // MeV
-    var sMinRecoilEnergy: NSString = NSString(format: "%d", Settings.getIntSetting(.MinRecoilEnergy)) // MeV
-    var sMaxRecoilEnergy: NSString = NSString(format: "%d", Settings.getIntSetting(.MaxRecoilEnergy)) // MeV
+    var sMinFissionEnergy: NSString = NSString(format: "%.1f", Settings.getDoubleSetting(.MinFissionEnergy)) // MeV
+    var sMaxFissionEnergy: NSString = NSString(format: "%.1f", Settings.getDoubleSetting(.MaxFissionEnergy)) // MeV
+    var sMinRecoilEnergy: NSString = NSString(format: "%.1f", Settings.getDoubleSetting(.MinRecoilEnergy)) // MeV
+    var sMaxRecoilEnergy: NSString = NSString(format: "%.1f", Settings.getDoubleSetting(.MaxRecoilEnergy)) // MeV
     var sMinTOFChannel: NSString = NSString(format: "%d", Settings.getIntSetting(.MinTOFChannel)) // channel
     var sMinRecoilTime: NSString = NSString(format: "%d", Settings.getIntSetting(.MinRecoilTime)) // mks
     var sMaxRecoilTime: NSString = NSString(format: "%d", Settings.getIntSetting(.MaxRecoilTime)) // mks
@@ -42,6 +42,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBOutlet weak var fissionAlphaControl: NSSegmentedControl!
     
     func applicationDidFinishLaunching(_ aNotification: Notification) {
+        fissionAlphaControl.selectedSegment = Settings.getIntSetting(.SearchType)
         showAppVersion()
     }
     
@@ -59,6 +60,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         progressIndicator?.startAnimation(self)
         fissionAlphaControl?.isEnabled = false
         startTimer()
+        saveSettings()
         
         let processor = ISAProcessor.shared();
         
@@ -146,10 +148,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     // MARK: - Settings
     
     fileprivate func saveSettings() {
-        Settings.setObject(sMinFissionEnergy.integerValue, forSetting: .MinFissionEnergy)
-        Settings.setObject(sMaxFissionEnergy.integerValue, forSetting: .MaxFissionEnergy)
-        Settings.setObject(sMinRecoilEnergy.integerValue, forSetting: .MinRecoilEnergy)
-        Settings.setObject(sMaxRecoilEnergy.integerValue, forSetting: .MaxRecoilEnergy)
+        Settings.setObject(sMinFissionEnergy.doubleValue, forSetting: .MinFissionEnergy)
+        Settings.setObject(sMaxFissionEnergy.doubleValue, forSetting: .MaxFissionEnergy)
+        Settings.setObject(sMinRecoilEnergy.doubleValue, forSetting: .MinRecoilEnergy)
+        Settings.setObject(sMaxRecoilEnergy.doubleValue, forSetting: .MaxRecoilEnergy)
         Settings.setObject(sMinTOFChannel.integerValue, forSetting: .MinTOFChannel)
         Settings.setObject(sMinRecoilTime.integerValue, forSetting: .MinRecoilTime)
         Settings.setObject(sMaxRecoilTime.integerValue, forSetting: .MaxRecoilTime)
@@ -165,6 +167,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         Settings.setObject(requiredRecoil, forSetting: .RequiredRecoil)
         Settings.setObject(requiredGamma, forSetting: .RequiredGamma)
         Settings.setObject(requiredTOF, forSetting: .RequiredTOF)
+        Settings.setObject(fissionAlphaControl.selectedSegment, forSetting: .SearchType)
     }
     
     // MARK: - App Version
