@@ -204,8 +204,10 @@ typedef NS_ENUM(unsigned short, Mask) {
                     }
                     
                     // Neutrons
-                    [self findNeutrons];
-                    fseek(_file, position, SEEK_SET);
+                    if (_searchNeutrons) {
+                        [self findNeutrons];
+                        fseek(_file, position, SEEK_SET);
+                    }
                     
                     // FON & Recoil Special && TOF Generations
                     [self findFONEvents];
@@ -225,7 +227,9 @@ typedef NS_ENUM(unsigned short, Mask) {
                     }
                     
                     // Завершили поиск корреляций
-                    [self updateNeutronsMultiplicity];
+                    if (_searchNeutrons) {
+                        [self updateNeutronsMultiplicity];
+                    }
                     [self logActResults];
                     [self clearActInfo];
                 }
@@ -236,7 +240,9 @@ typedef NS_ENUM(unsigned short, Mask) {
         [_delegate incrementProgress:progressForOneFile];
     }
     
-    [_logger logMultiplicity:_neutronsMultiplicityTotal];
+    if (_searchNeutrons) {
+        [_logger logMultiplicity:_neutronsMultiplicityTotal];
+    }
 }
 
 /**

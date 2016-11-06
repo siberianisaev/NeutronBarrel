@@ -30,7 +30,8 @@ class Settings {
         RequiredFissionRecoilBack = "RequiredFissionRecoilBack",
         RequiredRecoil = "RequiredRecoil",
         RequiredGamma = "RequiredGamma",
-        RequiredTOF = "RequiredTOF"
+        RequiredTOF = "RequiredTOF",
+        SearchNeutrons = "SearchNeutrons"
         
         func key() -> String {
             return "Setting.\(self.rawValue)"
@@ -103,6 +104,8 @@ class Settings {
             return false
         case .RequiredTOF:
             return false
+        case .SearchNeutrons:
+            return true
         }
     }
     

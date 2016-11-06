@@ -36,6 +36,7 @@
 @property (assign, nonatomic) BOOL requiredRecoil;
 @property (assign, nonatomic) BOOL requiredGamma;
 @property (assign, nonatomic) BOOL requiredTOF;
+@property (assign, nonatomic) BOOL searchNeutrons;
 @property (weak, nonatomic) id <ProcessorDelegate> delegate;
 
 + (ISAProcessor *)sharedProcessor;

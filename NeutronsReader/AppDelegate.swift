@@ -38,6 +38,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     var requiredRecoil: Bool = Settings.getBoolSetting(.RequiredRecoil)
     var requiredGamma: Bool = Settings.getBoolSetting(.RequiredGamma)
     var requiredTOF: Bool = Settings.getBoolSetting(.RequiredTOF)
+    var searchNeutrons: Bool = Settings.getBoolSetting(.SearchNeutrons)
     
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         showAppVersion()
@@ -77,6 +78,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         processor?.requiredRecoil = requiredRecoil
         processor?.requiredGamma = requiredGamma
         processor?.requiredTOF = requiredTOF
+        processor?.searchNeutrons = searchNeutrons
         processor?.delegate = self
         processor?.processData(completion: { [unowned self] in
             self.activity?.stopAnimation(self)
