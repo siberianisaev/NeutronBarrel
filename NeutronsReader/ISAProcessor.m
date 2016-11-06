@@ -168,7 +168,7 @@ typedef NS_ENUM(unsigned short, Mask) {
                 }
                 
                 // FFron or AFron
-                if ([self isFissionOrAlphaFront:event]) {
+                if ([self isFront:event type:_startParticleType]) {
                     // Запускаем новый цикл поиска, только если энергия осколка/альфы на лицевой стороне детектора выше минимальной
                     double energy = [self getEnergy:event type:_startParticleType];
                     if (energy < _fissionAlphaFrontMinEnergy || energy > _fissionAlphaFrontMaxEnergy) {
@@ -195,7 +195,7 @@ typedef NS_ENUM(unsigned short, Mask) {
                         continue;
                     }
                     
-                    // Recoil (Ищем рекойлы только после поиска всех FBack!)
+                    // Recoil (Ищем рекойлы только после поиска всех FBack/ABack!)
                     [self findRecoil];
                     fseek(_file, position, SEEK_SET);
                     if (_requiredRecoil && 0 == _recoilsFrontPerAct.count) {
@@ -281,7 +281,7 @@ typedef NS_ENUM(unsigned short, Mask) {
         if ([self isValidEventIdForTimeCheck:event.eventId]) {
             double deltaTime = fabs((double)event.param1 - _firstFissionAlphaTime);
             if (deltaTime <= _fissionAlphaMaxTime) {
-                if ([self isFissionOrAlphaBack:event]) {
+                if ([self isBack:event type:_startParticleType]) {
                     [self storeFissionAlphaBack:event];
                 }
             } else {
@@ -315,7 +315,7 @@ typedef NS_ENUM(unsigned short, Mask) {
         if ([self isValidEventIdForTimeCheck:event.eventId]) {
             double deltaTime = fabs((double)event.param1 - _firstFissionAlphaTime);
             if (deltaTime <= _fissionAlphaMaxTime) {
-                if ([self isFissionOrAlphaFront:event] && [self isFissionNearToFirstFissionFront:event]) {
+                if ([self isFront:event type:_startParticleType] && [self isFissionNearToFirstFissionFront:event]) {
                     [self storeNextFissionAlphaFront:event];
                 }
             } else {
@@ -339,7 +339,7 @@ typedef NS_ENUM(unsigned short, Mask) {
         if ([self isValidEventIdForTimeCheck:event.eventId]) {
             double deltaTime = fabs((double)event.param1 - _firstFissionAlphaTime);
             if (deltaTime <= _fissionAlphaMaxTime) {
-                if ([self isFissionOrAlphaFront:event] && [self isFissionNearToFirstFissionFront:event]) { // FFron/AFron пришедшие после первого
+                if ([self isFront:event type:_startParticleType] && [self isFissionNearToFirstFissionFront:event]) { // FFron/AFron пришедшие после первого
                     [self storeNextFissionAlphaFront:event];
                 }
             } else {
@@ -489,7 +489,7 @@ typedef NS_ENUM(unsigned short, Mask) {
         if (deltaTime < _recoilMinTime) {
             continue;
         } else if (deltaTime <= _recoilMaxTime) {
-            if (NO == [self isRecoilFront:event]) {
+            if (NO == [self isFront:event type:SearchTypeRecoil]) {
                 continue;
             }
             
@@ -545,7 +545,7 @@ typedef NS_ENUM(unsigned short, Mask) {
         
         double deltaTime = fabs((double)event.param1 - timeRecoilFront);
         if (deltaTime <= _recoilBackMaxTime) {
-            if ([self isRecoilBack:event]) {
+            if ([self isBack:event type:SearchTypeRecoil]) {
                 if (_requiredFissionRecoilBack) {
                     return [self isRecoilBackNearToFissionAlphaBack:event];
                 }
@@ -1082,12 +1082,12 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
     return (value_16_bits >> 13);
 }
 
-- (BOOL)isFissionOrAlphaFront:(ISAEvent)event
+- (BOOL)isFront:(ISAEvent)event type:(SearchType)type
 {
     unsigned short eventId = event.eventId;
     unsigned short marker = [self getMarker:event.param3];
-    return (kFissionOrAlphaMarker == marker) && (EventIdFissionFront1 == eventId || EventIdFissionFront2 == eventId || EventIdFissionFront3 == eventId ||
-                                                 EventIdFissionDaughterFront1 == eventId || EventIdFissionDaughterFront2 == eventId || EventIdFissionDaughterFront3 == eventId);
+    unsigned short typeMarker = (type == SearchTypeRecoil) ? kRecoilMarker : kFissionOrAlphaMarker;
+    return (typeMarker == marker) && (EventIdFissionFront1 == eventId || EventIdFissionFront2 == eventId || EventIdFissionFront3 == eventId || EventIdFissionDaughterFront1 == eventId || EventIdFissionDaughterFront2 == eventId || EventIdFissionDaughterFront3 == eventId);
 }
 
 - (BOOL)isFissionOrAlphaWel:(ISAEvent)event
@@ -1097,26 +1097,12 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
     return (kFissionOrAlphaMarker == marker) && (EventIdFissionWell1 == eventId || EventIdFissionWell2 == eventId);
 }
 
-- (BOOL)isFissionOrAlphaBack:(ISAEvent)event
+- (BOOL)isBack:(ISAEvent)event type:(SearchType)type
 {
     unsigned short eventId = event.eventId;
     unsigned short marker = [self getMarker:event.param3];
-    return (kFissionOrAlphaMarker == marker) && (EventIdFissionBack1 == eventId || EventIdFissionBack2 == eventId || EventIdFissionBack3 == eventId ||
-                                                 EventIdFissionDaughterBack1 == eventId || EventIdFissionDaughterBack2 == eventId || EventIdFissionDaughterBack3 == eventId);
-}
-
-- (BOOL)isRecoilFront:(ISAEvent)event
-{
-    unsigned short eventId = event.eventId;
-    unsigned short marker = [self getMarker:event.param3];
-    return (kRecoilMarker == marker) && (EventIdFissionFront1 == eventId || EventIdFissionFront2 == eventId || EventIdFissionFront3 == eventId);
-}
-
-- (BOOL)isRecoilBack:(ISAEvent)event
-{
-    unsigned short eventId = event.eventId;
-    unsigned short marker = [self getMarker:event.param3];
-    return (kRecoilMarker == marker) && (EventIdFissionBack1 == eventId || EventIdFissionBack2 == eventId || EventIdFissionBack3 == eventId);
+    unsigned short typeMarker = (type == SearchTypeRecoil) ? kRecoilMarker : kFissionOrAlphaMarker;
+    return (typeMarker == marker) && (EventIdFissionBack1 == eventId || EventIdFissionBack2 == eventId || EventIdFissionBack3 == eventId || EventIdFissionDaughterBack1 == eventId || EventIdFissionDaughterBack2 == eventId || EventIdFissionDaughterBack3 == eventId);
 }
 
 - (void)selectData

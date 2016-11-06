@@ -23,8 +23,6 @@ typedef NS_ENUM(NSInteger, SearchType) {
 
 @interface ISAProcessor : NSObject
 
-@property (assign, nonatomic) double alphaFrontMinEnergy;
-@property (assign, nonatomic) double alphaFrontMaxEnergy;
 @property (assign, nonatomic) double fissionAlphaFrontMinEnergy;
 @property (assign, nonatomic) double fissionAlphaFrontMaxEnergy;
 @property (assign, nonatomic) double recoilFrontMinEnergy;
