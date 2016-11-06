@@ -91,11 +91,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         processor?.maxNeutronTime = sMaxNeutronTime.doubleValue
         
         processor?.delegate = self
-        processor?.processData(completion: { [unowned self] in
-            self.activity?.stopAnimation(self)
-            self.progressIndicator?.doubleValue = 0.0
-            self.progressIndicator?.stopAnimation(self)
-            self.stopTimer()
+        processor?.processData(completion: { [weak self] in
+            self?.activity?.stopAnimation(self)
+            self?.progressIndicator?.doubleValue = 0.0
+            self?.progressIndicator?.stopAnimation(self)
+            self?.fissionAlphaControl?.isEnabled = true
+            self?.stopTimer()
         })
     }
     
