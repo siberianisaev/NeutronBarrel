@@ -167,6 +167,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         Settings.setObject(requiredRecoil, forSetting: .RequiredRecoil)
         Settings.setObject(requiredGamma, forSetting: .RequiredGamma)
         Settings.setObject(requiredTOF, forSetting: .RequiredTOF)
+        Settings.setObject(searchNeutrons, forSetting: .SearchNeutrons)
         Settings.setObject(fissionAlphaControl.selectedSegment, forSetting: .SearchType)
     }
     
