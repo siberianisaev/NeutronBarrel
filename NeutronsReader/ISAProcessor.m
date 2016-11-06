@@ -383,7 +383,7 @@ typedef NS_ENUM(unsigned short, Mask) {
 {
     unsigned short encoder = [self fissionAlphaRecoilEncoderForEventId:event.eventId];
     unsigned short strip_0_15 = event.param2 >> 12;  // value from 0 to 15
-    double energy = [self getEnergy:event type:SearchTypeFission];
+    double energy = [self getEnergy:event type:_startParticleType];
     NSDictionary *info = @{kEncoder:@(encoder),
                            kStrip0_15:@(strip_0_15),
                            kEnergy:@(energy),
@@ -702,10 +702,10 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
 
 - (void)storeFissionAlphaFront:(ISAEvent)event isFirst:(BOOL)isFirst
 {
-    unsigned short channel = _startParticleType == SearchTypeFission ? event.param2 & MaskFission : event.param3 & MaskRecoilAlpha;
+    unsigned short channel = (_startParticleType == SearchTypeFission) ? (event.param2 & MaskFission) : (event.param3 & MaskRecoilAlpha);
     unsigned short encoder = [self fissionAlphaRecoilEncoderForEventId:event.eventId];
     unsigned short strip_0_15 = event.param2 >> 12;  // value from 0 to 15
-    double energy = [self getEnergy:event type:SearchTypeFission];
+    double energy = [self getEnergy:event type:_startParticleType];
     NSDictionary *info = @{kEncoder:@(encoder),
                            kStrip0_15:@(strip_0_15),
                            kChannel:@(channel),
@@ -724,7 +724,7 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
 
 - (void)storeFissionAlphaWell:(ISAEvent)event
 {
-    double energy = [self getEnergy:event type:SearchTypeFission];
+    double energy = [self getEnergy:event type:_startParticleType];
     unsigned short encoder = [self fissionAlphaRecoilEncoderForEventId:event.eventId];
     unsigned short strip_0_15 = event.param2 >> 12;  // value from 0 to 15
     NSDictionary *info = @{kEncoder:@(encoder),
@@ -788,7 +788,7 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
 
 - (double)getEnergy:(ISAEvent)event type:(SearchType)type
 {
-    unsigned short channel = type == SearchTypeFission ? (event.param2 & MaskFission) : (event.param3 & MaskRecoilAlpha);
+    unsigned short channel = (type == SearchTypeFission) ? (event.param2 & MaskFission) : (event.param3 & MaskRecoilAlpha);
     unsigned short eventId = event.eventId;
     unsigned short strip_0_15 = event.param2 >> 12;  // value from 0 to 15
     unsigned short encoder = [self fissionAlphaRecoilEncoderForEventId:eventId];
@@ -876,7 +876,7 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
 
 - (void)logResultsHeader
 {
-    NSString *startParticle = _startParticleType == SearchTypeFission ? @"F" : @"A";
+    NSString *startParticle = (_startParticleType == SearchTypeFission) ? @"F" : @"A";
     NSString *header = [NSString stringWithFormat:@"File,Event,E(RFron),dT(RFron-$Fron),TOF,dT(TOF-RFRon),%@,Strip($Fron),Strip($Back),$Wel,$WelPos,Neutrons,Gamma,FON,Recoil(Special)", (_summarizeFissionsAlphaFront ? @"Summ($Fron)" : @"$Fron")];
     header = [header stringByReplacingOccurrencesOfString:@"$" withString:startParticle];
     NSArray *components = [header componentsSeparatedByString:@","];
