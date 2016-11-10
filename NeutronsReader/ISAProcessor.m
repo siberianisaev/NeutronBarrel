@@ -147,97 +147,99 @@ typedef NS_ENUM(unsigned short, Mask) {
     const double progressForOneFile = 100.0 / _files.count;
     
     for (NSString *path in _files) {
-        _file = fopen([path UTF8String], "rb");
-        _currentFileName = path.lastPathComponent;
-        [_delegate startProcessingFile:_currentFileName];
-        
-        if (_file == NULL) {
-            exit(-1);
-        } else {
-            setvbuf(_file, NULL, _IONBF, 0); // disable buffering
-            while (!feof(_file)) {
-                ISAEvent event;
-                fread(&event, sizeof(event), 1, _file);
-                if (ferror(_file)) {
-                    printf("\nERROR while reading file %s\n", [_currentFileName UTF8String]);
-                    exit(-1);
-                }
-                
-                if (event.eventId == EventIdCycleTime) {
-                    _mainCycleTimeEvent = event;
-                }
-                
-                // FFron or AFron
-                if ([self isFront:event type:_startParticleType]) {
-                    // Запускаем новый цикл поиска, только если энергия осколка/альфы на лицевой стороне детектора выше минимальной
-                    double energy = [self getEnergy:event type:_startParticleType];
-                    if (energy < _fissionAlphaFrontMinEnergy || energy > _fissionAlphaFrontMaxEnergy) {
-                        continue;
-                    }                    
-                    [self storeFirstFissionAlphaFront:event];
-                    
-                    fpos_t position;
-                    fgetpos(_file, &position);
-                    
-                    // Gamma
-                    [self findGamma];
-                    fseek(_file, position, SEEK_SET);
-                    if (_requiredGamma && 0 == _gammaPerAct.count) {
-                        [self clearActInfo];
-                        continue;
+        @autoreleasepool {
+            _file = fopen([path UTF8String], "rb");
+            _currentFileName = path.lastPathComponent;
+            [_delegate startProcessingFile:_currentFileName];
+            
+            if (_file == NULL) {
+                exit(-1);
+            } else {
+                setvbuf(_file, NULL, _IONBF, 0); // disable buffering
+                while (!feof(_file)) {
+                    ISAEvent event;
+                    fread(&event, sizeof(event), 1, _file);
+                    if (ferror(_file)) {
+                        printf("\nERROR while reading file %s\n", [_currentFileName UTF8String]);
+                        exit(-1);
                     }
                     
-                    // FBack or ABack
-                    [self findFissionsAlphaBack];
-                    fseek(_file, position, SEEK_SET);
-                    if (_requiredFissionRecoilBack && 0 == _fissionsAlphaBackPerAct.count) {
-                        [self clearActInfo];
-                        continue;
+                    if (event.eventId == EventIdCycleTime) {
+                        _mainCycleTimeEvent = event;
                     }
                     
-                    // Recoil (Ищем рекойлы только после поиска всех FBack/ABack!)
-                    [self findRecoil];
-                    fseek(_file, position, SEEK_SET);
-                    if (_requiredRecoil && 0 == _recoilsFrontPerAct.count) {
-                        [self clearActInfo];
-                        continue;
-                    }
-                    
-                    // Neutrons
-                    if (_searchNeutrons) {
-                        [self findNeutrons];
+                    // FFron or AFron
+                    if ([self isFront:event type:_startParticleType]) {
+                        // Запускаем новый цикл поиска, только если энергия осколка/альфы на лицевой стороне детектора выше минимальной
+                        double energy = [self getEnergy:event type:_startParticleType];
+                        if (energy < _fissionAlphaFrontMinEnergy || energy > _fissionAlphaFrontMaxEnergy) {
+                            continue;
+                        }
+                        [self storeFirstFissionAlphaFront:event];
+                        
+                        fpos_t position;
+                        fgetpos(_file, &position);
+                        
+                        // Gamma
+                        [self findGamma];
                         fseek(_file, position, SEEK_SET);
+                        if (_requiredGamma && 0 == _gammaPerAct.count) {
+                            [self clearActInfo];
+                            continue;
+                        }
+                        
+                        // FBack or ABack
+                        [self findFissionsAlphaBack];
+                        fseek(_file, position, SEEK_SET);
+                        if (_requiredFissionRecoilBack && 0 == _fissionsAlphaBackPerAct.count) {
+                            [self clearActInfo];
+                            continue;
+                        }
+                        
+                        // Recoil (Ищем рекойлы только после поиска всех FBack/ABack!)
+                        [self findRecoil];
+                        fseek(_file, position, SEEK_SET);
+                        if (_requiredRecoil && 0 == _recoilsFrontPerAct.count) {
+                            [self clearActInfo];
+                            continue;
+                        }
+                        
+                        // Neutrons
+                        if (_searchNeutrons) {
+                            [self findNeutrons];
+                            fseek(_file, position, SEEK_SET);
+                        }
+                        
+                        // FON & Recoil Special && TOF Generations
+                        [self findFONEvents];
+                        fseek(_file, position, SEEK_SET);
+                        
+                        // FWel or AWel
+                        [self findFissionsAlphaWel];
+                        fseek(_file, position, SEEK_SET);
+                        
+                        /*
+                         ВАЖНО: тут не делаем репозиционирование в потоке после поиска!
+                         Этот подцикл поиска всегда должен быть последним!
+                         */
+                        // Summ(FFron or AFron)
+                        if (_summarizeFissionsAlphaFront) {
+                            [self findFissionsAlphaFront];
+                        }
+                        
+                        // Завершили поиск корреляций
+                        if (_searchNeutrons) {
+                            [self updateNeutronsMultiplicity];
+                        }
+                        [self logActResults];
+                        [self clearActInfo];
                     }
-                    
-                    // FON & Recoil Special && TOF Generations
-                    [self findFONEvents];
-                    fseek(_file, position, SEEK_SET);
-                    
-                    // FWel or AWel
-                    [self findFissionsAlphaWel];
-                    fseek(_file, position, SEEK_SET);
-                    
-                    /*
-                     ВАЖНО: тут не делаем репозиционирование в потоке после поиска!
-                     Этот подцикл поиска всегда должен быть последним!
-                     */
-                    // Summ(FFron or AFron)
-                    if (_summarizeFissionsAlphaFront) {
-                        [self findFissionsAlphaFront];
-                    }
-                    
-                    // Завершили поиск корреляций
-                    if (_searchNeutrons) {
-                        [self updateNeutronsMultiplicity];
-                    }
-                    [self logActResults];
-                    [self clearActInfo];
                 }
             }
+            fclose(_file);
+            
+            [_delegate incrementProgress:progressForOneFile];
         }
-        fclose(_file);
-        
-        [_delegate incrementProgress:progressForOneFile];
     }
     
     if (_searchNeutrons) {
