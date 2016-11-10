@@ -526,7 +526,8 @@ typedef NS_ENUM(unsigned short, Mask) {
 {
     double energy = [self getEnergy:event type:SearchTypeRecoil];
     NSDictionary *info = @{kEnergy:@(energy),
-                           kDeltaTime:@(deltaTime)};
+                           kDeltaTime:@(deltaTime),
+                           kEventNumber:@([self eventNumber])};
     [_recoilsFrontPerAct addObject:info];
 }
 
@@ -937,6 +938,16 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
                 case 2:
                 {
                     if (row < (int)_recoilsFrontPerAct.count) {
+                        NSNumber *eventNumberObject = [[_recoilsFrontPerAct objectAtIndex:row] objectForKey:kEventNumber];
+                        if (eventNumberObject) {
+                            field = [NSString stringWithFormat:@"%llu", [eventNumberObject unsignedLongLongValue]];
+                        }
+                    }
+                    break;
+                }
+                case 3:
+                {
+                    if (row < (int)_recoilsFrontPerAct.count) {
                         NSNumber *recoilEnergy = [[_recoilsFrontPerAct objectAtIndex:row] valueForKey:kEnergy];
                         if (recoilEnergy) {
                             field = [NSString stringWithFormat:@"%.7f", [recoilEnergy doubleValue]];
@@ -944,7 +955,7 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
                     }
                     break;
                 }
-                case 3:
+                case 4:
                 {
                     if (row < (int)_recoilsFrontPerAct.count) {
                         NSNumber *deltaTimeRecoilFission = [[_recoilsFrontPerAct objectAtIndex:row] valueForKey:kDeltaTime];
@@ -954,7 +965,7 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
                     }
                     break;
                 }
-                case 4:
+                case 5:
                 {
                     if (row < (int)_tofRealPerAct.count) {
                         NSNumber *tof = [[_tofRealPerAct objectAtIndex:row] valueForKey:kChannel];
@@ -964,7 +975,7 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
                     }
                     break;
                 }
-                case 5:
+                case 6:
                 {
                     if (row < (int)_tofRealPerAct.count) {
                         NSNumber *deltaTimeTOFRecoil = [[_tofRealPerAct objectAtIndex:row] valueForKey:kDeltaTime];
@@ -974,32 +985,24 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
                     }
                     break;
                 }
-                case 6:
+                case 7:
                 {
                     if (row == 0) {
                         field = [NSString stringWithFormat:@"%.7f", summFFronE];
                     }
                     break;
                 }
-                case 7:
+                case 8:
                 {
                     if (row == 0 && stripFFronEMax > 0) {
                         field = [NSString stringWithFormat:@"%d", stripFFronEMax];
                     }
                     break;
                 }
-                case 8:
+                case 9:
                 {
                     if (row == 0 && stripFBackChannelMax > 0) {
                         field = [NSString stringWithFormat:@"%d", stripFBackChannelMax];
-                    }
-                    break;
-                }
-                case 9:
-                {
-                    if (row < (int)_fissionsAlphaWelPerAct.count) {
-                        NSDictionary *fissionInfo = [_fissionsAlphaWelPerAct objectAtIndex:row];
-                        field = [NSString stringWithFormat:@"%.7f", [[fissionInfo objectForKey:kEnergy] doubleValue]];
                     }
                     break;
                 }
@@ -1007,32 +1010,40 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
                 {
                     if (row < (int)_fissionsAlphaWelPerAct.count) {
                         NSDictionary *fissionInfo = [_fissionsAlphaWelPerAct objectAtIndex:row];
-                        field = [NSString stringWithFormat:@"FWel%d.%d", [[fissionInfo objectForKey:kEncoder] intValue], [[fissionInfo objectForKey:kStrip0_15] intValue]+1];
+                        field = [NSString stringWithFormat:@"%.7f", [[fissionInfo objectForKey:kEnergy] doubleValue]];
                     }
                     break;
                 }
                 case 11:
                 {
-                    if (row == 0) {
-                        field = [NSString stringWithFormat:@"%llu", _neutronsSummPerAct];
+                    if (row < (int)_fissionsAlphaWelPerAct.count) {
+                        NSDictionary *fissionInfo = [_fissionsAlphaWelPerAct objectAtIndex:row];
+                        field = [NSString stringWithFormat:@"FWel%d.%d", [[fissionInfo objectForKey:kEncoder] intValue], [[fissionInfo objectForKey:kStrip0_15] intValue]+1];
                     }
                     break;
                 }
                 case 12:
+                {
+                    if (row == 0 && _searchNeutrons) {
+                        field = [NSString stringWithFormat:@"%llu", _neutronsSummPerAct];
+                    }
+                    break;
+                }
+                case 13:
                 {
                     if (row < (int)_gammaPerAct.count) {
                         field = [NSString stringWithFormat:@"%.7f", [[_gammaPerAct objectAtIndex:row] doubleValue]];
                     }
                     break;
                 }
-                case 13:
+                case 14:
                 {
                     if (row == 0 && _fonPerAct) {
                         field = [NSString stringWithFormat:@"%hu", [_fonPerAct unsignedShortValue]];
                     }
                     break;
                 }
-                case 14:
+                case 15:
                 {
                     if (row == 0 && _recoilSpecialPerAct) {
                         field = [NSString stringWithFormat:@"%hu", [_recoilSpecialPerAct unsignedShortValue]];
