@@ -32,6 +32,10 @@ class DataLoader: NSObject {
                 
                 //TODO: использовать файл протокола для уточнения данных
                 selected = selected.filter() { false == $0.hasSuffix(".PRO") && false == $0.hasSuffix(".DS_Store") }
+                
+                selected = selected.sorted(by: { (s1: String, s2: String) -> Bool in
+                    return s1 < s2
+                })
                 onFinish(selected)
             }
         }

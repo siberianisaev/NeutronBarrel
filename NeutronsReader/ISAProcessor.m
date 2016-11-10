@@ -880,11 +880,16 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
 - (void)logResultsHeader
 {
     NSString *startParticle = (_startParticleType == SearchTypeFission) ? @"F" : @"A";
-    NSString *header = [NSString stringWithFormat:@"File,Event,E(RFron),dT(RFron-$Fron),TOF,dT(TOF-RFRon),%@,Strip($Fron),Strip($Back),$Wel,$WelPos,Neutrons,Gamma,FON,Recoil(Special)", (_summarizeFissionsAlphaFront ? @"Summ($Fron)" : @"$Fron")];
+    NSString *header = [NSString stringWithFormat:@"Event(Recoil),E(RFron),dT(RFron-$Fron),TOF,dT(TOF-RFRon),Event($),%@,Strip($Fron),Strip($Back),$Wel,$WelPos,Neutrons,Gamma,FON,Recoil(Special)", (_summarizeFissionsAlphaFront ? @"Summ($Fron)" : @"$Fron")];
     header = [header stringByReplacingOccurrencesOfString:@"$" withString:startParticle];
     NSArray *components = [header componentsSeparatedByString:@","];
     [_logger writeLineOfFields:components];
     [_logger finishLine]; // +1 line padding
+}
+
+- (NSString *)currentFileEventNumber:(long long)number
+{
+    return [NSString stringWithFormat:@"%@_%llu", _currentFileName, number];
 }
 
 - (void)logActResults
@@ -925,29 +930,15 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
             switch (column) {
                 case 0:
                 {
-                    if (row == 0) {
-                        field = _currentFileName;
-                    }
-                    break;
-                }
-                case 1:
-                {
-                    if (row == 0) {
-                        field = [NSString stringWithFormat:@"%llu", eventNumber];
-                    }
-                    break;
-                }
-                case 2:
-                {
                     if (row < (int)_recoilsFrontPerAct.count) {
                         NSNumber *eventNumberObject = [[_recoilsFrontPerAct objectAtIndex:row] objectForKey:kEventNumber];
                         if (eventNumberObject) {
-                            field = [NSString stringWithFormat:@"%llu", [eventNumberObject unsignedLongLongValue]];
+                            field = [self currentFileEventNumber:[eventNumberObject unsignedLongLongValue]];
                         }
                     }
                     break;
                 }
-                case 3:
+                case 1:
                 {
                     if (row < (int)_recoilsFrontPerAct.count) {
                         NSNumber *recoilEnergy = [[_recoilsFrontPerAct objectAtIndex:row] valueForKey:kEnergy];
@@ -957,7 +948,7 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
                     }
                     break;
                 }
-                case 4:
+                case 2:
                 {
                     if (row < (int)_recoilsFrontPerAct.count) {
                         NSNumber *deltaTimeRecoilFission = [[_recoilsFrontPerAct objectAtIndex:row] valueForKey:kDeltaTime];
@@ -967,7 +958,7 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
                     }
                     break;
                 }
-                case 5:
+                case 3:
                 {
                     if (row < (int)_tofRealPerAct.count) {
                         NSNumber *tof = [[_tofRealPerAct objectAtIndex:row] valueForKey:kChannel];
@@ -977,7 +968,7 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
                     }
                     break;
                 }
-                case 6:
+                case 4:
                 {
                     if (row < (int)_tofRealPerAct.count) {
                         NSNumber *deltaTimeTOFRecoil = [[_tofRealPerAct objectAtIndex:row] valueForKey:kDeltaTime];
@@ -987,28 +978,35 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
                     }
                     break;
                 }
-                case 7:
+                case 5:
+                {
+                    if (row == 0) {
+                        field = [self currentFileEventNumber:eventNumber];
+                    }
+                    break;
+                }
+                case 6:
                 {
                     if (row == 0) {
                         field = [NSString stringWithFormat:@"%.7f", summFFronE];
                     }
                     break;
                 }
-                case 8:
+                case 7:
                 {
                     if (row == 0 && stripFFronEMax > 0) {
                         field = [NSString stringWithFormat:@"%d", stripFFronEMax];
                     }
                     break;
                 }
-                case 9:
+                case 8:
                 {
                     if (row == 0 && stripFBackChannelMax > 0) {
                         field = [NSString stringWithFormat:@"%d", stripFBackChannelMax];
                     }
                     break;
                 }
-                case 10:
+                case 9:
                 {
                     if (row < (int)_fissionsAlphaWelPerAct.count) {
                         NSDictionary *fissionInfo = [_fissionsAlphaWelPerAct objectAtIndex:row];
@@ -1016,7 +1014,7 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
                     }
                     break;
                 }
-                case 11:
+                case 10:
                 {
                     if (row < (int)_fissionsAlphaWelPerAct.count) {
                         NSDictionary *fissionInfo = [_fissionsAlphaWelPerAct objectAtIndex:row];
@@ -1024,28 +1022,28 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
                     }
                     break;
                 }
-                case 12:
+                case 11:
                 {
                     if (row == 0 && _searchNeutrons) {
                         field = [NSString stringWithFormat:@"%llu", _neutronsSummPerAct];
                     }
                     break;
                 }
-                case 13:
+                case 12:
                 {
                     if (row < (int)_gammaPerAct.count) {
                         field = [NSString stringWithFormat:@"%.7f", [[_gammaPerAct objectAtIndex:row] doubleValue]];
                     }
                     break;
                 }
-                case 14:
+                case 13:
                 {
                     if (row == 0 && _fonPerAct) {
                         field = [NSString stringWithFormat:@"%hu", [_fonPerAct unsignedShortValue]];
                     }
                     break;
                 }
-                case 15:
+                case 14:
                 {
                     if (row == 0 && _recoilSpecialPerAct) {
                         field = [NSString stringWithFormat:@"%hu", [_recoilSpecialPerAct unsignedShortValue]];
