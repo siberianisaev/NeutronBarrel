@@ -17,8 +17,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBOutlet weak var labelVersion: NSTextField!
     @IBOutlet weak var labelTotalTime: NSTextField!
     @IBOutlet weak var labelProcessingFileName: NSTextField!
+    @IBOutlet weak var fissionAlphaControl: NSSegmentedControl!
+    
     fileprivate var totalTime: TimeInterval = 0
     fileprivate var timer: Timer?
+    
     var sMinFissionEnergy: NSString = NSString(format: "%.1f", Settings.getDoubleSetting(.MinFissionEnergy)) // MeV
     var sMaxFissionEnergy: NSString = NSString(format: "%.1f", Settings.getDoubleSetting(.MaxFissionEnergy)) // MeV
     var sMinRecoilEnergy: NSString = NSString(format: "%.1f", Settings.getDoubleSetting(.MinRecoilEnergy)) // MeV
@@ -39,7 +42,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     var requiredGamma: Bool = Settings.getBoolSetting(.RequiredGamma)
     var requiredTOF: Bool = Settings.getBoolSetting(.RequiredTOF)
     var searchNeutrons: Bool = Settings.getBoolSetting(.SearchNeutrons)
-    @IBOutlet weak var fissionAlphaControl: NSSegmentedControl!
+    // Alpha 2
+    var searchAlpha2: Bool = Settings.getBoolSetting(.SearchAlpha2)
+    var sMinAlpha2Energy: NSString = NSString(format: "%.1f", Settings.getDoubleSetting(.MinAlpha2Energy)) // MeV
+    var sMaxAlpha2Energy: NSString = NSString(format: "%.1f", Settings.getDoubleSetting(.MaxAlpha2Energy)) // MeV
+    var sMinAlpha2Time: NSString = NSString(format: "%d", Settings.getIntSetting(.MinAlpha2Time)) // mks
+    var sMaxAlpha2Time: NSString = NSString(format: "%d", Settings.getIntSetting(.MaxAlpha2Time)) // mks
+    var sMaxAlpha2FrontDeltaStrips: NSString = NSString(format: "%d", Settings.getIntSetting(.MaxAlpha2FrontDeltaStrips))
     
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         fissionAlphaControl.selectedSegment = Settings.getIntSetting(.SearchType)
@@ -69,6 +78,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         processor?.fissionAlphaFrontMaxEnergy = sMaxFissionEnergy.doubleValue
         processor?.fissionAlphaMaxTime = sMaxFissionTime.doubleValue
         processor?.summarizeFissionsAlphaFront = summarizeFissionsFront
+        
+        processor?.searchAlpha2 = searchAlpha2
+        processor?.alpha2MinEnergy = sMinAlpha2Energy.doubleValue
+        processor?.alpha2MaxEnergy = sMaxAlpha2Energy.doubleValue
+        processor?.alpha2MinTime = sMinAlpha2Time.doubleValue
+        processor?.alpha2MaxTime = sMaxAlpha2Time.doubleValue
+        processor?.alpha2MaxDeltaStrips = sMaxAlpha2FrontDeltaStrips.intValue
         
         processor?.recoilFrontMaxDeltaStrips = sMaxRecoilFrontDeltaStrips.intValue
         processor?.recoilBackMaxDeltaStrips = sMaxRecoilBackDeltaStrips.intValue
@@ -172,6 +188,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         Settings.setObject(requiredTOF, forSetting: .RequiredTOF)
         Settings.setObject(searchNeutrons, forSetting: .SearchNeutrons)
         Settings.setObject(fissionAlphaControl.selectedSegment, forSetting: .SearchType)
+        Settings.setObject(searchAlpha2, forSetting: .SearchAlpha2)
+        Settings.setObject(sMinAlpha2Energy.doubleValue, forSetting: .MinAlpha2Energy)
+        Settings.setObject(sMaxAlpha2Energy.doubleValue, forSetting: .MaxAlpha2Energy)
+        Settings.setObject(sMinAlpha2Time.integerValue, forSetting: .MinAlpha2Time)
+        Settings.setObject(sMaxAlpha2Time.integerValue, forSetting: .MaxAlpha2Time)
+        Settings.setObject(sMaxAlpha2FrontDeltaStrips.integerValue, forSetting: .MaxAlpha2FrontDeltaStrips)
     }
     
     // MARK: - App Version

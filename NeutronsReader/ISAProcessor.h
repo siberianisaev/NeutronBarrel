@@ -43,6 +43,14 @@ typedef NS_ENUM(NSInteger, SearchType) {
 @property (assign, nonatomic) BOOL requiredGamma;
 @property (assign, nonatomic) BOOL requiredTOF;
 @property (assign, nonatomic) BOOL searchNeutrons;
+
+@property (assign, nonatomic) BOOL searchAlpha2;
+@property (assign, nonatomic) double alpha2MinEnergy;
+@property (assign, nonatomic) double alpha2MaxEnergy;
+@property (assign, nonatomic) double alpha2MinTime;
+@property (assign, nonatomic) double alpha2MaxTime;
+@property (assign, nonatomic) int alpha2MaxDeltaStrips;
+
 @property (assign, nonatomic) SearchType startParticleType;
 @property (weak, nonatomic) id <ProcessorDelegate> delegate;
 

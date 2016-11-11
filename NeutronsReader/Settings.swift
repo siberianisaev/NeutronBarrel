@@ -32,7 +32,13 @@ class Settings {
         RequiredGamma = "RequiredGamma",
         RequiredTOF = "RequiredTOF",
         SearchNeutrons = "SearchNeutrons",
-        SearchType = "SearchType"
+        SearchType = "SearchType",
+        SearchAlpha2 = "SearchAlpha2",
+        MinAlpha2Energy = "MinAlpha2Energy",
+        MaxAlpha2Energy = "MaxAlpha2Energy",
+        MinAlpha2Time = "MinAlpha2Time",
+        MaxAlpha2Time = "MaxAlpha2Time",
+        MaxAlpha2FrontDeltaStrips = "MaxAlpha2FrontDeltaStrips"
         
         func key() -> String {
             return "Setting.\(self.rawValue)"
@@ -115,6 +121,18 @@ class Settings {
         case .SearchNeutrons:
             return true
         case .SearchType:
+            return 0
+        case .SearchAlpha2:
+            return 0
+        case .MinAlpha2Energy:
+            return 5
+        case .MaxAlpha2Energy:
+            return 20
+        case .MinAlpha2Time:
+            return 0
+        case .MaxAlpha2Time:
+            return 1000
+        case .MaxAlpha2FrontDeltaStrips:
             return 0
         }
     }
