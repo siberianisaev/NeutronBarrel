@@ -69,6 +69,7 @@ typedef NS_ENUM(unsigned short, Mask) {
 @property (strong, nonatomic) NSString *currentFileName;
 @property (strong, nonatomic) NSMutableDictionary *neutronsMultiplicityTotal;
 @property (strong, nonatomic) NSMutableArray *recoilsFrontPerAct;
+@property (strong, nonatomic) NSMutableArray *alpha2FrontPerAct;
 @property (strong, nonatomic) NSMutableArray *tofRealPerAct;
 @property (strong, nonatomic) NSMutableArray *fissionsAlphaFrontPerAct;
 @property (strong, nonatomic) NSMutableArray *fissionsAlphaBackPerAct;
@@ -132,6 +133,7 @@ typedef NS_ENUM(unsigned short, Mask) {
     
     _neutronsMultiplicityTotal = [NSMutableDictionary dictionary];
     _recoilsFrontPerAct = [NSMutableArray array];
+    _alpha2FrontPerAct = [NSMutableArray array];
     _tofRealPerAct = [NSMutableArray array];
     _fissionsAlphaFrontPerAct = [NSMutableArray array];
     _fissionsAlphaBackPerAct = [NSMutableArray array];
@@ -179,6 +181,16 @@ typedef NS_ENUM(unsigned short, Mask) {
                         
                         fpos_t position;
                         fgetpos(_file, &position);
+                        
+                        // Alpha 2
+                        if (_searchAlpha2) {
+                            [self findAlpha2];
+                            fseek(_file, position, SEEK_SET);
+                            if (0 == _alpha2FrontPerAct.count) {
+                                [self clearActInfo];
+                                continue;
+                            }
+                        }
                         
                         // Gamma
                         [self findGamma];
@@ -500,7 +512,7 @@ typedef NS_ENUM(unsigned short, Mask) {
                 continue;
             }
             
-            if (NO == [self isRecoilFrontNearToFirstFissionFront:event]) {
+            if (NO == [self isEventFrontNearToFirstFissionAlphaFront:event maxDelta:_recoilFrontMaxDeltaStrips]) {
                 continue;
             }
             
@@ -559,6 +571,53 @@ typedef NS_ENUM(unsigned short, Mask) {
         }
     }
     return NO;
+}
+
+/**
+ Поиск альфы 2 осуществляется с позиции файла где найдена альфа 1 (вперед по времени).
+ */
+- (void)findAlpha2
+{
+    long long alphaTime = [self time:_firstFissionAlphaTime cycleEvent:_mainCycleTimeEvent];
+    ISAEvent cycleEvent = _mainCycleTimeEvent;
+    
+    //  Ищем в направлении до +_maxAlpha2Time mks от T(Alpha 1 Front)
+    while (!feof(_file)) {
+        ISAEvent event;
+        fread(&event, sizeof(event), 1, _file);
+        
+        long long time = [self time:event.param1 cycleEvent:cycleEvent];
+        long double deltaTime = llabs((long long)time - alphaTime);
+        if (deltaTime < _alpha2MinTime) {
+            continue;
+        } else if (deltaTime <= _alpha2MaxTime) {
+            if (NO == [self isFront:event type:SearchTypeAlpha]) {
+                continue;
+            }
+            
+            double energy = [self getEnergy:event type:SearchTypeAlpha];
+            if (energy < _alpha2MinEnergy || energy > _alpha2MaxEnergy) {
+                continue;
+            }
+            
+            if (NO == [self isEventFrontNearToFirstFissionAlphaFront:event maxDelta:_alpha2MaxDeltaStrips]) {
+                continue;
+            }
+            
+            [self storeAlpha2:event deltaTime:deltaTime];
+        } else {
+            return;
+        }
+    }
+}
+
+- (void)storeAlpha2:(ISAEvent)event deltaTime:(long long)deltaTime
+{
+    double energy = [self getEnergy:event type:SearchTypeAlpha];
+    NSDictionary *info = @{kEnergy:@(energy),
+                           kDeltaTime:@(deltaTime),
+                           kEventNumber:@([self eventNumber])};
+    [_alpha2FrontPerAct addObject:info];
 }
 
 /**
@@ -743,14 +802,14 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
 }
 
 /**
- Метод проверяет находится ли рекоил event на близких стрипах (_recoilFrontMaxDeltaStrips) относительно первого осколка/альфы.
+ Метод проверяет находится ли ! рекоил/альфа ! event на близких стрипах относительно первого осколка/альфы.
  */
-- (BOOL)isRecoilFrontNearToFirstFissionFront:(ISAEvent)event
+- (BOOL)isEventFrontNearToFirstFissionAlphaFront:(ISAEvent)event maxDelta:(int)maxDelta
 {
     unsigned short strip_0_15 = event.param2 >> 12;
     int strip_1_48 = [self focalStripConvertToFormat_1_48:strip_0_15 eventId:event.eventId];
     int strip_1_48_first_fission = [[_firstFissionAlphaInfo objectForKey:kStrip1_48] intValue];
-    return (abs(strip_1_48 - strip_1_48_first_fission) <= _recoilFrontMaxDeltaStrips);
+    return (abs(strip_1_48 - strip_1_48_first_fission) <= maxDelta);
 }
 
 /**
@@ -851,6 +910,7 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
     [_tofGenerationsPerAct removeAllObjects];
     [_fissionsAlphaWelPerAct removeAllObjects];
     [_recoilsFrontPerAct removeAllObjects];
+    [_alpha2FrontPerAct removeAllObjects];
     [_tofRealPerAct removeAllObjects];
     _firstFissionAlphaInfo = nil;
     _fonPerAct = nil;
@@ -881,6 +941,9 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
 {
     NSString *startParticle = (_startParticleType == SearchTypeFission) ? @"F" : @"A";
     NSString *header = [NSString stringWithFormat:@"Event(Recoil),E(RFron),dT(RFron-$Fron),TOF,dT(TOF-RFRon),Event($),%@,Strip($Fron),Strip($Back),$Wel,$WelPos,Neutrons,Gamma,FON,Recoil(Special)", (_summarizeFissionsAlphaFront ? @"Summ($Fron)" : @"$Fron")];
+    if (_searchAlpha2) {
+        header = [header stringByAppendingString:@",Event(Alpha2),E(Alpha2),dT(Alpha1-Alpha2)"];
+    }
     header = [header stringByReplacingOccurrencesOfString:@"$" withString:startParticle];
     NSArray *components = [header componentsSeparatedByString:@","];
     [_logger writeLineOfFields:components];
@@ -923,6 +986,9 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
     }
     
     int columnsCount = 14;
+    if (_searchAlpha2) {
+        columnsCount += 3;
+    }
     int rowsMax = MAX(MAX(MAX(1, (int)_gammaPerAct.count), (int)_fissionsAlphaWelPerAct.count), (int)_recoilsFrontPerAct.count);
     for (int row = 0; row < rowsMax; row++) {
         for (int column = 0; column <= columnsCount; column++) {
@@ -1047,6 +1113,36 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
                 {
                     if (row == 0 && _recoilSpecialPerAct) {
                         field = [NSString stringWithFormat:@"%hu", [_recoilSpecialPerAct unsignedShortValue]];
+                    }
+                    break;
+                }
+                case 15:
+                {
+                    if (row < (int)_alpha2FrontPerAct.count) {
+                        NSNumber *event = [[_alpha2FrontPerAct objectAtIndex:row] objectForKey:kEventNumber];
+                        if (event) {
+                            field = [self currentFileEventNumber:[event unsignedLongLongValue]];
+                        }
+                    }
+                    break;
+                }
+                case 16:
+                {
+                    if (row < (int)_alpha2FrontPerAct.count) {
+                        NSNumber *energy = [[_alpha2FrontPerAct objectAtIndex:row] valueForKey:kEnergy];
+                        if (energy) {
+                            field = [NSString stringWithFormat:@"%.7f", [energy doubleValue]];
+                        }
+                    }
+                    break;
+                }
+                case 17:
+                {
+                    if (row < (int)_alpha2FrontPerAct.count) {
+                        NSNumber *deltaTime = [[_alpha2FrontPerAct objectAtIndex:row] valueForKey:kDeltaTime];
+                        if (deltaTime) {
+                            field = [NSString stringWithFormat:@"%lld", (long long)[deltaTime longLongValue]];
+                        }
                     }
                     break;
                 }
