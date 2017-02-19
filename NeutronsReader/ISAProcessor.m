@@ -45,6 +45,7 @@ typedef NS_ENUM(unsigned short, EventId) {
     EventIdFissionWell1 = 13,
     EventIdFissionWell2 = 14,
     EventIdGamma1 = 15,
+    EventIdGamma2 = 16,
     EventIdTOF = 17,
     EventIdNeutrons = 23,
     EventIdCycleTime = 24,
@@ -405,6 +406,11 @@ typedef NS_ENUM(unsigned short, Mask) {
     [_fissionsAlphaBackPerAct addObject:info];
 }
 
+- (BOOL)isGammaEvent:(ISAEvent)event
+{
+    return EventIdGamma1 == event.eventId || EventIdGamma2 == event.eventId;
+}
+
 /**
  Ищем ВСЕ! Gam1 в окне до _maxGammaTime относительно времени Fission Front (в двух направлениях).
  */
@@ -426,7 +432,7 @@ typedef NS_ENUM(unsigned short, Mask) {
         if ([self isValidEventIdForTimeCheck:event.eventId]) {
             double deltaTime = fabs((double)event.param1 - _firstFissionAlphaTime);
             if (deltaTime <= _maxGammaTime) {
-                if (EventIdGamma1 == event.eventId) {
+                if ([self isGammaEvent:event]) {
                     [self storeGamma:event];
                 }
             } else {
@@ -446,7 +452,7 @@ typedef NS_ENUM(unsigned short, Mask) {
         if ([self isValidEventIdForTimeCheck:event.eventId]) {
             double deltaTime = fabs((double)event.param1 - _firstFissionAlphaTime);
             if (deltaTime <= _maxGammaTime) {
-                if (EventIdGamma1 == event.eventId) {
+                if ([self isGammaEvent:event]) {
                     [self storeGamma:event];
                 }
             } else {
@@ -1176,7 +1182,7 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
  */
 - (BOOL)isValidEventIdForTimeCheck:(unsigned short)eventId
 {
-    return (eventId <= EventIdFissionWell2 || EventIdTOF == eventId || EventIdGamma1 == eventId || EventIdNeutrons == eventId);
+    return (eventId <= EventIdFissionWell2 || EventIdTOF == eventId || EventIdGamma1 == eventId || EventIdGamma2 == eventId || EventIdNeutrons == eventId);
 }
 
 /**
