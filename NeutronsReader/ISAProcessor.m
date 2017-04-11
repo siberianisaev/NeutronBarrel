@@ -320,6 +320,13 @@ typedef NS_ENUM(unsigned short, Mask) {
     
     // 1. Ищем в направлении до -_fissionMaxTime mks от T(Fission First)
     fpos_t current = initial;
+    
+    if (current > -1) {
+        // Skip Fission/Alpha First event!
+        current -= sizeof(ISAEvent);
+        fseek(_file, current, SEEK_SET);
+    }
+    
     while (current > -1) {
         current -= sizeof(ISAEvent);
         fseek(_file, current, SEEK_SET);
