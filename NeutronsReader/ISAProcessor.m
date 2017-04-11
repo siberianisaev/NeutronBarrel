@@ -834,7 +834,7 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
         
         int strip_0_15_back_fission = [[fissionBackInfo objectForKey:kStrip0_15] intValue];
         int encoder_back_fission = [[fissionBackInfo objectForKey:kEncoder] intValue];
-        int strip_1_48_back_fission = [self focalStripConvertToFormat_1_48:strip_0_15_back_fission encoder:encoder_back_fission];
+        int strip_1_48_back_fission = [self stripConvertToFormat_1_48:strip_0_15_back_fission encoder:encoder_back_fission];
         
         return (abs(strip_1_48 - strip_1_48_back_fission) <= _recoilBackMaxDeltaStrips);
     }
@@ -950,7 +950,7 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
 - (void)logResultsHeader
 {
     NSString *startParticle = (_startParticleType == SearchTypeFission) ? @"F" : @"A";
-    NSString *header = [NSString stringWithFormat:@"Event(Recoil),E(RFron),dT(RFron-$Fron),TOF,dT(TOF-RFron),Event($),%@,Strip($Fron),$Back,dT($Fron-$Back),Strip($Back),$Wel,$WelPos,Neutrons,Gamma,dT($Fron-Gamma),FON,Recoil(Special)", (_summarizeFissionsAlphaFront ? @"Summ($Fron)" : @"$Fron")];
+    NSString *header = [NSString stringWithFormat:@"Event(Recoil),E(RFron),dT(RFron-$Fron),TOF,dT(TOF-RFron),Event($),Summ($Fron),$Fron,Strip($Fron),$Back,dT($Fron-$Back),Strip($Back),$Wel,$WelPos,Neutrons,Gamma,dT($Fron-Gamma),FON,Recoil(Special)"];
     if (_searchAlpha2) {
         header = [header stringByAppendingString:@",Event(Alpha2),E(Alpha2),dT(Alpha1-Alpha2)"];
     }
@@ -967,35 +967,7 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
 
 - (void)logActResults
 {
-    // FFRON
-    unsigned long long eventNumber = NAN;
-    double summFFronE = 0;
-    int stripFFronEMax = -1;
-    double maxFFronE = 0;
-    for (NSDictionary *fissionInfo in _fissionsAlphaFrontPerAct) {
-        double energy = [[fissionInfo objectForKey:kEnergy] doubleValue];
-        if (maxFFronE < energy) {
-            maxFFronE = energy;
-            
-            int strip_0_15 = [[fissionInfo objectForKey:kStrip0_15] intValue];
-            int encoder = [[fissionInfo objectForKey:kEncoder] intValue];
-            stripFFronEMax = [self focalStripConvertToFormat_1_48:strip_0_15 encoder:encoder];
-            
-            eventNumber = [[fissionInfo objectForKey:kEventNumber] unsignedLongLongValue];
-        }
-        summFFronE += energy;
-    }
-    
-    // FBACK
-    int stripFBackChannelMax = -1;
-    NSDictionary *fissionAlphaBackInfo = [self fissionAlphaBackWithMaxEnergyInAct];
-    if (fissionAlphaBackInfo) {
-        int strip_0_15 = [[fissionAlphaBackInfo objectForKey:kStrip0_15] intValue];
-        int encoder = [[fissionAlphaBackInfo objectForKey:kEncoder] intValue];
-        stripFBackChannelMax = [self focalStripConvertToFormat_1_48:strip_0_15 encoder:encoder];
-    }
-    
-    int columnsCount = 17;
+    int columnsCount = 18;
     if (_searchAlpha2) {
         columnsCount += 3;
     }
@@ -1056,7 +1028,9 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
                 }
                 case 5:
                 {
-                    if (row == 0) {
+                    if (row < (int)_fissionsAlphaFrontPerAct.count) {
+                        NSDictionary *info = [_fissionsAlphaFrontPerAct objectAtIndex:row];
+                        unsigned long long eventNumber = [[info objectForKey:kEventNumber] unsignedLongLongValue];
                         field = [self currentFileEventNumber:eventNumber];
                     }
                     break;
@@ -1064,22 +1038,31 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
                 case 6:
                 {
                     if (row == 0) {
-                        field = [NSString stringWithFormat:@"%.7f", summFFronE];
+                        double summ = 0;
+                        for (NSDictionary *info in _fissionsAlphaFrontPerAct) {
+                            double energy = [[info objectForKey:kEnergy] doubleValue];
+                            summ += energy;
+                        }
+                        field = [NSString stringWithFormat:@"%.7f", summ];
                     }
                     break;
                 }
                 case 7:
                 {
-                    if (row == 0 && stripFFronEMax > 0) {
-                        field = [NSString stringWithFormat:@"%d", stripFFronEMax];
+                    if (row < (int)_fissionsAlphaFrontPerAct.count) {
+                        NSDictionary *info = [_fissionsAlphaFrontPerAct objectAtIndex:row];
+                        field = [NSString stringWithFormat:@"%.7f", [[info objectForKey:kEnergy] doubleValue]];
                     }
                     break;
                 }
                 case 8:
                 {
-                    if (row < (int)_fissionsAlphaBackPerAct.count) {
-                        NSDictionary *fissionInfo = [_fissionsAlphaBackPerAct objectAtIndex:row];
-                        field = [NSString stringWithFormat:@"%.7f", [[fissionInfo objectForKey:kEnergy] doubleValue]];
+                    if (row < (int)_fissionsAlphaFrontPerAct.count) {
+                        NSDictionary *info = [_fissionsAlphaFrontPerAct objectAtIndex:row];
+                        int strip_0_15 = [[info objectForKey:kStrip0_15] intValue];
+                        int encoder = [[info objectForKey:kEncoder] intValue];
+                        unsigned short strip = [self stripConvertToFormat_1_48:strip_0_15 encoder:encoder];
+                        field = [NSString stringWithFormat:@"%d", strip];
                     }
                     break;
                 }
@@ -1087,22 +1070,26 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
                 {
                     if (row < (int)_fissionsAlphaBackPerAct.count) {
                         NSDictionary *fissionInfo = [_fissionsAlphaBackPerAct objectAtIndex:row];
-                        field = [NSString stringWithFormat:@"%d", [[fissionInfo objectForKey:kDeltaTime] intValue]];
+                        field = [NSString stringWithFormat:@"%.7f", [[fissionInfo objectForKey:kEnergy] doubleValue]];
                     }
                     break;
                 }
                 case 10:
                 {
-                    if (row == 0 && stripFBackChannelMax > 0) {
-                        field = [NSString stringWithFormat:@"%d", stripFBackChannelMax];
+                    if (row < (int)_fissionsAlphaBackPerAct.count) {
+                        NSDictionary *fissionInfo = [_fissionsAlphaBackPerAct objectAtIndex:row];
+                        field = [NSString stringWithFormat:@"%d", [[fissionInfo objectForKey:kDeltaTime] intValue]];
                     }
                     break;
                 }
                 case 11:
                 {
-                    if (row < (int)_fissionsAlphaWelPerAct.count) {
-                        NSDictionary *fissionInfo = [_fissionsAlphaWelPerAct objectAtIndex:row];
-                        field = [NSString stringWithFormat:@"%.7f", [[fissionInfo objectForKey:kEnergy] doubleValue]];
+                    if (row < (int)_fissionsAlphaBackPerAct.count) {
+                        NSDictionary *info = [_fissionsAlphaBackPerAct objectAtIndex:row];
+                        int strip_0_15 = [[info objectForKey:kStrip0_15] intValue];
+                        int encoder = [[info objectForKey:kEncoder] intValue];
+                        unsigned short strip = [self stripConvertToFormat_1_48:strip_0_15 encoder:encoder];
+                        field = [NSString stringWithFormat:@"%d", strip];
                     }
                     break;
                 }
@@ -1110,18 +1097,26 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
                 {
                     if (row < (int)_fissionsAlphaWelPerAct.count) {
                         NSDictionary *fissionInfo = [_fissionsAlphaWelPerAct objectAtIndex:row];
-                        field = [NSString stringWithFormat:@"FWel%d.%d", [[fissionInfo objectForKey:kEncoder] intValue], [[fissionInfo objectForKey:kStrip0_15] intValue]+1];
+                        field = [NSString stringWithFormat:@"%.7f", [[fissionInfo objectForKey:kEnergy] doubleValue]];
                     }
                     break;
                 }
                 case 13:
+                {
+                    if (row < (int)_fissionsAlphaWelPerAct.count) {
+                        NSDictionary *fissionInfo = [_fissionsAlphaWelPerAct objectAtIndex:row];
+                        field = [NSString stringWithFormat:@"FWel%d.%d", [[fissionInfo objectForKey:kEncoder] intValue], [[fissionInfo objectForKey:kStrip0_15] intValue]+1];
+                    }
+                    break;
+                }
+                case 14:
                 {
                     if (row == 0 && _searchNeutrons) {
                         field = [NSString stringWithFormat:@"%llu", _neutronsSummPerAct];
                     }
                     break;
                 }
-                case 14:
+                case 15:
                 {
                     if (row < (int)_gammaPerAct.count) {
                         NSDictionary *info = [_gammaPerAct objectAtIndex:row];
@@ -1129,7 +1124,7 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
                     }
                     break;
                 }
-                case 15:
+                case 16:
                     if (row < (int)_gammaPerAct.count) {
                         NSDictionary *info = [_gammaPerAct objectAtIndex:row];
                         NSNumber *deltaTimeFissionGamma = [info objectForKey:kDeltaTime];
@@ -1138,21 +1133,21 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
                         }
                     }
                     break;
-                case 16:
+                case 17:
                 {
                     if (row == 0 && _fonPerAct) {
                         field = [NSString stringWithFormat:@"%hu", [_fonPerAct unsignedShortValue]];
                     }
                     break;
                 }
-                case 17:
+                case 18:
                 {
                     if (row == 0 && _recoilSpecialPerAct) {
                         field = [NSString stringWithFormat:@"%hu", [_recoilSpecialPerAct unsignedShortValue]];
                     }
                     break;
                 }
-                case 18:
+                case 19:
                 {
                     if (row < (int)_alpha2FrontPerAct.count) {
                         NSNumber *event = [[_alpha2FrontPerAct objectAtIndex:row] objectForKey:kEventNumber];
@@ -1162,7 +1157,7 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
                     }
                     break;
                 }
-                case 19:
+                case 20:
                 {
                     if (row < (int)_alpha2FrontPerAct.count) {
                         NSNumber *energy = [[_alpha2FrontPerAct objectAtIndex:row] valueForKey:kEnergy];
@@ -1172,7 +1167,7 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
                     }
                     break;
                 }
-                case 20:
+                case 21:
                 {
                     if (row < (int)_alpha2FrontPerAct.count) {
                         NSNumber *deltaTime = [[_alpha2FrontPerAct objectAtIndex:row] valueForKey:kDeltaTime];
@@ -1199,10 +1194,10 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
 - (unsigned short)focalStripConvertToFormat_1_48:(unsigned short)strip_0_15 eventId:(unsigned short)eventId
 {
     int encoder = [self fissionAlphaRecoilEncoderForEventId:eventId];
-    return [self focalStripConvertToFormat_1_48:strip_0_15 encoder:encoder];
+    return [self stripConvertToFormat_1_48:strip_0_15 encoder:encoder];
 }
 
-- (unsigned short)focalStripConvertToFormat_1_48:(unsigned short)strip_0_15 encoder:(unsigned short)encoder
+- (unsigned short)stripConvertToFormat_1_48:(unsigned short)strip_0_15 encoder:(unsigned short)encoder
 {
     return (strip_0_15 * 3) + (encoder - 1) + 1;
 }
