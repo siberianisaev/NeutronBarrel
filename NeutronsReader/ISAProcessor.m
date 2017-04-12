@@ -339,7 +339,7 @@ typedef NS_ENUM(unsigned short, Mask) {
             double deltaTime = fabs((double)event.param1 - _firstFissionAlphaTime);
             if (deltaTime <= _fissionAlphaMaxTime) {
                 if ([self isFront:event type:_startParticleType] && [self isFissionNearToFirstFissionFront:event]) {
-                    [self storeNextFissionAlphaFront:event];
+                    [self storeNextFissionAlphaFront:event deltaTime:deltaTime];
                 }
             } else {
                 break;
@@ -363,7 +363,7 @@ typedef NS_ENUM(unsigned short, Mask) {
             double deltaTime = fabs((double)event.param1 - _firstFissionAlphaTime);
             if (deltaTime <= _fissionAlphaMaxTime) {
                 if ([self isFront:event type:_startParticleType] && [self isFissionNearToFirstFissionFront:event]) { // FFron/AFron пришедшие после первого
-                    [self storeNextFissionAlphaFront:event];
+                    [self storeNextFissionAlphaFront:event deltaTime:deltaTime];
                 }
             } else {
                 return;
@@ -771,15 +771,15 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
 
 - (void)storeFirstFissionAlphaFront:(ISAEvent)event
 {
-    [self storeFissionAlphaFront:event isFirst:YES];
+    [self storeFissionAlphaFront:event isFirst:YES deltaTime:0];
 }
 
-- (void)storeNextFissionAlphaFront:(ISAEvent)event
+- (void)storeNextFissionAlphaFront:(ISAEvent)event deltaTime:(double)deltaTime
 {
-    [self storeFissionAlphaFront:event isFirst:NO];
+    [self storeFissionAlphaFront:event isFirst:NO deltaTime:deltaTime];
 }
 
-- (void)storeFissionAlphaFront:(ISAEvent)event isFirst:(BOOL)isFirst
+- (void)storeFissionAlphaFront:(ISAEvent)event isFirst:(BOOL)isFirst deltaTime:(double)deltaTime
 {
     unsigned short channel = (_startParticleType == SearchTypeFission) ? (event.param2 & MaskFission) : (event.param3 & MaskRecoilAlpha);
     unsigned short encoder = [self fissionAlphaRecoilEncoderForEventId:event.eventId];
@@ -789,7 +789,8 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
                            kStrip0_15:@(strip_0_15),
                            kChannel:@(channel),
                            kEnergy:@(energy),
-                           kEventNumber:@([self eventNumber])};
+                           kEventNumber:@([self eventNumber]),
+                           kDeltaTime:@(deltaTime)};
     [_fissionsAlphaFrontPerAct addObject:info];
     
     if (isFirst) {
@@ -957,7 +958,7 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
 - (void)logResultsHeader
 {
     NSString *startParticle = (_startParticleType == SearchTypeFission) ? @"F" : @"A";
-    NSString *header = [NSString stringWithFormat:@"Event(Recoil),E(RFron),dT(RFron-$Fron),TOF,dT(TOF-RFron),Event($),Summ($Fron),$Fron,Strip($Fron),$Back,dT($Fron-$Back),Strip($Back),$Wel,$WelPos,Neutrons,Gamma,dT($Fron-Gamma),FON,Recoil(Special)"];
+    NSString *header = [NSString stringWithFormat:@"Event(Recoil),E(RFron),dT(RFron-$Fron),TOF,dT(TOF-RFron),Event($),Summ($Fron),$Fron,dT($FronFirst-Next),Strip($Fron),$Back,dT($Fron-$Back),Strip($Back),$Wel,$WelPos,Neutrons,Gamma,dT($Fron-Gamma),FON,Recoil(Special)"];
     if (_searchAlpha2) {
         header = [header stringByAppendingString:@",Event(Alpha2),E(Alpha2),dT(Alpha1-Alpha2)"];
     }
@@ -974,7 +975,7 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
 
 - (void)logActResults
 {
-    int columnsCount = 18;
+    int columnsCount = 19;
     if (_searchAlpha2) {
         columnsCount += 3;
     }
@@ -1066,6 +1067,14 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
                 {
                     if (row < (int)_fissionsAlphaFrontPerAct.count) {
                         NSDictionary *info = [_fissionsAlphaFrontPerAct objectAtIndex:row];
+                        field = [NSString stringWithFormat:@"%lld", [[info objectForKey:kDeltaTime] longLongValue]];
+                    }
+                    break;
+                }
+                case 9:
+                {
+                    if (row < (int)_fissionsAlphaFrontPerAct.count) {
+                        NSDictionary *info = [_fissionsAlphaFrontPerAct objectAtIndex:row];
                         int strip_0_15 = [[info objectForKey:kStrip0_15] intValue];
                         int encoder = [[info objectForKey:kEncoder] intValue];
                         unsigned short strip = [self stripConvertToFormat_1_48:strip_0_15 encoder:encoder];
@@ -1073,7 +1082,7 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
                     }
                     break;
                 }
-                case 9:
+                case 10:
                 {
                     if (row < (int)_fissionsAlphaBackPerAct.count) {
                         NSDictionary *fissionInfo = [_fissionsAlphaBackPerAct objectAtIndex:row];
@@ -1081,7 +1090,7 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
                     }
                     break;
                 }
-                case 10:
+                case 11:
                 {
                     if (row < (int)_fissionsAlphaBackPerAct.count) {
                         NSDictionary *fissionInfo = [_fissionsAlphaBackPerAct objectAtIndex:row];
@@ -1089,7 +1098,7 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
                     }
                     break;
                 }
-                case 11:
+                case 12:
                 {
                     if (row < (int)_fissionsAlphaBackPerAct.count) {
                         NSDictionary *info = [_fissionsAlphaBackPerAct objectAtIndex:row];
@@ -1100,7 +1109,7 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
                     }
                     break;
                 }
-                case 12:
+                case 13:
                 {
                     if (row < (int)_fissionsAlphaWelPerAct.count) {
                         NSDictionary *fissionInfo = [_fissionsAlphaWelPerAct objectAtIndex:row];
@@ -1108,7 +1117,7 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
                     }
                     break;
                 }
-                case 13:
+                case 14:
                 {
                     if (row < (int)_fissionsAlphaWelPerAct.count) {
                         NSDictionary *fissionInfo = [_fissionsAlphaWelPerAct objectAtIndex:row];
@@ -1116,14 +1125,14 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
                     }
                     break;
                 }
-                case 14:
+                case 15:
                 {
                     if (row == 0 && _searchNeutrons) {
                         field = [NSString stringWithFormat:@"%llu", _neutronsSummPerAct];
                     }
                     break;
                 }
-                case 15:
+                case 16:
                 {
                     if (row < (int)_gammaPerAct.count) {
                         NSDictionary *info = [_gammaPerAct objectAtIndex:row];
@@ -1131,7 +1140,7 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
                     }
                     break;
                 }
-                case 16:
+                case 17:
                     if (row < (int)_gammaPerAct.count) {
                         NSDictionary *info = [_gammaPerAct objectAtIndex:row];
                         NSNumber *deltaTimeFissionGamma = [info objectForKey:kDeltaTime];
@@ -1140,21 +1149,21 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
                         }
                     }
                     break;
-                case 17:
+                case 18:
                 {
                     if (row == 0 && _fonPerAct) {
                         field = [NSString stringWithFormat:@"%hu", [_fonPerAct unsignedShortValue]];
                     }
                     break;
                 }
-                case 18:
+                case 19:
                 {
                     if (row == 0 && _recoilSpecialPerAct) {
                         field = [NSString stringWithFormat:@"%hu", [_recoilSpecialPerAct unsignedShortValue]];
                     }
                     break;
                 }
-                case 19:
+                case 20:
                 {
                     if (row < (int)_alpha2FrontPerAct.count) {
                         NSNumber *event = [[_alpha2FrontPerAct objectAtIndex:row] objectForKey:kEventNumber];
@@ -1164,7 +1173,7 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
                     }
                     break;
                 }
-                case 20:
+                case 21:
                 {
                     if (row < (int)_alpha2FrontPerAct.count) {
                         NSNumber *energy = [[_alpha2FrontPerAct objectAtIndex:row] valueForKey:kEnergy];
@@ -1174,7 +1183,7 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
                     }
                     break;
                 }
-                case 21:
+                case 22:
                 {
                     if (row < (int)_alpha2FrontPerAct.count) {
                         NSNumber *deltaTime = [[_alpha2FrontPerAct objectAtIndex:row] valueForKey:kDeltaTime];
