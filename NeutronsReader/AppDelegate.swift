@@ -19,6 +19,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBOutlet weak var labelProcessingFileName: NSTextField!
     @IBOutlet weak var fissionAlphaControl: NSSegmentedControl!
     @IBOutlet weak var tofUnitsControl: NSSegmentedControl!
+    @IBOutlet weak var indicatorData: NSTextField!
+    @IBOutlet weak var indicatorCalibration: NSTextField!
     
     fileprivate var totalTime: TimeInterval = 0
     fileprivate var timer: Timer?
@@ -55,6 +57,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         fissionAlphaControl.selectedSegment = Settings.getIntSetting(.SearchType)
         tofUnitsControl.selectedSegment = Settings.getIntSetting(.TOFUnits)
+        for i in [indicatorData, indicatorCalibration] {
+            setSelected(false, indicator: i)
+        }
         showAppVersion()
     }
     
@@ -64,6 +69,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     
     func applicationWillTerminate(_ aNotification: Notification) {
         saveSettings()
+    }
+    
+    fileprivate func setSelected(_ selected: Bool, indicator: NSTextField?) {
+        indicator?.textColor = selected ? NSColor.green : NSColor.red
+        indicator?.stringValue = selected ? "✓" : "×"
     }
     
 //TODO: добавить возможность остановить поиск
@@ -124,11 +134,15 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     }
     
     @IBAction func selectData(_ sender: AnyObject?) {
-        ISAProcessor.shared().selectData()
+        ISAProcessor.shared().selectData { [weak self] (success: Bool) in
+            self?.setSelected(success, indicator: self?.indicatorData)
+        }
     }
     
     @IBAction func selectCalibration(_ sender: AnyObject?) {
-        ISAProcessor.shared().selectCalibration()
+        ISAProcessor.shared().selectCalibration { [weak self] (success: Bool) in
+            self?.setSelected(success, indicator: self?.indicatorCalibration)
+        }
     }
     
     // MARK: - ProcessorDelegate

@@ -17,6 +17,8 @@
             <connections>
                 <outlet property="activity" destination="efV-t0-MaY" id="ciS-Dq-IAJ"/>
                 <outlet property="fissionAlphaControl" destination="uWj-m9-lqI" id="vu9-dD-TiC"/>
+                <outlet property="indicatorCalibration" destination="XqW-b9-4q2" id="1bX-rn-I9g"/>
+                <outlet property="indicatorData" destination="dGH-Qw-g6c" id="ew5-EN-2OK"/>
                 <outlet property="labelProcessingFileName" destination="om2-lB-Td7" id="9Qy-lb-5Yx"/>
                 <outlet property="labelTotalTime" destination="2Ow-sS-sNC" id="iCu-v0-Oyd"/>
                 <outlet property="labelVersion" destination="Jp9-e5-rtp" id="VMy-Bb-Lfg"/>
@@ -1309,6 +1311,24 @@
                             </segments>
                         </segmentedCell>
                     </segmentedControl>
+                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" allowsCharacterPickerTouchBarItem="NO" translatesAutoresizingMaskIntoConstraints="NO" id="XqW-b9-4q2">
+                        <rect key="frame" x="206" y="145" width="30" height="30"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="center" id="e39-8I-RgZ">
+                            <font key="font" metaFont="systemBold" size="22"/>
+                            <color key="textColor" red="0.92941182850000004" green="0.1098039299" blue="0.1411764771" alpha="1" colorSpace="deviceRGB"/>
+                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                    </textField>
+                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" allowsCharacterPickerTouchBarItem="NO" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" id="dGH-Qw-g6c">
+                        <rect key="frame" x="206" y="198" width="30" height="30"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" allowsUndo="NO" sendsActionOnEndEditing="YES" alignment="center" id="pzR-Bd-hCE">
+                            <font key="font" metaFont="systemBold" size="22"/>
+                            <color key="textColor" red="0.92941182850000004" green="0.1098039299" blue="0.1411764771" alpha="1" colorSpace="deviceRGB"/>
+                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                    </textField>
                 </subviews>
             </view>
             <point key="canvasLocation" x="479" y="437.5"/>

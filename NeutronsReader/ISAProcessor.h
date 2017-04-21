@@ -64,7 +64,7 @@ typedef NS_ENUM(NSInteger, TOFUnits) {
 + (ISAProcessor *)sharedProcessor;
 
 - (void)processDataWithCompletion:(void (^)(void))completion;
-- (void)selectData;
-- (void)selectCalibration;
+- (void)selectDataWithCompletion:(void (^)(BOOL))completion;
+- (void)selectCalibrationWithCompletion:(void (^)(BOOL))completion;
 
 @end

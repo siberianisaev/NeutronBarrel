@@ -1290,17 +1290,19 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
     return (typeMarker == marker) && (EventIdFissionBack1 == eventId || EventIdFissionBack2 == eventId || EventIdFissionBack3 == eventId || EventIdFissionDaughterBack1 == eventId || EventIdFissionDaughterBack2 == eventId || EventIdFissionDaughterBack3 == eventId);
 }
 
-- (void)selectData
+- (void)selectDataWithCompletion:(void (^)(BOOL))completion
 {
     [DataLoader load:^(NSArray *files){
         _files = files;
+        completion(files.count > 0);
     }];
 }
 
-- (void)selectCalibration
+- (void)selectCalibrationWithCompletion:(void (^)(BOOL))completion
 {
     [Calibration openCalibration:^(Calibration *calibration){
-         _calibration = calibration;
+        _calibration = calibration;
+        completion(true);
     }];
 }
 
