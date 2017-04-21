@@ -14,6 +14,11 @@ typedef NS_ENUM(NSInteger, SearchType) {
     SearchTypeRecoil
 };
 
+typedef NS_ENUM(NSInteger, TOFUnits) {
+    TOFUnitsChannels,
+    TOFUnitsNanoseconds
+};
+
 @protocol ProcessorDelegate <NSObject>
 
 - (void)incrementProgress:(double)delta;
@@ -27,7 +32,8 @@ typedef NS_ENUM(NSInteger, SearchType) {
 @property (assign, nonatomic) double fissionAlphaFrontMaxEnergy;
 @property (assign, nonatomic) double recoilFrontMinEnergy;
 @property (assign, nonatomic) double recoilFrontMaxEnergy;
-@property (assign, nonatomic) double minTOFChannel;
+@property (assign, nonatomic) double minTOFValue;
+@property (assign, nonatomic) double maxTOFValue;
 @property (assign, nonatomic) double recoilMinTime;
 @property (assign, nonatomic) double recoilMaxTime;
 @property (assign, nonatomic) double recoilBackMaxTime;
@@ -52,6 +58,7 @@ typedef NS_ENUM(NSInteger, SearchType) {
 @property (assign, nonatomic) int alpha2MaxDeltaStrips;
 
 @property (assign, nonatomic) SearchType startParticleType;
+@property (assign, nonatomic) TOFUnits unitsTOF;
 @property (weak, nonatomic) id <ProcessorDelegate> delegate;
 
 + (ISAProcessor *)sharedProcessor;

@@ -75,7 +75,7 @@ class Calibration: NSObject {
         }
     }
     
-    func energyForAmplitude(_ channel: Double, eventName: String) -> Double {
+    func calibratedValueForAmplitude(_ channel: Double, eventName: String) -> Double {
         if let value = self.data[eventName] {
             let nB = value[self.kCoefficientB]
             let nA = value[self.kCoefficientA]

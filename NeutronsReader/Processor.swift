@@ -56,6 +56,9 @@ class Processor {
     fileprivate var kEnergy: String {
         return "energy"
     }
+    fileprivate var kValue: String {
+        return "value"
+    }
     fileprivate var kDeltaTime: String {
         return "delta_time"
     }

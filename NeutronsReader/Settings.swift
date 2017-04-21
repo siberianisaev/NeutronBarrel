@@ -16,7 +16,9 @@ class Settings {
         MaxFissionEnergy = "MaxFissionEnergy",
         MinRecoilEnergy = "MinRecoilEnergy",
         MaxRecoilEnergy = "MaxRecoilEnergy",
-        MinTOFChannel = "MinTOFChannel",
+        MinTOFValue = "MinTOFValue",
+        MaxTOFValue = "MaxTOFValue",
+        TOFUnits = "TOFUnits",
         MinRecoilTime = "MinRecoilTime",
         MaxRecoilTime = "MaxRecoilTime",
         MaxRecoilBackTime = "MaxRecoilBackTime",
@@ -88,8 +90,10 @@ class Settings {
             return 1
         case .MaxRecoilEnergy:
             return 20
-        case .MinTOFChannel:
+        case .MinTOFValue:
             return 0
+        case .MaxTOFValue:
+            return 10000
         case .MinRecoilTime:
             return 0
         case .MaxRecoilTime:
@@ -120,7 +124,7 @@ class Settings {
             return false
         case .SearchNeutrons:
             return true
-        case .SearchType:
+        case .SearchType, .TOFUnits:
             return 0
         case .SearchAlpha2:
             return 0

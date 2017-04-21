@@ -18,6 +18,7 @@ static NSString * const kEncoder = @"encoder";
 static NSString * const kStrip0_15 = @"strip_0_15";
 static NSString * const kStrip1_48 = @"strip_1_48";
 static NSString * const kEnergy = @"energy";
+static NSString * const kValue = @"value";
 static NSString * const kDeltaTime = @"delta_time";
 static NSString * const kChannel = @"channel";
 static NSString * const kEventNumber = @"event_number";
@@ -474,7 +475,7 @@ typedef NS_ENUM(unsigned short, Mask) {
 - (void)storeGamma:(ISAEvent)event deltaTime:(int)deltaTime
 {
     unsigned short channel = event.param3 & MaskGamma;
-    double energy = [_calibration energyForAmplitude:channel eventName:@"Gam1"];
+    double energy = [_calibration calibratedValueForAmplitude:channel eventName:@"Gam1"];
     NSDictionary *info = @{kEnergy:@(energy),
                            kDeltaTime: @(deltaTime)};
     [_gammaPerAct addObject:info];
@@ -540,7 +541,7 @@ typedef NS_ENUM(unsigned short, Mask) {
                 continue;
             }
             
-            BOOL isTOFFounded = [self findTOFForRecoilTime:recoilTime];
+            BOOL isTOFFounded = [self findTOFForRecoil:event time:recoilTime];
             fseek(_file, current, SEEK_SET);
             if (_requiredTOF && !isTOFFounded) {
                 continue;
@@ -640,7 +641,7 @@ typedef NS_ENUM(unsigned short, Mask) {
 /**
  Real TOF for Recoil.
  */
-- (BOOL)findTOFForRecoilTime:(unsigned short)recoilTime
+- (BOOL)findTOFForRecoil:(ISAEvent)eventRecoil time:(unsigned short)timeRecoil
 {
     fpos_t initial;
     fgetpos(_file, &initial);
@@ -655,11 +656,14 @@ typedef NS_ENUM(unsigned short, Mask) {
         fread(&event, sizeof(event), 1, _file);
         
         if ([self isValidEventIdForTimeCheck:event.eventId]) {
-            double deltaTime = fabs((double)event.param1 - recoilTime);
+            double deltaTime = fabs((double)event.param1 - timeRecoil);
             if (deltaTime <= _maxTOFTime) {
-                if (EventIdTOF == event.eventId && [self validTOFChannel:event]) {
-                    [self storeRealTOF:event deltaTime:-deltaTime];
-                    return YES;
+                if (EventIdTOF == event.eventId) {
+                    double value = [self valueTOF:event forRecoil:eventRecoil];
+                    if (value >= _minTOFValue && value <= _maxTOFValue) {
+                        [self storeRealTOFValue:value deltaTime:-deltaTime];
+                        return YES;
+                    }
                 }
             } else {
                 break;
@@ -675,11 +679,14 @@ typedef NS_ENUM(unsigned short, Mask) {
         fread(&event, sizeof(event), 1, _file);
         
         if ([self isValidEventIdForTimeCheck:event.eventId]) {
-            double deltaTime = fabs((double)event.param1 - recoilTime);
+            double deltaTime = fabs((double)event.param1 - timeRecoil);
             if (deltaTime <= _maxTOFTime) {
-                if (EventIdTOF == event.eventId && [self validTOFChannel:event]) {
-                    [self storeRealTOF:event deltaTime:deltaTime];
-                    return YES;
+                if (EventIdTOF == event.eventId) {
+                    double value = [self valueTOF:event forRecoil:eventRecoil];
+                    if (value >= _minTOFValue && value <= _maxTOFValue) {
+                        [self storeRealTOFValue:value deltaTime:deltaTime];
+                        return YES;
+                    }
                 }
             } else {
                 return NO;
@@ -690,16 +697,40 @@ typedef NS_ENUM(unsigned short, Mask) {
     return NO;
 }
 
-- (BOOL)validTOFChannel:(ISAEvent)event
+- (unsigned short)channelForTOF:(ISAEvent)event
 {
     unsigned short channel = event.param3 & MaskTOF;
-    return (channel >= _minTOFChannel);
+    return channel;
 }
 
-- (void)storeRealTOF:(ISAEvent)event deltaTime:(double)deltaTime
+- (double)nanosecondsForTOFChannel:(unsigned short)channelTOF eventRecoil:(ISAEvent)eventRecoil
 {
-    unsigned short channel = event.param3 & MaskTOF;
-    NSDictionary *info = @{kChannel:@(channel),
+    unsigned short eventId = eventRecoil.eventId;
+    unsigned short strip_0_15 = eventRecoil.param2 >> 12;  // value from 0 to 15
+    unsigned short encoder = [self fissionAlphaRecoilEncoderForEventId:eventId];
+    NSString *position = nil;
+    if (EventIdFissionFront1 == eventId || EventIdFissionFront2 == eventId || EventIdFissionFront3 == eventId) {
+        position = @"Fron";
+    } else {
+        position = @"Back";
+    }
+    NSString *name = [NSString stringWithFormat:@"T%@%d.%d", position, encoder, strip_0_15+1];
+    return [_calibration calibratedValueForAmplitude:channelTOF eventName:name];
+}
+
+- (double)valueTOF:(ISAEvent)eventTOF forRecoil:(ISAEvent)eventRecoil
+{
+    double channel = [self channelForTOF:eventTOF];
+    if (_unitsTOF == TOFUnitsChannels) {
+        return channel;
+    } else {
+        return [self nanosecondsForTOFChannel:channel eventRecoil:eventRecoil];
+    }
+}
+
+- (void)storeRealTOFValue:(double)value deltaTime:(double)deltaTime
+{
+    NSDictionary *info = @{kValue:@(value),
                            kDeltaTime:@(deltaTime)};
     [_tofRealPerAct addObject:info];
 }
@@ -902,7 +933,7 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
     }
     NSString *name = [NSString stringWithFormat:@"%@%@%d.%d", detector, position, encoder, strip_0_15+1];
     
-    return [_calibration energyForAmplitude:channel eventName:name];
+    return [_calibration calibratedValueForAmplitude:channel eventName:name];
 }
 
 - (unsigned short)fissionAlphaRecoilEncoderForEventId:(unsigned short)eventId
@@ -1017,7 +1048,7 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
                 case 3:
                 {
                     if (row < (int)_tofRealPerAct.count) {
-                        NSNumber *tof = [[_tofRealPerAct objectAtIndex:row] valueForKey:kChannel];
+                        NSNumber *tof = [[_tofRealPerAct objectAtIndex:row] valueForKey:kValue];
                         if (tof) {
                             field = [NSString stringWithFormat:@"%hu", [tof unsignedShortValue]];
                         }

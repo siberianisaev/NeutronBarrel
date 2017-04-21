@@ -18,6 +18,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBOutlet weak var labelTotalTime: NSTextField!
     @IBOutlet weak var labelProcessingFileName: NSTextField!
     @IBOutlet weak var fissionAlphaControl: NSSegmentedControl!
+    @IBOutlet weak var tofUnitsControl: NSSegmentedControl!
     
     fileprivate var totalTime: TimeInterval = 0
     fileprivate var timer: Timer?
@@ -26,7 +27,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     var sMaxFissionEnergy: NSString = NSString(format: "%.1f", Settings.getDoubleSetting(.MaxFissionEnergy)) // MeV
     var sMinRecoilEnergy: NSString = NSString(format: "%.1f", Settings.getDoubleSetting(.MinRecoilEnergy)) // MeV
     var sMaxRecoilEnergy: NSString = NSString(format: "%.1f", Settings.getDoubleSetting(.MaxRecoilEnergy)) // MeV
-    var sMinTOFChannel: NSString = NSString(format: "%d", Settings.getIntSetting(.MinTOFChannel)) // channel
+    var sMinTOFValue: NSString = NSString(format: "%d", Settings.getIntSetting(.MinTOFValue)) // channel or ns
+    var sMaxTOFValue: NSString = NSString(format: "%d", Settings.getIntSetting(.MaxTOFValue)) // channel or ns
     var sMinRecoilTime: NSString = NSString(format: "%d", Settings.getIntSetting(.MinRecoilTime)) // mks
     var sMaxRecoilTime: NSString = NSString(format: "%d", Settings.getIntSetting(.MaxRecoilTime)) // mks
     var sMaxRecoilBackTime: NSString = NSString(format: "%d", Settings.getIntSetting(.MaxRecoilBackTime)) // mks
@@ -52,6 +54,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         fissionAlphaControl.selectedSegment = Settings.getIntSetting(.SearchType)
+        tofUnitsControl.selectedSegment = Settings.getIntSetting(.TOFUnits)
         showAppVersion()
     }
     
@@ -68,6 +71,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         activity?.startAnimation(self)
         progressIndicator?.startAnimation(self)
         fissionAlphaControl?.isEnabled = false
+        tofUnitsControl?.isEnabled = false
         startTimer()
         saveSettings()
         
@@ -96,7 +100,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         processor?.recoilMaxTime = sMaxRecoilTime.doubleValue
         processor?.recoilBackMaxTime = sMaxRecoilBackTime.doubleValue
         
-        processor?.minTOFChannel = sMinTOFChannel.doubleValue
+        processor?.minTOFValue = sMinTOFValue.doubleValue
+        processor?.maxTOFValue = sMaxTOFValue.doubleValue
+        processor?.unitsTOF = tofUnitsControl.selectedSegment == 0 ? .channels : .nanoseconds
         processor?.maxTOFTime = sMaxTOFTime.doubleValue
         processor?.requiredTOF = requiredTOF
         
@@ -112,6 +118,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             self?.progressIndicator?.doubleValue = 0.0
             self?.progressIndicator?.stopAnimation(self)
             self?.fissionAlphaControl?.isEnabled = true
+            self?.tofUnitsControl?.isEnabled = true
             self?.stopTimer()
         })
     }
@@ -171,7 +178,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         Settings.setObject(sMaxFissionEnergy.doubleValue, forSetting: .MaxFissionEnergy)
         Settings.setObject(sMinRecoilEnergy.doubleValue, forSetting: .MinRecoilEnergy)
         Settings.setObject(sMaxRecoilEnergy.doubleValue, forSetting: .MaxRecoilEnergy)
-        Settings.setObject(sMinTOFChannel.integerValue, forSetting: .MinTOFChannel)
+        Settings.setObject(sMinTOFValue.integerValue, forSetting: .MinTOFValue)
+        Settings.setObject(sMaxTOFValue.integerValue, forSetting: .MaxTOFValue)
+        Settings.setObject(tofUnitsControl.selectedSegment, forSetting: .TOFUnits)
         Settings.setObject(sMinRecoilTime.integerValue, forSetting: .MinRecoilTime)
         Settings.setObject(sMaxRecoilTime.integerValue, forSetting: .MaxRecoilTime)
         Settings.setObject(sMaxRecoilBackTime.integerValue, forSetting: .MaxRecoilBackTime)

@@ -21,6 +21,7 @@
                 <outlet property="labelTotalTime" destination="2Ow-sS-sNC" id="iCu-v0-Oyd"/>
                 <outlet property="labelVersion" destination="Jp9-e5-rtp" id="VMy-Bb-Lfg"/>
                 <outlet property="progressIndicator" destination="jRb-3t-cUo" id="TTa-Pk-rm0"/>
+                <outlet property="tofUnitsControl" destination="2QM-Jn-ZjV" id="EPI-g8-gt3"/>
                 <outlet property="window" destination="QvC-M9-y7g" id="gIp-Ho-8D9"/>
             </connections>
         </customObject>
@@ -678,11 +679,11 @@
         <window title="NeutronsReader" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" animationBehavior="default" id="QvC-M9-y7g">
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
             <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
-            <rect key="contentRect" x="335" y="390" width="1083" height="453"/>
+            <rect key="contentRect" x="335" y="390" width="1096" height="453"/>
             <rect key="screenRect" x="0.0" y="0.0" width="1920" height="1057"/>
-            <value key="minSize" type="size" width="1083" height="435"/>
+            <value key="minSize" type="size" width="1096" height="453"/>
             <view key="contentView" id="EiT-Mj-1SZ">
-                <rect key="frame" x="0.0" y="0.0" width="1083" height="453"/>
+                <rect key="frame" x="0.0" y="0.0" width="1096" height="453"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
                     <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="qly-NS-Sdp">
@@ -952,21 +953,8 @@
                             <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>
                         <connections>
-                            <binding destination="Voe-Tx-rLC" name="value" keyPath="self.sMinTOFChannel" id="GQF-UT-5qL">
-                                <dictionary key="options">
-                                    <bool key="NSContinuouslyUpdatesValue" value="YES"/>
-                                </dictionary>
-                            </binding>
+                            <binding destination="Voe-Tx-rLC" name="value" keyPath="self.sMinTOFValue" id="ghy-Lq-5LT"/>
                         </connections>
-                    </textField>
-                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" allowsCharacterPickerTouchBarItem="NO" translatesAutoresizingMaskIntoConstraints="NO" id="yc7-G8-9Ym">
-                        <rect key="frame" x="866" y="301" width="126" height="17"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                        <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Channel min" id="6vw-2y-g8u">
-                            <font key="font" metaFont="system"/>
-                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                        </textFieldCell>
                     </textField>
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" allowsCharacterPickerTouchBarItem="NO" translatesAutoresizingMaskIntoConstraints="NO" id="wIN-4e-vUP">
                         <rect key="frame" x="866" y="246" width="140" height="17"/>
@@ -1298,9 +1286,32 @@
                             <binding destination="Voe-Tx-rLC" name="value" keyPath="self.searchAlpha2" id="qXc-R8-HJn"/>
                         </connections>
                     </button>
+                    <textField verticalHuggingPriority="750" fixedFrame="YES" allowsCharacterPickerTouchBarItem="NO" translatesAutoresizingMaskIntoConstraints="NO" id="lQy-Qe-Nmq">
+                        <rect key="frame" x="976" y="271" width="100" height="22"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" title="10000" placeholderString="0" drawsBackground="YES" id="yco-sP-hqf">
+                            <font key="font" metaFont="system"/>
+                            <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                        <connections>
+                            <binding destination="Voe-Tx-rLC" name="value" keyPath="self.sMaxTOFValue" id="z1P-1z-5iH"/>
+                        </connections>
+                    </textField>
+                    <segmentedControl verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="2QM-Jn-ZjV">
+                        <rect key="frame" x="866" y="298" width="212" height="24"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <segmentedCell key="cell" borderStyle="border" alignment="left" style="rounded" trackingMode="selectOne" id="Hzo-yQ-0WY">
+                            <font key="font" metaFont="system"/>
+                            <segments>
+                                <segment label="channels" width="103" selected="YES"/>
+                                <segment label="nanoseconds" width="102" tag="1"/>
+                            </segments>
+                        </segmentedCell>
+                    </segmentedControl>
                 </subviews>
             </view>
-            <point key="canvasLocation" x="473" y="438"/>
+            <point key="canvasLocation" x="479" y="437.5"/>
         </window>
         <userDefaultsController representsSharedInstance="YES" id="aAU-rt-5o7"/>
     </objects>
