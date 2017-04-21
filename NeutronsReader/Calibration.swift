@@ -30,30 +30,26 @@ class Calibration: NSObject {
         let panel = NSOpenPanel()
         panel.canChooseDirectories = false
         panel.canChooseFiles = true
-        panel.allowsMultipleSelection = false
+        panel.allowsMultipleSelection = true
         panel.begin { (result) -> Void in
             if result == NSFileHandlingPanelOKButton {
-                onFinish(self.calibrationWithUrl(panel.url))
+                let urls = panel.urls.filter() { $0.path.hasSuffix(".clb") }
+                onFinish(self.calibrationWithUrls(urls))
             }
         }
     }
     
-    class func defaultCalibration() -> Calibration {
-        let path = Bundle.main.path(forResource: "default", ofType: "clb")
-        let URL = Foundation.URL(fileURLWithPath: path!)
-        return self.calibrationWithUrl(URL)
-    }
-    
-    fileprivate class func calibrationWithUrl(_ URL: Foundation.URL?) -> Calibration {
+    fileprivate class func calibrationWithUrls(_ URLs: [Foundation.URL]) -> Calibration {
         let calibration = Calibration()
-        calibration.load(URL)
+        calibration.load(URLs)
         return calibration
     }
     
-    fileprivate func load(_ URL: Foundation.URL?) {
+    fileprivate func load(_ URLs: [Foundation.URL]) {
         self.data.removeAll(keepingCapacity: true)
     
-        if let path = URL?.path {
+        for URL in URLs {
+            let path = URL.path
             do {
                 var content = try String(contentsOfFile: path, encoding: String.Encoding.utf8)
                 content = content.replacingOccurrences(of: "\r", with: "")
@@ -88,7 +84,9 @@ class Calibration: NSObject {
             }
         }
         
-        print("No calibration for name \(eventName)")
+        if self.data.count > 0 {
+            print("No calibration for name \(eventName)")
+        }
         return channel
     }
     

@@ -25,7 +25,7 @@ class Processor {
     var requiredGamma: Bool = false
     var requiredTOF: Bool = false
     
-    fileprivate var calibration = Calibration.defaultCalibration()
+    fileprivate var calibration = Calibration()
     fileprivate var selectedFiles = [String]()
     fileprivate var neutronsSummPerAct: Int = 0
     fileprivate var neutronsMultiplicityTotal = [Int: CUnsignedLongLong]()

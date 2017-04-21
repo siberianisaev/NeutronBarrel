@@ -31,7 +31,7 @@ class FileManager: NSObject {
         var path = self.desktopFolder()
         if let timeStamp = timeStamp {
             path = path?.appendingPathComponent(timeStamp) as NSString?
-            createIfNeedsDirectoryAtPath(path as? String)
+            createIfNeedsDirectoryAtPath(path as String?)
         }
         return path?.appendingPathComponent(fileName)
     }

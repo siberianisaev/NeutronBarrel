@@ -102,7 +102,7 @@ typedef NS_ENUM(unsigned short, Mask) {
 - (id)init
 {
     if (self = [super init]) {
-        _calibration = [Calibration defaultCalibration];
+        _calibration = [[Calibration alloc] init];
         _files = [NSArray array];
     }
     return self;
