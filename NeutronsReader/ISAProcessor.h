@@ -66,5 +66,6 @@ typedef NS_ENUM(NSInteger, TOFUnits) {
 - (void)processDataWithCompletion:(void (^)(void))completion;
 - (void)selectDataWithCompletion:(void (^)(BOOL))completion;
 - (void)selectCalibrationWithCompletion:(void (^)(BOOL))completion;
+- (void)stop;
 
 @end

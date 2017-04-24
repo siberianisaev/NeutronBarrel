@@ -21,6 +21,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBOutlet weak var tofUnitsControl: NSSegmentedControl!
     @IBOutlet weak var indicatorData: NSTextField!
     @IBOutlet weak var indicatorCalibration: NSTextField!
+    @IBOutlet weak var buttonRun: NSButton!
     
     fileprivate var totalTime: TimeInterval = 0
     fileprivate var timer: Timer?
@@ -61,6 +62,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             setSelected(false, indicator: i)
         }
         showAppVersion()
+        run = false
     }
     
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
@@ -76,61 +78,73 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         indicator?.stringValue = selected ? "✓" : "×"
     }
     
-//TODO: добавить возможность остановить поиск
     @IBAction func start(_ sender: AnyObject?) {
-        activity?.startAnimation(self)
-        progressIndicator?.startAnimation(self)
-        fissionAlphaControl?.isEnabled = false
-        tofUnitsControl?.isEnabled = false
-        startTimer()
-        saveSettings()
-        
-        let processor = ISAProcessor.shared();
-        
-        processor?.startParticleType = fissionAlphaControl.selectedSegment == 0 ? .fission : .alpha
-        processor?.fissionAlphaFrontMinEnergy = sMinFissionEnergy.doubleValue
-        processor?.fissionAlphaFrontMaxEnergy = sMaxFissionEnergy.doubleValue
-        processor?.fissionAlphaMaxTime = sMaxFissionTime.doubleValue
-        processor?.summarizeFissionsAlphaFront = summarizeFissionsFront
-        
-        processor?.searchAlpha2 = searchAlpha2
-        processor?.alpha2MinEnergy = sMinAlpha2Energy.doubleValue
-        processor?.alpha2MaxEnergy = sMaxAlpha2Energy.doubleValue
-        processor?.alpha2MinTime = sMinAlpha2Time.doubleValue
-        processor?.alpha2MaxTime = sMaxAlpha2Time.doubleValue
-        processor?.alpha2MaxDeltaStrips = sMaxAlpha2FrontDeltaStrips.intValue
-        
-        processor?.recoilFrontMaxDeltaStrips = sMaxRecoilFrontDeltaStrips.intValue
-        processor?.recoilBackMaxDeltaStrips = sMaxRecoilBackDeltaStrips.intValue
-        processor?.requiredFissionRecoilBack = requiredFissionRecoilBack
-        processor?.requiredRecoil = requiredRecoil
-        processor?.recoilFrontMinEnergy = sMinRecoilEnergy.doubleValue
-        processor?.recoilFrontMaxEnergy = sMaxRecoilEnergy.doubleValue
-        processor?.recoilMinTime = sMinRecoilTime.doubleValue
-        processor?.recoilMaxTime = sMaxRecoilTime.doubleValue
-        processor?.recoilBackMaxTime = sMaxRecoilBackTime.doubleValue
-        
-        processor?.minTOFValue = sMinTOFValue.doubleValue
-        processor?.maxTOFValue = sMaxTOFValue.doubleValue
-        processor?.unitsTOF = tofUnitsControl.selectedSegment == 0 ? .channels : .nanoseconds
-        processor?.maxTOFTime = sMaxTOFTime.doubleValue
-        processor?.requiredTOF = requiredTOF
-        
-        processor?.maxGammaTime = sMaxGammaTime.doubleValue
-        processor?.requiredGamma = requiredGamma
-        
-        processor?.searchNeutrons = searchNeutrons
-        processor?.maxNeutronTime = sMaxNeutronTime.doubleValue
-        
-        processor?.delegate = self
-        processor?.processData(completion: { [weak self] in
-            self?.activity?.stopAnimation(self)
-            self?.progressIndicator?.doubleValue = 0.0
-            self?.progressIndicator?.stopAnimation(self)
-            self?.fissionAlphaControl?.isEnabled = true
-            self?.tofUnitsControl?.isEnabled = true
-            self?.stopTimer()
-        })
+        let processor = ISAProcessor.shared()
+        if run {
+            processor?.stop()
+            run = false
+        } else {
+            run = true
+            
+            processor?.startParticleType = fissionAlphaControl.selectedSegment == 0 ? .fission : .alpha
+            processor?.fissionAlphaFrontMinEnergy = sMinFissionEnergy.doubleValue
+            processor?.fissionAlphaFrontMaxEnergy = sMaxFissionEnergy.doubleValue
+            processor?.fissionAlphaMaxTime = sMaxFissionTime.doubleValue
+            processor?.summarizeFissionsAlphaFront = summarizeFissionsFront
+            
+            processor?.searchAlpha2 = searchAlpha2
+            processor?.alpha2MinEnergy = sMinAlpha2Energy.doubleValue
+            processor?.alpha2MaxEnergy = sMaxAlpha2Energy.doubleValue
+            processor?.alpha2MinTime = sMinAlpha2Time.doubleValue
+            processor?.alpha2MaxTime = sMaxAlpha2Time.doubleValue
+            processor?.alpha2MaxDeltaStrips = sMaxAlpha2FrontDeltaStrips.intValue
+            
+            processor?.recoilFrontMaxDeltaStrips = sMaxRecoilFrontDeltaStrips.intValue
+            processor?.recoilBackMaxDeltaStrips = sMaxRecoilBackDeltaStrips.intValue
+            processor?.requiredFissionRecoilBack = requiredFissionRecoilBack
+            processor?.requiredRecoil = requiredRecoil
+            processor?.recoilFrontMinEnergy = sMinRecoilEnergy.doubleValue
+            processor?.recoilFrontMaxEnergy = sMaxRecoilEnergy.doubleValue
+            processor?.recoilMinTime = sMinRecoilTime.doubleValue
+            processor?.recoilMaxTime = sMaxRecoilTime.doubleValue
+            processor?.recoilBackMaxTime = sMaxRecoilBackTime.doubleValue
+            
+            processor?.minTOFValue = sMinTOFValue.doubleValue
+            processor?.maxTOFValue = sMaxTOFValue.doubleValue
+            processor?.unitsTOF = tofUnitsControl.selectedSegment == 0 ? .channels : .nanoseconds
+            processor?.maxTOFTime = sMaxTOFTime.doubleValue
+            processor?.requiredTOF = requiredTOF
+            
+            processor?.maxGammaTime = sMaxGammaTime.doubleValue
+            processor?.requiredGamma = requiredGamma
+            
+            processor?.searchNeutrons = searchNeutrons
+            processor?.maxNeutronTime = sMaxNeutronTime.doubleValue
+            
+            processor?.delegate = self
+            processor?.processData(completion: { [weak self] in
+                self?.run = false
+            })
+        }
+    }
+    
+    fileprivate var run: Bool = false {
+        didSet {
+            buttonRun.title = run ? "Stop" : "Start"
+            if run {
+                activity?.startAnimation(self)
+                startTimer()
+                progressIndicator?.startAnimation(self)
+                saveSettings()
+            } else {
+                activity?.stopAnimation(self)
+                stopTimer()
+                progressIndicator.stopAnimation(self)
+                progressIndicator?.doubleValue = 0.0
+            }
+            fissionAlphaControl?.isEnabled = !run
+            tofUnitsControl?.isEnabled = !run
+        }
     }
     
     @IBAction func selectData(_ sender: AnyObject?) {

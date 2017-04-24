@@ -62,6 +62,7 @@ typedef NS_ENUM(unsigned short, Mask) {
 @property (assign, nonatomic) unsigned long long neutronsSummPerAct;
 @property (assign, nonatomic) FILE *file;
 @property (assign, nonatomic) ISAEvent mainCycleTimeEvent;
+@property (assign, nonatomic) BOOL stoped;
 
 @end
 
@@ -85,9 +86,16 @@ typedef NS_ENUM(unsigned short, Mask) {
     }
     return self;
 }
+    
+- (void)stop
+{
+    _stoped = YES;
+}
 
 - (void)processDataWithCompletion:(void (^)(void))completion
 {
+    _stoped = NO;
+    
     __weak ISAProcessor *weakSelf = self;
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         [weakSelf processData];
@@ -145,6 +153,10 @@ typedef NS_ENUM(unsigned short, Mask) {
                     if (ferror(_file)) {
                         printf("\nERROR while reading file %s\n", [_currentFileName UTF8String]);
                         exit(-1);
+                    }
+                    
+                    if (_stoped) {
+                        return;
                     }
                     
                     if (event.eventId == _dataProtocol.CycleTime) {
