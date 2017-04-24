@@ -299,12 +299,38 @@ typedef NS_ENUM(unsigned short, Mask) {
             double deltaTime = fabs((double)event.param1 - _firstFissionAlphaTime);
             if (deltaTime <= _fissionAlphaMaxTime) {
                 if ([self isBack:event type:_startParticleType]) {
-                    [self storeFissionAlphaBack:event deltaTime:deltaTime];
+                    double energy = [self getEnergy:event type:_startParticleType];
+                    if (energy >= _fissionAlphaFrontMinEnergy && energy <= _fissionAlphaFrontMaxEnergy) {
+                        [self storeFissionAlphaBack:event deltaTime:deltaTime];
+                    }
                 }
             } else {
-                return;
+                break;
             }
         }
+    }
+    
+    if (_fissionsAlphaBackPerAct.count > 1) {
+        NSDictionary *dict = [[_fissionsAlphaBackPerAct sortedArrayUsingComparator:^NSComparisonResult(id obj1, id obj2) {
+            NSDictionary *item1 = (NSDictionary *)obj1;
+            NSDictionary *item2 = (NSDictionary *)obj2;
+            return ([[item1 objectForKey:kEnergy] doubleValue] > [[item2 objectForKey:kEnergy] doubleValue]);
+        }] firstObject];
+        unsigned short encoder = [[dict objectForKey:kEncoder] unsignedShortValue];
+        unsigned short strip0_15 = [[dict objectForKey:kStrip0_15] unsignedShortValue];
+        unsigned short strip1_48 = [self stripConvertToFormat_1_48:strip0_15 encoder:encoder];
+        
+        _fissionsAlphaBackPerAct = [[_fissionsAlphaBackPerAct filteredArrayUsingPredicate:[NSPredicate predicateWithBlock:^BOOL(id obj, NSDictionary *bindings) {
+            NSDictionary *item = (NSDictionary *)obj;
+            if ([item isEqual:dict]) {
+                return YES;
+            }
+            unsigned short e = [[item objectForKey:kEncoder] unsignedShortValue];
+            unsigned short s0_15 = [[item objectForKey:kStrip0_15] unsignedShortValue];
+            unsigned short s1_48 = [self stripConvertToFormat_1_48:s0_15 encoder:e];
+            // TODO: new input field for _fissionBackMaxDeltaStrips
+            return (abs(strip1_48 - s1_48) <= _recoilBackMaxDeltaStrips);
+        }]] mutableCopy];
     }
 }
 
