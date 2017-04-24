@@ -11,7 +11,7 @@ import AppKit
 
 class DataLoader: NSObject {
     
-    class func load(_ onFinish: @escaping (([String]) -> ())) {
+    class func load(_ onFinish: @escaping (([String], Protocol) -> ())) {
         let panel = NSOpenPanel()
         panel.canChooseDirectories = true
         panel.canChooseFiles = true
@@ -30,13 +30,15 @@ class DataLoader: NSObject {
                     }
                 }
                 
-                //TODO: использовать файл протокола для уточнения данных
-                selected = selected.filter() { false == $0.hasSuffix(".PRO") && false == $0.hasSuffix(".DS_Store") }
+                //TODO: множественные протоколы
+                let protocolURLString = selected.filter() { $0.hasSuffix(".PRO") }.first
+                let protocolObject = Protocol.load(protocolURLString)
                 
+                selected = selected.filter() { false == $0.hasSuffix(".PRO") && false == $0.hasSuffix(".DS_Store") }
                 selected = selected.sorted(by: { (s1: String, s2: String) -> Bool in
                     return s1 < s2
                 })
-                onFinish(selected)
+                onFinish(selected, protocolObject)
             }
         }
     }

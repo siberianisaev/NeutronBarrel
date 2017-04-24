@@ -30,30 +30,6 @@ typedef struct {
     unsigned short param3;
 } ISAEvent;
 
-typedef NS_ENUM(unsigned short, EventId) {
-    EventIdFissionFront1 = 1,
-    EventIdFissionFront2 = 2,
-    EventIdFissionFront3 = 3,
-    EventIdFissionBack1 = 4,
-    EventIdFissionBack2 = 5,
-    EventIdFissionBack3 = 6,
-    EventIdFissionDaughterFront1 = 7,
-    EventIdFissionDaughterFront2 = 8,
-    EventIdFissionDaughterFront3 = 9,
-    EventIdFissionDaughterBack1 = 10,
-    EventIdFissionDaughterBack2 = 11,
-    EventIdFissionDaughterBack3 = 12,
-    EventIdFissionWell1 = 13,
-    EventIdFissionWell2 = 14,
-    EventIdGamma1 = 15,
-    EventIdGamma2 = 16,
-    EventIdTOF = 17,
-    EventIdNeutrons = 23,
-    EventIdCycleTime = 24,
-    EventIdFON = 29,
-    EventIdRecoilSpecial = 30
-};
-
 typedef NS_ENUM(unsigned short, Mask) {
     MaskFission = 0x0FFF,
     MaskGamma = 0x1FFF,
@@ -67,6 +43,7 @@ typedef NS_ENUM(unsigned short, Mask) {
 
 @property (strong, nonatomic) Logger *logger;
 @property (strong, nonatomic) Calibration *calibration;
+@property (strong, nonatomic) Protocol *dataProtocol;
 @property (strong, nonatomic) NSArray *files;
 @property (strong, nonatomic) NSString *currentFileName;
 @property (strong, nonatomic) NSMutableDictionary *neutronsMultiplicityTotal;
@@ -169,7 +146,7 @@ typedef NS_ENUM(unsigned short, Mask) {
                         exit(-1);
                     }
                     
-                    if (event.eventId == EventIdCycleTime) {
+                    if (event.eventId == _dataProtocol.CycleTime) {
                         _mainCycleTimeEvent = event;
                     }
                     
@@ -275,7 +252,7 @@ typedef NS_ENUM(unsigned short, Mask) {
         if ([self isValidEventIdForTimeCheck:event.eventId]) {
             double deltaTime = fabs((double)event.param1 - _firstFissionAlphaTime);
             if (deltaTime <= _maxNeutronTime) {
-                if (EventIdNeutrons == event.eventId) {
+                if (_dataProtocol.Neutrons == event.eventId) {
                     _neutronsSummPerAct += 1;
                 }
             } else {
@@ -381,7 +358,7 @@ typedef NS_ENUM(unsigned short, Mask) {
         ISAEvent event;
         fread(&event, sizeof(event), 1, _file);
         
-        if (event.eventId == EventIdCycleTime) {
+        if (event.eventId == _dataProtocol.CycleTime) {
             _mainCycleTimeEvent = event;
         }
         
@@ -444,7 +421,7 @@ typedef NS_ENUM(unsigned short, Mask) {
 
 - (BOOL)isGammaEvent:(ISAEvent)event
 {
-    return EventIdGamma1 == event.eventId || EventIdGamma2 == event.eventId;
+    return [_dataProtocol Gam:1] == event.eventId || [_dataProtocol Gam:2] == event.eventId || [_dataProtocol Gam] == event.eventId;
 }
 
 /**
@@ -534,7 +511,7 @@ typedef NS_ENUM(unsigned short, Mask) {
         ISAEvent event;
         fread(&event, sizeof(event), 1, _file);
         
-        if (event.eventId == EventIdCycleTime) { // Откатились по времени к предыдущему циклу!
+        if (event.eventId == _dataProtocol.CycleTime) { // Откатились по времени к предыдущему циклу!
             cycleEvent = event;
         }
         
@@ -684,7 +661,7 @@ typedef NS_ENUM(unsigned short, Mask) {
         if ([self isValidEventIdForTimeCheck:event.eventId]) {
             double deltaTime = fabs((double)event.param1 - timeRecoil);
             if (deltaTime <= _maxTOFTime) {
-                if (EventIdTOF == event.eventId) {
+                if (_dataProtocol.TOF == event.eventId) {
                     double value = [self valueTOF:event forRecoil:eventRecoil];
                     if (value >= _minTOFValue && value <= _maxTOFValue) {
                         [self storeRealTOFValue:value deltaTime:-deltaTime];
@@ -707,7 +684,7 @@ typedef NS_ENUM(unsigned short, Mask) {
         if ([self isValidEventIdForTimeCheck:event.eventId]) {
             double deltaTime = fabs((double)event.param1 - timeRecoil);
             if (deltaTime <= _maxTOFTime) {
-                if (EventIdTOF == event.eventId) {
+                if (_dataProtocol.TOF == event.eventId) {
                     double value = [self valueTOF:event forRecoil:eventRecoil];
                     if (value >= _minTOFValue && value <= _maxTOFValue) {
                         [self storeRealTOFValue:value deltaTime:deltaTime];
@@ -735,7 +712,7 @@ typedef NS_ENUM(unsigned short, Mask) {
     unsigned short strip_0_15 = eventRecoil.param2 >> 12;  // value from 0 to 15
     unsigned short encoder = [self fissionAlphaRecoilEncoderForEventId:eventId];
     NSString *position = nil;
-    if (EventIdFissionFront1 == eventId || EventIdFissionFront2 == eventId || EventIdFissionFront3 == eventId) {
+    if ([_dataProtocol AFron:1] == eventId || [_dataProtocol AFron:2] == eventId || [_dataProtocol AFron:3] == eventId) {
         position = @"Fron";
     } else {
         position = @"Back";
@@ -775,17 +752,17 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
         ISAEvent event;
         fread(&event, sizeof(event), 1, _file);
         
-        if (EventIdFON == event.eventId) {
+        if (_dataProtocol.FON == event.eventId) {
             if (!fonFound) {
                 [self storeFON:event];
                 fonFound = YES;
             }
-        } else if (EventIdRecoilSpecial == event.eventId) {
+        } else if (_dataProtocol.RecoilSpecial == event.eventId) {
             if (!recoilFound) {
                 [self storeRecoilSpecial:event];
                 recoilFound = YES;
             }
-        } else if (EventIdTOF == event.eventId) {
+        } else if (_dataProtocol.TOF == event.eventId) {
             if (!tofFound) {
 //#warning TODO: не учитывается EventIdCycleTime
                 double deltaTime = fabs((double)event.param1 - _firstFissionAlphaTime);
@@ -946,13 +923,13 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
     }
     
     NSString *position = nil;
-    if (EventIdFissionFront1 == eventId || EventIdFissionFront2 == eventId || EventIdFissionFront3 == eventId) {
+    if ([_dataProtocol AFron:1] == eventId || [_dataProtocol AFron:2] == eventId || [_dataProtocol AFron:3] == eventId) {
         position = @"Fron";
-    } else if (EventIdFissionBack1 == eventId || EventIdFissionBack2 == eventId || EventIdFissionBack3 == eventId) {
+    } else if ([_dataProtocol ABack:1] == eventId || [_dataProtocol ABack:2] == eventId || [_dataProtocol ABack:3] == eventId) {
         position = @"Back";
-    } else if (EventIdFissionDaughterFront1 == eventId || EventIdFissionDaughterFront2 == eventId || EventIdFissionDaughterFront3 == eventId) {
+    } else if ([_dataProtocol AdFr:1] == eventId || [_dataProtocol AdFr:2] == eventId || [_dataProtocol AdFr:3] == eventId) {
         position = @"dFr";
-    } else if (EventIdFissionDaughterBack1 == eventId || EventIdFissionDaughterBack2 == eventId || EventIdFissionDaughterBack3 == eventId) {
+    } else if ([_dataProtocol AdBk:1] == eventId || [_dataProtocol AdBk:2] == eventId || [_dataProtocol AdBk:3] == eventId) {
         position = @"dBk";
     } else {
         position = @"Wel";
@@ -964,14 +941,17 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
 
 - (unsigned short)fissionAlphaRecoilEncoderForEventId:(unsigned short)eventId
 {
-    if (EventIdFissionFront1 == eventId || EventIdFissionBack1 == eventId || EventIdFissionDaughterFront1 == eventId || EventIdFissionDaughterBack1 == eventId ||  EventIdFissionWell1 == eventId) {
+    if ([_dataProtocol AFron:1] == eventId || [_dataProtocol ABack:1] == eventId || [_dataProtocol AdFr:1] == eventId || [_dataProtocol AdBk:1] == eventId || [_dataProtocol AWel:1] == eventId || [_dataProtocol AWel] == eventId) {
         return 1;
     }
-    if (EventIdFissionFront2 == eventId || EventIdFissionBack2 == eventId || EventIdFissionDaughterFront2 == eventId || EventIdFissionDaughterBack2 == eventId ||  EventIdFissionWell2 == eventId) {
+    if ([_dataProtocol AFron:2] == eventId || [_dataProtocol ABack:2] == eventId || [_dataProtocol AdFr:2] == eventId || [_dataProtocol AdBk:2] == eventId || [_dataProtocol AWel:2] == eventId) {
         return 2;
     }
-    if (EventIdFissionFront3 == eventId || EventIdFissionBack3 == eventId || EventIdFissionDaughterFront3 == eventId || EventIdFissionDaughterBack3 == eventId) {
+    if ([_dataProtocol AFron:3] == eventId || [_dataProtocol ABack:3] == eventId || [_dataProtocol AdFr:3] == eventId || [_dataProtocol AdBk:3] == eventId || [_dataProtocol AWel:3] == eventId) {
         return 3;
+    }
+    if ([_dataProtocol AWel:4] == eventId) {
+        return 4;
     }
     return 0;
 }
@@ -1280,7 +1260,7 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
  */
 - (BOOL)isValidEventIdForTimeCheck:(unsigned short)eventId
 {
-    return (eventId <= EventIdFissionWell2 || EventIdTOF == eventId || EventIdGamma1 == eventId || EventIdGamma2 == eventId || EventIdNeutrons == eventId);
+    return (eventId <= [_dataProtocol AWel:2] || eventId <= [_dataProtocol AWel:1] || eventId <= [_dataProtocol AWel] || _dataProtocol.TOF == eventId || [_dataProtocol Gam:1] == eventId || [_dataProtocol Gam:2] == eventId || [_dataProtocol Gam] == eventId || _dataProtocol.Neutrons == eventId);
 }
 
 /**
@@ -1298,14 +1278,14 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
     unsigned short eventId = event.eventId;
     unsigned short marker = [self getMarker:event.param3];
     unsigned short typeMarker = (type == SearchTypeRecoil) ? kRecoilMarker : kFissionOrAlphaMarker;
-    return (typeMarker == marker) && (EventIdFissionFront1 == eventId || EventIdFissionFront2 == eventId || EventIdFissionFront3 == eventId || EventIdFissionDaughterFront1 == eventId || EventIdFissionDaughterFront2 == eventId || EventIdFissionDaughterFront3 == eventId);
+    return (typeMarker == marker) && ([_dataProtocol AFron:1] == eventId || [_dataProtocol AFron:2] == eventId || [_dataProtocol AFron:3] == eventId || [_dataProtocol AdFr:1] == eventId || [_dataProtocol AdFr:2] == eventId || [_dataProtocol AdFr:3] == eventId);
 }
 
 - (BOOL)isFissionOrAlphaWel:(ISAEvent)event
 {
     unsigned short eventId = event.eventId;
     unsigned short marker = [self getMarker:event.param3];
-    return (kFissionOrAlphaMarker == marker) && (EventIdFissionWell1 == eventId || EventIdFissionWell2 == eventId);
+    return (kFissionOrAlphaMarker == marker) && ([_dataProtocol AWel] == eventId || [_dataProtocol AWel:1] == eventId || [_dataProtocol AWel:2] == eventId);
 }
 
 - (BOOL)isBack:(ISAEvent)event type:(SearchType)type
@@ -1313,13 +1293,14 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
     unsigned short eventId = event.eventId;
     unsigned short marker = [self getMarker:event.param3];
     unsigned short typeMarker = (type == SearchTypeRecoil) ? kRecoilMarker : kFissionOrAlphaMarker;
-    return (typeMarker == marker) && (EventIdFissionBack1 == eventId || EventIdFissionBack2 == eventId || EventIdFissionBack3 == eventId || EventIdFissionDaughterBack1 == eventId || EventIdFissionDaughterBack2 == eventId || EventIdFissionDaughterBack3 == eventId);
+    return (typeMarker == marker) && ([_dataProtocol ABack:1] == eventId || [_dataProtocol ABack:2] == eventId || [_dataProtocol ABack:3] == eventId || [_dataProtocol AdBk:1] == eventId || [_dataProtocol AdBk:2] == eventId || [_dataProtocol AdBk:3] == eventId);
 }
 
 - (void)selectDataWithCompletion:(void (^)(BOOL))completion
 {
-    [DataLoader load:^(NSArray *files){
+    [DataLoader load:^(NSArray *files, Protocol *protocol){
         _files = files;
+        _dataProtocol = protocol;
         completion(files.count > 0);
     }];
 }

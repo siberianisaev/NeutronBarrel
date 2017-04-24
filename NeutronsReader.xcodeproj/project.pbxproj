@@ -10,8 +10,7 @@
 		6513070C1A4E911300E33704 /* FileManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6513070B1A4E911300E33704 /* FileManager.swift */; };
 		651307121A4E94AB00E33704 /* Calibration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 651307111A4E94AB00E33704 /* Calibration.swift */; };
 		651307141A4E94C500E33704 /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 651307131A4E94C500E33704 /* Logger.swift */; };
-		659447111AC2B055004C39F9 /* Processor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 659447101AC2B055004C39F9 /* Processor.swift */; };
-		659447131AC2B142004C39F9 /* Event.swift in Sources */ = {isa = PBXBuildFile; fileRef = 659447121AC2B142004C39F9 /* Event.swift */; };
+		656A05DC1EADEDD500677B0F /* Protocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 656A05DB1EADEDD500677B0F /* Protocol.swift */; };
 		780BC3A61A5EF99700EDEECE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 780BC3A51A5EF99700EDEECE /* AppDelegate.swift */; };
 		784150C91ABCC76200831384 /* TimeStamp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 784150C81ABCC76200831384 /* TimeStamp.swift */; };
 		784150DA1AC184C400831384 /* CSVWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 784150D91AC184C400831384 /* CSVWriter.swift */; };
@@ -29,8 +28,7 @@
 		6513070D1A4E92CD00E33704 /* NeutronsReader-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NeutronsReader-Bridging-Header.h"; sourceTree = "<group>"; };
 		651307111A4E94AB00E33704 /* Calibration.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Calibration.swift; sourceTree = "<group>"; };
 		651307131A4E94C500E33704 /* Logger.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
-		659447101AC2B055004C39F9 /* Processor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Processor.swift; sourceTree = "<group>"; };
-		659447121AC2B142004C39F9 /* Event.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Event.swift; sourceTree = "<group>"; };
+		656A05DB1EADEDD500677B0F /* Protocol.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Protocol.swift; sourceTree = "<group>"; };
 		780BC3A51A5EF99700EDEECE /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		784150C81ABCC76200831384 /* TimeStamp.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TimeStamp.swift; sourceTree = "<group>"; };
 		784150D91AC184C400831384 /* CSVWriter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CSVWriter.swift; sourceTree = "<group>"; };
@@ -67,8 +65,6 @@
 			children = (
 				78419AD21A4B37400087A551 /* ISAProcessor.h */,
 				78419AD31A4B37400087A551 /* ISAProcessor.m */,
-				659447101AC2B055004C39F9 /* Processor.swift */,
-				659447121AC2B142004C39F9 /* Event.swift */,
 			);
 			name = "TODO: transition to swift";
 			sourceTree = "<group>";
@@ -130,6 +126,7 @@
 				78FC512E1A5301A500FE5737 /* EventStack.swift */,
 				78FC51301A530D0300FE5737 /* DataLoader.swift */,
 				784B0B881ABB13F80041FA66 /* Settings.swift */,
+				656A05DB1EADEDD500677B0F /* Protocol.swift */,
 				659447141AC2B15C004C39F9 /* TODO: transition to swift */,
 				780BC43E1A604AE000EDEECE /* Resources */,
 				78B6A54E193A3B3900C7E36A /* Supporting Files */,
@@ -177,7 +174,7 @@
 				CLASSPREFIX = ISA;
 				LastSwiftMigration = 0730;
 				LastSwiftUpdateCheck = 0730;
-				LastUpgradeCheck = 0510;
+				LastUpgradeCheck = 0830;
 				ORGANIZATIONNAME = "Andrey Isaev";
 				TargetAttributes = {
 					78B6A543193A3B3900C7E36A = {
@@ -237,11 +234,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				656A05DC1EADEDD500677B0F /* Protocol.swift in Sources */,
 				78419AD41A4B37400087A551 /* ISAProcessor.m in Sources */,
 				78FC512F1A5301A500FE5737 /* EventStack.swift in Sources */,
-				659447111AC2B055004C39F9 /* Processor.swift in Sources */,
 				784B0B891ABB13F80041FA66 /* Settings.swift in Sources */,
-				659447131AC2B142004C39F9 /* Event.swift in Sources */,
 				651307121A4E94AB00E33704 /* Calibration.swift in Sources */,
 				784150DA1AC184C400831384 /* CSVWriter.swift in Sources */,
 				651307141A4E94C500E33704 /* Logger.swift in Sources */,
@@ -269,6 +265,7 @@
 		78B6A573193A3B3900C7E36A /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_CXX_LIBRARY = "libc++";
@@ -279,15 +276,20 @@
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEFINES_MODULE = YES;
-				EMBEDDED_CONTENT_CONTAINS_SWIFT = YES;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
@@ -310,6 +312,7 @@
 		78B6A574193A3B3900C7E36A /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_CXX_LIBRARY = "libc++";
@@ -320,16 +323,20 @@
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEFINES_MODULE = YES;
-				EMBEDDED_CONTENT_CONTAINS_SWIFT = YES;
 				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
@@ -339,6 +346,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.9;
 				SDKROOT = macosx;
 				SWIFT_OBJC_BRIDGING_HEADER = " $(SRCROOT)/NeutronsReader/NeutronsReader-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
 			};
 			name = Release;
 		};
@@ -352,6 +360,7 @@
 				GCC_PREFIX_HEADER = "NeutronsReader/NeutronsReader-Prefix.pch";
 				INFOPLIST_FILE = "NeutronsReader/NeutronsReader-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "ru.jinr.AndreyIsaev.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_MODULE_NAME = NeutronsReader;
 				PRODUCT_NAME = NeutronsReader;
 				SWIFT_OBJC_BRIDGING_HEADER = "NeutronsReader/NeutronsReader-Bridging-Header.h";
@@ -371,6 +380,7 @@
 				GCC_PREFIX_HEADER = "NeutronsReader/NeutronsReader-Prefix.pch";
 				INFOPLIST_FILE = "NeutronsReader/NeutronsReader-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "ru.jinr.AndreyIsaev.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_MODULE_NAME = NeutronsReader;
 				PRODUCT_NAME = NeutronsReader;
 				SWIFT_OBJC_BRIDGING_HEADER = "NeutronsReader/NeutronsReader-Bridging-Header.h";
