@@ -36,16 +36,20 @@ class FileManager: NSObject {
         return path?.appendingPathComponent(fileName)
     }
     
-    class func resultsFilePath(_ timeStamp: String?) -> String? {
-        return self.desktopFilePathWithName("results.csv", timeStamp: timeStamp)
+    class func resultsFilePath(_ timeStamp: String) -> String? {
+        return self.desktopFilePathWithName("results_\(timeStamp).csv", timeStamp: timeStamp)
     }
     
-    class func multiplicityFilePath(_ timeStamp: String?) -> String? {
-        return self.desktopFilePathWithName("multiplicity.txt", timeStamp: timeStamp)
+    class func inputFilePath(_ timeStamp: String) -> String? {
+        return self.desktopFilePathWithName("input_\(timeStamp).png", timeStamp: timeStamp)
     }
     
-    class func calibrationFilePath(_ timeStamp: String?) -> String? {
-        return self.desktopFilePathWithName("calibration.txt", timeStamp: timeStamp)
+    class func multiplicityFilePath(_ timeStamp: String) -> String? {
+        return self.desktopFilePathWithName("multiplicity_\(timeStamp).txt", timeStamp: timeStamp)
+    }
+    
+    class func calibrationFilePath(_ timeStamp: String) -> String? {
+        return self.desktopFilePathWithName("calibration_\(timeStamp).txt", timeStamp: timeStamp)
     }
     
 }

@@ -11,6 +11,7 @@
 		651307121A4E94AB00E33704 /* Calibration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 651307111A4E94AB00E33704 /* Calibration.swift */; };
 		651307141A4E94C500E33704 /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 651307131A4E94C500E33704 /* Logger.swift */; };
 		656A05DC1EADEDD500677B0F /* Protocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 656A05DB1EADEDD500677B0F /* Protocol.swift */; };
+		656A05DE1EAE03BC00677B0F /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 656A05DD1EAE03BC00677B0F /* Extensions.swift */; };
 		780BC3A61A5EF99700EDEECE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 780BC3A51A5EF99700EDEECE /* AppDelegate.swift */; };
 		784150C91ABCC76200831384 /* TimeStamp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 784150C81ABCC76200831384 /* TimeStamp.swift */; };
 		784150DA1AC184C400831384 /* CSVWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 784150D91AC184C400831384 /* CSVWriter.swift */; };
@@ -29,6 +30,7 @@
 		651307111A4E94AB00E33704 /* Calibration.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Calibration.swift; sourceTree = "<group>"; };
 		651307131A4E94C500E33704 /* Logger.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
 		656A05DB1EADEDD500677B0F /* Protocol.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Protocol.swift; sourceTree = "<group>"; };
+		656A05DD1EAE03BC00677B0F /* Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
 		780BC3A51A5EF99700EDEECE /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		784150C81ABCC76200831384 /* TimeStamp.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TimeStamp.swift; sourceTree = "<group>"; };
 		784150D91AC184C400831384 /* CSVWriter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CSVWriter.swift; sourceTree = "<group>"; };
@@ -127,6 +129,7 @@
 				78FC51301A530D0300FE5737 /* DataLoader.swift */,
 				784B0B881ABB13F80041FA66 /* Settings.swift */,
 				656A05DB1EADEDD500677B0F /* Protocol.swift */,
+				656A05DD1EAE03BC00677B0F /* Extensions.swift */,
 				659447141AC2B15C004C39F9 /* TODO: transition to swift */,
 				780BC43E1A604AE000EDEECE /* Resources */,
 				78B6A54E193A3B3900C7E36A /* Supporting Files */,
@@ -241,6 +244,7 @@
 				651307121A4E94AB00E33704 /* Calibration.swift in Sources */,
 				784150DA1AC184C400831384 /* CSVWriter.swift in Sources */,
 				651307141A4E94C500E33704 /* Logger.swift in Sources */,
+				656A05DE1EAE03BC00677B0F /* Extensions.swift in Sources */,
 				6513070C1A4E911300E33704 /* FileManager.swift in Sources */,
 				784150C91ABCC76200831384 /* TimeStamp.swift in Sources */,
 				780BC3A61A5EF99700EDEECE /* AppDelegate.swift in Sources */,

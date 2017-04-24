@@ -122,6 +122,7 @@ typedef NS_ENUM(unsigned short, Mask) {
     _fissionsAlphaWelPerAct = [NSMutableArray array];
     
     _logger = [[Logger alloc] init];
+    [self logInput];
     [self logCalibration];
     [self logResultsHeader];
     
@@ -985,6 +986,12 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
         }
     }
     return fission;
+}
+
+- (void)logInput
+{
+    NSImage *image = [[(AppDelegate *)[[NSApplication sharedApplication] delegate] window] screenshot];
+    [_logger logInput:image];
 }
 
 - (void)logCalibration

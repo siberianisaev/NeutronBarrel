@@ -6,11 +6,11 @@
 //  Copyright (c) 2014 Andrey Isaev. All rights reserved.
 //
 
-import Foundation
+import Cocoa
 
 class Logger: NSObject {
     fileprivate var resultsCSVWriter: CSVWriter!
-    fileprivate var timeStamp: String?
+    fileprivate var timeStamp: String!
     
     override init() {
         super.init()
@@ -53,6 +53,17 @@ class Logger: NSObject {
 
     func logCalibration(_ string: String) {
         self.logString(string, path: FileManager.calibrationFilePath(timeStamp))
+    }
+    
+    func logInput(_ image: NSImage?) {
+        if let path = FileManager.inputFilePath(timeStamp) {
+            let url = URL.init(fileURLWithPath: path)
+            do {
+                try image?.imagePNGRepresentation()?.write(to: url)
+            } catch {
+                print("Error writing to file \(path): \(error)")
+            }
+        }
     }
     
 }
