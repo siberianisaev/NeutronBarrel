@@ -61,6 +61,7 @@ typedef NS_ENUM(unsigned short, Mask) {
 @property (assign, nonatomic) unsigned short firstFissionAlphaTime; // время главного осколка/альфы в цикле
 @property (assign, nonatomic) unsigned long long neutronsSummPerAct;
 @property (assign, nonatomic) FILE *file;
+@property (assign, nonatomic) unsigned long long totalEventNumber;
 @property (assign, nonatomic) ISAEvent mainCycleTimeEvent;
 @property (assign, nonatomic) BOOL stoped;
 
@@ -128,6 +129,7 @@ typedef NS_ENUM(unsigned short, Mask) {
     _gammaPerAct = [NSMutableArray array];
     _tofGenerationsPerAct = [NSMutableArray array];
     _fissionsAlphaWelPerAct = [NSMutableArray array];
+    _totalEventNumber = 0;
     
     _logger = [[Logger alloc] init];
     [self logInput];
@@ -241,6 +243,12 @@ typedef NS_ENUM(unsigned short, Mask) {
                     }
                 }
             }
+            
+            fseek(_file, 0L, SEEK_END);
+            fpos_t lastNumber;
+            fgetpos(_file, &lastNumber);
+            _totalEventNumber += (unsigned long long)lastNumber/sizeof(ISAEvent);
+            
             fclose(_file);
             
             [_delegate incrementProgress:progressForOneFile];
@@ -416,7 +424,7 @@ typedef NS_ENUM(unsigned short, Mask) {
 {
     fpos_t eventNumber;
     fgetpos(_file, &eventNumber);
-    return (unsigned long long)eventNumber/sizeof(ISAEvent);
+    return (unsigned long long)eventNumber/sizeof(ISAEvent) + _totalEventNumber + 1;
 }
 
 - (void)storeFissionAlphaBack:(ISAEvent)event deltaTime:(int)deltaTime
