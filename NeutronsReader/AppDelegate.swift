@@ -15,6 +15,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBOutlet weak var activity: NSProgressIndicator!
     @IBOutlet weak var progressIndicator: NSProgressIndicator!
     @IBOutlet weak var labelVersion: NSTextField!
+    @IBOutlet weak var labelBranch: NSTextField!
     @IBOutlet weak var labelTotalTime: NSTextField!
     @IBOutlet weak var labelProcessingFileName: NSTextField!
     @IBOutlet weak var fissionAlphaControl: NSSegmentedControl!
@@ -251,6 +252,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             string += " Git SHA " + gitSHA
         }
         labelVersion?.stringValue = string
+        let branch = infoPlistStringForKey("CFBundleVersionGitBranch") ?? "unknown"
+        labelBranch?.stringValue = "Branch: " + branch
     }
     
 }

@@ -228,7 +228,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# write git version SHA into Info.plist\ncd \"$PROJECT_DIR\"\n# say hello\n/usr/libexec/PlistBuddy -c \"Set :CFBundleVersionGitSHA $(git rev-parse --short HEAD)\" \"$TARGET_BUILD_DIR/$INFOPLIST_PATH\"";
+			shellScript = "# write git version SHA into Info.plist\ncd \"$PROJECT_DIR\"\n# say hello\n/usr/libexec/PlistBuddy -c \"Set :CFBundleVersionGitSHA $(git rev-parse --short HEAD)\" \"$TARGET_BUILD_DIR/$INFOPLIST_PATH\"\n/usr/libexec/PlistBuddy -c \"Set :CFBundleVersionGitBranch $(git rev-parse --short HEAD --symbolic --abbrev-ref $1)\" \"$TARGET_BUILD_DIR/$INFOPLIST_PATH\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 

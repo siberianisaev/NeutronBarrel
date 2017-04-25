@@ -20,6 +20,7 @@
                 <outlet property="fissionAlphaControl" destination="uWj-m9-lqI" id="vu9-dD-TiC"/>
                 <outlet property="indicatorCalibration" destination="XqW-b9-4q2" id="1bX-rn-I9g"/>
                 <outlet property="indicatorData" destination="dGH-Qw-g6c" id="ew5-EN-2OK"/>
+                <outlet property="labelBranch" destination="fyH-cd-qW7" id="xqw-CT-XPq"/>
                 <outlet property="labelProcessingFileName" destination="om2-lB-Td7" id="9Qy-lb-5Yx"/>
                 <outlet property="labelTotalTime" destination="2Ow-sS-sNC" id="iCu-v0-Oyd"/>
                 <outlet property="labelVersion" destination="Jp9-e5-rtp" id="VMy-Bb-Lfg"/>
@@ -1327,6 +1328,15 @@
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" allowsUndo="NO" sendsActionOnEndEditing="YES" alignment="center" id="pzR-Bd-hCE">
                             <font key="font" metaFont="systemBold" size="22"/>
                             <color key="textColor" red="0.92941182850000004" green="0.1098039299" blue="0.1411764771" alpha="1" colorSpace="deviceRGB"/>
+                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                    </textField>
+                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" allowsCharacterPickerTouchBarItem="NO" translatesAutoresizingMaskIntoConstraints="NO" id="fyH-cd-qW7">
+                        <rect key="frame" x="235" y="39" width="390" height="30"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="center" title="Branch" placeholderString="Branch" id="BPN-LJ-xEw">
+                            <font key="font" size="15" name="HelveticaNeue-Light"/>
+                            <color key="textColor" name="selectedMenuItemColor" catalog="System" colorSpace="catalog"/>
                             <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>
                     </textField>

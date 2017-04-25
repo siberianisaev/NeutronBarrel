@@ -24,6 +24,8 @@
 	<string>7</string>
 	<key>CFBundleVersionGitSHA</key>
 	<string>CFBundleVersionGitSHA</string>
+	<key>CFBundleVersionGitBranch</key>
+	<string>CFBundleVersionGitBranch</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>${MACOSX_DEPLOYMENT_TARGET}</string>
 	<key>NSHumanReadableCopyright</key>
