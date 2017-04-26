@@ -1043,7 +1043,7 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
     if (_searchAlpha2) {
         columnsCount += 3;
     }
-    int rowsMax = MAX(MAX(MAX(MAX(1, (int)_gammaPerAct.count), (int)_fissionsAlphaWelPerAct.count), (int)_recoilsFrontPerAct.count), (int)_fissionsAlphaBackPerAct.count);
+    int rowsMax = MAX(MAX(MAX(MAX(MAX(1, (int)_gammaPerAct.count), (int)_fissionsAlphaWelPerAct.count), (int)_recoilsFrontPerAct.count), (int)_fissionsAlphaBackPerAct.count), (int)_fissionsAlphaFrontPerAct.count);
     for (int row = 0; row < rowsMax; row++) {
         for (int column = 0; column <= columnsCount; column++) {
             NSString *field = @"";
@@ -1312,7 +1312,7 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
 {
     unsigned short eventId = event.eventId;
     unsigned short marker = [self getMarker:event.param3];
-    return (kFissionOrAlphaMarker == marker) && ([_dataProtocol AWel] == eventId || [_dataProtocol AWel:1] == eventId || [_dataProtocol AWel:2] == eventId);
+    return (kFissionOrAlphaMarker == marker) && ([_dataProtocol AWel] == eventId || [_dataProtocol AWel:1] == eventId || [_dataProtocol AWel:2] == eventId || [_dataProtocol AWel:3] == eventId || [_dataProtocol AWel:4] == eventId);
 }
 
 - (BOOL)isBack:(ISAEvent)event type:(SearchType)type
