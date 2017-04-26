@@ -56,13 +56,13 @@ class Protocol: NSObject {
     }
     
     func AFron(_ i: Int) -> Int {
-        let i = value("AFron\(i)")
-        return i != -1 ? i : value("AFr\(i)")
+        let v = value("AFron\(i)")
+        return v != -1 ? v : value("AFr\(i)")
     }
     
     func ABack(_ i: Int) -> Int {
-        let i = value("ABack\(i)")
-        return i != -1 ? i : value("ABk\(i)")
+        let v = value("ABack\(i)")
+        return v != -1 ? v : value("ABk\(i)")
     }
     
     func AdFr(_ i: Int) -> Int {
