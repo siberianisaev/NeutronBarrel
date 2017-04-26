@@ -8,6 +8,13 @@
 
 #import <Foundation/Foundation.h>
 
+typedef struct {
+    unsigned short eventId;
+    unsigned short param1;
+    unsigned short param2;
+    unsigned short param3;
+} ISAEvent;
+
 typedef NS_ENUM(NSInteger, SearchType) {
     SearchTypeFission,
     SearchTypeAlpha,
@@ -26,7 +33,14 @@ typedef NS_ENUM(NSInteger, TOFUnits) {
 
 @end
 
+@class DataProtocol;
+
 @interface ISAProcessor : NSObject
+
+// public during migration to Swift phase
+@property (assign, nonatomic) FILE *file;
+@property (strong, nonatomic) DataProtocol *dataProtocol;
+@property (assign, nonatomic) ISAEvent mainCycleTimeEvent;
 
 @property (assign, nonatomic) double fissionAlphaFrontMinEnergy;
 @property (assign, nonatomic) double fissionAlphaFrontMaxEnergy;
@@ -67,5 +81,7 @@ typedef NS_ENUM(NSInteger, TOFUnits) {
 - (void)selectDataWithCompletion:(void (^)(BOOL))completion;
 - (void)selectCalibrationWithCompletion:(void (^)(BOOL))completion;
 - (void)stop;
+
+- (unsigned long long)time:(unsigned short)relativeTime cycleEvent:(ISAEvent)cycleEvent;
 
 @end

@@ -1,5 +1,5 @@
 //
-//  EventID.swift
+//  DataProtocol.swift
 //  NeutronsReader
 //
 //  Created by Andrey Isaev on 24/04/2017.
@@ -9,12 +9,12 @@
 import Foundation
 import AppKit
 
-class Protocol: NSObject {
+class DataProtocol: NSObject {
     
     fileprivate var dict = [String: Int]()
     
-    class func load(_ path: String?) -> Protocol {
-        let p = Protocol()
+    class func load(_ path: String?) -> DataProtocol {
+        let p = DataProtocol()
         
         if let path = path {
             do {
@@ -49,6 +49,13 @@ class Protocol: NSObject {
         }
         
         return p
+    }
+    
+    /**
+     Не у всех событий в базе, вторые 16 бит слова отводятся под время.
+     */
+    func isValidEventIdForTimeCheck(_ eventId: Int) -> Bool {
+        return (eventId <= AWel(2) || eventId <= AWel(1) || eventId <= AWel || eventId == TOF  || eventId == Gam(1) || eventId == Gam(2) || eventId == Gam || eventId == Neutrons)
     }
     
     fileprivate func value(_ key: String) -> Int {
