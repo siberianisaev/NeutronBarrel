@@ -15,6 +15,11 @@ typedef struct {
     unsigned short param3;
 } ISAEvent;
 
+typedef NS_ENUM(NSInteger, SearchDirection) {
+    SearchDirectionForward,
+    SearchDirectionBackward
+};
+
 typedef NS_ENUM(NSInteger, SearchType) {
     SearchTypeFission,
     SearchTypeAlpha,

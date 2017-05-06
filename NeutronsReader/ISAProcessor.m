@@ -90,7 +90,10 @@ typedef NS_ENUM(unsigned short, Mask) {
     
     __weak ISAProcessor *weakSelf = self;
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        [weakSelf processData];
+        ISAProcessor *strongSelf = weakSelf;
+        if (strongSelf) {
+            [strongSelf processData];
+        }
         if (completion) {
             completion();
         }
@@ -143,99 +146,20 @@ typedef NS_ENUM(unsigned short, Mask) {
                 exit(-1);
             } else {
                 setvbuf(_file, NULL, _IONBF, 0); // disable buffering
-                while (!feof(_file)) { // TODO: use forwardSearch method!
-                    ISAEvent event;
-                    fread(&event, sizeof(event), 1, _file);
-                    if (ferror(_file)) {
-                        printf("\nERROR while reading file %s\n", [_currentFileName UTF8String]);
-                        exit(-1);
+                __weak ISAProcessor *weakSelf = self;
+                [_processor forwardSearchWithChecker:^(ISAEvent event, BOOL *stop) {
+                    ISAProcessor *strongSelf = weakSelf;
+                    if (strongSelf) {
+                        if (ferror(strongSelf.file)) {
+                            printf("\nERROR while reading file %s\n", [strongSelf.currentFileName UTF8String]);
+                            exit(-1);
+                        }
+                        if (strongSelf.stoped) {
+                            *stop = YES;
+                        }
+                        [strongSelf mainCycleEventCheck:event];
                     }
-                    
-                    if (_stoped) {
-                        return;
-                    }
-                    
-                    if (event.eventId == _dataProtocol.CycleTime) {
-                        _mainCycleTimeEvent = event;
-                    }
-                    
-                    // FFron or AFron
-                    if ([self isFront:event type:_startParticleType]) {
-                        // Запускаем новый цикл поиска, только если энергия осколка/альфы на лицевой стороне детектора выше минимальной
-                        double energy = [self getEnergy:event type:_startParticleType];
-                        if (energy < _fissionAlphaFrontMinEnergy || energy > _fissionAlphaFrontMaxEnergy) {
-                            continue;
-                        }
-                        [self storeFirstFissionAlphaFront:event];
-                        
-                        fpos_t position;
-                        fgetpos(_file, &position);
-                        
-                        // Alpha 2
-                        if (_searchAlpha2) {
-                            [self findAlpha2];
-                            fseek(_file, position, SEEK_SET);
-                            if (0 == _alpha2FrontPerAct.count) {
-                                [self clearActInfo];
-                                continue;
-                            }
-                        }
-                        
-                        // Gamma
-                        [self findGamma];
-                        fseek(_file, position, SEEK_SET);
-                        if (_requiredGamma && 0 == _gammaPerAct.count) {
-                            [self clearActInfo];
-                            continue;
-                        }
-                        
-                        // FBack or ABack
-                        [self findFissionsAlphaBack];
-                        fseek(_file, position, SEEK_SET);
-                        if (_requiredFissionRecoilBack && 0 == _fissionsAlphaBackPerAct.count) {
-                            [self clearActInfo];
-                            continue;
-                        }
-                        
-                        // Recoil (Ищем рекойлы только после поиска всех FBack/ABack!)
-                        [self findRecoil];
-                        fseek(_file, position, SEEK_SET);
-                        if (_requiredRecoil && 0 == _recoilsFrontPerAct.count) {
-                            [self clearActInfo];
-                            continue;
-                        }
-                        
-                        // Neutrons
-                        if (_searchNeutrons) {
-                            [self findNeutrons];
-                            fseek(_file, position, SEEK_SET);
-                        }
-                        
-                        // FON & Recoil Special && TOF Generations
-                        [self findFONEvents];
-                        fseek(_file, position, SEEK_SET);
-                        
-                        // FWel or AWel
-                        [self findFissionsAlphaWel];
-                        fseek(_file, position, SEEK_SET);
-                        
-                        /*
-                         ВАЖНО: тут не делаем репозиционирование в потоке после поиска!
-                         Этот подцикл поиска всегда должен быть последним!
-                         */
-                        // Summ(FFron or AFron)
-                        if (_summarizeFissionsAlphaFront) {
-                            [self findFissionsAlphaFront];
-                        }
-                        
-                        // Завершили поиск корреляций
-                        if (_searchNeutrons) {
-                            [self updateNeutronsMultiplicity];
-                        }
-                        [self logActResults];
-                        [self clearActInfo];
-                    }
-                }
+                }];
             }
             
             fseek(_file, 0L, SEEK_END);
@@ -254,12 +178,97 @@ typedef NS_ENUM(unsigned short, Mask) {
     }
 }
 
+- (void)mainCycleEventCheck:(ISAEvent)event
+{
+    if (event.eventId == _dataProtocol.CycleTime) {
+        _mainCycleTimeEvent = event;
+    }
+    
+    // FFron or AFron
+    if ([self isFront:event type:_startParticleType]) {
+        // Запускаем новый цикл поиска, только если энергия осколка/альфы на лицевой стороне детектора выше минимальной
+        double energy = [self getEnergy:event type:_startParticleType];
+        if (energy < _fissionAlphaFrontMinEnergy || energy > _fissionAlphaFrontMaxEnergy) {
+            return;
+        }
+        [self storeFirstFissionAlphaFront:event];
+        
+        fpos_t position;
+        fgetpos(_file, &position);
+        
+        // Alpha 2
+        if (_searchAlpha2) {
+            [self findAlpha2];
+            fseek(_file, position, SEEK_SET);
+            if (0 == _alpha2FrontPerAct.count) {
+                [self clearActInfo];
+                return;
+            }
+        }
+        
+        // Gamma
+        [self findGamma];
+        fseek(_file, position, SEEK_SET);
+        if (_requiredGamma && 0 == _gammaPerAct.count) {
+            [self clearActInfo];
+            return;
+        }
+        
+        // FBack or ABack
+        [self findFissionsAlphaBack];
+        fseek(_file, position, SEEK_SET);
+        if (_requiredFissionRecoilBack && 0 == _fissionsAlphaBackPerAct.count) {
+            [self clearActInfo];
+            return;
+        }
+        
+        // Recoil (Ищем рекойлы только после поиска всех FBack/ABack!)
+        [self findRecoil];
+        fseek(_file, position, SEEK_SET);
+        if (_requiredRecoil && 0 == _recoilsFrontPerAct.count) {
+            [self clearActInfo];
+            return;
+        }
+        
+        // Neutrons
+        if (_searchNeutrons) {
+            [self findNeutrons];
+            fseek(_file, position, SEEK_SET);
+        }
+        
+        // FON & Recoil Special && TOF Generations
+        [self findFONEvents];
+        fseek(_file, position, SEEK_SET);
+        
+        // FWel or AWel
+        [self findFissionsAlphaWel];
+        fseek(_file, position, SEEK_SET);
+        
+        /*
+         ВАЖНО: тут не делаем репозиционирование в потоке после поиска!
+         Этот подцикл поиска всегда должен быть последним!
+         */
+        // Summ(FFron or AFron)
+        if (_summarizeFissionsAlphaFront) {
+            [self findFissionsAlphaFront];
+        }
+        
+        // Завершили поиск корреляций
+        if (_searchNeutrons) {
+            [self updateNeutronsMultiplicity];
+        }
+        [self logActResults];
+        [self clearActInfo];
+    }
+}
+
 /**
  Ищем все Neutrons в окне <= _maxNeutronTime относительно времени FFron.
  */
 - (void)findNeutrons
 {
-    [_processor forwardSearchWithStartTime:_firstFissionAlphaTime minDeltaTime:0 maxDeltaTime:_maxNeutronTime useCycleTime:NO updateCycleEvent:NO checker:^(ISAEvent event, unsigned long long deltaTime, BOOL *stop) {
+    NSSet *directions = [NSSet setWithObject:@(SearchDirectionForward)];
+    [_processor searchWithDirections:directions startTime:_firstFissionAlphaTime minDeltaTime:0 maxDeltaTime:_maxNeutronTime useCycleTime:NO updateCycleEvent:NO checker:^(ISAEvent event, unsigned long long time, long long deltaTime, BOOL *stop) {
         if (_dataProtocol.Neutrons == event.eventId) {
             _neutronsSummPerAct += 1;
         }
@@ -271,7 +280,8 @@ typedef NS_ENUM(unsigned short, Mask) {
  */
 - (void)findFissionsAlphaBack
 {
-    [_processor forwardSearchWithStartTime:_firstFissionAlphaTime minDeltaTime:0 maxDeltaTime:_fissionAlphaMaxTime useCycleTime:NO updateCycleEvent:NO checker:^(ISAEvent event, unsigned long long deltaTime, BOOL *stop) {
+    NSSet *directions = [NSSet setWithObject:@(SearchDirectionForward)];
+    [_processor searchWithDirections:directions startTime:_firstFissionAlphaTime minDeltaTime:0 maxDeltaTime:_fissionAlphaMaxTime useCycleTime:NO updateCycleEvent:NO checker:^(ISAEvent event, unsigned long long time, long long deltaTime, BOOL *stop) {
         if ([self isBack:event type:_startParticleType]) {
             double energy = [self getEnergy:event type:_startParticleType];
             if (energy >= _fissionAlphaFrontMinEnergy && energy <= _fissionAlphaFrontMaxEnergy) {
@@ -312,42 +322,16 @@ typedef NS_ENUM(unsigned short, Mask) {
  */
 - (void)findFissionsAlphaFront
 {
-    fpos_t initial;
-    fgetpos(_file, &initial);
-    
-    // 1. Ищем в направлении до -_fissionMaxTime mks от T(Fission First)
-    fpos_t current = initial;
-    
-    if (current > -1) {
-        // Skip Fission/Alpha First event!
-        current -= sizeof(ISAEvent);
-        fseek(_file, current, SEEK_SET);
+    // Skip Fission/Alpha First event!
+    fpos_t position;
+    fgetpos(_file, &position);
+    if (position > -1) {
+        position -= sizeof(ISAEvent);
+        fseek(_file, position, SEEK_SET);
     }
     
-    while (current > -1) {
-        current -= sizeof(ISAEvent);
-        fseek(_file, current, SEEK_SET);
-        
-        ISAEvent event;
-        fread(&event, sizeof(event), 1, _file);
-        
-//#warning TODO: не учитывается EventIdCycleTime
-        if ([_dataProtocol isValidEventIdForTimeCheck:event.eventId]) {
-            double deltaTime = fabs((double)event.param1 - _firstFissionAlphaTime);
-            if (deltaTime <= _fissionAlphaMaxTime) {
-                if ([self isFront:event type:_startParticleType] && [self isFissionNearToFirstFissionFront:event]) {
-                    [self storeNextFissionAlphaFront:event deltaTime:deltaTime];
-                }
-            } else {
-                break;
-            }
-        }
-    }
-    
-    fseek(_file, initial, SEEK_SET);
-    
-    // 2. Ищем в направлении до +_fissionMaxTime mks от T(Fission/Alpha First)
-    [_processor forwardSearchWithStartTime:_firstFissionAlphaTime minDeltaTime:0 maxDeltaTime:_fissionAlphaMaxTime useCycleTime:NO updateCycleEvent:YES checker:^(ISAEvent event, unsigned long long deltaTime, BOOL *stop) {
+    NSSet *directions = [NSSet setWithObjects:@(SearchDirectionForward), @(SearchDirectionBackward), nil];
+    [_processor searchWithDirections:directions startTime:_firstFissionAlphaTime minDeltaTime:0 maxDeltaTime:_fissionAlphaMaxTime useCycleTime:NO updateCycleEvent:YES checker:^(ISAEvent event, unsigned long long time, long long deltaTime, BOOL *stop) {
         if ([self isFront:event type:_startParticleType] && [self isFissionNearToFirstFissionFront:event]) { // FFron/AFron пришедшие после первого
             [self storeNextFissionAlphaFront:event deltaTime:deltaTime];
         }
@@ -359,7 +343,8 @@ typedef NS_ENUM(unsigned short, Mask) {
  */
 - (void)findFissionsAlphaWel
 {
-    [_processor forwardSearchWithStartTime:_firstFissionAlphaTime minDeltaTime:0 maxDeltaTime:_fissionAlphaMaxTime useCycleTime:NO updateCycleEvent:NO checker:^(ISAEvent event, unsigned long long deltaTime, BOOL *stop) {
+    NSSet *directions = [NSSet setWithObject:@(SearchDirectionForward)];
+    [_processor searchWithDirections:directions startTime:_firstFissionAlphaTime minDeltaTime:0 maxDeltaTime:_fissionAlphaMaxTime useCycleTime:NO updateCycleEvent:NO checker:^(ISAEvent event, unsigned long long time, long long deltaTime, BOOL *stop) {
         if ([self isFissionOrAlphaWel:event]) {
             [self storeFissionAlphaWell:event];
         }
@@ -396,35 +381,8 @@ typedef NS_ENUM(unsigned short, Mask) {
  */
 - (void)findGamma
 {
-    fpos_t initial;
-    fgetpos(_file, &initial);
-    
-    // 1. Ищем в направлении до -_maxGammaTime mks от T(Fission Front)
-    fpos_t current = initial;
-    while (current > -1) {
-        current -= sizeof(ISAEvent);
-        fseek(_file, current, SEEK_SET);
-        
-        ISAEvent event;
-        fread(&event, sizeof(event), 1, _file);
-        
-//#warning TODO: не учитывается EventIdCycleTime
-        if ([_dataProtocol isValidEventIdForTimeCheck:event.eventId]) {
-            double deltaTime = fabs((double)event.param1 - _firstFissionAlphaTime);
-            if (deltaTime <= _maxGammaTime) {
-                if ([self isGammaEvent:event]) {
-                    [self storeGamma:event deltaTime:deltaTime];
-                }
-            } else {
-                break;
-            }
-        }
-    }
-    
-    fseek(_file, initial, SEEK_SET);
-    
-    // 2. Ищем в направлении до +_maxGammaTime mks от T(Fission Front)
-    [_processor forwardSearchWithStartTime:_firstFissionAlphaTime minDeltaTime:0 maxDeltaTime:_maxGammaTime useCycleTime:NO updateCycleEvent:NO checker:^(ISAEvent event, unsigned long long deltaTime, BOOL *stop) {
+    NSSet *directions = [NSSet setWithObjects:@(SearchDirectionForward), @(SearchDirectionBackward), nil];
+    [_processor searchWithDirections:directions startTime:_firstFissionAlphaTime minDeltaTime:0 maxDeltaTime:_maxGammaTime useCycleTime:NO updateCycleEvent:NO checker:^(ISAEvent event, unsigned long long time, long long deltaTime, BOOL *stop) {
         if ([self isGammaEvent:event]) {
             [self storeGamma:event deltaTime:(int)deltaTime];
         }
@@ -434,7 +392,7 @@ typedef NS_ENUM(unsigned short, Mask) {
 - (void)storeGamma:(ISAEvent)event deltaTime:(int)deltaTime
 {
     unsigned short channel = event.param3 & MaskGamma;
-    double energy = [_calibration calibratedValueForAmplitude:channel eventName:@"Gam1"];
+    double energy = [_calibration calibratedValueForAmplitude:channel eventName:@"Gam1"]; // TODO: Gam2, Gam
     NSDictionary *info = @{kEnergy:@(energy),
                            kDeltaTime: @(deltaTime)};
     [_gammaPerAct addObject:info];
@@ -455,62 +413,26 @@ typedef NS_ENUM(unsigned short, Mask) {
 - (void)findRecoil
 {
     long long fissionTime = [self time:_firstFissionAlphaTime cycleEvent:_mainCycleTimeEvent];
-    ISAEvent cycleEvent = _mainCycleTimeEvent;
-    
-    fpos_t current;
-    fgetpos(_file, &current);
-//TODO: работает в пределах одного файла!
-    while (current > -1) {
-        current -= sizeof(ISAEvent);
-        fseek(_file, current, SEEK_SET);
-        
-        ISAEvent event;
-        fread(&event, sizeof(event), 1, _file);
-        
-        if (event.eventId == _dataProtocol.CycleTime) { // Откатились по времени к предыдущему циклу!
-            cycleEvent = event;
-        }
-        
-        if (NO == [_dataProtocol isValidEventIdForTimeCheck:event.eventId]) {
-            continue;
-        }
-        
-        long long recoilTime = [self time:event.param1 cycleEvent:cycleEvent];
-        long double deltaTime = llabs((long long)recoilTime - fissionTime);
-        if (deltaTime < _recoilMinTime) {
-            continue;
-        } else if (deltaTime <= _recoilMaxTime) {
-            if (NO == [self isFront:event type:SearchTypeRecoil]) {
-                continue;
-            }
-            
+    NSSet *directions = [NSSet setWithObject:@(SearchDirectionBackward)];
+    [_processor searchWithDirections:directions startTime:fissionTime minDeltaTime:_recoilMinTime maxDeltaTime:_recoilMaxTime useCycleTime:YES updateCycleEvent:NO checker:^(ISAEvent event, unsigned long long time, long long deltaTime, BOOL *stop) {
+        if ([self isFront:event type:SearchTypeRecoil] && [self isEventFrontNearToFirstFissionAlphaFront:event maxDelta:_recoilFrontMaxDeltaStrips]) {
             double energy = [self getEnergy:event type:SearchTypeRecoil];
-            if (energy < _recoilFrontMinEnergy || energy > _recoilFrontMaxEnergy) {
-                continue;
+            if (energy >= _recoilFrontMinEnergy && energy <= _recoilFrontMaxEnergy) {
+                // Сохраняем рекойл только если к нему найден Recoil Back и TOF (если required)
+                fpos_t current;
+                fgetpos(_file, &current);
+                BOOL isRecoilBackFounded = [self findRecoilBack:event.param1];
+                fseek(_file, current, SEEK_SET);
+                if (isRecoilBackFounded) {
+                    BOOL isTOFFounded = [self findTOFForRecoil:event time:time];
+                    fseek(_file, current, SEEK_SET);
+                    if (!_requiredTOF || isTOFFounded) {
+                        [self storeRecoil:event deltaTime:deltaTime];
+                    }
+                }
             }
-            
-            if (NO == [self isEventFrontNearToFirstFissionAlphaFront:event maxDelta:_recoilFrontMaxDeltaStrips]) {
-                continue;
-            }
-            
-            // Сохраняем рекойл только если к нему найден Recoil Back
-            BOOL isRecoilBackFounded = [self findRecoilBack:event.param1];
-            fseek(_file, current, SEEK_SET);
-            if (!isRecoilBackFounded) {
-                continue;
-            }
-            
-            BOOL isTOFFounded = [self findTOFForRecoil:event time:recoilTime];
-            fseek(_file, current, SEEK_SET);
-            if (_requiredTOF && !isTOFFounded) {
-                continue;
-            }
-
-            [self storeRecoil:event deltaTime:deltaTime];
-        } else {
-            return;
         }
-    }
+    }];
 }
     
 - (void)storeRecoil:(ISAEvent)event deltaTime:(long long)deltaTime
@@ -528,7 +450,8 @@ typedef NS_ENUM(unsigned short, Mask) {
 - (BOOL)findRecoilBack:(unsigned short)timeRecoilFront
 {
     __block BOOL found = NO;
-    [_processor forwardSearchWithStartTime:timeRecoilFront minDeltaTime:0 maxDeltaTime:_recoilBackMaxTime useCycleTime:NO updateCycleEvent:NO checker:^(ISAEvent event, unsigned long long deltaTime, BOOL *stop) {
+    NSSet *directions = [NSSet setWithObject:@(SearchDirectionForward)];
+    [_processor searchWithDirections:directions startTime:timeRecoilFront minDeltaTime:0 maxDeltaTime:_recoilBackMaxTime useCycleTime:NO updateCycleEvent:NO checker:^(ISAEvent event, unsigned long long time, long long deltaTime, BOOL *stop) {
         if ([self isBack:event type:SearchTypeRecoil]) {
             if (_requiredFissionRecoilBack) {
                 found = [self isRecoilBackNearToFissionAlphaBack:event];
@@ -547,7 +470,8 @@ typedef NS_ENUM(unsigned short, Mask) {
 - (void)findAlpha2
 {
     long long alphaTime = [self time:_firstFissionAlphaTime cycleEvent:_mainCycleTimeEvent];
-    [_processor forwardSearchWithStartTime:alphaTime minDeltaTime:_alpha2MinTime maxDeltaTime:_alpha2MaxTime useCycleTime:YES updateCycleEvent:NO checker:^(ISAEvent event, unsigned long long deltaTime, BOOL *stop) {
+    NSSet *directions = [NSSet setWithObject:@(SearchDirectionForward)];
+    [_processor searchWithDirections:directions startTime:alphaTime minDeltaTime:_alpha2MinTime maxDeltaTime:_alpha2MaxTime useCycleTime:YES updateCycleEvent:NO checker:^(ISAEvent event, unsigned long long time, long long deltaTime, BOOL *stop) {
         if ([self isFront:event type:SearchTypeAlpha]) {
             double energy = [self getEnergy:event type:SearchTypeAlpha];
             if (energy >= _alpha2MinEnergy && energy <= _alpha2MaxEnergy && [self isEventFrontNearToFirstFissionAlphaFront:event maxDelta:_alpha2MaxDeltaStrips]) {
@@ -571,39 +495,9 @@ typedef NS_ENUM(unsigned short, Mask) {
  */
 - (BOOL)findTOFForRecoil:(ISAEvent)eventRecoil time:(unsigned short)timeRecoil
 {
-    fpos_t initial;
-    fgetpos(_file, &initial);
-    
-    // 1. Ищем в направлении до -10 mks от T(Recoil)
-    fpos_t current = initial;
-    while (current > -1) {
-        current -= sizeof(ISAEvent);
-        fseek(_file, current, SEEK_SET);
-        
-        ISAEvent event;
-        fread(&event, sizeof(event), 1, _file);
-        
-        if ([_dataProtocol isValidEventIdForTimeCheck:event.eventId]) {
-            double deltaTime = fabs((double)event.param1 - timeRecoil);
-            if (deltaTime <= _maxTOFTime) {
-                if (_dataProtocol.TOF == event.eventId) {
-                    double value = [self valueTOF:event forRecoil:eventRecoil];
-                    if (value >= _minTOFValue && value <= _maxTOFValue) {
-                        [self storeRealTOFValue:value deltaTime:-deltaTime];
-                        return YES;
-                    }
-                }
-            } else {
-                break;
-            }
-        }
-    }
-    
-    fseek(_file, initial, SEEK_SET);
-    
-    // 2. Ищем в направлении до +10 mks от T(Recoil)
     __block BOOL found = NO;
-    [_processor forwardSearchWithStartTime:timeRecoil minDeltaTime:0 maxDeltaTime:_maxTOFTime useCycleTime:NO updateCycleEvent:NO checker:^(ISAEvent event, unsigned long long deltaTime, BOOL *stop) {
+    NSSet *directions = [NSSet setWithObjects:@(SearchDirectionForward), @(SearchDirectionBackward), nil];
+    [_processor searchWithDirections:directions startTime:timeRecoil minDeltaTime:0 maxDeltaTime:_maxTOFTime useCycleTime:NO updateCycleEvent:NO checker:^(ISAEvent event, unsigned long long time, long long deltaTime, BOOL *stop) {
         if (_dataProtocol.TOF == event.eventId) {
             double value = [self valueTOF:event forRecoil:eventRecoil];
             if (value >= _minTOFValue && value <= _maxTOFValue) {

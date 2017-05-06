@@ -25,41 +25,88 @@ class Processor: NSObject {
         }
     }
     
-    @objc func forwardSearch(startTime: CUnsignedLongLong, minDeltaTime: CUnsignedLongLong, maxDeltaTime: CUnsignedLongLong, useCycleTime: Bool, updateCycleEvent: Bool, checker: @escaping ((ISAEvent, CUnsignedLongLong, UnsafeMutablePointer<Bool>)->())) {
-        
-        while feof(p.file) != 1 {
-            var event = ISAEvent()
-            fread(&event, MemoryLayout<ISAEvent>.size, 1, p.file)
+    /**
+     Note: use SearchDirection values in 'directions'.
+     */
+    @objc func search(directions: Set<NSNumber>, startTime: CUnsignedLongLong, minDeltaTime: CUnsignedLongLong, maxDeltaTime: CUnsignedLongLong, useCycleTime: Bool, updateCycleEvent: Bool, checker: @escaping ((ISAEvent, CUnsignedLongLong, CLongLong, UnsafeMutablePointer<Bool>)->())) {
+        //TODO: работает в пределах одного файла
+        if directions.contains(SearchDirection.backward.rawValue as NSNumber) {
+            var initial = fpos_t()
+            fgetpos(p.file, &initial)
             
-            let id = Int(event.eventId)
-            if updateCycleEvent {
+            var cycleEvent = p.mainCycleTimeEvent
+            var current = Int(initial)
+            while current > -1 {
+                current -= MemoryLayout<ISAEvent>.size
+                fseek(p.file, current, SEEK_SET)
+                
+                var event = ISAEvent()
+                fread(&event, MemoryLayout<ISAEvent>.size, 1, p.file)
+                
+                let id = Int(event.eventId)
                 if id == p.dataProtocol.CycleTime {
-                    p.mainCycleTimeEvent = event
+                    cycleEvent = event
                     continue
                 }
-            }
-            
-            if p.dataProtocol.isValidEventIdForTimeCheck(id) {
-                let relativeTime = event.param1
-                let time = useCycleTime ? p.time(relativeTime, cycle: p.mainCycleTimeEvent) : CUnsignedLongLong(relativeTime)
-                let deltaTime = (time < startTime) ? (startTime - time) : (time - startTime)
-                if deltaTime <= maxDeltaTime {
-                    if deltaTime < minDeltaTime {
-                        continue
+                
+                if p.dataProtocol.isValidEventIdForTimeCheck(id) {
+                    let relativeTime = event.param1
+                    let time = useCycleTime ? p.time(relativeTime, cycle: cycleEvent) : CUnsignedLongLong(relativeTime)
+                    let deltaTime = (time < startTime) ? (startTime - time) : (time - startTime)
+                    if deltaTime <= maxDeltaTime {
+                        if deltaTime < minDeltaTime {
+                            continue
+                        }
+                        
+                        var stop: Bool = false
+                        checker(event, time, -(CLongLong)(deltaTime), &stop)
+                        if stop {
+                            return
+                        }
+                    } else {
+                        break
                     }
-                    
-                    var stop: Bool = false
-                    checker(event, deltaTime, &stop)
-                    if stop {
+                }
+                
+                fseek(p.file, Int(initial), SEEK_SET)
+            }
+        }
+        
+        if directions.contains(SearchDirection.forward.rawValue as NSNumber) {
+            var cycleEvent = p.mainCycleTimeEvent
+            while feof(p.file) != 1 {
+                var event = ISAEvent()
+                fread(&event, MemoryLayout<ISAEvent>.size, 1, p.file)
+                
+                let id = Int(event.eventId)
+                if id == p.dataProtocol.CycleTime {
+                    if updateCycleEvent {
+                        p.mainCycleTimeEvent = event
+                    }
+                    cycleEvent = event
+                    continue
+                }
+            
+                if p.dataProtocol.isValidEventIdForTimeCheck(id) {
+                    let relativeTime = event.param1
+                    let time = useCycleTime ? p.time(relativeTime, cycle: cycleEvent) : CUnsignedLongLong(relativeTime)
+                    let deltaTime = (time < startTime) ? (startTime - time) : (time - startTime)
+                    if deltaTime <= maxDeltaTime {
+                        if deltaTime < minDeltaTime {
+                            continue
+                        }
+                        
+                        var stop: Bool = false
+                        checker(event, time, CLongLong(deltaTime), &stop)
+                        if stop {
+                            return
+                        }
+                    } else {
                         return
                     }
-                } else {
-                    return
                 }
             }
         }
     }
-    
-    // TODO: implement backward search
 
 }
