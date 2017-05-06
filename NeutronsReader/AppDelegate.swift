@@ -90,7 +90,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             processor?.startParticleType = fissionAlphaControl.selectedSegment == 0 ? .fission : .alpha
             processor?.fissionAlphaFrontMinEnergy = sMinFissionEnergy.doubleValue
             processor?.fissionAlphaFrontMaxEnergy = sMaxFissionEnergy.doubleValue
-            processor?.fissionAlphaMaxTime = sMaxFissionTime.doubleValue
+            processor?.fissionAlphaMaxTime = UInt64(sMaxFissionTime.longLongValue)
             processor?.summarizeFissionsAlphaFront = summarizeFissionsFront
             
             processor?.searchAlpha2 = searchAlpha2
@@ -120,7 +120,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             processor?.requiredGamma = requiredGamma
             
             processor?.searchNeutrons = searchNeutrons
-            processor?.maxNeutronTime = sMaxNeutronTime.doubleValue
+            processor?.maxNeutronTime = UInt64(sMaxNeutronTime.doubleValue)
             
             processor?.delegate = self
             processor?.processData(completion: { [weak self] in

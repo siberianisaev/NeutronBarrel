@@ -15,6 +15,15 @@ typedef struct {
     unsigned short param3;
 } ISAEvent;
 
+typedef NS_ENUM(unsigned short, Mask) {
+    MaskFission = 0x0FFF,
+    MaskGamma = 0x1FFF,
+    MaskTOF = 0x1FFF,
+    MaskFON = 0xFFFF,
+    MaskRecoilAlpha = 0x1FFF, // Alpha or Recoil
+    MaskRecoilSpecial = 0xFFFF
+};
+
 typedef NS_ENUM(NSInteger, SearchDirection) {
     SearchDirectionForward,
     SearchDirectionBackward
@@ -46,6 +55,9 @@ typedef NS_ENUM(NSInteger, TOFUnits) {
 @property (assign, nonatomic) FILE *file;
 @property (strong, nonatomic) DataProtocol *dataProtocol;
 @property (assign, nonatomic) ISAEvent mainCycleTimeEvent;
+@property (assign, nonatomic) unsigned long long totalEventNumber;
+@property (assign, nonatomic) unsigned long long firstFissionAlphaTime; // время главного осколка/альфы в цикле
+@property (assign, nonatomic) unsigned long long neutronsSummPerAct;
 
 @property (assign, nonatomic) double fissionAlphaFrontMinEnergy;
 @property (assign, nonatomic) double fissionAlphaFrontMaxEnergy;
@@ -56,10 +68,10 @@ typedef NS_ENUM(NSInteger, TOFUnits) {
 @property (assign, nonatomic) double recoilMinTime;
 @property (assign, nonatomic) double recoilMaxTime;
 @property (assign, nonatomic) double recoilBackMaxTime;
-@property (assign, nonatomic) double fissionAlphaMaxTime;
+@property (assign, nonatomic) unsigned long long fissionAlphaMaxTime;
 @property (assign, nonatomic) double maxTOFTime;
 @property (assign, nonatomic) double maxGammaTime;
-@property (assign, nonatomic) double maxNeutronTime;
+@property (assign, nonatomic) unsigned long long maxNeutronTime;
 @property (assign, nonatomic) int recoilFrontMaxDeltaStrips;
 @property (assign, nonatomic) int recoilBackMaxDeltaStrips;
 @property (assign, nonatomic) BOOL summarizeFissionsAlphaFront;
@@ -87,6 +99,7 @@ typedef NS_ENUM(NSInteger, TOFUnits) {
 - (void)selectCalibrationWithCompletion:(void (^)(BOOL))completion;
 - (void)stop;
 
-- (unsigned long long)time:(unsigned short)relativeTime cycleEvent:(ISAEvent)cycleEvent;
+// public during migration to Swift phase
+- (void)storeFissionAlphaWell:(ISAEvent)event;
 
 @end

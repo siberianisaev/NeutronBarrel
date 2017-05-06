@@ -8,12 +8,6 @@
 
 #import "ISAProcessor.h"
 
-/**
- Маркер отличающий осколок/альфу (0) от рекойла (4), записывается в первые 3 бита param3.
- */
-static unsigned short kFissionOrAlphaMarker = 0b000;
-static unsigned short kRecoilMarker = 0b100;
-
 static NSString * const kEncoder = @"encoder";
 static NSString * const kStrip0_15 = @"strip_0_15";
 static NSString * const kStrip1_48 = @"strip_1_48";
@@ -22,15 +16,6 @@ static NSString * const kValue = @"value";
 static NSString * const kDeltaTime = @"delta_time";
 static NSString * const kChannel = @"channel";
 static NSString * const kEventNumber = @"event_number";
-
-typedef NS_ENUM(unsigned short, Mask) {
-    MaskFission = 0x0FFF,
-    MaskGamma = 0x1FFF,
-    MaskTOF = 0x1FFF,
-    MaskFON = 0xFFFF,
-    MaskRecoilAlpha = 0x1FFF, // Alpha or Recoil
-    MaskRecoilSpecial = 0xFFFF
-};
 
 @interface ISAProcessor ()
 
@@ -51,9 +36,6 @@ typedef NS_ENUM(unsigned short, Mask) {
 @property (strong, nonatomic) NSNumber *fonPerAct;
 @property (strong, nonatomic) NSNumber *recoilSpecialPerAct;
 @property (strong, nonatomic) NSDictionary *firstFissionAlphaInfo; // информация о главном осколке/альфе в цикле
-@property (assign, nonatomic) unsigned short firstFissionAlphaTime; // время главного осколка/альфы в цикле
-@property (assign, nonatomic) unsigned long long neutronsSummPerAct;
-@property (assign, nonatomic) unsigned long long totalEventNumber;
 @property (assign, nonatomic) BOOL stoped;
 
 @end
@@ -185,7 +167,7 @@ typedef NS_ENUM(unsigned short, Mask) {
     }
     
     // FFron or AFron
-    if ([self isFront:event type:_startParticleType]) {
+    if ([_processor isFront:event type:_startParticleType]) {
         // Запускаем новый цикл поиска, только если энергия осколка/альфы на лицевой стороне детектора выше минимальной
         double energy = [self getEnergy:event type:_startParticleType];
         if (energy < _fissionAlphaFrontMinEnergy || energy > _fissionAlphaFrontMaxEnergy) {
@@ -232,7 +214,7 @@ typedef NS_ENUM(unsigned short, Mask) {
         
         // Neutrons
         if (_searchNeutrons) {
-            [self findNeutrons];
+            [_processor findNeutrons];
             fseek(_file, position, SEEK_SET);
         }
         
@@ -241,7 +223,7 @@ typedef NS_ENUM(unsigned short, Mask) {
         fseek(_file, position, SEEK_SET);
         
         // FWel or AWel
-        [self findFissionsAlphaWel];
+        [_processor findFissionsAlphaWel];
         fseek(_file, position, SEEK_SET);
         
         /*
@@ -263,26 +245,13 @@ typedef NS_ENUM(unsigned short, Mask) {
 }
 
 /**
- Ищем все Neutrons в окне <= _maxNeutronTime относительно времени FFron.
- */
-- (void)findNeutrons
-{
-    NSSet *directions = [NSSet setWithObject:@(SearchDirectionForward)];
-    [_processor searchWithDirections:directions startTime:_firstFissionAlphaTime minDeltaTime:0 maxDeltaTime:_maxNeutronTime useCycleTime:NO updateCycleEvent:NO checker:^(ISAEvent event, unsigned long long time, long long deltaTime, BOOL *stop) {
-        if (_dataProtocol.Neutrons == event.eventId) {
-            _neutronsSummPerAct += 1;
-        }
-    }];
-}
-
-/**
  Ищем все FBack/ABack в окне <= _fissionAlphaMaxTime относительно времени FFron.
  */
 - (void)findFissionsAlphaBack
 {
     NSSet *directions = [NSSet setWithObject:@(SearchDirectionForward)];
     [_processor searchWithDirections:directions startTime:_firstFissionAlphaTime minDeltaTime:0 maxDeltaTime:_fissionAlphaMaxTime useCycleTime:NO updateCycleEvent:NO checker:^(ISAEvent event, unsigned long long time, long long deltaTime, BOOL *stop) {
-        if ([self isBack:event type:_startParticleType]) {
+        if ([_processor isBack:event type:_startParticleType]) {
             double energy = [self getEnergy:event type:_startParticleType];
             if (energy >= _fissionAlphaFrontMinEnergy && energy <= _fissionAlphaFrontMaxEnergy) {
                 [self storeFissionAlphaBack:event deltaTime:(int)deltaTime];
@@ -298,7 +267,7 @@ typedef NS_ENUM(unsigned short, Mask) {
         }] firstObject];
         unsigned short encoder = [[dict objectForKey:kEncoder] unsignedShortValue];
         unsigned short strip0_15 = [[dict objectForKey:kStrip0_15] unsignedShortValue];
-        unsigned short strip1_48 = [self stripConvertToFormat_1_48:strip0_15 encoder:encoder];
+        unsigned short strip1_48 = [_processor stripConvertToFormat_1_48:strip0_15 encoder:encoder];
         
         _fissionsAlphaBackPerAct = [[_fissionsAlphaBackPerAct filteredArrayUsingPredicate:[NSPredicate predicateWithBlock:^BOOL(id obj, NSDictionary *bindings) {
             NSDictionary *item = (NSDictionary *)obj;
@@ -307,7 +276,7 @@ typedef NS_ENUM(unsigned short, Mask) {
             }
             unsigned short e = [[item objectForKey:kEncoder] unsignedShortValue];
             unsigned short s0_15 = [[item objectForKey:kStrip0_15] unsignedShortValue];
-            unsigned short s1_48 = [self stripConvertToFormat_1_48:s0_15 encoder:e];
+            unsigned short s1_48 = [_processor stripConvertToFormat_1_48:s0_15 encoder:e];
             // TODO: new input field for _fissionBackMaxDeltaStrips
             return (abs(strip1_48 - s1_48) <= _recoilBackMaxDeltaStrips);
         }]] mutableCopy];
@@ -332,48 +301,23 @@ typedef NS_ENUM(unsigned short, Mask) {
     
     NSSet *directions = [NSSet setWithObjects:@(SearchDirectionForward), @(SearchDirectionBackward), nil];
     [_processor searchWithDirections:directions startTime:_firstFissionAlphaTime minDeltaTime:0 maxDeltaTime:_fissionAlphaMaxTime useCycleTime:NO updateCycleEvent:YES checker:^(ISAEvent event, unsigned long long time, long long deltaTime, BOOL *stop) {
-        if ([self isFront:event type:_startParticleType] && [self isFissionNearToFirstFissionFront:event]) { // FFron/AFron пришедшие после первого
+        if ([_processor isFront:event type:_startParticleType] && [self isFissionNearToFirstFissionFront:event]) { // FFron/AFron пришедшие после первого
             [self storeNextFissionAlphaFront:event deltaTime:deltaTime];
         }
     }];
 }
 
-/**
- Ищем все FWel/AWel в направлении до +_fissionAlphaMaxTime относительно времени T(Fission/Alpha First).
- */
-- (void)findFissionsAlphaWel
-{
-    NSSet *directions = [NSSet setWithObject:@(SearchDirectionForward)];
-    [_processor searchWithDirections:directions startTime:_firstFissionAlphaTime minDeltaTime:0 maxDeltaTime:_fissionAlphaMaxTime useCycleTime:NO updateCycleEvent:NO checker:^(ISAEvent event, unsigned long long time, long long deltaTime, BOOL *stop) {
-        if ([self isFissionOrAlphaWel:event]) {
-            [self storeFissionAlphaWell:event];
-        }
-    }];
-}
-
-- (unsigned long long)eventNumber
-{
-    fpos_t eventNumber;
-    fgetpos(_file, &eventNumber);
-    return (unsigned long long)eventNumber/sizeof(ISAEvent) + _totalEventNumber + 1;
-}
-
 - (void)storeFissionAlphaBack:(ISAEvent)event deltaTime:(int)deltaTime
 {
-    unsigned short encoder = [self fissionAlphaRecoilEncoderForEventId:event.eventId];
+    unsigned short encoder = [_processor fissionAlphaRecoilEncoderForEventId:event.eventId];
     unsigned short strip_0_15 = event.param2 >> 12;  // value from 0 to 15
     double energy = [self getEnergy:event type:_startParticleType];
     NSDictionary *info = @{kEncoder:@(encoder),
                            kStrip0_15:@(strip_0_15),
                            kEnergy:@(energy),
-                           kEventNumber:@([self eventNumber]),
+                           kEventNumber:@([_processor eventNumber]),
                            kDeltaTime: @(deltaTime)};
     [_fissionsAlphaBackPerAct addObject:info];
-}
-
-- (BOOL)isGammaEvent:(ISAEvent)event
-{
-    return [_dataProtocol Gam:1] == event.eventId || [_dataProtocol Gam:2] == event.eventId || [_dataProtocol Gam] == event.eventId;
 }
 
 /**
@@ -383,7 +327,7 @@ typedef NS_ENUM(unsigned short, Mask) {
 {
     NSSet *directions = [NSSet setWithObjects:@(SearchDirectionForward), @(SearchDirectionBackward), nil];
     [_processor searchWithDirections:directions startTime:_firstFissionAlphaTime minDeltaTime:0 maxDeltaTime:_maxGammaTime useCycleTime:NO updateCycleEvent:NO checker:^(ISAEvent event, unsigned long long time, long long deltaTime, BOOL *stop) {
-        if ([self isGammaEvent:event]) {
+        if ([_processor isGammaEvent:event]) {
             [self storeGamma:event deltaTime:(int)deltaTime];
         }
     }];
@@ -399,23 +343,14 @@ typedef NS_ENUM(unsigned short, Mask) {
 }
 
 /**
- У осколков/рекойлов записывается только время относительно начала нового счетчика времени (счетчик обновляется каждые 0xFFFF мкс).
- Для вычисления времени от запуска файла используем время цикла (id #24).
- */
-- (unsigned long long)time:(unsigned short)relativeTime cycleEvent:(ISAEvent)cycleEvent
-{
-    return (((unsigned long long)cycleEvent.param3 << 16) + cycleEvent.param1) + relativeTime;
-}
-
-/**
  Поиск рекойла осуществляется с позиции файла где найден главный осколок/альфа (возвращаемся назад по времени).
  */
 - (void)findRecoil
 {
-    long long fissionTime = [self time:_firstFissionAlphaTime cycleEvent:_mainCycleTimeEvent];
+    long long fissionTime = [_processor absTime:_firstFissionAlphaTime cycleEvent:_mainCycleTimeEvent];
     NSSet *directions = [NSSet setWithObject:@(SearchDirectionBackward)];
     [_processor searchWithDirections:directions startTime:fissionTime minDeltaTime:_recoilMinTime maxDeltaTime:_recoilMaxTime useCycleTime:YES updateCycleEvent:NO checker:^(ISAEvent event, unsigned long long time, long long deltaTime, BOOL *stop) {
-        if ([self isFront:event type:SearchTypeRecoil] && [self isEventFrontNearToFirstFissionAlphaFront:event maxDelta:_recoilFrontMaxDeltaStrips]) {
+        if ([_processor isFront:event type:SearchTypeRecoil] && [self isEventFrontNearToFirstFissionAlphaFront:event maxDelta:_recoilFrontMaxDeltaStrips]) {
             double energy = [self getEnergy:event type:SearchTypeRecoil];
             if (energy >= _recoilFrontMinEnergy && energy <= _recoilFrontMaxEnergy) {
                 // Сохраняем рекойл только если к нему найден Recoil Back и TOF (если required)
@@ -440,7 +375,7 @@ typedef NS_ENUM(unsigned short, Mask) {
     double energy = [self getEnergy:event type:SearchTypeRecoil];
     NSDictionary *info = @{kEnergy:@(energy),
                            kDeltaTime:@(deltaTime),
-                           kEventNumber:@([self eventNumber])};
+                           kEventNumber:@([_processor eventNumber])};
     [_recoilsFrontPerAct addObject:info];
 }
 
@@ -452,7 +387,7 @@ typedef NS_ENUM(unsigned short, Mask) {
     __block BOOL found = NO;
     NSSet *directions = [NSSet setWithObject:@(SearchDirectionForward)];
     [_processor searchWithDirections:directions startTime:timeRecoilFront minDeltaTime:0 maxDeltaTime:_recoilBackMaxTime useCycleTime:NO updateCycleEvent:NO checker:^(ISAEvent event, unsigned long long time, long long deltaTime, BOOL *stop) {
-        if ([self isBack:event type:SearchTypeRecoil]) {
+        if ([_processor isBack:event type:SearchTypeRecoil]) {
             if (_requiredFissionRecoilBack) {
                 found = [self isRecoilBackNearToFissionAlphaBack:event];
             } else {
@@ -469,10 +404,10 @@ typedef NS_ENUM(unsigned short, Mask) {
  */
 - (void)findAlpha2
 {
-    long long alphaTime = [self time:_firstFissionAlphaTime cycleEvent:_mainCycleTimeEvent];
+    long long alphaTime = [_processor absTime:_firstFissionAlphaTime cycleEvent:_mainCycleTimeEvent];
     NSSet *directions = [NSSet setWithObject:@(SearchDirectionForward)];
     [_processor searchWithDirections:directions startTime:alphaTime minDeltaTime:_alpha2MinTime maxDeltaTime:_alpha2MaxTime useCycleTime:YES updateCycleEvent:NO checker:^(ISAEvent event, unsigned long long time, long long deltaTime, BOOL *stop) {
-        if ([self isFront:event type:SearchTypeAlpha]) {
+        if ([_processor isFront:event type:SearchTypeAlpha]) {
             double energy = [self getEnergy:event type:SearchTypeAlpha];
             if (energy >= _alpha2MinEnergy && energy <= _alpha2MaxEnergy && [self isEventFrontNearToFirstFissionAlphaFront:event maxDelta:_alpha2MaxDeltaStrips]) {
                 [self storeAlpha2:event deltaTime:deltaTime];
@@ -486,7 +421,7 @@ typedef NS_ENUM(unsigned short, Mask) {
     double energy = [self getEnergy:event type:SearchTypeAlpha];
     NSDictionary *info = @{kEnergy:@(energy),
                            kDeltaTime:@(deltaTime),
-                           kEventNumber:@([self eventNumber])};
+                           kEventNumber:@([_processor eventNumber])};
     [_alpha2FrontPerAct addObject:info];
 }
 
@@ -510,17 +445,11 @@ typedef NS_ENUM(unsigned short, Mask) {
     return found;
 }
 
-- (unsigned short)channelForTOF:(ISAEvent)event
-{
-    unsigned short channel = event.param3 & MaskTOF;
-    return channel;
-}
-
 - (double)nanosecondsForTOFChannel:(unsigned short)channelTOF eventRecoil:(ISAEvent)eventRecoil
 {
     unsigned short eventId = eventRecoil.eventId;
     unsigned short strip_0_15 = eventRecoil.param2 >> 12;  // value from 0 to 15
-    unsigned short encoder = [self fissionAlphaRecoilEncoderForEventId:eventId];
+    unsigned short encoder = [_processor fissionAlphaRecoilEncoderForEventId:eventId];
     NSString *position = nil;
     if ([_dataProtocol AFron:1] == eventId || [_dataProtocol AFron:2] == eventId || [_dataProtocol AFron:3] == eventId) {
         position = @"Fron";
@@ -533,7 +462,7 @@ typedef NS_ENUM(unsigned short, Mask) {
 
 - (double)valueTOF:(ISAEvent)eventTOF forRecoil:(ISAEvent)eventRecoil
 {
-    double channel = [self channelForTOF:eventTOF];
+    double channel = [_processor channelForTOF:eventTOF];
     if (_unitsTOF == TOFUnitsChannels) {
         return channel;
     } else {
@@ -618,19 +547,19 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
 - (void)storeFissionAlphaFront:(ISAEvent)event isFirst:(BOOL)isFirst deltaTime:(double)deltaTime
 {
     unsigned short channel = (_startParticleType == SearchTypeFission) ? (event.param2 & MaskFission) : (event.param3 & MaskRecoilAlpha);
-    unsigned short encoder = [self fissionAlphaRecoilEncoderForEventId:event.eventId];
+    unsigned short encoder = [_processor fissionAlphaRecoilEncoderForEventId:event.eventId];
     unsigned short strip_0_15 = event.param2 >> 12;  // value from 0 to 15
     double energy = [self getEnergy:event type:_startParticleType];
     NSDictionary *info = @{kEncoder:@(encoder),
                            kStrip0_15:@(strip_0_15),
                            kChannel:@(channel),
                            kEnergy:@(energy),
-                           kEventNumber:@([self eventNumber]),
+                           kEventNumber:@([_processor eventNumber]),
                            kDeltaTime:@(deltaTime)};
     [_fissionsAlphaFrontPerAct addObject:info];
     
     if (isFirst) {
-        unsigned short strip_1_48 = [self focalStripConvertToFormat_1_48:strip_0_15 eventId:event.eventId];
+        unsigned short strip_1_48 = [_processor focalStripConvertToFormat_1_48:strip_0_15 eventId:event.eventId];
         NSMutableDictionary *extraInfo = [info mutableCopy];
         [extraInfo setObject:@(strip_1_48) forKey:kStrip1_48];
         _firstFissionAlphaInfo = extraInfo;
@@ -641,7 +570,7 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
 - (void)storeFissionAlphaWell:(ISAEvent)event
 {
     double energy = [self getEnergy:event type:_startParticleType];
-    unsigned short encoder = [self fissionAlphaRecoilEncoderForEventId:event.eventId];
+    unsigned short encoder = [_processor fissionAlphaRecoilEncoderForEventId:event.eventId];
     unsigned short strip_0_15 = event.param2 >> 12;  // value from 0 to 15
     NSDictionary *info = @{kEncoder:@(encoder),
                            kStrip0_15:@(strip_0_15),
@@ -661,7 +590,7 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
 - (BOOL)isEventFrontNearToFirstFissionAlphaFront:(ISAEvent)event maxDelta:(int)maxDelta
 {
     unsigned short strip_0_15 = event.param2 >> 12;
-    int strip_1_48 = [self focalStripConvertToFormat_1_48:strip_0_15 eventId:event.eventId];
+    int strip_1_48 = [_processor focalStripConvertToFormat_1_48:strip_0_15 eventId:event.eventId];
     int strip_1_48_first_fission = [[_firstFissionAlphaInfo objectForKey:kStrip1_48] intValue];
     return (abs(strip_1_48 - strip_1_48_first_fission) <= maxDelta);
 }
@@ -674,11 +603,11 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
     NSDictionary *fissionBackInfo = [self fissionAlphaBackWithMaxEnergyInAct];
     if (fissionBackInfo) {
         unsigned short strip_0_15 = event.param2 >> 12;
-        int strip_1_48 = [self focalStripConvertToFormat_1_48:strip_0_15 eventId:event.eventId];
+        int strip_1_48 = [_processor focalStripConvertToFormat_1_48:strip_0_15 eventId:event.eventId];
         
         int strip_0_15_back_fission = [[fissionBackInfo objectForKey:kStrip0_15] intValue];
         int encoder_back_fission = [[fissionBackInfo objectForKey:kEncoder] intValue];
-        int strip_1_48_back_fission = [self stripConvertToFormat_1_48:strip_0_15_back_fission encoder:encoder_back_fission];
+        int strip_1_48_back_fission = [_processor stripConvertToFormat_1_48:strip_0_15_back_fission encoder:encoder_back_fission];
         
         return (abs(strip_1_48 - strip_1_48_back_fission) <= _recoilBackMaxDeltaStrips);
     }
@@ -697,7 +626,7 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
         return YES;
     }
     
-    int strip_1_48 = [self focalStripConvertToFormat_1_48:strip_0_15 eventId:event.eventId];
+    int strip_1_48 = [_processor focalStripConvertToFormat_1_48:strip_0_15 eventId:event.eventId];
     int strip_1_48_first_fission = [[_firstFissionAlphaInfo objectForKey:kStrip1_48] intValue];
     return (abs(strip_1_48 - strip_1_48_first_fission) <= 1); // +/- 1 стрип
 }
@@ -707,7 +636,7 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
     unsigned short channel = (type == SearchTypeFission) ? (event.param2 & MaskFission) : (event.param3 & MaskRecoilAlpha);
     unsigned short eventId = event.eventId;
     unsigned short strip_0_15 = event.param2 >> 12;  // value from 0 to 15
-    unsigned short encoder = [self fissionAlphaRecoilEncoderForEventId:eventId];
+    unsigned short encoder = [_processor fissionAlphaRecoilEncoderForEventId:eventId];
     
     NSString *detector = nil;
     switch (type) {
@@ -739,23 +668,6 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
     NSString *name = [NSString stringWithFormat:@"%@%@%d.%d", detector, position, encoder, strip_0_15+1];
     
     return [_calibration calibratedValueForAmplitude:channel eventName:name];
-}
-
-- (unsigned short)fissionAlphaRecoilEncoderForEventId:(unsigned short)eventId
-{
-    if ([_dataProtocol AFron:1] == eventId || [_dataProtocol ABack:1] == eventId || [_dataProtocol AdFr:1] == eventId || [_dataProtocol AdBk:1] == eventId || [_dataProtocol AWel:1] == eventId || [_dataProtocol AWel] == eventId) {
-        return 1;
-    }
-    if ([_dataProtocol AFron:2] == eventId || [_dataProtocol ABack:2] == eventId || [_dataProtocol AdFr:2] == eventId || [_dataProtocol AdBk:2] == eventId || [_dataProtocol AWel:2] == eventId) {
-        return 2;
-    }
-    if ([_dataProtocol AFron:3] == eventId || [_dataProtocol ABack:3] == eventId || [_dataProtocol AdFr:3] == eventId || [_dataProtocol AdBk:3] == eventId || [_dataProtocol AWel:3] == eventId) {
-        return 3;
-    }
-    if ([_dataProtocol AWel:4] == eventId) {
-        return 4;
-    }
-    return 0;
 }
 
 - (void)clearActInfo
@@ -922,7 +834,7 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
                         NSDictionary *info = [_fissionsAlphaFrontPerAct objectAtIndex:row];
                         int strip_0_15 = [[info objectForKey:kStrip0_15] intValue];
                         int encoder = [[info objectForKey:kEncoder] intValue];
-                        unsigned short strip = [self stripConvertToFormat_1_48:strip_0_15 encoder:encoder];
+                        unsigned short strip = [_processor stripConvertToFormat_1_48:strip_0_15 encoder:encoder];
                         field = [NSString stringWithFormat:@"%d", strip];
                     }
                     break;
@@ -949,7 +861,7 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
                         NSDictionary *info = [_fissionsAlphaBackPerAct objectAtIndex:row];
                         int strip_0_15 = [[info objectForKey:kStrip0_15] intValue];
                         int encoder = [[info objectForKey:kEncoder] intValue];
-                        unsigned short strip = [self stripConvertToFormat_1_48:strip_0_15 encoder:encoder];
+                        unsigned short strip = [_processor stripConvertToFormat_1_48:strip_0_15 encoder:encoder];
                         field = [NSString stringWithFormat:@"%d", strip];
                     }
                     break;
@@ -1045,55 +957,6 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
         }
         [_logger finishLine];
     }
-}
-
-/**
- В фокальном детекторе cтрипы подключены поочередно к трем 16-канальным кодировщикам:
- | 1.0 | 2.0 | 3.0 | 1.1 | 2.1 | 3.1 | 1.1 ... (encoder.strip_0_15)
- Метод переводит стрип из формата "кодировщик + стрип от 0 до 15" в формат "стрип от 1 до 48".
- */
-- (unsigned short)focalStripConvertToFormat_1_48:(unsigned short)strip_0_15 eventId:(unsigned short)eventId
-{
-    int encoder = [self fissionAlphaRecoilEncoderForEventId:eventId];
-    return [self stripConvertToFormat_1_48:strip_0_15 encoder:encoder];
-}
-
-- (unsigned short)stripConvertToFormat_1_48:(unsigned short)strip_0_15 encoder:(unsigned short)encoder
-{
-    return (strip_0_15 * 3) + (encoder - 1) + 1;
-}
-
-/**
- Чтобы различить рекоил и осколок/альфу используем первые 3 бита из param3:
- 000 - осколок,
- 100 - рекоил
- */
-- (unsigned short)getMarker:(unsigned short)value_16_bits
-{
-    return (value_16_bits >> 13);
-}
-
-- (BOOL)isFront:(ISAEvent)event type:(SearchType)type
-{
-    unsigned short eventId = event.eventId;
-    unsigned short marker = [self getMarker:event.param3];
-    unsigned short typeMarker = (type == SearchTypeRecoil) ? kRecoilMarker : kFissionOrAlphaMarker;
-    return (typeMarker == marker) && ([_dataProtocol AFron:1] == eventId || [_dataProtocol AFron:2] == eventId || [_dataProtocol AFron:3] == eventId || [_dataProtocol AdFr:1] == eventId || [_dataProtocol AdFr:2] == eventId || [_dataProtocol AdFr:3] == eventId);
-}
-
-- (BOOL)isFissionOrAlphaWel:(ISAEvent)event
-{
-    unsigned short eventId = event.eventId;
-    unsigned short marker = [self getMarker:event.param3];
-    return (kFissionOrAlphaMarker == marker) && ([_dataProtocol AWel] == eventId || [_dataProtocol AWel:1] == eventId || [_dataProtocol AWel:2] == eventId || [_dataProtocol AWel:3] == eventId || [_dataProtocol AWel:4] == eventId);
-}
-
-- (BOOL)isBack:(ISAEvent)event type:(SearchType)type
-{
-    unsigned short eventId = event.eventId;
-    unsigned short marker = [self getMarker:event.param3];
-    unsigned short typeMarker = (type == SearchTypeRecoil) ? kRecoilMarker : kFissionOrAlphaMarker;
-    return (typeMarker == marker) && ([_dataProtocol ABack:1] == eventId || [_dataProtocol ABack:2] == eventId || [_dataProtocol ABack:3] == eventId || [_dataProtocol AdBk:1] == eventId || [_dataProtocol AdBk:2] == eventId || [_dataProtocol AdBk:3] == eventId);
 }
 
 - (void)selectDataWithCompletion:(void (^)(BOOL))completion
