@@ -8,6 +8,15 @@
 
 #import <Foundation/Foundation.h>
 
+static NSString * const kEncoder = @"encoder";
+static NSString * const kStrip0_15 = @"strip_0_15";
+static NSString * const kStrip1_48 = @"strip_1_48";
+static NSString * const kEnergy = @"energy";
+static NSString * const kValue = @"value";
+static NSString * const kDeltaTime = @"delta_time";
+static NSString * const kChannel = @"channel";
+static NSString * const kEventNumber = @"event_number";
+
 typedef struct {
     unsigned short eventId;
     unsigned short param1;
@@ -47,7 +56,7 @@ typedef NS_ENUM(NSInteger, TOFUnits) {
 
 @end
 
-@class DataProtocol;
+@class DataProtocol, Calibration, Logger;
 
 @interface ISAProcessor : NSObject
 
@@ -58,6 +67,23 @@ typedef NS_ENUM(NSInteger, TOFUnits) {
 @property (assign, nonatomic) unsigned long long totalEventNumber;
 @property (assign, nonatomic) unsigned long long firstFissionAlphaTime; // время главного осколка/альфы в цикле
 @property (assign, nonatomic) unsigned long long neutronsSummPerAct;
+@property (strong, nonatomic) NSArray *files;
+@property (strong, nonatomic) NSString *currentFileName;
+@property (strong, nonatomic) NSMutableDictionary *neutronsMultiplicityTotal;
+@property (strong, nonatomic) NSMutableArray *recoilsFrontPerAct;
+@property (strong, nonatomic) NSMutableArray *alpha2FrontPerAct;
+@property (strong, nonatomic) NSMutableArray *tofRealPerAct;
+@property (strong, nonatomic) NSMutableArray *fissionsAlphaFrontPerAct;
+@property (strong, nonatomic) NSMutableArray *fissionsAlphaBackPerAct;
+@property (strong, nonatomic) NSMutableArray *fissionsAlphaWelPerAct;
+@property (strong, nonatomic) NSMutableArray *gammaPerAct;
+@property (strong, nonatomic) NSMutableArray *tofGenerationsPerAct;
+@property (strong, nonatomic) NSNumber *fonPerAct;
+@property (strong, nonatomic) NSNumber *recoilSpecialPerAct;
+@property (strong, nonatomic) NSDictionary *firstFissionAlphaInfo; // информация о главном осколке/альфе в цикле
+@property (assign, nonatomic) BOOL stoped;
+@property (strong, nonatomic) Logger *logger;
+@property (strong, nonatomic) Calibration *calibration;
 
 @property (assign, nonatomic) double fissionAlphaFrontMinEnergy;
 @property (assign, nonatomic) double fissionAlphaFrontMaxEnergy;
@@ -65,12 +91,12 @@ typedef NS_ENUM(NSInteger, TOFUnits) {
 @property (assign, nonatomic) double recoilFrontMaxEnergy;
 @property (assign, nonatomic) double minTOFValue;
 @property (assign, nonatomic) double maxTOFValue;
-@property (assign, nonatomic) double recoilMinTime;
-@property (assign, nonatomic) double recoilMaxTime;
-@property (assign, nonatomic) double recoilBackMaxTime;
+@property (assign, nonatomic) unsigned long long recoilMinTime;
+@property (assign, nonatomic) unsigned long long recoilMaxTime;
+@property (assign, nonatomic) unsigned long long recoilBackMaxTime;
 @property (assign, nonatomic) unsigned long long fissionAlphaMaxTime;
-@property (assign, nonatomic) double maxTOFTime;
-@property (assign, nonatomic) double maxGammaTime;
+@property (assign, nonatomic) unsigned long long maxTOFTime;
+@property (assign, nonatomic) unsigned long long maxGammaTime;
 @property (assign, nonatomic) unsigned long long maxNeutronTime;
 @property (assign, nonatomic) int recoilFrontMaxDeltaStrips;
 @property (assign, nonatomic) int recoilBackMaxDeltaStrips;
@@ -84,8 +110,8 @@ typedef NS_ENUM(NSInteger, TOFUnits) {
 @property (assign, nonatomic) BOOL searchAlpha2;
 @property (assign, nonatomic) double alpha2MinEnergy;
 @property (assign, nonatomic) double alpha2MaxEnergy;
-@property (assign, nonatomic) double alpha2MinTime;
-@property (assign, nonatomic) double alpha2MaxTime;
+@property (assign, nonatomic) unsigned long long alpha2MinTime;
+@property (assign, nonatomic) unsigned long long alpha2MaxTime;
 @property (assign, nonatomic) int alpha2MaxDeltaStrips;
 
 @property (assign, nonatomic) SearchType startParticleType;
@@ -101,5 +127,16 @@ typedef NS_ENUM(NSInteger, TOFUnits) {
 
 // public during migration to Swift phase
 - (void)storeFissionAlphaWell:(ISAEvent)event;
+- (void)storeNextFissionAlphaFront:(ISAEvent)event deltaTime:(long long)deltaTime;
+- (NSDictionary *)fissionAlphaBackWithMaxEnergyInAct;
+- (void)storeGamma:(ISAEvent)event deltaTime:(long long)deltaTime;
+- (void)storeAlpha2:(ISAEvent)event deltaTime:(long long)deltaTime;
+- (void)storeRecoil:(ISAEvent)event deltaTime:(long long)deltaTime;
+- (double)valueTOF:(ISAEvent)eventTOF forRecoil:(ISAEvent)eventRecoil;
+- (void)storeRealTOFValue:(double)value deltaTime:(long long)deltaTime;
+- (void)storeFON:(ISAEvent)event;
+- (void)storeRecoilSpecial:(ISAEvent)event;
+- (void)storeTOFGenerations:(ISAEvent)event;
+- (void)storeFissionAlphaBack:(ISAEvent)event deltaTime:(long long)deltaTime;
 
 @end

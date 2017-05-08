@@ -96,8 +96,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             processor?.searchAlpha2 = searchAlpha2
             processor?.alpha2MinEnergy = sMinAlpha2Energy.doubleValue
             processor?.alpha2MaxEnergy = sMaxAlpha2Energy.doubleValue
-            processor?.alpha2MinTime = sMinAlpha2Time.doubleValue
-            processor?.alpha2MaxTime = sMaxAlpha2Time.doubleValue
+            processor?.alpha2MinTime = UInt64(sMinAlpha2Time.doubleValue)
+            processor?.alpha2MaxTime = UInt64(sMaxAlpha2Time.doubleValue)
             processor?.alpha2MaxDeltaStrips = sMaxAlpha2FrontDeltaStrips.intValue
             
             processor?.recoilFrontMaxDeltaStrips = sMaxRecoilFrontDeltaStrips.intValue
@@ -106,17 +106,17 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             processor?.requiredRecoil = requiredRecoil
             processor?.recoilFrontMinEnergy = sMinRecoilEnergy.doubleValue
             processor?.recoilFrontMaxEnergy = sMaxRecoilEnergy.doubleValue
-            processor?.recoilMinTime = sMinRecoilTime.doubleValue
-            processor?.recoilMaxTime = sMaxRecoilTime.doubleValue
-            processor?.recoilBackMaxTime = sMaxRecoilBackTime.doubleValue
+            processor?.recoilMinTime = UInt64(sMinRecoilTime.doubleValue)
+            processor?.recoilMaxTime = UInt64(sMaxRecoilTime.doubleValue)
+            processor?.recoilBackMaxTime = UInt64(sMaxRecoilBackTime.doubleValue)
             
             processor?.minTOFValue = sMinTOFValue.doubleValue
             processor?.maxTOFValue = sMaxTOFValue.doubleValue
             processor?.unitsTOF = tofUnitsControl.selectedSegment == 0 ? .channels : .nanoseconds
-            processor?.maxTOFTime = sMaxTOFTime.doubleValue
+            processor?.maxTOFTime = UInt64(sMaxTOFTime.doubleValue)
             processor?.requiredTOF = requiredTOF
             
-            processor?.maxGammaTime = sMaxGammaTime.doubleValue
+            processor?.maxGammaTime = UInt64(sMaxGammaTime.doubleValue)
             processor?.requiredGamma = requiredGamma
             
             processor?.searchNeutrons = searchNeutrons

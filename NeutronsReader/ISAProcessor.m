@@ -8,35 +8,9 @@
 
 #import "ISAProcessor.h"
 
-static NSString * const kEncoder = @"encoder";
-static NSString * const kStrip0_15 = @"strip_0_15";
-static NSString * const kStrip1_48 = @"strip_1_48";
-static NSString * const kEnergy = @"energy";
-static NSString * const kValue = @"value";
-static NSString * const kDeltaTime = @"delta_time";
-static NSString * const kChannel = @"channel";
-static NSString * const kEventNumber = @"event_number";
-
 @interface ISAProcessor ()
 
 @property (strong, nonatomic) Processor *processor;
-@property (strong, nonatomic) Logger *logger;
-@property (strong, nonatomic) Calibration *calibration;
-@property (strong, nonatomic) NSArray *files;
-@property (strong, nonatomic) NSString *currentFileName;
-@property (strong, nonatomic) NSMutableDictionary *neutronsMultiplicityTotal;
-@property (strong, nonatomic) NSMutableArray *recoilsFrontPerAct;
-@property (strong, nonatomic) NSMutableArray *alpha2FrontPerAct;
-@property (strong, nonatomic) NSMutableArray *tofRealPerAct;
-@property (strong, nonatomic) NSMutableArray *fissionsAlphaFrontPerAct;
-@property (strong, nonatomic) NSMutableArray *fissionsAlphaBackPerAct;
-@property (strong, nonatomic) NSMutableArray *fissionsAlphaWelPerAct;
-@property (strong, nonatomic) NSMutableArray *gammaPerAct;
-@property (strong, nonatomic) NSMutableArray *tofGenerationsPerAct;
-@property (strong, nonatomic) NSNumber *fonPerAct;
-@property (strong, nonatomic) NSNumber *recoilSpecialPerAct;
-@property (strong, nonatomic) NSDictionary *firstFissionAlphaInfo; // информация о главном осколке/альфе в цикле
-@property (assign, nonatomic) BOOL stoped;
 
 @end
 
@@ -169,7 +143,7 @@ static NSString * const kEventNumber = @"event_number";
     // FFron or AFron
     if ([_processor isFront:event type:_startParticleType]) {
         // Запускаем новый цикл поиска, только если энергия осколка/альфы на лицевой стороне детектора выше минимальной
-        double energy = [self getEnergy:event type:_startParticleType];
+        double energy = [_processor getEnergy:event type:_startParticleType];
         if (energy < _fissionAlphaFrontMinEnergy || energy > _fissionAlphaFrontMaxEnergy) {
             return;
         }
@@ -180,7 +154,7 @@ static NSString * const kEventNumber = @"event_number";
         
         // Alpha 2
         if (_searchAlpha2) {
-            [self findAlpha2];
+            [_processor findAlpha2];
             fseek(_file, position, SEEK_SET);
             if (0 == _alpha2FrontPerAct.count) {
                 [self clearActInfo];
@@ -189,7 +163,7 @@ static NSString * const kEventNumber = @"event_number";
         }
         
         // Gamma
-        [self findGamma];
+        [_processor findGamma];
         fseek(_file, position, SEEK_SET);
         if (_requiredGamma && 0 == _gammaPerAct.count) {
             [self clearActInfo];
@@ -205,7 +179,7 @@ static NSString * const kEventNumber = @"event_number";
         }
         
         // Recoil (Ищем рекойлы только после поиска всех FBack/ABack!)
-        [self findRecoil];
+        [_processor findRecoil];
         fseek(_file, position, SEEK_SET);
         if (_requiredRecoil && 0 == _recoilsFrontPerAct.count) {
             [self clearActInfo];
@@ -219,7 +193,7 @@ static NSString * const kEventNumber = @"event_number";
         }
         
         // FON & Recoil Special && TOF Generations
-        [self findFONEvents];
+        [_processor findFONEvents];
         fseek(_file, position, SEEK_SET);
         
         // FWel or AWel
@@ -232,7 +206,7 @@ static NSString * const kEventNumber = @"event_number";
          */
         // Summ(FFron or AFron)
         if (_summarizeFissionsAlphaFront) {
-            [self findFissionsAlphaFront];
+            [_processor findFissionsAlphaFront];
         }
         
         // Завершили поиск корреляций
@@ -252,7 +226,7 @@ static NSString * const kEventNumber = @"event_number";
     NSSet *directions = [NSSet setWithObject:@(SearchDirectionForward)];
     [_processor searchWithDirections:directions startTime:_firstFissionAlphaTime minDeltaTime:0 maxDeltaTime:_fissionAlphaMaxTime useCycleTime:NO updateCycleEvent:NO checker:^(ISAEvent event, unsigned long long time, long long deltaTime, BOOL *stop) {
         if ([_processor isBack:event type:_startParticleType]) {
-            double energy = [self getEnergy:event type:_startParticleType];
+            double energy = [_processor getEnergy:event type:_startParticleType];
             if (energy >= _fissionAlphaFrontMinEnergy && energy <= _fissionAlphaFrontMaxEnergy) {
                 [self storeFissionAlphaBack:event deltaTime:(int)deltaTime];
             }
@@ -283,35 +257,11 @@ static NSString * const kEventNumber = @"event_number";
     }
 }
 
-/**
- Ищем все FFron/AFRon в окне <= _fissionAlphaMaxTime относительно времени T(Fission/Alpha First).
- 
- Важно: _mainCycleTimeEvent обновляется при поиске в прямом направлении,
- так как эта часть относится к основному циклу и после поиска не производится репозиционирование потока!
- */
-- (void)findFissionsAlphaFront
-{
-    // Skip Fission/Alpha First event!
-    fpos_t position;
-    fgetpos(_file, &position);
-    if (position > -1) {
-        position -= sizeof(ISAEvent);
-        fseek(_file, position, SEEK_SET);
-    }
-    
-    NSSet *directions = [NSSet setWithObjects:@(SearchDirectionForward), @(SearchDirectionBackward), nil];
-    [_processor searchWithDirections:directions startTime:_firstFissionAlphaTime minDeltaTime:0 maxDeltaTime:_fissionAlphaMaxTime useCycleTime:NO updateCycleEvent:YES checker:^(ISAEvent event, unsigned long long time, long long deltaTime, BOOL *stop) {
-        if ([_processor isFront:event type:_startParticleType] && [self isFissionNearToFirstFissionFront:event]) { // FFron/AFron пришедшие после первого
-            [self storeNextFissionAlphaFront:event deltaTime:deltaTime];
-        }
-    }];
-}
-
-- (void)storeFissionAlphaBack:(ISAEvent)event deltaTime:(int)deltaTime
+- (void)storeFissionAlphaBack:(ISAEvent)event deltaTime:(long long)deltaTime
 {
     unsigned short encoder = [_processor fissionAlphaRecoilEncoderForEventId:event.eventId];
     unsigned short strip_0_15 = event.param2 >> 12;  // value from 0 to 15
-    double energy = [self getEnergy:event type:_startParticleType];
+    double energy = [_processor getEnergy:event type:_startParticleType];
     NSDictionary *info = @{kEncoder:@(encoder),
                            kStrip0_15:@(strip_0_15),
                            kEnergy:@(energy),
@@ -320,20 +270,7 @@ static NSString * const kEventNumber = @"event_number";
     [_fissionsAlphaBackPerAct addObject:info];
 }
 
-/**
- Ищем ВСЕ! Gam1 в окне до _maxGammaTime относительно времени Fission Front (в двух направлениях).
- */
-- (void)findGamma
-{
-    NSSet *directions = [NSSet setWithObjects:@(SearchDirectionForward), @(SearchDirectionBackward), nil];
-    [_processor searchWithDirections:directions startTime:_firstFissionAlphaTime minDeltaTime:0 maxDeltaTime:_maxGammaTime useCycleTime:NO updateCycleEvent:NO checker:^(ISAEvent event, unsigned long long time, long long deltaTime, BOOL *stop) {
-        if ([_processor isGammaEvent:event]) {
-            [self storeGamma:event deltaTime:(int)deltaTime];
-        }
-    }];
-}
-
-- (void)storeGamma:(ISAEvent)event deltaTime:(int)deltaTime
+- (void)storeGamma:(ISAEvent)event deltaTime:(long long)deltaTime
 {
     unsigned short channel = event.param3 & MaskGamma;
     double energy = [_calibration calibratedValueForAmplitude:channel eventName:@"Gam1"]; // TODO: Gam2, Gam
@@ -341,108 +278,23 @@ static NSString * const kEventNumber = @"event_number";
                            kDeltaTime: @(deltaTime)};
     [_gammaPerAct addObject:info];
 }
-
-/**
- Поиск рекойла осуществляется с позиции файла где найден главный осколок/альфа (возвращаемся назад по времени).
- */
-- (void)findRecoil
-{
-    long long fissionTime = [_processor absTime:_firstFissionAlphaTime cycleEvent:_mainCycleTimeEvent];
-    NSSet *directions = [NSSet setWithObject:@(SearchDirectionBackward)];
-    [_processor searchWithDirections:directions startTime:fissionTime minDeltaTime:_recoilMinTime maxDeltaTime:_recoilMaxTime useCycleTime:YES updateCycleEvent:NO checker:^(ISAEvent event, unsigned long long time, long long deltaTime, BOOL *stop) {
-        if ([_processor isFront:event type:SearchTypeRecoil] && [self isEventFrontNearToFirstFissionAlphaFront:event maxDelta:_recoilFrontMaxDeltaStrips]) {
-            double energy = [self getEnergy:event type:SearchTypeRecoil];
-            if (energy >= _recoilFrontMinEnergy && energy <= _recoilFrontMaxEnergy) {
-                // Сохраняем рекойл только если к нему найден Recoil Back и TOF (если required)
-                fpos_t current;
-                fgetpos(_file, &current);
-                BOOL isRecoilBackFounded = [self findRecoilBack:event.param1];
-                fseek(_file, current, SEEK_SET);
-                if (isRecoilBackFounded) {
-                    BOOL isTOFFounded = [self findTOFForRecoil:event time:time];
-                    fseek(_file, current, SEEK_SET);
-                    if (!_requiredTOF || isTOFFounded) {
-                        [self storeRecoil:event deltaTime:deltaTime];
-                    }
-                }
-            }
-        }
-    }];
-}
     
 - (void)storeRecoil:(ISAEvent)event deltaTime:(long long)deltaTime
 {
-    double energy = [self getEnergy:event type:SearchTypeRecoil];
+    double energy = [_processor getEnergy:event type:SearchTypeRecoil];
     NSDictionary *info = @{kEnergy:@(energy),
                            kDeltaTime:@(deltaTime),
                            kEventNumber:@([_processor eventNumber])};
     [_recoilsFrontPerAct addObject:info];
 }
 
-/**
- Ищем Recoil Back в окне <= kFissionsMaxSearchTimeInMks относительно времени Recoil Front.
- */
-- (BOOL)findRecoilBack:(unsigned short)timeRecoilFront
-{
-    __block BOOL found = NO;
-    NSSet *directions = [NSSet setWithObject:@(SearchDirectionForward)];
-    [_processor searchWithDirections:directions startTime:timeRecoilFront minDeltaTime:0 maxDeltaTime:_recoilBackMaxTime useCycleTime:NO updateCycleEvent:NO checker:^(ISAEvent event, unsigned long long time, long long deltaTime, BOOL *stop) {
-        if ([_processor isBack:event type:SearchTypeRecoil]) {
-            if (_requiredFissionRecoilBack) {
-                found = [self isRecoilBackNearToFissionAlphaBack:event];
-            } else {
-                found = YES;
-            }
-            *stop = YES;
-        }
-    }];
-    return found;
-}
-
-/**
- Поиск альфы 2 осуществляется с позиции файла где найдена альфа 1 (вперед по времени).
- */
-- (void)findAlpha2
-{
-    long long alphaTime = [_processor absTime:_firstFissionAlphaTime cycleEvent:_mainCycleTimeEvent];
-    NSSet *directions = [NSSet setWithObject:@(SearchDirectionForward)];
-    [_processor searchWithDirections:directions startTime:alphaTime minDeltaTime:_alpha2MinTime maxDeltaTime:_alpha2MaxTime useCycleTime:YES updateCycleEvent:NO checker:^(ISAEvent event, unsigned long long time, long long deltaTime, BOOL *stop) {
-        if ([_processor isFront:event type:SearchTypeAlpha]) {
-            double energy = [self getEnergy:event type:SearchTypeAlpha];
-            if (energy >= _alpha2MinEnergy && energy <= _alpha2MaxEnergy && [self isEventFrontNearToFirstFissionAlphaFront:event maxDelta:_alpha2MaxDeltaStrips]) {
-                [self storeAlpha2:event deltaTime:deltaTime];
-            }
-        }
-    }];
-}
-
 - (void)storeAlpha2:(ISAEvent)event deltaTime:(long long)deltaTime
 {
-    double energy = [self getEnergy:event type:SearchTypeAlpha];
+    double energy = [_processor getEnergy:event type:SearchTypeAlpha];
     NSDictionary *info = @{kEnergy:@(energy),
                            kDeltaTime:@(deltaTime),
                            kEventNumber:@([_processor eventNumber])};
     [_alpha2FrontPerAct addObject:info];
-}
-
-/**
- Real TOF for Recoil.
- */
-- (BOOL)findTOFForRecoil:(ISAEvent)eventRecoil time:(unsigned short)timeRecoil
-{
-    __block BOOL found = NO;
-    NSSet *directions = [NSSet setWithObjects:@(SearchDirectionForward), @(SearchDirectionBackward), nil];
-    [_processor searchWithDirections:directions startTime:timeRecoil minDeltaTime:0 maxDeltaTime:_maxTOFTime useCycleTime:NO updateCycleEvent:NO checker:^(ISAEvent event, unsigned long long time, long long deltaTime, BOOL *stop) {
-        if (_dataProtocol.TOF == event.eventId) {
-            double value = [self valueTOF:event forRecoil:eventRecoil];
-            if (value >= _minTOFValue && value <= _maxTOFValue) {
-                [self storeRealTOFValue:value deltaTime:deltaTime];
-                found = YES;
-                *stop = YES;
-            }
-        }
-    }];
-    return found;
 }
 
 - (double)nanosecondsForTOFChannel:(unsigned short)channelTOF eventRecoil:(ISAEvent)eventRecoil
@@ -470,46 +322,11 @@ static NSString * const kEventNumber = @"event_number";
     }
 }
 
-- (void)storeRealTOFValue:(double)value deltaTime:(double)deltaTime
+- (void)storeRealTOFValue:(double)value deltaTime:(long long)deltaTime
 {
     NSDictionary *info = @{kValue:@(value),
                            kDeltaTime:@(deltaTime)};
     [_tofRealPerAct addObject:info];
-}
-
-static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные генерации, а не отмеки рекойлов)
-/**
- Поиск первых событий FON, Recoil Special, TOF (случайные генерации) осуществляется с позиции файла где найден главный осколок.
- */
-- (void)findFONEvents
-{
-    __block BOOL fonFound = NO;
-    __block BOOL recoilFound = NO;
-    __block BOOL tofFound = NO;
-    [_processor forwardSearchWithChecker:^(ISAEvent event, BOOL *stop) {
-        if (_dataProtocol.FON == event.eventId) {
-            if (!fonFound) {
-                [self storeFON:event];
-                fonFound = YES;
-            }
-        } else if (_dataProtocol.RecoilSpecial == event.eventId) {
-            if (!recoilFound) {
-                [self storeRecoilSpecial:event];
-                recoilFound = YES;
-            }
-        } else if (_dataProtocol.TOF == event.eventId) {
-            if (!tofFound) {
-                double deltaTime = fabs((double)event.param1 - _firstFissionAlphaTime);
-                if (deltaTime <= kTOFGenerationsMaxTime) {
-                    [self storeTOFGenerations:event];
-                }
-                tofFound = YES;
-            }
-        }
-        if (fonFound && recoilFound && tofFound) {
-            *stop = YES;
-        }
-    }];
 }
 
 - (void)storeFON:(ISAEvent)event
@@ -539,17 +356,17 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
     [self storeFissionAlphaFront:event isFirst:YES deltaTime:0];
 }
 
-- (void)storeNextFissionAlphaFront:(ISAEvent)event deltaTime:(double)deltaTime
+- (void)storeNextFissionAlphaFront:(ISAEvent)event deltaTime:(long long)deltaTime
 {
     [self storeFissionAlphaFront:event isFirst:NO deltaTime:deltaTime];
 }
 
-- (void)storeFissionAlphaFront:(ISAEvent)event isFirst:(BOOL)isFirst deltaTime:(double)deltaTime
+- (void)storeFissionAlphaFront:(ISAEvent)event isFirst:(BOOL)isFirst deltaTime:(long long)deltaTime
 {
     unsigned short channel = (_startParticleType == SearchTypeFission) ? (event.param2 & MaskFission) : (event.param3 & MaskRecoilAlpha);
     unsigned short encoder = [_processor fissionAlphaRecoilEncoderForEventId:event.eventId];
     unsigned short strip_0_15 = event.param2 >> 12;  // value from 0 to 15
-    double energy = [self getEnergy:event type:_startParticleType];
+    double energy = [_processor getEnergy:event type:_startParticleType];
     NSDictionary *info = @{kEncoder:@(encoder),
                            kStrip0_15:@(strip_0_15),
                            kChannel:@(channel),
@@ -569,7 +386,7 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
 
 - (void)storeFissionAlphaWell:(ISAEvent)event
 {
-    double energy = [self getEnergy:event type:_startParticleType];
+    double energy = [_processor getEnergy:event type:_startParticleType];
     unsigned short encoder = [_processor fissionAlphaRecoilEncoderForEventId:event.eventId];
     unsigned short strip_0_15 = event.param2 >> 12;  // value from 0 to 15
     NSDictionary *info = @{kEncoder:@(encoder),
@@ -582,92 +399,6 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
 {
     unsigned short channel = event.param3 & MaskTOF;
     [_tofGenerationsPerAct addObject:@(channel)];
-}
-
-/**
- Метод проверяет находится ли ! рекоил/альфа ! event на близких стрипах относительно первого осколка/альфы.
- */
-- (BOOL)isEventFrontNearToFirstFissionAlphaFront:(ISAEvent)event maxDelta:(int)maxDelta
-{
-    unsigned short strip_0_15 = event.param2 >> 12;
-    int strip_1_48 = [_processor focalStripConvertToFormat_1_48:strip_0_15 eventId:event.eventId];
-    int strip_1_48_first_fission = [[_firstFissionAlphaInfo objectForKey:kStrip1_48] intValue];
-    return (abs(strip_1_48 - strip_1_48_first_fission) <= maxDelta);
-}
-
-/**
- Метод проверяет находится ли рекоил event на близких стрипах (_recoilBackMaxDeltaStrips) относительно заднего осколка с макимальной энергией.
- */
-- (BOOL)isRecoilBackNearToFissionAlphaBack:(ISAEvent)event
-{
-    NSDictionary *fissionBackInfo = [self fissionAlphaBackWithMaxEnergyInAct];
-    if (fissionBackInfo) {
-        unsigned short strip_0_15 = event.param2 >> 12;
-        int strip_1_48 = [_processor focalStripConvertToFormat_1_48:strip_0_15 eventId:event.eventId];
-        
-        int strip_0_15_back_fission = [[fissionBackInfo objectForKey:kStrip0_15] intValue];
-        int encoder_back_fission = [[fissionBackInfo objectForKey:kEncoder] intValue];
-        int strip_1_48_back_fission = [_processor stripConvertToFormat_1_48:strip_0_15_back_fission encoder:encoder_back_fission];
-        
-        return (abs(strip_1_48 - strip_1_48_back_fission) <= _recoilBackMaxDeltaStrips);
-    }
-    return NO;
-}
-
-/**
- Метод проверяет находится ли осколок event на соседних стрипах относительно первого осколка.
- */
-- (BOOL)isFissionNearToFirstFissionFront:(ISAEvent)event
-{
-    unsigned short strip_0_15 = event.param2 >> 12;
-    
-    int strip_0_15_first_fission = [[_firstFissionAlphaInfo objectForKey:kStrip0_15] intValue];
-    if (strip_0_15 == strip_0_15_first_fission) { // совпадают
-        return YES;
-    }
-    
-    int strip_1_48 = [_processor focalStripConvertToFormat_1_48:strip_0_15 eventId:event.eventId];
-    int strip_1_48_first_fission = [[_firstFissionAlphaInfo objectForKey:kStrip1_48] intValue];
-    return (abs(strip_1_48 - strip_1_48_first_fission) <= 1); // +/- 1 стрип
-}
-
-- (double)getEnergy:(ISAEvent)event type:(SearchType)type
-{
-    unsigned short channel = (type == SearchTypeFission) ? (event.param2 & MaskFission) : (event.param3 & MaskRecoilAlpha);
-    unsigned short eventId = event.eventId;
-    unsigned short strip_0_15 = event.param2 >> 12;  // value from 0 to 15
-    unsigned short encoder = [_processor fissionAlphaRecoilEncoderForEventId:eventId];
-    
-    NSString *detector = nil;
-    switch (type) {
-        case SearchTypeFission:
-            detector = @"F";
-            break;
-        case SearchTypeAlpha:
-            detector = @"A";
-            break;
-        case SearchTypeRecoil:
-            detector = @"R";
-            break;
-        default:
-            break;
-    }
-    
-    NSString *position = nil;
-    if ([_dataProtocol AFron:1] == eventId || [_dataProtocol AFron:2] == eventId || [_dataProtocol AFron:3] == eventId) {
-        position = @"Fron";
-    } else if ([_dataProtocol ABack:1] == eventId || [_dataProtocol ABack:2] == eventId || [_dataProtocol ABack:3] == eventId) {
-        position = @"Back";
-    } else if ([_dataProtocol AdFr:1] == eventId || [_dataProtocol AdFr:2] == eventId || [_dataProtocol AdFr:3] == eventId) {
-        position = @"dFr";
-    } else if ([_dataProtocol AdBk:1] == eventId || [_dataProtocol AdBk:2] == eventId || [_dataProtocol AdBk:3] == eventId) {
-        position = @"dBk";
-    } else {
-        position = @"Wel";
-    }
-    NSString *name = [NSString stringWithFormat:@"%@%@%d.%d", detector, position, encoder, strip_0_15+1];
-    
-    return [_calibration calibratedValueForAmplitude:channel eventName:name];
 }
 
 - (void)clearActInfo
@@ -725,11 +456,6 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
     [_logger finishLine]; // +1 line padding
 }
 
-- (NSString *)currentFileEventNumber:(long long)number
-{
-    return [NSString stringWithFormat:@"%@_%llu", _currentFileName, number];
-}
-
 - (void)logActResults
 {
     int columnsCount = 19;
@@ -746,7 +472,7 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
                     if (row < (int)_recoilsFrontPerAct.count) {
                         NSNumber *eventNumberObject = [[_recoilsFrontPerAct objectAtIndex:row] objectForKey:kEventNumber];
                         if (eventNumberObject) {
-                            field = [self currentFileEventNumber:[eventNumberObject unsignedLongLongValue]];
+                            field = [_processor currentFileEventNumber:[eventNumberObject unsignedLongLongValue]];
                         }
                     }
                     break;
@@ -796,7 +522,7 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
                     if (row < (int)_fissionsAlphaFrontPerAct.count) {
                         NSDictionary *info = [_fissionsAlphaFrontPerAct objectAtIndex:row];
                         unsigned long long eventNumber = [[info objectForKey:kEventNumber] unsignedLongLongValue];
-                        field = [self currentFileEventNumber:eventNumber];
+                        field = [_processor currentFileEventNumber:eventNumber];
                     }
                     break;
                 }
@@ -925,7 +651,7 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
                     if (row < (int)_alpha2FrontPerAct.count) {
                         NSNumber *event = [[_alpha2FrontPerAct objectAtIndex:row] objectForKey:kEventNumber];
                         if (event) {
-                            field = [self currentFileEventNumber:[event unsignedLongLongValue]];
+                            field = [_processor currentFileEventNumber:[event unsignedLongLongValue]];
                         }
                     }
                     break;
