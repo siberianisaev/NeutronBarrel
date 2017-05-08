@@ -33,11 +33,6 @@ typedef NS_ENUM(unsigned short, Mask) {
     MaskRecoilSpecial = 0xFFFF
 };
 
-typedef NS_ENUM(NSInteger, SearchDirection) {
-    SearchDirectionForward,
-    SearchDirectionBackward
-};
-
 typedef NS_ENUM(NSInteger, SearchType) {
     SearchTypeFission,
     SearchTypeAlpha,
@@ -124,19 +119,5 @@ typedef NS_ENUM(NSInteger, TOFUnits) {
 - (void)selectDataWithCompletion:(void (^)(BOOL))completion;
 - (void)selectCalibrationWithCompletion:(void (^)(BOOL))completion;
 - (void)stop;
-
-// public during migration to Swift phase
-- (void)storeFissionAlphaWell:(ISAEvent)event;
-- (void)storeNextFissionAlphaFront:(ISAEvent)event deltaTime:(long long)deltaTime;
-- (NSDictionary *)fissionAlphaBackWithMaxEnergyInAct;
-- (void)storeGamma:(ISAEvent)event deltaTime:(long long)deltaTime;
-- (void)storeAlpha2:(ISAEvent)event deltaTime:(long long)deltaTime;
-- (void)storeRecoil:(ISAEvent)event deltaTime:(long long)deltaTime;
-- (double)valueTOF:(ISAEvent)eventTOF forRecoil:(ISAEvent)eventRecoil;
-- (void)storeRealTOFValue:(double)value deltaTime:(long long)deltaTime;
-- (void)storeFON:(ISAEvent)event;
-- (void)storeRecoilSpecial:(ISAEvent)event;
-- (void)storeTOFGenerations:(ISAEvent)event;
-- (void)storeFissionAlphaBack:(ISAEvent)event deltaTime:(long long)deltaTime;
 
 @end
