@@ -16,7 +16,6 @@
 		780BC3A61A5EF99700EDEECE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 780BC3A51A5EF99700EDEECE /* AppDelegate.swift */; };
 		784150C91ABCC76200831384 /* TimeStamp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 784150C81ABCC76200831384 /* TimeStamp.swift */; };
 		784150DA1AC184C400831384 /* CSVWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 784150D91AC184C400831384 /* CSVWriter.swift */; };
-		78419AD41A4B37400087A551 /* ISAProcessor.m in Sources */ = {isa = PBXBuildFile; fileRef = 78419AD31A4B37400087A551 /* ISAProcessor.m */; };
 		784B0B891ABB13F80041FA66 /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 784B0B881ABB13F80041FA66 /* Settings.swift */; };
 		78B6A548193A3B3900C7E36A /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 78B6A547193A3B3900C7E36A /* Cocoa.framework */; };
 		78B6A55E193A3B3900C7E36A /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 78B6A55C193A3B3900C7E36A /* MainMenu.xib */; };
@@ -30,13 +29,12 @@
 		6513070D1A4E92CD00E33704 /* NeutronsReader-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NeutronsReader-Bridging-Header.h"; sourceTree = "<group>"; };
 		651307111A4E94AB00E33704 /* Calibration.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Calibration.swift; sourceTree = "<group>"; };
 		651307131A4E94C500E33704 /* Logger.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
+		651FDD8F1EC1012F0041CDE8 /* Constants.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Constants.h; sourceTree = "<group>"; };
 		656A05DB1EADEDD500677B0F /* DataProtocol.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DataProtocol.swift; sourceTree = "<group>"; };
 		656A05DD1EAE03BC00677B0F /* Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
 		780BC3A51A5EF99700EDEECE /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		784150C81ABCC76200831384 /* TimeStamp.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TimeStamp.swift; sourceTree = "<group>"; };
 		784150D91AC184C400831384 /* CSVWriter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CSVWriter.swift; sourceTree = "<group>"; };
-		78419AD21A4B37400087A551 /* ISAProcessor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ISAProcessor.h; sourceTree = "<group>"; };
-		78419AD31A4B37400087A551 /* ISAProcessor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ISAProcessor.m; sourceTree = "<group>"; };
 		784B0B881ABB13F80041FA66 /* Settings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
 		78B6A544193A3B3900C7E36A /* NeutronsReader.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NeutronsReader.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		78B6A547193A3B3900C7E36A /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
@@ -62,15 +60,6 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		659447141AC2B15C004C39F9 /* TODO: transition to swift */ = {
-			isa = PBXGroup;
-			children = (
-				78419AD21A4B37400087A551 /* ISAProcessor.h */,
-				78419AD31A4B37400087A551 /* ISAProcessor.m */,
-			);
-			name = "TODO: transition to swift";
-			sourceTree = "<group>";
-		};
 		780BC43E1A604AE000EDEECE /* Resources */ = {
 			isa = PBXGroup;
 			children = (
@@ -130,7 +119,7 @@
 				656A05DB1EADEDD500677B0F /* DataProtocol.swift */,
 				656A05DD1EAE03BC00677B0F /* Extensions.swift */,
 				5A036F701EB0F5C80092D3C4 /* Processor.swift */,
-				659447141AC2B15C004C39F9 /* TODO: transition to swift */,
+				651FDD8F1EC1012F0041CDE8 /* Constants.h */,
 				780BC43E1A604AE000EDEECE /* Resources */,
 				78B6A54E193A3B3900C7E36A /* Supporting Files */,
 			);
@@ -238,7 +227,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				656A05DC1EADEDD500677B0F /* DataProtocol.swift in Sources */,
-				78419AD41A4B37400087A551 /* ISAProcessor.m in Sources */,
 				784B0B891ABB13F80041FA66 /* Settings.swift in Sources */,
 				5A036F711EB0F5C80092D3C4 /* Processor.swift in Sources */,
 				651307121A4E94AB00E33704 /* Calibration.swift in Sources */,
@@ -306,7 +294,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.9;
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
 				SWIFT_OBJC_BRIDGING_HEADER = " $(SRCROOT)/NeutronsReader/NeutronsReader-Bridging-Header.h";
@@ -347,7 +335,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.9;
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				SDKROOT = macosx;
 				SWIFT_OBJC_BRIDGING_HEADER = " $(SRCROOT)/NeutronsReader/NeutronsReader-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";

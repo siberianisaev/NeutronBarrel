@@ -9,9 +9,134 @@
 import Foundation
 import Cocoa
 
+protocol ProcessorDelegate {
+    
+    func incrementProgress(_ delta: Double)
+    func startProcessingFile(_ fileName: String)
+    
+}
+
 class Processor: NSObject {
     
-    var p: ISAProcessor! // used during mirgation to Swift phase
+    enum SearchType {
+        case fission
+        case alpha
+        case recoil
+    }
+    
+    enum TOFUnits {
+        case channels
+        case nanoseconds
+    }
+    
+    fileprivate let kEncoder = "encoder"
+    fileprivate let kStrip0_15 = "strip_0_15"
+    fileprivate let kStrip1_48 = "strip_1_48"
+    fileprivate let kEnergy = "energy"
+    fileprivate let kValue = "value"
+    fileprivate let kDeltaTime = "delta_time"
+    fileprivate let kChannel = "channel"
+    fileprivate let kEventNumber = "event_number"
+    
+    // public during migration to Swift phase
+    fileprivate var file: UnsafeMutablePointer<FILE>!
+    fileprivate var dataProtocol: DataProtocol!
+    fileprivate var mainCycleTimeEvent = ISAEvent()
+    fileprivate var totalEventNumber: CUnsignedLongLong = 0
+    fileprivate var firstFissionAlphaTime: CUnsignedLongLong = 0 // время главного осколка/альфы в цикле
+    fileprivate var neutronsSummPerAct: CUnsignedLongLong = 0
+    fileprivate var files = NSArray()
+    fileprivate var currentFileName: String?
+    fileprivate var neutronsMultiplicityTotal = NSMutableDictionary()
+    fileprivate var recoilsFrontPerAct = NSMutableArray()
+    fileprivate var alpha2FrontPerAct = NSMutableArray()
+    fileprivate var tofRealPerAct = NSMutableArray()
+    fileprivate var fissionsAlphaFrontPerAct = NSMutableArray()
+    fileprivate var fissionsAlphaBackPerAct = NSMutableArray()
+    fileprivate var fissionsAlphaWelPerAct = NSMutableArray()
+    fileprivate var gammaPerAct = NSMutableArray()
+    fileprivate var tofGenerationsPerAct = NSMutableArray()
+    fileprivate var fonPerAct: NSNumber?
+    fileprivate var recoilSpecialPerAct: NSNumber?
+    fileprivate var firstFissionAlphaInfo: NSDictionary? // информация о главном осколке/альфе в цикле
+    fileprivate var stoped: Bool = false
+    fileprivate var logger: Logger!
+    fileprivate var calibration: Calibration!
+    
+    var fissionAlphaFrontMinEnergy: Double = 0
+    var fissionAlphaFrontMaxEnergy: Double = 0
+    var recoilFrontMinEnergy: Double = 0
+    var recoilFrontMaxEnergy: Double = 0
+    var minTOFValue: Double = 0
+    var maxTOFValue: Double = 0
+    var recoilMinTime: CUnsignedLongLong = 0
+    var recoilMaxTime: CUnsignedLongLong = 0
+    var recoilBackMaxTime: CUnsignedLongLong = 0
+    var fissionAlphaMaxTime: CUnsignedLongLong = 0
+    var maxTOFTime: CUnsignedLongLong = 0
+    var maxGammaTime: CUnsignedLongLong = 0
+    var maxNeutronTime: CUnsignedLongLong = 0
+    var recoilFrontMaxDeltaStrips: Int = 0
+    var recoilBackMaxDeltaStrips: Int = 0
+    var summarizeFissionsAlphaFront: Bool = false
+    var requiredFissionRecoilBack: Bool = false
+    var requiredRecoil: Bool = false
+    var requiredGamma: Bool = false
+    var requiredTOF: Bool = false
+    var searchNeutrons: Bool = false
+    
+    var searchAlpha2: Bool = false
+    var alpha2MinEnergy: Double = 0
+    var alpha2MaxEnergy: Double = 0
+    var alpha2MinTime: CUnsignedLongLong = 0
+    var alpha2MaxTime: CUnsignedLongLong = 0
+    var alpha2MaxDeltaStrips: Int = 0
+    
+    var startParticleType: SearchType = .fission
+    var unitsTOF: TOFUnits = .channels
+    var delegate: ProcessorDelegate! //TODO: weak
+    
+    class var singleton : Processor {
+        struct Static {
+            static let sharedInstance : Processor = Processor()
+        }
+        return Static.sharedInstance
+    }
+    
+    override init() {
+        calibration = Calibration()
+        super.init()
+    }
+    
+    func stop() {
+        stoped = true
+    }
+    
+    func processDataWithCompletion(_ completion: @escaping (()->())) {
+        stoped = false
+    
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            self?.processData()
+            DispatchQueue.main.async {
+                completion()
+            }
+        }
+    }
+    
+    func selectDataWithCompletion(_ completion: @escaping ((Bool)->())) {
+        DataLoader.load { [weak self] (files: [String], dataProtocol: DataProtocol) in
+            self?.files = files as NSArray
+            self?.dataProtocol = dataProtocol
+            completion(files.count > 0)
+        }
+    }
+    
+    func selectCalibrationWithCompletion(_ completion: @escaping ((Bool)->())) {
+        Calibration.openCalibration { [weak self] (calibration: Calibration?) in
+            self?.calibration = calibration!
+            completion(true)
+        }
+    }
     
     // MARK: - Algorithms
     
@@ -20,9 +145,9 @@ class Processor: NSObject {
     }
     
     @objc func forwardSearch(checker: @escaping ((ISAEvent, UnsafeMutablePointer<Bool>)->())) {
-        while feof(p.file) != 1 {
+        while feof(file) != 1 {
             var event = ISAEvent()
-            fread(&event, eventSize, 1, p.file)
+            fread(&event, eventSize, 1, file)
             
             var stop: Bool = false
             checker(event, &stop)
@@ -39,24 +164,24 @@ class Processor: NSObject {
         //TODO: работает в пределах одного файла
         if directions.contains(.backward) {
             var initial = fpos_t()
-            fgetpos(p.file, &initial)
+            fgetpos(file, &initial)
             
-            var cycleEvent = p.mainCycleTimeEvent
+            var cycleEvent = mainCycleTimeEvent
             var current = Int(initial)
             while current > -1 {
                 current -= eventSize
-                fseek(p.file, current, SEEK_SET)
+                fseek(file, current, SEEK_SET)
                 
                 var event = ISAEvent()
-                fread(&event, eventSize, 1, p.file)
+                fread(&event, eventSize, 1, file)
                 
                 let id = Int(event.eventId)
-                if id == p.dataProtocol.CycleTime {
+                if id == dataProtocol.CycleTime {
                     cycleEvent = event
                     continue
                 }
                 
-                if p.dataProtocol.isValidEventIdForTimeCheck(id) {
+                if dataProtocol.isValidEventIdForTimeCheck(id) {
                     let relativeTime = event.param1
                     let time = useCycleTime ? absTime(relativeTime, cycleEvent: cycleEvent) : CUnsignedLongLong(relativeTime)
                     let deltaTime = (time < startTime) ? (startTime - time) : (time - startTime)
@@ -75,26 +200,26 @@ class Processor: NSObject {
                     }
                 }
                 
-                fseek(p.file, Int(initial), SEEK_SET)
+                fseek(file, Int(initial), SEEK_SET)
             }
         }
         
         if directions.contains(.forward) {
-            var cycleEvent = p.mainCycleTimeEvent
-            while feof(p.file) != 1 {
+            var cycleEvent = mainCycleTimeEvent
+            while feof(file) != 1 {
                 var event = ISAEvent()
-                fread(&event, eventSize, 1, p.file)
+                fread(&event, eventSize, 1, file)
                 
                 let id = Int(event.eventId)
-                if id == p.dataProtocol.CycleTime {
+                if id == dataProtocol.CycleTime {
                     if updateCycleEvent {
-                        p.mainCycleTimeEvent = event
+                        mainCycleTimeEvent = event
                     }
                     cycleEvent = event
                     continue
                 }
             
-                if p.dataProtocol.isValidEventIdForTimeCheck(id) {
+                if dataProtocol.isValidEventIdForTimeCheck(id) {
                     let relativeTime = event.param1
                     let time = useCycleTime ? absTime(relativeTime, cycleEvent: cycleEvent) : CUnsignedLongLong(relativeTime)
                     let deltaTime = (time < startTime) ? (startTime - time) : (time - startTime)
@@ -118,28 +243,105 @@ class Processor: NSObject {
     
     // MARK: - Search
     
+    func showNoDataAlert() {
+        DispatchQueue.main.async {
+            let alert = NSAlert()
+            alert.messageText = "Error"
+            alert.informativeText = "Please select some data files to start analysis!"
+            alert.addButton(withTitle: "OK")
+            alert.alertStyle = .warning
+            alert.runModal()
+        }
+    }
+    
+    func processData() {
+        if 0 == files.count {
+            showNoDataAlert()
+            return
+        }
+        
+        neutronsMultiplicityTotal = NSMutableDictionary()
+        recoilsFrontPerAct = NSMutableArray()
+        alpha2FrontPerAct = NSMutableArray()
+        tofRealPerAct = NSMutableArray()
+        fissionsAlphaFrontPerAct = NSMutableArray()
+        fissionsAlphaBackPerAct = NSMutableArray()
+        gammaPerAct = NSMutableArray()
+        tofGenerationsPerAct = NSMutableArray()
+        fissionsAlphaWelPerAct = NSMutableArray()
+        totalEventNumber = 0;
+        
+        logger = Logger()
+        logInput()
+        logCalibration()
+        logResultsHeader()
+        
+        delegate.incrementProgress(Double.ulpOfOne) // Show progress indicator
+        let progressForOneFile: Double = 100.0 / Double(files.count)
+        
+        for fp in files {
+            let path = fp as! NSString
+            autoreleasepool {
+                file = fopen(path.utf8String, "rb")
+                currentFileName = path.lastPathComponent
+                delegate.startProcessingFile(currentFileName!)
+                
+                if let file = file {
+                    setvbuf(file, nil, _IONBF, 0) // disable buffering
+                    forwardSearch(checker: { [weak self] (event: ISAEvent, stop: UnsafeMutablePointer<Bool>) in
+                        if let file = self?.file, let currentFileName = self?.currentFileName, let stoped = self?.stoped {
+                            if ferror(file) != 0 {
+                                print("\nERROR while reading file \(currentFileName)\n")
+                                exit(-1)
+                            }
+                            if stoped {
+                                stop.initialize(to: true)
+                            }
+                        }
+                        self?.mainCycleEventCheck(event)
+                    })
+                } else {
+                    exit(-1)
+                }
+                
+                fseek(file, 0, SEEK_END)
+                var lastNumber = fpos_t()
+                fgetpos(file, &lastNumber)
+                totalEventNumber += CUnsignedLongLong(lastNumber)/CUnsignedLongLong(eventSize)
+                
+                fclose(file)
+                
+                delegate.incrementProgress(progressForOneFile)
+            }
+        }
+        
+        if searchNeutrons {
+            logger.logMultiplicity(neutronsMultiplicityTotal as! [Int : Int])
+        }
+    }
+    
     func mainCycleEventCheck(_ event: ISAEvent) {
-        if Int(event.eventId) == p.dataProtocol.CycleTime {
-            p.mainCycleTimeEvent = event
+        if Int(event.eventId) == dataProtocol.CycleTime {
+            mainCycleTimeEvent = event
         }
         
         // FFron or AFron
-        if isFront(event, type: p.startParticleType) {
+        if isFront(event, type: startParticleType) {
             // Запускаем новый цикл поиска, только если энергия осколка/альфы на лицевой стороне детектора выше минимальной
-            let energy = getEnergy(event, type: p.startParticleType)
-            if energy < p.fissionAlphaFrontMinEnergy || energy > p.fissionAlphaFrontMaxEnergy {
+            let energy = getEnergy(event, type: startParticleType)
+            if energy < fissionAlphaFrontMinEnergy || energy > fissionAlphaFrontMaxEnergy {
                 return
             }
             storeFissionAlphaFront(event, isFirst: true, deltaTime: 0)
             
             var position = fpos_t()
-            fgetpos(p.file, &position)
+            fgetpos(file, &position)
             
             // Alpha 2
-            if p.searchAlpha2 {
+            if searchAlpha2 {
                 findAlpha2()
-                fseek(p.file, Int(position), SEEK_SET)
-                if 0 == p.alpha2FrontPerAct.count {
+                fseek(file, Int(position), SEEK_SET)
+                if 0 == alpha2FrontPerAct.count {
                     clearActInfo()
                     return
                 }
@@ -147,53 +349,53 @@ class Processor: NSObject {
             
             // Gamma
             findGamma()
-            fseek(p.file, Int(position), SEEK_SET)
-            if p.requiredGamma && 0 == p.gammaPerAct.count {
+            fseek(file, Int(position), SEEK_SET)
+            if requiredGamma && 0 == gammaPerAct.count {
                 clearActInfo()
                 return
             }
             
             // FBack or ABack
             findFissionsAlphaBack()
-            fseek(p.file, Int(position), SEEK_SET)
-            if p.requiredFissionRecoilBack && 0 == p.fissionsAlphaBackPerAct.count {
+            fseek(file, Int(position), SEEK_SET)
+            if requiredFissionRecoilBack && 0 == fissionsAlphaBackPerAct.count {
                 clearActInfo()
                 return
             }
             
             // Recoil (Ищем рекойлы только после поиска всех FBack/ABack!)
             findRecoil()
-            fseek(p.file, Int(position), SEEK_SET)
-            if p.requiredRecoil && 0 == p.recoilsFrontPerAct.count {
+            fseek(file, Int(position), SEEK_SET)
+            if requiredRecoil && 0 == recoilsFrontPerAct.count {
                 clearActInfo()
                 return
             }
             
             // Neutrons
-            if p.searchNeutrons {
+            if searchNeutrons {
                 findNeutrons()
-                fseek(p.file, Int(position), SEEK_SET)
+                fseek(file, Int(position), SEEK_SET)
             }
             
             // FON & Recoil Special && TOF Generations
             findFONEvents()
-            fseek(p.file, Int(position), SEEK_SET)
+            fseek(file, Int(position), SEEK_SET)
             
             // FWel or AWel
             findFissionsAlphaWel()
-            fseek(p.file, Int(position), SEEK_SET)
+            fseek(file, Int(position), SEEK_SET)
             
             /*
              ВАЖНО: тут не делаем репозиционирование в потоке после поиска!
              Этот подцикл поиска всегда должен быть последним!
              */
             // Summ(FFron or AFron)
-            if p.summarizeFissionsAlphaFront {
+            if summarizeFissionsAlphaFront {
                 findFissionsAlphaFront()
             }
             
             // Завершили поиск корреляций
-            if p.searchNeutrons {
+            if searchNeutrons {
                 updateNeutronsMultiplicity()
             }
             logActResults()
@@ -206,7 +408,7 @@ class Processor: NSObject {
      */
     func findFissionsAlphaWel() {
         let directions: Set<SearchDirection> = [.forward]
-        search(directions: directions, startTime: p.firstFissionAlphaTime, minDeltaTime: 0, maxDeltaTime: p.fissionAlphaMaxTime, useCycleTime: false, updateCycleEvent: false) { (event: ISAEvent, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
+        search(directions: directions, startTime: firstFissionAlphaTime, minDeltaTime: 0, maxDeltaTime: fissionAlphaMaxTime, useCycleTime: false, updateCycleEvent: false) { (event: ISAEvent, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
             if self.isFissionOrAlphaWel(event) {
                 self.storeFissionAlphaWell(event)
             }
@@ -218,9 +420,9 @@ class Processor: NSObject {
      */
     func findNeutrons() {
         let directions: Set<SearchDirection> = [.forward]
-        search(directions: directions, startTime: p.firstFissionAlphaTime, minDeltaTime: 0, maxDeltaTime: p.maxNeutronTime, useCycleTime: false, updateCycleEvent: false) { (event: ISAEvent, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
-            if self.p.dataProtocol.Neutrons == Int(event.eventId) {
-                self.p.neutronsSummPerAct += 1
+        search(directions: directions, startTime: firstFissionAlphaTime, minDeltaTime: 0, maxDeltaTime: maxNeutronTime, useCycleTime: false, updateCycleEvent: false) { (event: ISAEvent, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
+            if self.dataProtocol.Neutrons == Int(event.eventId) {
+                self.neutronsSummPerAct += 1
             }
         }
     }
@@ -233,15 +435,15 @@ class Processor: NSObject {
     func findFissionsAlphaFront() {
         // Skip Fission/Alpha First event!
         var position = fpos_t()
-        fgetpos(p.file, &position)
+        fgetpos(file, &position)
         if (position > -1) {
             position -= fpos_t(eventSize)
-            fseek(p.file, Int(position), SEEK_SET)
+            fseek(file, Int(position), SEEK_SET)
         }
         
         let directions: Set<SearchDirection> = [.forward, .backward]
-        search(directions: directions, startTime: p.firstFissionAlphaTime, minDeltaTime: 0, maxDeltaTime: p.fissionAlphaMaxTime, useCycleTime: false, updateCycleEvent: true) { (event: ISAEvent, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
-            if self.isFront(event, type: self.p.startParticleType) && self.isFissionNearToFirstFissionFront(event) { // FFron/AFron пришедшие после первого
+        search(directions: directions, startTime: firstFissionAlphaTime, minDeltaTime: 0, maxDeltaTime: fissionAlphaMaxTime, useCycleTime: false, updateCycleEvent: true) { (event: ISAEvent, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
+            if self.isFront(event, type: self.startParticleType) && self.isFissionNearToFirstFissionFront(event) { // FFron/AFron пришедшие после первого
                 self.storeFissionAlphaFront(event, isFirst: false, deltaTime: deltaTime)
             }
         }
@@ -252,7 +454,7 @@ class Processor: NSObject {
      */
     func findGamma() {
         let directions: Set<SearchDirection> = [.forward, .backward]
-        search(directions: directions, startTime: p.firstFissionAlphaTime, minDeltaTime: 0, maxDeltaTime: p.maxGammaTime, useCycleTime: false, updateCycleEvent: false) { (event: ISAEvent, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
+        search(directions: directions, startTime: firstFissionAlphaTime, minDeltaTime: 0, maxDeltaTime: maxGammaTime, useCycleTime: false, updateCycleEvent: false) { (event: ISAEvent, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
             if self.isGammaEvent(event) {
                 self.storeGamma(event, deltaTime: deltaTime)
             }
@@ -264,18 +466,18 @@ class Processor: NSObject {
      */
     func findFissionsAlphaBack() {
         let directions: Set<SearchDirection> = [.forward]
-        search(directions: directions, startTime: p.firstFissionAlphaTime, minDeltaTime: 0, maxDeltaTime: p.fissionAlphaMaxTime, useCycleTime: false, updateCycleEvent: false) { (event: ISAEvent, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
-            let type = self.p.startParticleType
+        search(directions: directions, startTime: firstFissionAlphaTime, minDeltaTime: 0, maxDeltaTime: fissionAlphaMaxTime, useCycleTime: false, updateCycleEvent: false) { (event: ISAEvent, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
+            let type = self.startParticleType
             if self.isBack(event, type: type) {
                 let energy = self.getEnergy(event, type: type)
-                if energy >= self.p.fissionAlphaFrontMinEnergy && energy <= self.p.fissionAlphaFrontMaxEnergy {
+                if energy >= self.fissionAlphaFrontMinEnergy && energy <= self.fissionAlphaFrontMaxEnergy {
                     self.storeFissionAlphaBack(event, deltaTime: deltaTime)
                 }
             }
         }
         
-        if p.fissionsAlphaBackPerAct.count > 1 {
-            let dict = p.fissionsAlphaBackPerAct.sorted(by: { (obj1: Any, obj2: Any) -> Bool in
+        if fissionsAlphaBackPerAct.count > 1 {
+            let dict = fissionsAlphaBackPerAct.sorted(by: { (obj1: Any, obj2: Any) -> Bool in
                 func energy(_ o: Any) -> Double {
                     return (o as! NSDictionary)[kEnergy] as? Double ?? 0
                 }
@@ -283,7 +485,7 @@ class Processor: NSObject {
             }).first as? NSDictionary
             if let dict = dict, let encoder = dict[kEncoder] as? CUnsignedShort, let strip0_15 = dict[kStrip0_15] as? CUnsignedShort {
                 let strip1_48 = stripConvertToFormat_1_48(strip0_15, encoder: encoder)
-                p.fissionsAlphaBackPerAct = (p.fissionsAlphaBackPerAct as NSArray).filter( { (obj: Any) -> Bool in
+                fissionsAlphaBackPerAct = (fissionsAlphaBackPerAct as NSArray).filter( { (obj: Any) -> Bool in
                     let item = obj as! NSDictionary
                     if item == dict {
                         return true
@@ -292,7 +494,7 @@ class Processor: NSObject {
                     let s0_15 = item[kStrip0_15] as! CUnsignedShort
                     let s1_48 = self.stripConvertToFormat_1_48(s0_15, encoder: e)
                     // TODO: new input field for _fissionBackMaxDeltaStrips
-                    return abs(Int32(strip1_48) - Int32(s1_48)) <= Int32(p.recoilBackMaxDeltaStrips)
+                    return abs(Int32(strip1_48) - Int32(s1_48)) <= Int32(recoilBackMaxDeltaStrips)
                 }) as! NSMutableArray
             }
         }
@@ -302,21 +504,21 @@ class Processor: NSObject {
      Поиск рекойла осуществляется с позиции файла где найден главный осколок/альфа (возвращаемся назад по времени).
      */
     func findRecoil() {
-        let fissionTime = absTime(CUnsignedShort(p.firstFissionAlphaTime), cycleEvent:p.mainCycleTimeEvent)
+        let fissionTime = absTime(CUnsignedShort(firstFissionAlphaTime), cycleEvent:mainCycleTimeEvent)
         let directions: Set<SearchDirection> = [.backward]
-        search(directions: directions, startTime: fissionTime, minDeltaTime: p.recoilMinTime, maxDeltaTime: p.recoilMaxTime, useCycleTime: true, updateCycleEvent: false) { (event: ISAEvent, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
-            if self.isFront(event, type: .recoil) && self.isEventFrontNearToFirstFissionAlphaFront(event, maxDelta: Int(self.p.recoilFrontMaxDeltaStrips)) {
+        search(directions: directions, startTime: fissionTime, minDeltaTime: recoilMinTime, maxDeltaTime: recoilMaxTime, useCycleTime: true, updateCycleEvent: false) { (event: ISAEvent, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
+            if self.isFront(event, type: .recoil) && self.isEventFrontNearToFirstFissionAlphaFront(event, maxDelta: Int(self.recoilFrontMaxDeltaStrips)) {
                 let energy = self.getEnergy(event, type: .recoil)
-                if energy >= self.p.recoilFrontMinEnergy && energy <= self.p.recoilFrontMaxEnergy {
+                if energy >= self.recoilFrontMinEnergy && energy <= self.recoilFrontMaxEnergy {
                     // Сохраняем рекойл только если к нему найден Recoil Back и TOF (если required)
                     var position = fpos_t()
-                    fgetpos(self.p.file, &position)
+                    fgetpos(self.file, &position)
                     let isRecoilBackFounded = self.findRecoilBack(CUnsignedLongLong(event.param1))
-                    fseek(self.p.file, Int(position), SEEK_SET)
+                    fseek(self.file, Int(position), SEEK_SET)
                     if (isRecoilBackFounded) {
                         let isTOFFounded = self.findTOFForRecoil(event, timeRecoil: time)
-                        fseek(self.p.file, Int(position), SEEK_SET)
-                        if (!self.p.requiredTOF || isTOFFounded) {
+                        fseek(self.file, Int(position), SEEK_SET)
+                        if (!self.requiredTOF || isTOFFounded) {
                             self.storeRecoil(event, deltaTime: deltaTime)
                         }
                     }
@@ -331,10 +533,10 @@ class Processor: NSObject {
     func findTOFForRecoil(_ eventRecoil: ISAEvent, timeRecoil: CUnsignedLongLong) -> Bool {
         var found: Bool = false
         let directions: Set<SearchDirection> = [.forward, .backward]
-        search(directions: directions, startTime: timeRecoil, minDeltaTime: 0, maxDeltaTime: p.maxTOFTime, useCycleTime: false, updateCycleEvent: false) { (event: ISAEvent, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
-            if self.p.dataProtocol.TOF == Int(event.eventId) {
+        search(directions: directions, startTime: timeRecoil, minDeltaTime: 0, maxDeltaTime: maxTOFTime, useCycleTime: false, updateCycleEvent: false) { (event: ISAEvent, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
+            if self.dataProtocol.TOF == Int(event.eventId) {
                 let value = self.valueTOF(event, eventRecoil: eventRecoil)
-                if value >= self.p.minTOFValue && value <= self.p.maxTOFValue {
+                if value >= self.minTOFValue && value <= self.maxTOFValue {
                     self.storeRealTOFValue(value, deltaTime: deltaTime)
                     found = true
                     stop.initialize(to: true)
@@ -350,9 +552,9 @@ class Processor: NSObject {
     func findRecoilBack(_ timeRecoilFront: CUnsignedLongLong) -> Bool {
         var found: Bool = false
         let directions: Set<SearchDirection> = [.forward]
-        search(directions: directions, startTime: timeRecoilFront, minDeltaTime: 0, maxDeltaTime: p.recoilBackMaxTime, useCycleTime: false, updateCycleEvent: false) { (event: ISAEvent, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
+        search(directions: directions, startTime: timeRecoilFront, minDeltaTime: 0, maxDeltaTime: recoilBackMaxTime, useCycleTime: false, updateCycleEvent: false) { (event: ISAEvent, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
             if self.isBack(event, type: .recoil) {
-                if (self.p.requiredFissionRecoilBack) {
+                if (self.requiredFissionRecoilBack) {
                     found = self.isRecoilBackNearToFissionAlphaBack(event)
                 } else {
                     found = true
@@ -372,19 +574,19 @@ class Processor: NSObject {
         var recoilFound: Bool = false
         var tofFound: Bool = false
         forwardSearch { (event: ISAEvent, stop: UnsafeMutablePointer<Bool>) in
-            if self.p.dataProtocol.FON == Int(event.eventId) {
+            if self.dataProtocol.FON == Int(event.eventId) {
                 if !fonFound {
                     self.storeFON(event)
                     fonFound = true
                 }
-            } else if self.p.dataProtocol.RecoilSpecial == Int(event.eventId) {
+            } else if self.dataProtocol.RecoilSpecial == Int(event.eventId) {
                 if !recoilFound {
                     self.storeRecoilSpecial(event)
                     recoilFound = true
                 }
-            } else if self.p.dataProtocol.TOF == Int(event.eventId) {
+            } else if self.dataProtocol.TOF == Int(event.eventId) {
                 if !tofFound {
-                    let deltaTime = fabs(Double(event.param1) - Double(self.p.firstFissionAlphaTime))
+                    let deltaTime = fabs(Double(event.param1) - Double(self.firstFissionAlphaTime))
                     if deltaTime <= self.kTOFGenerationsMaxTime {
                         self.storeTOFGenerations(event)
                     }
@@ -401,12 +603,12 @@ class Processor: NSObject {
      Поиск альфы 2 осуществляется с позиции файла где найдена альфа 1 (вперед по времени).
      */
     func findAlpha2() {
-        let alphaTime = absTime(CUnsignedShort(p.firstFissionAlphaTime), cycleEvent: p.mainCycleTimeEvent)
+        let alphaTime = absTime(CUnsignedShort(firstFissionAlphaTime), cycleEvent: mainCycleTimeEvent)
         let directions: Set<SearchDirection> = [.forward]
-        search(directions: directions, startTime: alphaTime, minDeltaTime: p.alpha2MinTime, maxDeltaTime: p.alpha2MaxTime, useCycleTime: true, updateCycleEvent: false) { (event: ISAEvent, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
+        search(directions: directions, startTime: alphaTime, minDeltaTime: alpha2MinTime, maxDeltaTime: alpha2MaxTime, useCycleTime: true, updateCycleEvent: false) { (event: ISAEvent, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
             if self.isFront(event, type: .alpha) {
                 let energy = self.getEnergy(event, type: .alpha)
-                if energy >= self.p.alpha2MinEnergy && energy <= self.p.alpha2MaxEnergy && self.isEventFrontNearToFirstFissionAlphaFront(event, maxDelta: Int(self.p.alpha2MaxDeltaStrips)) {
+                if energy >= self.alpha2MinEnergy && energy <= self.alpha2MaxEnergy && self.isEventFrontNearToFirstFissionAlphaFront(event, maxDelta: Int(self.alpha2MaxDeltaStrips)) {
                     self.storeAlpha2(event, deltaTime: deltaTime)
                 }
             }
@@ -418,53 +620,53 @@ class Processor: NSObject {
     func storeFissionAlphaBack(_ event: ISAEvent, deltaTime: CLongLong) {
         let encoder = fissionAlphaRecoilEncoderForEventId(Int(event.eventId))
         let strip_0_15 = event.param2 >> 12  // value from 0 to 15
-        let energy = getEnergy(event, type: p.startParticleType)
+        let energy = getEnergy(event, type: startParticleType)
         let info: NSDictionary = [kEncoder: encoder,
                                   kStrip0_15: strip_0_15,
                                   kEnergy: energy,
                                   kEventNumber: eventNumber(),
                                   kDeltaTime: deltaTime]
-        p.fissionsAlphaBackPerAct.add(info)
+        fissionsAlphaBackPerAct.add(info)
     }
     
     /**
      Используется для определения суммарной множественности нейтронов во всех файлах
      */
     func updateNeutronsMultiplicity() {
-        let key = p.neutronsSummPerAct
-        var summ = (p.neutronsMultiplicityTotal[key] as? CUnsignedLongLong) ?? 0
+        let key = neutronsSummPerAct
+        var summ = (neutronsMultiplicityTotal[key] as? CUnsignedLongLong) ?? 0
         summ += 1 // Одно событие для всех нейтронов в одном акте деления
-        p.neutronsMultiplicityTotal[key] = summ
+        neutronsMultiplicityTotal[key] = summ
     }
     
     func storeFissionAlphaFront(_ event: ISAEvent, isFirst: Bool, deltaTime: CLongLong) {
-        let channel = p.startParticleType == .fission ? (event.param2 & Mask.fission.rawValue) : (event.param3 & Mask.recoilAlpha.rawValue)
+        let channel = startParticleType == .fission ? (event.param2 & Mask.fission.rawValue) : (event.param3 & Mask.recoilAlpha.rawValue)
         let encoder = fissionAlphaRecoilEncoderForEventId(Int(event.eventId))
         let strip_0_15 = event.param2 >> 12 // value from 0 to 15
-        let energy = getEnergy(event, type: p.startParticleType)
+        let energy = getEnergy(event, type: startParticleType)
         let info: NSDictionary = [kEncoder: encoder,
                                   kStrip0_15: strip_0_15,
                                   kChannel: channel,
                                   kEnergy: energy,
                                   kEventNumber: eventNumber(),
                                   kDeltaTime: deltaTime]
-        p.fissionsAlphaFrontPerAct.add(info)
+        fissionsAlphaFrontPerAct.add(info)
         
         if isFirst {
             let strip_1_48 = focalStripConvertToFormat_1_48(strip_0_15, eventId: event.eventId)
             let extraInfo = info.mutableCopy() as! NSMutableDictionary
             extraInfo[kStrip1_48] = strip_1_48
-            p.firstFissionAlphaInfo = extraInfo as! [AnyHashable : Any]
-            p.firstFissionAlphaTime = UInt64(event.param1)
+            firstFissionAlphaInfo = extraInfo as NSDictionary
+            firstFissionAlphaTime = UInt64(event.param1)
         }
     }
     
     func storeGamma(_ event: ISAEvent, deltaTime: CLongLong) {
         let channel = event.param3 & Mask.gamma.rawValue
-        let energy = p.calibration.calibratedValueForAmplitude(Double(channel), eventName: "Gam1") // TODO: Gam2, Gam
+        let energy = calibration.calibratedValueForAmplitude(Double(channel), eventName: "Gam1") // TODO: Gam2, Gam
         let info: NSDictionary = [kEnergy: energy,
                                   kDeltaTime: deltaTime]
-        p.gammaPerAct.add(info)
+        gammaPerAct.add(info)
     }
     
     func storeRecoil(_ event: ISAEvent, deltaTime: CLongLong) {
@@ -472,7 +674,7 @@ class Processor: NSObject {
         let info: NSDictionary = [kEnergy: energy,
                                   kDeltaTime: deltaTime,
                                   kEventNumber: eventNumber()]
-        p.recoilsFrontPerAct.add(info)
+        recoilsFrontPerAct.add(info)
     }
     
     func storeAlpha2(_ event: ISAEvent, deltaTime: CLongLong) {
@@ -480,53 +682,53 @@ class Processor: NSObject {
         let info: NSDictionary = [kEnergy: energy,
                                   kDeltaTime: deltaTime,
                                   kEventNumber: eventNumber()]
-        p.alpha2FrontPerAct.add(info)
+        alpha2FrontPerAct.add(info)
     }
     
     func storeRealTOFValue(_ value: Double, deltaTime: CLongLong) {
         let info: NSDictionary = [kValue: value,
                                   kDeltaTime: deltaTime]
-        p.tofRealPerAct.add(info)
+        tofRealPerAct.add(info)
     }
     
     func storeFissionAlphaWell(_ event: ISAEvent) {
-        let energy = getEnergy(event, type: p.startParticleType)
+        let energy = getEnergy(event, type: startParticleType)
         let encoder = fissionAlphaRecoilEncoderForEventId(Int(event.eventId))
         let strip_0_15 = event.param2 >> 12  // value from 0 to 15
         let info: NSDictionary = [kEncoder: encoder,
                                   kStrip0_15: strip_0_15,
                                   kEnergy: energy]
-        p.fissionsAlphaWelPerAct.add(info)
+        fissionsAlphaWelPerAct.add(info)
     }
     
     func storeTOFGenerations(_ event: ISAEvent) {
         let channel = event.param3 & Mask.TOF.rawValue
-        p.tofGenerationsPerAct.add(channel)
+        tofGenerationsPerAct.add(channel)
     }
     
     func storeFON(_ event: ISAEvent) {
         let channel = event.param3 & Mask.FON.rawValue
-        p.fonPerAct = channel as NSNumber
+        fonPerAct = channel as NSNumber
     }
     
     func storeRecoilSpecial(_ event: ISAEvent) {
         let channel = event.param3 & Mask.recoilSpecial.rawValue
-        p.recoilSpecialPerAct = channel as NSNumber
+        recoilSpecialPerAct = channel as NSNumber
     }
     
     func clearActInfo() {
-        p.neutronsSummPerAct = 0
-        p.fissionsAlphaFrontPerAct.removeAllObjects()
-        p.fissionsAlphaBackPerAct.removeAllObjects()
-        p.gammaPerAct.removeAllObjects()
-        p.tofGenerationsPerAct.removeAllObjects()
-        p.fissionsAlphaWelPerAct.removeAllObjects()
-        p.recoilsFrontPerAct.removeAllObjects()
-        p.alpha2FrontPerAct.removeAllObjects()
-        p.tofRealPerAct.removeAllObjects()
-        p.firstFissionAlphaInfo = nil
-        p.fonPerAct = nil
-        p.recoilSpecialPerAct = nil
+        neutronsSummPerAct = 0
+        fissionsAlphaFrontPerAct.removeAllObjects()
+        fissionsAlphaBackPerAct.removeAllObjects()
+        gammaPerAct.removeAllObjects()
+        tofGenerationsPerAct.removeAllObjects()
+        fissionsAlphaWelPerAct.removeAllObjects()
+        recoilsFrontPerAct.removeAllObjects()
+        alpha2FrontPerAct.removeAllObjects()
+        tofRealPerAct.removeAllObjects()
+        firstFissionAlphaInfo = nil
+        fonPerAct = nil
+        recoilSpecialPerAct = nil
     }
     
     // MARK: - Helpers
@@ -538,7 +740,7 @@ class Processor: NSObject {
     func fissionAlphaBackWithMaxEnergyInAct() -> NSDictionary? {
         var fission: NSDictionary?
         var maxE: Double = 0
-        for info in p.fissionsAlphaBackPerAct {
+        for info in fissionsAlphaBackPerAct {
             if let dict = info as? NSDictionary, let e = dict[kEnergy] as? Double {
                 if (maxE < e) {
                     maxE = e
@@ -555,8 +757,10 @@ class Processor: NSObject {
     func isEventFrontNearToFirstFissionAlphaFront(_ event: ISAEvent, maxDelta: Int) -> Bool {
         let strip_0_15 = event.param2 >> 12
         let strip_1_48 = Int(focalStripConvertToFormat_1_48(strip_0_15, eventId:event.eventId))
-        let strip_1_48_first_fission = p.firstFissionAlphaInfo[kStrip1_48] as! Int
-        return abs(Int32(strip_1_48 - strip_1_48_first_fission)) <= Int32(maxDelta)
+        if let strip_1_48_first_fission = firstFissionAlphaInfo?[kStrip1_48] as? Int {
+            return abs(Int32(strip_1_48 - strip_1_48_first_fission)) <= Int32(maxDelta)
+        }
+        return false
     }
     
     /**
@@ -569,7 +773,7 @@ class Processor: NSObject {
             let strip_0_15_back_fission = fissionBackInfo[kStrip0_15] as! Int
             let encoder_back_fission = fissionBackInfo[kEncoder] as! Int
             let strip_1_48_back_fission = stripConvertToFormat_1_48(CUnsignedShort(strip_0_15_back_fission), encoder: CUnsignedShort(encoder_back_fission))
-            return abs(Int32(strip_1_48 - strip_1_48_back_fission)) <= Int32(p.recoilBackMaxDeltaStrips)
+            return abs(Int32(strip_1_48 - strip_1_48_back_fission)) <= Int32(recoilBackMaxDeltaStrips)
         } else {
             return false
         }
@@ -580,14 +784,17 @@ class Processor: NSObject {
      */
     func isFissionNearToFirstFissionFront(_ event: ISAEvent) -> Bool {
         let strip_0_15 = event.param2 >> 12
-        let strip_0_15_first_fission = p.firstFissionAlphaInfo[kStrip0_15] as! Int
-        if Int(strip_0_15) == strip_0_15_first_fission { // совпадают
-            return true
+        if let strip_0_15_first_fission = firstFissionAlphaInfo?[kStrip0_15] as? Int {
+            if Int(strip_0_15) == strip_0_15_first_fission { // совпадают
+                return true
+            }
+            
+            let strip_1_48 = focalStripConvertToFormat_1_48(strip_0_15, eventId: event.eventId)
+            if let strip_1_48_first_fission = firstFissionAlphaInfo?[kStrip1_48] as? Int {
+                return abs(Int32(Int(strip_1_48) - strip_1_48_first_fission)) <= 1 // +/- 1 стрип
+            }
         }
-        
-        let strip_1_48 = focalStripConvertToFormat_1_48(strip_0_15, eventId: event.eventId)
-        let strip_1_48_first_fission = p.firstFissionAlphaInfo[kStrip1_48] as! Int
-        return abs(Int32(Int(strip_1_48) - strip_1_48_first_fission)) <= 1 // +/- 1 стрип
+        return false
     }
     
     /**
@@ -622,16 +829,16 @@ class Processor: NSObject {
     }
     
     func fissionAlphaRecoilEncoderForEventId(_ eventId: Int) -> CUnsignedShort {
-        if (p.dataProtocol.AFron(1) == eventId || p.dataProtocol.ABack(1) == eventId || p.dataProtocol.AdFr(1) == eventId || p.dataProtocol.AdBk(1) == eventId || p.dataProtocol.AWel(1) == eventId || p.dataProtocol.AWel == eventId) {
+        if (dataProtocol.AFron(1) == eventId || dataProtocol.ABack(1) == eventId || dataProtocol.AdFr(1) == eventId || dataProtocol.AdBk(1) == eventId || dataProtocol.AWel(1) == eventId || dataProtocol.AWel == eventId) {
             return 1
         }
-        if (p.dataProtocol.AFron(2) == eventId || p.dataProtocol.ABack(2) == eventId || p.dataProtocol.AdFr(2) == eventId || p.dataProtocol.AdBk(2) == eventId || p.dataProtocol.AWel(2) == eventId) {
+        if (dataProtocol.AFron(2) == eventId || dataProtocol.ABack(2) == eventId || dataProtocol.AdFr(2) == eventId || dataProtocol.AdBk(2) == eventId || dataProtocol.AWel(2) == eventId) {
             return 2
         }
-        if (p.dataProtocol.AFron(3) == eventId || p.dataProtocol.ABack(3) == eventId || p.dataProtocol.AdFr(3) == eventId || p.dataProtocol.AdBk(3) == eventId || p.dataProtocol.AWel(3) == eventId) {
+        if (dataProtocol.AFron(3) == eventId || dataProtocol.ABack(3) == eventId || dataProtocol.AdFr(3) == eventId || dataProtocol.AdBk(3) == eventId || dataProtocol.AWel(3) == eventId) {
             return 3
         }
-        if (p.dataProtocol.AWel(4) == eventId) {
+        if (dataProtocol.AWel(4) == eventId) {
             return 4
         }
         return 0
@@ -645,33 +852,33 @@ class Processor: NSObject {
     
     func isGammaEvent(_ event: ISAEvent) -> Bool {
         let eventId = Int(event.eventId)
-        return p.dataProtocol.Gam(1) == eventId || p.dataProtocol.Gam(2) == eventId || p.dataProtocol.Gam == eventId
+        return dataProtocol.Gam(1) == eventId || dataProtocol.Gam(2) == eventId || dataProtocol.Gam == eventId
     }
     
     func isFront(_ event: ISAEvent, type: SearchType) -> Bool {
         let eventId = Int(event.eventId)
         let marker = getMarker(event.param3)
         let typeMarker = type == .recoil ? kRecoilMarker : kFissionOrAlphaMarker
-        return (typeMarker == marker) && (p.dataProtocol.AFron(1) == eventId || p.dataProtocol.AFron(2) == eventId || p.dataProtocol.AFron(3) == eventId || p.dataProtocol.AdFr(1) == eventId || p.dataProtocol.AdFr(2) == eventId || p.dataProtocol.AdFr(3) == eventId)
+        return (typeMarker == marker) && (dataProtocol.AFron(1) == eventId || dataProtocol.AFron(2) == eventId || dataProtocol.AFron(3) == eventId || dataProtocol.AdFr(1) == eventId || dataProtocol.AdFr(2) == eventId || dataProtocol.AdFr(3) == eventId)
     }
     
     func isFissionOrAlphaWel(_ event: ISAEvent) -> Bool {
         let eventId = Int(event.eventId)
         let marker = getMarker(event.param3)
-        return (kFissionOrAlphaMarker == marker) && (p.dataProtocol.AWel == eventId || p.dataProtocol.AWel(1) == eventId || p.dataProtocol.AWel(2) == eventId || p.dataProtocol.AWel(3) == eventId || p.dataProtocol.AWel(4) == eventId)
+        return (kFissionOrAlphaMarker == marker) && (dataProtocol.AWel == eventId || dataProtocol.AWel(1) == eventId || dataProtocol.AWel(2) == eventId || dataProtocol.AWel(3) == eventId || dataProtocol.AWel(4) == eventId)
     }
     
     func isBack(_ event: ISAEvent, type: SearchType) -> Bool {
         let eventId = Int(event.eventId)
         let marker = getMarker(event.param3)
         let typeMarker = type == .recoil ? kRecoilMarker : kFissionOrAlphaMarker
-        return (typeMarker == marker) && (p.dataProtocol.ABack(1) == eventId || p.dataProtocol.ABack(2) == eventId || p.dataProtocol.ABack(3) == eventId || p.dataProtocol.AdBk(1) == eventId || p.dataProtocol.AdBk(2) == eventId || p.dataProtocol.AdBk(3) == eventId)
+        return (typeMarker == marker) && (dataProtocol.ABack(1) == eventId || dataProtocol.ABack(2) == eventId || dataProtocol.ABack(3) == eventId || dataProtocol.AdBk(1) == eventId || dataProtocol.AdBk(2) == eventId || dataProtocol.AdBk(3) == eventId)
     }
     
     func eventNumber() -> CUnsignedLongLong {
         var position = fpos_t()
-        fgetpos(p.file, &position)
-        return CUnsignedLongLong(position/Int64(eventSize)) + p.totalEventNumber + 1
+        fgetpos(file, &position)
+        return CUnsignedLongLong(position/Int64(eventSize)) + totalEventNumber + 1
     }
     
     func channelForTOF(_ event :ISAEvent) -> CUnsignedShort {
@@ -695,24 +902,24 @@ class Processor: NSObject {
         }
         
         var position: String
-        if p.dataProtocol.AFron(1) == eventId || p.dataProtocol.AFron(2) == eventId || p.dataProtocol.AFron(3) == eventId {
+        if dataProtocol.AFron(1) == eventId || dataProtocol.AFron(2) == eventId || dataProtocol.AFron(3) == eventId {
             position = "Fron"
-        } else if p.dataProtocol.ABack(1) == eventId || p.dataProtocol.ABack(2) == eventId || p.dataProtocol.ABack(3) == eventId {
+        } else if dataProtocol.ABack(1) == eventId || dataProtocol.ABack(2) == eventId || dataProtocol.ABack(3) == eventId {
             position = "Back"
-        } else if p.dataProtocol.AdFr(1) == eventId || p.dataProtocol.AdFr(2) == eventId || p.dataProtocol.AdFr(3) == eventId {
+        } else if dataProtocol.AdFr(1) == eventId || dataProtocol.AdFr(2) == eventId || dataProtocol.AdFr(3) == eventId {
             position = "dFr"
-        } else if p.dataProtocol.AdBk(1) == eventId || p.dataProtocol.AdBk(2) == eventId || p.dataProtocol.AdBk(3) == eventId {
+        } else if dataProtocol.AdBk(1) == eventId || dataProtocol.AdBk(2) == eventId || dataProtocol.AdBk(3) == eventId {
             position = "dBk"
         } else {
             position = "Wel"
         }
         
         let name = String(format: "%@%@%d.%d", detector, position, encoder, strip_0_15+1)
-        return p.calibration.calibratedValueForAmplitude(Double(channel), eventName: name)
+        return calibration.calibratedValueForAmplitude(Double(channel), eventName: name)
     }
     
     func currentFileEventNumber(_ number: CLongLong) -> String {
-        return String(format: "%@_%llu", p.currentFileName, number)
+        return String(format: "%@_%llu", currentFileName ?? "", number)
     }
     
     func nanosecondsForTOFChannel(_ channelTOF: CUnsignedShort, eventRecoil: ISAEvent) -> Double {
@@ -720,18 +927,18 @@ class Processor: NSObject {
         let strip_0_15 = eventRecoil.param2 >> 12  // value from 0 to 15
         let encoder = fissionAlphaRecoilEncoderForEventId(eventId)
         var position: String
-        if p.dataProtocol.AFron(1) == eventId || p.dataProtocol.AFron(2) == eventId || p.dataProtocol.AFron(3) == eventId {
+        if dataProtocol.AFron(1) == eventId || dataProtocol.AFron(2) == eventId || dataProtocol.AFron(3) == eventId {
             position = "Fron"
         } else {
             position = "Back"
         }
         let name = String(format: "T%@%d.%d", position, encoder, strip_0_15+1)
-        return p.calibration.calibratedValueForAmplitude(Double(channelTOF), eventName: name)
+        return calibration.calibratedValueForAmplitude(Double(channelTOF), eventName: name)
     }
     
     func valueTOF(_ eventTOF: ISAEvent, eventRecoil: ISAEvent) -> Double {
         let channel = channelForTOF(eventTOF)
-        if p.unitsTOF == .channels {
+        if unitsTOF == .channels {
             return Double(channel)
         } else {
             return nanosecondsForTOFChannel(channel, eventRecoil: eventRecoil)
@@ -743,23 +950,23 @@ class Processor: NSObject {
     func logInput() {
         let appDelegate = NSApplication.shared().delegate as! AppDelegate
         let image = appDelegate.window.screenshot()
-        p.logger.logInput(image)
+        logger.logInput(image)
     }
     
     func logCalibration() {
-        p.logger.logCalibration(p.calibration.stringValue ?? "")
+        logger.logCalibration(calibration.stringValue ?? "")
     }
     
     func logResultsHeader() {
-        let startParticle = p.startParticleType == .fission ? "F" : "A"
+        let startParticle = startParticleType == .fission ? "F" : "A"
         var header = String(format: "Event(Recoil),E(RFron),dT(RFron-$Fron),TOF,dT(TOF-RFron),Event($),Summ($Fron),$Fron,dT($FronFirst-Next),Strip($Fron),$Back,dT($Fron-$Back),Strip($Back),$Wel,$WelPos,Neutrons,Gamma,dT($Fron-Gamma),FON,Recoil(Special)")
-        if p.searchAlpha2 {
+        if searchAlpha2 {
             header += ",Event(Alpha2),E(Alpha2),dT(Alpha1-Alpha2)"
         }
         header = header.replacingOccurrences(of: "$", with: startParticle)
         let components = header.components(separatedBy: ",")
-        p.logger.writeLineOfFields(components as [AnyObject])
-        p.logger.finishLine() // +1 line padding
+        logger.writeLineOfFields(components as [AnyObject])
+        logger.finishLine() // +1 line padding
     }
     
     func logActResults() {
@@ -768,161 +975,161 @@ class Processor: NSObject {
         }
         
         var columnsCount = 19
-        if p.searchAlpha2 {
+        if searchAlpha2 {
             columnsCount += 3
         }
-        let rowsMax = max(max(max(max(max(1, p.gammaPerAct.count), p.fissionsAlphaWelPerAct.count), p.recoilsFrontPerAct.count), p.fissionsAlphaBackPerAct.count), p.fissionsAlphaFrontPerAct.count)
+        let rowsMax = max(max(max(max(max(1, gammaPerAct.count), fissionsAlphaWelPerAct.count), recoilsFrontPerAct.count), fissionsAlphaBackPerAct.count), fissionsAlphaFrontPerAct.count)
         for row in 0 ..< rowsMax {
             for column in 0...columnsCount {
                 var field = ""
                 switch column {
                 case 0:
-                    if row < p.recoilsFrontPerAct.count {
-                        if let eventNumberObject = getValueFrom(array: p.recoilsFrontPerAct, row: row, key: kEventNumber) as? CLongLong {
+                    if row < recoilsFrontPerAct.count {
+                        if let eventNumberObject = getValueFrom(array: recoilsFrontPerAct, row: row, key: kEventNumber) as? CLongLong {
                             field = currentFileEventNumber(eventNumberObject)
                         }
                     }
                 case 1:
-                    if row < p.recoilsFrontPerAct.count {
-                        if let recoilEnergy = getValueFrom(array: p.recoilsFrontPerAct, row: row, key: kEnergy) as? Double {
+                    if row < recoilsFrontPerAct.count {
+                        if let recoilEnergy = getValueFrom(array: recoilsFrontPerAct, row: row, key: kEnergy) as? Double {
                             field = String(format: "%.7f", recoilEnergy)
                         }
                     }
                 case 2:
-                    if row < p.recoilsFrontPerAct.count {
-                        if let deltaTimeRecoilFission = getValueFrom(array: p.recoilsFrontPerAct, row: row, key: kDeltaTime) as? CLongLong {
+                    if row < recoilsFrontPerAct.count {
+                        if let deltaTimeRecoilFission = getValueFrom(array: recoilsFrontPerAct, row: row, key: kDeltaTime) as? CLongLong {
                             field = String(format: "%lld", deltaTimeRecoilFission)
                         }
                     }
                 case 3:
-                    if row < p.tofRealPerAct.count {
-                        if let tof = getValueFrom(array: p.tofRealPerAct, row: row, key: kValue) as? CUnsignedShort {
+                    if row < tofRealPerAct.count {
+                        if let tof = getValueFrom(array: tofRealPerAct, row: row, key: kValue) as? CUnsignedShort {
                             field = String(format: "%hu", tof)
                         }
                     }
                 case 4:
-                    if row < p.tofRealPerAct.count {
-                        if let deltaTimeTOFRecoil = getValueFrom(array: p.tofRealPerAct, row: row, key: kDeltaTime) as? CLongLong {
+                    if row < tofRealPerAct.count {
+                        if let deltaTimeTOFRecoil = getValueFrom(array: tofRealPerAct, row: row, key: kDeltaTime) as? CLongLong {
                             field = String(format: "%lld", deltaTimeTOFRecoil)
                         }
                     }
                 case 5:
-                    if row < p.fissionsAlphaFrontPerAct.count {
-                        if let eventNumber = getValueFrom(array: p.fissionsAlphaFrontPerAct, row: row, key: kDeltaTime) as? CLongLong {
+                    if row < fissionsAlphaFrontPerAct.count {
+                        if let eventNumber = getValueFrom(array: fissionsAlphaFrontPerAct, row: row, key: kDeltaTime) as? CLongLong {
                             field = currentFileEventNumber(eventNumber)
                         }
                     }
                 case 6:
                     if row == 0 {
                         var summ: Double = 0
-                        for info in p.fissionsAlphaFrontPerAct {
+                        for info in fissionsAlphaFrontPerAct {
                             let energy = ((info as? [String: Any])?[kEnergy] as? Double) ?? 0
                             summ += energy
                         }
                         field = String(format: "%.7f", summ)
                     }
                 case 7:
-                    if row < p.fissionsAlphaFrontPerAct.count {
-                        if let energy = getValueFrom(array: p.fissionsAlphaFrontPerAct, row: row, key: kEnergy) as? Double {
+                    if row < fissionsAlphaFrontPerAct.count {
+                        if let energy = getValueFrom(array: fissionsAlphaFrontPerAct, row: row, key: kEnergy) as? Double {
                             field = String(format: "%.7f", energy)
                         }
                     }
                 case 8:
-                    if row < p.fissionsAlphaFrontPerAct.count {
-                        if let deltaTime = getValueFrom(array: p.fissionsAlphaFrontPerAct, row: row, key: kDeltaTime) as? CLongLong {
+                    if row < fissionsAlphaFrontPerAct.count {
+                        if let deltaTime = getValueFrom(array: fissionsAlphaFrontPerAct, row: row, key: kDeltaTime) as? CLongLong {
                             field = String(format: "%lld", deltaTime)
                         }
                     }
                 case 9:
-                    if row < p.fissionsAlphaFrontPerAct.count {
-                        if let info = p.fissionsAlphaFrontPerAct[row] as? [String: Any], let strip_0_15 = info[kStrip0_15] as? CUnsignedShort, let encoder = info[kEncoder] as? CUnsignedShort {
+                    if row < fissionsAlphaFrontPerAct.count {
+                        if let info = fissionsAlphaFrontPerAct[row] as? [String: Any], let strip_0_15 = info[kStrip0_15] as? CUnsignedShort, let encoder = info[kEncoder] as? CUnsignedShort {
                             let strip = stripConvertToFormat_1_48(strip_0_15, encoder: encoder)
                             field = String(format: "%d", strip)
                         }
                     }
                 case 10:
-                    if row < p.fissionsAlphaBackPerAct.count {
-                        if let energy = getValueFrom(array: p.fissionsAlphaBackPerAct, row: row, key: kEnergy) as? Double {
+                    if row < fissionsAlphaBackPerAct.count {
+                        if let energy = getValueFrom(array: fissionsAlphaBackPerAct, row: row, key: kEnergy) as? Double {
                             field = String(format: "%.7f", energy)
                         }
                     }
                 case 11:
-                    if row < p.fissionsAlphaBackPerAct.count {
-                        if let deltaTime = getValueFrom(array: p.fissionsAlphaBackPerAct, row: row, key: kDeltaTime) as? CLongLong {
+                    if row < fissionsAlphaBackPerAct.count {
+                        if let deltaTime = getValueFrom(array: fissionsAlphaBackPerAct, row: row, key: kDeltaTime) as? CLongLong {
                             field = String(format: "%lld", deltaTime)
                         }
                     }
                 case 12:
-                    if row < p.fissionsAlphaBackPerAct.count {
-                        if let info = p.fissionsAlphaBackPerAct[row] as? [String: Any], let strip_0_15 = info[kStrip0_15] as? CUnsignedShort, let encoder = info[kEncoder] as? CUnsignedShort {
+                    if row < fissionsAlphaBackPerAct.count {
+                        if let info = fissionsAlphaBackPerAct[row] as? [String: Any], let strip_0_15 = info[kStrip0_15] as? CUnsignedShort, let encoder = info[kEncoder] as? CUnsignedShort {
                             let strip = stripConvertToFormat_1_48(strip_0_15, encoder: encoder)
                             field = String(format: "%d", strip)
                         }
                     }
                 case 13:
-                    if row < p.fissionsAlphaWelPerAct.count {
-                        if let energy = getValueFrom(array: p.fissionsAlphaWelPerAct, row: row, key: kEnergy) as? Double {
+                    if row < fissionsAlphaWelPerAct.count {
+                        if let energy = getValueFrom(array: fissionsAlphaWelPerAct, row: row, key: kEnergy) as? Double {
                             field = String(format: "%.7f", energy)
                         }
                     }
                 case 14:
-                    if row < p.fissionsAlphaWelPerAct.count {
-                        if let info = p.fissionsAlphaWelPerAct[row] as? [String: Any], let strip_0_15 = info[kStrip0_15] as? CUnsignedShort, let encoder = info[kEncoder] as? CUnsignedShort {
+                    if row < fissionsAlphaWelPerAct.count {
+                        if let info = fissionsAlphaWelPerAct[row] as? [String: Any], let strip_0_15 = info[kStrip0_15] as? CUnsignedShort, let encoder = info[kEncoder] as? CUnsignedShort {
                             field = String(format: "FWel%d.%d", encoder, strip_0_15 + 1)
                         }
                     }
                 case 15:
-                    if row == 0 && p.searchNeutrons {
-                        field = String(format: "%llu", p.neutronsSummPerAct)
+                    if row == 0 && searchNeutrons {
+                        field = String(format: "%llu", neutronsSummPerAct)
                     }
                 case 16:
-                    if row < p.gammaPerAct.count {
-                        if let energy = getValueFrom(array: p.gammaPerAct, row: row, key: kEnergy) as? Double {
+                    if row < gammaPerAct.count {
+                        if let energy = getValueFrom(array: gammaPerAct, row: row, key: kEnergy) as? Double {
                             field = String(format: "%.7f", energy)
                         }
                     }
                 case 17:
-                    if row < p.gammaPerAct.count {
-                        if let deltaTime = getValueFrom(array: p.gammaPerAct, row: row, key: kDeltaTime) as? CLongLong {
+                    if row < gammaPerAct.count {
+                        if let deltaTime = getValueFrom(array: gammaPerAct, row: row, key: kDeltaTime) as? CLongLong {
                             field = String(format: "%llu", deltaTime)
                         }
                     }
                 case 18:
                     if row == 0 {
-                        if let v = p.fonPerAct as? CUnsignedShort {
+                        if let v = fonPerAct as? CUnsignedShort {
                             field = String(format: "%hu", v)
                         }
                     }
                 case 19:
                     if row == 0 {
-                        if let v = p.recoilSpecialPerAct as? CUnsignedShort {
+                        if let v = recoilSpecialPerAct as? CUnsignedShort {
                             field = String(format: "%hu", v)
                         }
                     }
                 case 20:
-                    if row < p.alpha2FrontPerAct.count {
-                        if let eventNumber = getValueFrom(array: p.alpha2FrontPerAct, row: row, key: kEventNumber) as? CLongLong {
+                    if row < alpha2FrontPerAct.count {
+                        if let eventNumber = getValueFrom(array: alpha2FrontPerAct, row: row, key: kEventNumber) as? CLongLong {
                             field = currentFileEventNumber(eventNumber)
                         }
                     }
                 case 21:
-                    if row < p.alpha2FrontPerAct.count {
-                        if let energy = getValueFrom(array: p.alpha2FrontPerAct, row: row, key: kEnergy) as? Double {
+                    if row < alpha2FrontPerAct.count {
+                        if let energy = getValueFrom(array: alpha2FrontPerAct, row: row, key: kEnergy) as? Double {
                             field = String(format: "%.7f", energy)
                         }
                     }
                 case 22:
-                    if row < p.alpha2FrontPerAct.count {
-                        if let deltaTime = getValueFrom(array: p.alpha2FrontPerAct, row: row, key: kDeltaTime) as? CLongLong {
+                    if row < alpha2FrontPerAct.count {
+                        if let deltaTime = getValueFrom(array: alpha2FrontPerAct, row: row, key: kDeltaTime) as? CLongLong {
                             field = String(format: "%lld", deltaTime)
                         }
                     }
                 default:
                     break
                 }
-                p.logger.writeField(field as AnyObject)
+                logger.writeField(field as AnyObject)
             }
-            p.logger.finishLine()
+            logger.finishLine()
         }
     }
 
