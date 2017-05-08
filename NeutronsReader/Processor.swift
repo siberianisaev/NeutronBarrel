@@ -47,7 +47,7 @@ class Processor: NSObject {
     fileprivate var neutronsSummPerAct: CUnsignedLongLong = 0
     fileprivate var files = NSArray()
     fileprivate var currentFileName: String?
-    fileprivate var neutronsMultiplicityTotal = NSMutableDictionary()
+    fileprivate var neutronsMultiplicityTotal = [Int : Int]()
     fileprivate var recoilsFrontPerAct = NSMutableArray()
     fileprivate var alpha2FrontPerAct = NSMutableArray()
     fileprivate var tofRealPerAct = NSMutableArray()
@@ -115,7 +115,7 @@ class Processor: NSObject {
     func processDataWithCompletion(_ completion: @escaping (()->())) {
         stoped = false
     
-        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+        DispatchQueue.global(qos: .default).async { [weak self] in
             self?.processData()
             DispatchQueue.main.async {
                 completion()
@@ -260,7 +260,7 @@ class Processor: NSObject {
             return
         }
         
-        neutronsMultiplicityTotal = NSMutableDictionary()
+        neutronsMultiplicityTotal = [:]
         recoilsFrontPerAct = NSMutableArray()
         alpha2FrontPerAct = NSMutableArray()
         tofRealPerAct = NSMutableArray()
@@ -276,15 +276,20 @@ class Processor: NSObject {
         logCalibration()
         logResultsHeader()
         
-        delegate.incrementProgress(Double.ulpOfOne) // Show progress indicator
+        DispatchQueue.main.async { [weak self] in
+            self?.delegate.incrementProgress(Double.ulpOfOne) // Show progress indicator
+        }
         let progressForOneFile: Double = 100.0 / Double(files.count)
         
         for fp in files {
             let path = fp as! NSString
             autoreleasepool {
                 file = fopen(path.utf8String, "rb")
-                currentFileName = path.lastPathComponent
-                delegate.startProcessingFile(currentFileName!)
+                let name = path.lastPathComponent
+                currentFileName = name
+                DispatchQueue.main.async { [weak self] in
+                    self?.delegate.startProcessingFile(name)
+                }
                 
                 if let file = file {
                     setvbuf(file, nil, _IONBF, 0) // disable buffering
@@ -311,12 +316,14 @@ class Processor: NSObject {
                 
                 fclose(file)
                 
-                delegate.incrementProgress(progressForOneFile)
+                DispatchQueue.main.async { [weak self] in
+                    self?.delegate.incrementProgress(progressForOneFile)
+                }
             }
         }
         
         if searchNeutrons {
-            logger.logMultiplicity(neutronsMultiplicityTotal as! [Int : Int])
+            logger.logMultiplicity(neutronsMultiplicityTotal)
         }
     }
     
@@ -485,7 +492,7 @@ class Processor: NSObject {
             }).first as? NSDictionary
             if let dict = dict, let encoder = dict[kEncoder] as? CUnsignedShort, let strip0_15 = dict[kStrip0_15] as? CUnsignedShort {
                 let strip1_48 = stripConvertToFormat_1_48(strip0_15, encoder: encoder)
-                fissionsAlphaBackPerAct = (fissionsAlphaBackPerAct as NSArray).filter( { (obj: Any) -> Bool in
+                let array = (fissionsAlphaBackPerAct as NSArray).filter( { (obj: Any) -> Bool in
                     let item = obj as! NSDictionary
                     if item == dict {
                         return true
@@ -495,7 +502,8 @@ class Processor: NSObject {
                     let s1_48 = self.stripConvertToFormat_1_48(s0_15, encoder: e)
                     // TODO: new input field for _fissionBackMaxDeltaStrips
                     return abs(Int32(strip1_48) - Int32(s1_48)) <= Int32(recoilBackMaxDeltaStrips)
-                }) as! NSMutableArray
+                })
+                fissionsAlphaBackPerAct = NSMutableArray(array: array)
             }
         }
     }
@@ -634,9 +642,9 @@ class Processor: NSObject {
      */
     func updateNeutronsMultiplicity() {
         let key = neutronsSummPerAct
-        var summ = (neutronsMultiplicityTotal[key] as? CUnsignedLongLong) ?? 0
+        var summ = neutronsMultiplicityTotal[Int(key)] ?? 0
         summ += 1 // Одно событие для всех нейтронов в одном акте деления
-        neutronsMultiplicityTotal[key] = summ
+        neutronsMultiplicityTotal[Int(key)] = summ
     }
     
     func storeFissionAlphaFront(_ event: ISAEvent, isFirst: Bool, deltaTime: CLongLong) {
@@ -802,7 +810,7 @@ class Processor: NSObject {
      Для вычисления времени от запуска файла используем время цикла.
      */
     func absTime(_ relativeTime: CUnsignedShort, cycleEvent: ISAEvent) -> CUnsignedLongLong {
-        return CUnsignedLongLong(cycleEvent.param3 << 16) + CUnsignedLongLong(cycleEvent.param1) + CUnsignedLongLong(relativeTime)
+        return (CUnsignedLongLong(cycleEvent.param3) << 16) + CUnsignedLongLong(cycleEvent.param1) + CUnsignedLongLong(relativeTime)
     }
     
     /**
