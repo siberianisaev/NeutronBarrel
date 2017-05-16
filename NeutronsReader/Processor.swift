@@ -45,20 +45,20 @@ class Processor: NSObject {
     fileprivate var totalEventNumber: CUnsignedLongLong = 0
     fileprivate var firstFissionAlphaTime: CUnsignedLongLong = 0 // время главного осколка/альфы в цикле
     fileprivate var neutronsSummPerAct: CUnsignedLongLong = 0
-    fileprivate var files = NSArray()
+    fileprivate var files = [String]()
     fileprivate var currentFileName: String?
     fileprivate var neutronsMultiplicityTotal = [Int : Int]()
-    fileprivate var recoilsFrontPerAct = NSMutableArray()
-    fileprivate var alpha2FrontPerAct = NSMutableArray()
-    fileprivate var tofRealPerAct = NSMutableArray()
-    fileprivate var fissionsAlphaFrontPerAct = NSMutableArray()
-    fileprivate var fissionsAlphaBackPerAct = NSMutableArray()
-    fileprivate var fissionsAlphaWelPerAct = NSMutableArray()
-    fileprivate var gammaPerAct = NSMutableArray()
-    fileprivate var tofGenerationsPerAct = NSMutableArray()
-    fileprivate var fonPerAct: NSNumber?
-    fileprivate var recoilSpecialPerAct: NSNumber?
-    fileprivate var firstFissionAlphaInfo: NSDictionary? // информация о главном осколке/альфе в цикле
+    fileprivate var recoilsFrontPerAct = [Any]()
+    fileprivate var alpha2FrontPerAct = [Any]()
+    fileprivate var tofRealPerAct = [Any]()
+    fileprivate var fissionsAlphaFrontPerAct = [Any]()
+    fileprivate var fissionsAlphaBackPerAct = [Any]()
+    fileprivate var fissionsAlphaWelPerAct = [Any]()
+    fileprivate var gammaPerAct = [Any]()
+    fileprivate var tofGenerationsPerAct = [Any]()
+    fileprivate var fonPerAct: CUnsignedShort?
+    fileprivate var recoilSpecialPerAct: CUnsignedShort?
+    fileprivate var firstFissionAlphaInfo: [String: Any]? // информация о главном осколке/альфе в цикле
     fileprivate var stoped: Bool = false
     fileprivate var logger: Logger!
     fileprivate var calibration: Calibration!
@@ -125,7 +125,7 @@ class Processor: NSObject {
     
     func selectDataWithCompletion(_ completion: @escaping ((Bool)->())) {
         DataLoader.load { [weak self] (files: [String], dataProtocol: DataProtocol) in
-            self?.files = files as NSArray
+            self?.files = files
             self?.dataProtocol = dataProtocol
             completion(files.count > 0)
         }
@@ -261,15 +261,15 @@ class Processor: NSObject {
         }
         
         neutronsMultiplicityTotal = [:]
-        recoilsFrontPerAct = NSMutableArray()
-        alpha2FrontPerAct = NSMutableArray()
-        tofRealPerAct = NSMutableArray()
-        fissionsAlphaFrontPerAct = NSMutableArray()
-        fissionsAlphaBackPerAct = NSMutableArray()
-        gammaPerAct = NSMutableArray()
-        tofGenerationsPerAct = NSMutableArray()
-        fissionsAlphaWelPerAct = NSMutableArray()
-        totalEventNumber = 0;
+        recoilsFrontPerAct.removeAll()
+        alpha2FrontPerAct.removeAll()
+        tofRealPerAct.removeAll()
+        fissionsAlphaFrontPerAct.removeAll()
+        fissionsAlphaBackPerAct.removeAll()
+        gammaPerAct.removeAll()
+        tofGenerationsPerAct.removeAll()
+        fissionsAlphaWelPerAct.removeAll()
+        totalEventNumber = 0
         
         logger = Logger()
         logInput()
@@ -282,7 +282,7 @@ class Processor: NSObject {
         let progressForOneFile: Double = 100.0 / Double(files.count)
         
         for fp in files {
-            let path = fp as! NSString
+            let path = fp as NSString
             autoreleasepool {
                 file = fopen(path.utf8String, "rb")
                 let name = path.lastPathComponent
@@ -486,15 +486,15 @@ class Processor: NSObject {
         if fissionsAlphaBackPerAct.count > 1 {
             let dict = fissionsAlphaBackPerAct.sorted(by: { (obj1: Any, obj2: Any) -> Bool in
                 func energy(_ o: Any) -> Double {
-                    return (o as! NSDictionary)[kEnergy] as? Double ?? 0
+                    return (o as! [String: Any])[kEnergy] as? Double ?? 0
                 }
                 return energy(obj1) > energy(obj2)
-            }).first as? NSDictionary
+            }).first as? [String: Any]
             if let dict = dict, let encoder = dict[kEncoder] as? CUnsignedShort, let strip0_15 = dict[kStrip0_15] as? CUnsignedShort {
                 let strip1_48 = stripConvertToFormat_1_48(strip0_15, encoder: encoder)
-                let array = (fissionsAlphaBackPerAct as NSArray).filter( { (obj: Any) -> Bool in
-                    let item = obj as! NSDictionary
-                    if item == dict {
+                let array = (fissionsAlphaBackPerAct as [Any]).filter( { (obj: Any) -> Bool in
+                    let item = obj as! [String: Any]
+                    if NSDictionary(dictionary: item).isEqual(to: dict) {
                         return true
                     }
                     let e = item[kEncoder] as! CUnsignedShort
@@ -503,7 +503,7 @@ class Processor: NSObject {
                     // TODO: new input field for _fissionBackMaxDeltaStrips
                     return abs(Int32(strip1_48) - Int32(s1_48)) <= Int32(recoilBackMaxDeltaStrips)
                 })
-                fissionsAlphaBackPerAct = NSMutableArray(array: array)
+                fissionsAlphaBackPerAct = array
             }
         }
     }
@@ -629,12 +629,12 @@ class Processor: NSObject {
         let encoder = fissionAlphaRecoilEncoderForEventId(Int(event.eventId))
         let strip_0_15 = event.param2 >> 12  // value from 0 to 15
         let energy = getEnergy(event, type: startParticleType)
-        let info: NSDictionary = [kEncoder: encoder,
-                                  kStrip0_15: strip_0_15,
-                                  kEnergy: energy,
-                                  kEventNumber: eventNumber(),
-                                  kDeltaTime: deltaTime]
-        fissionsAlphaBackPerAct.add(info)
+        let info = [kEncoder: encoder,
+                    kStrip0_15: strip_0_15,
+                    kEnergy: energy,
+                    kEventNumber: eventNumber(),
+                    kDeltaTime: deltaTime] as [String : Any]
+        fissionsAlphaBackPerAct.append(info)
     }
     
     /**
@@ -652,19 +652,19 @@ class Processor: NSObject {
         let encoder = fissionAlphaRecoilEncoderForEventId(Int(event.eventId))
         let strip_0_15 = event.param2 >> 12 // value from 0 to 15
         let energy = getEnergy(event, type: startParticleType)
-        let info: NSDictionary = [kEncoder: encoder,
-                                  kStrip0_15: strip_0_15,
-                                  kChannel: channel,
-                                  kEnergy: energy,
-                                  kEventNumber: eventNumber(),
-                                  kDeltaTime: deltaTime]
-        fissionsAlphaFrontPerAct.add(info)
+        let info = [kEncoder: encoder,
+                    kStrip0_15: strip_0_15,
+                    kChannel: channel,
+                    kEnergy: energy,
+                    kEventNumber: eventNumber(),
+                    kDeltaTime: deltaTime] as [String : Any]
+        fissionsAlphaFrontPerAct.append(info)
         
         if isFirst {
             let strip_1_48 = focalStripConvertToFormat_1_48(strip_0_15, eventId: event.eventId)
-            let extraInfo = info.mutableCopy() as! NSMutableDictionary
+            var extraInfo = info
             extraInfo[kStrip1_48] = strip_1_48
-            firstFissionAlphaInfo = extraInfo as NSDictionary
+            firstFissionAlphaInfo = extraInfo
             firstFissionAlphaTime = UInt64(event.param1)
         }
     }
@@ -672,68 +672,68 @@ class Processor: NSObject {
     func storeGamma(_ event: ISAEvent, deltaTime: CLongLong) {
         let channel = event.param3 & Mask.gamma.rawValue
         let energy = calibration.calibratedValueForAmplitude(Double(channel), eventName: "Gam1") // TODO: Gam2, Gam
-        let info: NSDictionary = [kEnergy: energy,
-                                  kDeltaTime: deltaTime]
-        gammaPerAct.add(info)
+        let info = [kEnergy: energy,
+                    kDeltaTime: deltaTime] as [String : Any]
+        gammaPerAct.append(info)
     }
     
     func storeRecoil(_ event: ISAEvent, deltaTime: CLongLong) {
         let energy = getEnergy(event, type: .recoil)
-        let info: NSDictionary = [kEnergy: energy,
-                                  kDeltaTime: deltaTime,
-                                  kEventNumber: eventNumber()]
-        recoilsFrontPerAct.add(info)
+        let info = [kEnergy: energy,
+                    kDeltaTime: deltaTime,
+                    kEventNumber: eventNumber()] as [String : Any]
+        recoilsFrontPerAct.append(info)
     }
     
     func storeAlpha2(_ event: ISAEvent, deltaTime: CLongLong) {
         let energy = getEnergy(event, type: .alpha)
-        let info: NSDictionary = [kEnergy: energy,
-                                  kDeltaTime: deltaTime,
-                                  kEventNumber: eventNumber()]
-        alpha2FrontPerAct.add(info)
+        let info = [kEnergy: energy,
+                    kDeltaTime: deltaTime,
+                    kEventNumber: eventNumber()] as [String : Any]
+        alpha2FrontPerAct.append(info)
     }
     
     func storeRealTOFValue(_ value: Double, deltaTime: CLongLong) {
-        let info: NSDictionary = [kValue: value,
-                                  kDeltaTime: deltaTime]
-        tofRealPerAct.add(info)
+        let info = [kValue: value,
+                    kDeltaTime: deltaTime] as [String : Any]
+        tofRealPerAct.append(info)
     }
     
     func storeFissionAlphaWell(_ event: ISAEvent) {
         let energy = getEnergy(event, type: startParticleType)
         let encoder = fissionAlphaRecoilEncoderForEventId(Int(event.eventId))
         let strip_0_15 = event.param2 >> 12  // value from 0 to 15
-        let info: NSDictionary = [kEncoder: encoder,
-                                  kStrip0_15: strip_0_15,
-                                  kEnergy: energy]
-        fissionsAlphaWelPerAct.add(info)
+        let info = [kEncoder: encoder,
+                    kStrip0_15: strip_0_15,
+                    kEnergy: energy] as [String : Any]
+        fissionsAlphaWelPerAct.append(info)
     }
     
     func storeTOFGenerations(_ event: ISAEvent) {
         let channel = event.param3 & Mask.TOF.rawValue
-        tofGenerationsPerAct.add(channel)
+        tofGenerationsPerAct.append(channel)
     }
     
     func storeFON(_ event: ISAEvent) {
         let channel = event.param3 & Mask.FON.rawValue
-        fonPerAct = channel as NSNumber
+        fonPerAct = channel
     }
     
     func storeRecoilSpecial(_ event: ISAEvent) {
         let channel = event.param3 & Mask.recoilSpecial.rawValue
-        recoilSpecialPerAct = channel as NSNumber
+        recoilSpecialPerAct = channel
     }
     
     func clearActInfo() {
         neutronsSummPerAct = 0
-        fissionsAlphaFrontPerAct.removeAllObjects()
-        fissionsAlphaBackPerAct.removeAllObjects()
-        gammaPerAct.removeAllObjects()
-        tofGenerationsPerAct.removeAllObjects()
-        fissionsAlphaWelPerAct.removeAllObjects()
-        recoilsFrontPerAct.removeAllObjects()
-        alpha2FrontPerAct.removeAllObjects()
-        tofRealPerAct.removeAllObjects()
+        fissionsAlphaFrontPerAct.removeAll()
+        fissionsAlphaBackPerAct.removeAll()
+        gammaPerAct.removeAll()
+        tofGenerationsPerAct.removeAll()
+        fissionsAlphaWelPerAct.removeAll()
+        recoilsFrontPerAct.removeAll()
+        alpha2FrontPerAct.removeAll()
+        tofRealPerAct.removeAll()
         firstFissionAlphaInfo = nil
         fonPerAct = nil
         recoilSpecialPerAct = nil
@@ -745,11 +745,11 @@ class Processor: NSObject {
         return MemoryLayout<ISAEvent>.size
     }
     
-    func fissionAlphaBackWithMaxEnergyInAct() -> NSDictionary? {
-        var fission: NSDictionary?
+    func fissionAlphaBackWithMaxEnergyInAct() -> [String: Any]? {
+        var fission: [String: Any]?
         var maxE: Double = 0
         for info in fissionsAlphaBackPerAct {
-            if let dict = info as? NSDictionary, let e = dict[kEnergy] as? Double {
+            if let dict = info as? [String: Any], let e = dict[kEnergy] as? Double {
                 if (maxE < e) {
                     maxE = e
                     fission = dict
@@ -978,7 +978,7 @@ class Processor: NSObject {
     }
     
     func logActResults() {
-        func getValueFrom(array: NSArray, row: Int, key: String) -> Any? {
+        func getValueFrom(array: [Any], row: Int, key: String) -> Any? {
             return (array[row] as? [String: Any])?[key]
         }
         
@@ -1104,13 +1104,13 @@ class Processor: NSObject {
                     }
                 case 18:
                     if row == 0 {
-                        if let v = fonPerAct as? CUnsignedShort {
+                        if let v = fonPerAct {
                             field = String(format: "%hu", v)
                         }
                     }
                 case 19:
                     if row == 0 {
-                        if let v = recoilSpecialPerAct as? CUnsignedShort {
+                        if let v = recoilSpecialPerAct {
                             field = String(format: "%hu", v)
                         }
                     }
