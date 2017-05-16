@@ -886,7 +886,8 @@ class Processor: NSObject {
     func eventNumber() -> CUnsignedLongLong {
         var position = fpos_t()
         fgetpos(file, &position)
-        return CUnsignedLongLong(position/Int64(eventSize)) + totalEventNumber + 1
+        let value = CUnsignedLongLong(position/Int64(eventSize)) + totalEventNumber + 1
+        return value
     }
     
     func channelForTOF(_ event :ISAEvent) -> CUnsignedShort {
@@ -926,7 +927,7 @@ class Processor: NSObject {
         return calibration.calibratedValueForAmplitude(Double(channel), eventName: name)
     }
     
-    func currentFileEventNumber(_ number: CLongLong) -> String {
+    func currentFileEventNumber(_ number: CUnsignedLongLong) -> String {
         return String(format: "%@_%llu", currentFileName ?? "", number)
     }
     
@@ -993,7 +994,7 @@ class Processor: NSObject {
                 switch column {
                 case 0:
                     if row < recoilsFrontPerAct.count {
-                        if let eventNumberObject = getValueFrom(array: recoilsFrontPerAct, row: row, key: kEventNumber) as? CLongLong {
+                        if let eventNumberObject = getValueFrom(array: recoilsFrontPerAct, row: row, key: kEventNumber) as? CUnsignedLongLong {
                             field = currentFileEventNumber(eventNumberObject)
                         }
                     }
@@ -1023,7 +1024,7 @@ class Processor: NSObject {
                     }
                 case 5:
                     if row < fissionsAlphaFrontPerAct.count {
-                        if let eventNumber = getValueFrom(array: fissionsAlphaFrontPerAct, row: row, key: kDeltaTime) as? CLongLong {
+                        if let eventNumber = getValueFrom(array: fissionsAlphaFrontPerAct, row: row, key: kDeltaTime) as? CUnsignedLongLong {
                             field = currentFileEventNumber(eventNumber)
                         }
                     }
@@ -1116,7 +1117,7 @@ class Processor: NSObject {
                     }
                 case 20:
                     if row < alpha2FrontPerAct.count {
-                        if let eventNumber = getValueFrom(array: alpha2FrontPerAct, row: row, key: kEventNumber) as? CLongLong {
+                        if let eventNumber = getValueFrom(array: alpha2FrontPerAct, row: row, key: kEventNumber) as? CUnsignedLongLong {
                             field = currentFileEventNumber(eventNumber)
                         }
                     }
