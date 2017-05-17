@@ -789,9 +789,9 @@ class Processor: NSObject {
         if let fissionBackInfo = fissionAlphaBackWithMaxEnergyInAct() {
             let strip_0_15 = event.param2 >> 12
             let strip_1_48 = focalStripConvertToFormat_1_48(strip_0_15, eventId:event.eventId)
-            let strip_0_15_back_fission = fissionBackInfo[kStrip0_15] as! Int
-            let encoder_back_fission = fissionBackInfo[kEncoder] as! Int
-            let strip_1_48_back_fission = stripConvertToFormat_1_48(CUnsignedShort(strip_0_15_back_fission), encoder: CUnsignedShort(encoder_back_fission))
+            let strip_0_15_back_fission = fissionBackInfo[kStrip0_15] as! CUnsignedShort
+            let encoder_back_fission = fissionBackInfo[kEncoder] as! CUnsignedShort
+            let strip_1_48_back_fission = stripConvertToFormat_1_48(strip_0_15_back_fission, encoder: encoder_back_fission)
             return abs(Int32(strip_1_48) - Int32(strip_1_48_back_fission)) <= Int32(recoilBackMaxDeltaStrips)
         } else {
             return false
