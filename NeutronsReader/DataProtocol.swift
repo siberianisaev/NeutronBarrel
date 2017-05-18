@@ -55,7 +55,7 @@ class DataProtocol: NSObject {
      Не у всех событий в базе, вторые 16 бит слова отводятся под время.
      */
     func isValidEventIdForTimeCheck(_ eventId: Int) -> Bool {
-        return (eventId <= AWel(2) || eventId <= AWel(1) || eventId <= AWel || eventId == TOF  || eventId == Gam(1) || eventId == Gam(2) || eventId == Gam || eventId == Neutrons)
+        return (eventId <= AWel(4) || eventId <= AWel(3) || eventId <= AWel(2) || eventId <= AWel(1) || eventId <= AWel || eventId == TOF  || eventId == Gam(1) || eventId == Gam(2) || eventId == Gam || eventId == Neutrons)
     }
     
     fileprivate func value(_ key: String) -> Int {
