@@ -1287,7 +1287,7 @@ static int const kTOFGenerationsMaxTime = 2; // from t(FF) (случайные �
  */
 - (BOOL)isValidEventIdForTimeCheck:(unsigned short)eventId
 {
-    return (eventId <= [_dataProtocol AWel:2] || eventId <= [_dataProtocol AWel:1] || eventId <= [_dataProtocol AWel] || _dataProtocol.TOF == eventId || [_dataProtocol Gam:1] == eventId || [_dataProtocol Gam:2] == eventId || [_dataProtocol Gam] == eventId || _dataProtocol.Neutrons == eventId);
+    return (eventId <= [_dataProtocol AWel:4] || eventId <= [_dataProtocol AWel:3] || eventId <= [_dataProtocol AWel:2] || eventId <= [_dataProtocol AWel:1] || eventId <= [_dataProtocol AWel] || _dataProtocol.TOF == eventId || [_dataProtocol Gam:1] == eventId || [_dataProtocol Gam:2] == eventId || [_dataProtocol Gam] == eventId || _dataProtocol.Neutrons == eventId);
 }
 
 /**
