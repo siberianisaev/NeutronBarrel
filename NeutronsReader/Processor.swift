@@ -442,24 +442,13 @@ class Processor: NSObject {
     func findFissionsAlphaFront() {
         var initial = fpos_t()
         fgetpos(file, &initial)
-        
-        let directions: [SearchDirection] = [.backward, .forward] // order is important! Make sure that -search:... method always used it.
-        for direction in directions {
-            // Skip Fission/Alpha First event!
-            if direction == .backward {
-                var position = initial
-                if (position > -1) {
-                    position -= fpos_t(eventSize)
-                    fseek(file, Int(position), SEEK_SET)
-                }
-            } else {
-                fseek(file, Int(initial), SEEK_SET)
-            }
-            
-            search(directions: [direction], startTime: firstFissionAlphaTime, minDeltaTime: 0, maxDeltaTime: fissionAlphaMaxTime, useCycleTime: false, updateCycleEvent: true) { (event: ISAEvent, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
-                if self.isFront(event, type: self.startParticleType) && self.isFissionNearToFirstFissionFront(event) { // FFron/AFron пришедшие после первого
-                    self.storeFissionAlphaFront(event, isFirst: false, deltaTime: deltaTime)
-                }
+        var current = initial
+        let directions: Set<SearchDirection> = [.forward, .backward]
+        search(directions: directions, startTime: firstFissionAlphaTime, minDeltaTime: 0, maxDeltaTime: fissionAlphaMaxTime, useCycleTime: false, updateCycleEvent: true) { (event: ISAEvent, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
+            // File-position check is used for skip Fission/Alpha First event!
+            fgetpos(self.file, &current)
+            if current != initial && self.isFront(event, type: self.startParticleType) && self.isFissionNearToFirstFissionFront(event) { // FFron/AFron пришедшие после первого
+                self.storeFissionAlphaFront(event, isFirst: false, deltaTime: deltaTime)
             }
         }
     }
