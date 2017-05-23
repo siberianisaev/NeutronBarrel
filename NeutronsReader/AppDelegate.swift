@@ -80,50 +80,50 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     }
     
     @IBAction func start(_ sender: AnyObject?) {
-        let processor = ISAProcessor.shared()
+        let processor = Processor.singleton
         if run {
-            processor?.stop()
+            processor.stop()
             run = false
         } else {
             run = true
             
-            processor?.startParticleType = fissionAlphaControl.selectedSegment == 0 ? .fission : .alpha
-            processor?.fissionAlphaFrontMinEnergy = sMinFissionEnergy.doubleValue
-            processor?.fissionAlphaFrontMaxEnergy = sMaxFissionEnergy.doubleValue
-            processor?.fissionAlphaMaxTime = sMaxFissionTime.doubleValue
-            processor?.summarizeFissionsAlphaFront = summarizeFissionsFront
+            processor.startParticleType = fissionAlphaControl.selectedSegment == 0 ? .fission : .alpha
+            processor.fissionAlphaFrontMinEnergy = sMinFissionEnergy.doubleValue
+            processor.fissionAlphaFrontMaxEnergy = sMaxFissionEnergy.doubleValue
+            processor.fissionAlphaMaxTime = UInt64(sMaxFissionTime.longLongValue)
+            processor.summarizeFissionsAlphaFront = summarizeFissionsFront
             
-            processor?.searchAlpha2 = searchAlpha2
-            processor?.alpha2MinEnergy = sMinAlpha2Energy.doubleValue
-            processor?.alpha2MaxEnergy = sMaxAlpha2Energy.doubleValue
-            processor?.alpha2MinTime = sMinAlpha2Time.doubleValue
-            processor?.alpha2MaxTime = sMaxAlpha2Time.doubleValue
-            processor?.alpha2MaxDeltaStrips = sMaxAlpha2FrontDeltaStrips.intValue
+            processor.searchAlpha2 = searchAlpha2
+            processor.alpha2MinEnergy = sMinAlpha2Energy.doubleValue
+            processor.alpha2MaxEnergy = sMaxAlpha2Energy.doubleValue
+            processor.alpha2MinTime = UInt64(sMinAlpha2Time.doubleValue)
+            processor.alpha2MaxTime = UInt64(sMaxAlpha2Time.doubleValue)
+            processor.alpha2MaxDeltaStrips = sMaxAlpha2FrontDeltaStrips.integerValue
             
-            processor?.recoilFrontMaxDeltaStrips = sMaxRecoilFrontDeltaStrips.intValue
-            processor?.recoilBackMaxDeltaStrips = sMaxRecoilBackDeltaStrips.intValue
-            processor?.requiredFissionRecoilBack = requiredFissionRecoilBack
-            processor?.requiredRecoil = requiredRecoil
-            processor?.recoilFrontMinEnergy = sMinRecoilEnergy.doubleValue
-            processor?.recoilFrontMaxEnergy = sMaxRecoilEnergy.doubleValue
-            processor?.recoilMinTime = sMinRecoilTime.doubleValue
-            processor?.recoilMaxTime = sMaxRecoilTime.doubleValue
-            processor?.recoilBackMaxTime = sMaxRecoilBackTime.doubleValue
+            processor.recoilFrontMaxDeltaStrips = sMaxRecoilFrontDeltaStrips.integerValue
+            processor.recoilBackMaxDeltaStrips = sMaxRecoilBackDeltaStrips.integerValue
+            processor.requiredFissionRecoilBack = requiredFissionRecoilBack
+            processor.requiredRecoil = requiredRecoil
+            processor.recoilFrontMinEnergy = sMinRecoilEnergy.doubleValue
+            processor.recoilFrontMaxEnergy = sMaxRecoilEnergy.doubleValue
+            processor.recoilMinTime = UInt64(sMinRecoilTime.doubleValue)
+            processor.recoilMaxTime = UInt64(sMaxRecoilTime.doubleValue)
+            processor.recoilBackMaxTime = UInt64(sMaxRecoilBackTime.doubleValue)
             
-            processor?.minTOFValue = sMinTOFValue.doubleValue
-            processor?.maxTOFValue = sMaxTOFValue.doubleValue
-            processor?.unitsTOF = tofUnitsControl.selectedSegment == 0 ? .channels : .nanoseconds
-            processor?.maxTOFTime = sMaxTOFTime.doubleValue
-            processor?.requiredTOF = requiredTOF
+            processor.minTOFValue = sMinTOFValue.doubleValue
+            processor.maxTOFValue = sMaxTOFValue.doubleValue
+            processor.unitsTOF = tofUnitsControl.selectedSegment == 0 ? .channels : .nanoseconds
+            processor.maxTOFTime = UInt64(sMaxTOFTime.doubleValue)
+            processor.requiredTOF = requiredTOF
             
-            processor?.maxGammaTime = sMaxGammaTime.doubleValue
-            processor?.requiredGamma = requiredGamma
+            processor.maxGammaTime = UInt64(sMaxGammaTime.doubleValue)
+            processor.requiredGamma = requiredGamma
             
-            processor?.searchNeutrons = searchNeutrons
-            processor?.maxNeutronTime = sMaxNeutronTime.doubleValue
+            processor.searchNeutrons = searchNeutrons
+            processor.maxNeutronTime = UInt64(sMaxNeutronTime.doubleValue)
             
-            processor?.delegate = self
-            processor?.processData(completion: { [weak self] in
+            processor.delegate = self
+            processor.processDataWithCompletion({ [weak self] in
                 self?.run = false
             })
         }
@@ -149,13 +149,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     }
     
     @IBAction func selectData(_ sender: AnyObject?) {
-        ISAProcessor.shared().selectData { [weak self] (success: Bool) in
+        Processor.singleton.selectDataWithCompletion { [weak self] (success: Bool) in
             self?.setSelected(success, indicator: self?.indicatorData)
         }
     }
     
     @IBAction func selectCalibration(_ sender: AnyObject?) {
-        ISAProcessor.shared().selectCalibration { [weak self] (success: Bool) in
+        Processor.singleton.selectCalibrationWithCompletion { [weak self] (success: Bool) in
             self?.setSelected(success, indicator: self?.indicatorCalibration)
         }
     }
