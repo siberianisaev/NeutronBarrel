@@ -440,18 +440,26 @@ class Processor: NSObject {
      так как эта часть относится к основному циклу и после поиска не производится репозиционирование потока!
      */
     func findFissionsAlphaFront() {
-        // Skip Fission/Alpha First event!
-        var position = fpos_t()
-        fgetpos(file, &position)
-        if (position > -1) {
-            position -= fpos_t(eventSize)
-            fseek(file, Int(position), SEEK_SET)
-        }
+        var initial = fpos_t()
+        fgetpos(file, &initial)
         
-        let directions: Set<SearchDirection> = [.forward, .backward]
-        search(directions: directions, startTime: firstFissionAlphaTime, minDeltaTime: 0, maxDeltaTime: fissionAlphaMaxTime, useCycleTime: false, updateCycleEvent: true) { (event: ISAEvent, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
-            if self.isFront(event, type: self.startParticleType) && self.isFissionNearToFirstFissionFront(event) { // FFron/AFron пришедшие после первого
-                self.storeFissionAlphaFront(event, isFirst: false, deltaTime: deltaTime)
+        let directions: [SearchDirection] = [.backward, .forward] // order is important! Make sure that -search:... method always used it.
+        for direction in directions {
+            // Skip Fission/Alpha First event!
+            if direction == .backward {
+                var position = initial
+                if (position > -1) {
+                    position -= fpos_t(eventSize)
+                    fseek(file, Int(position), SEEK_SET)
+                }
+            } else {
+                fseek(file, Int(initial), SEEK_SET)
+            }
+            
+            search(directions: [direction], startTime: firstFissionAlphaTime, minDeltaTime: 0, maxDeltaTime: fissionAlphaMaxTime, useCycleTime: false, updateCycleEvent: true) { (event: ISAEvent, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
+                if self.isFront(event, type: self.startParticleType) && self.isFissionNearToFirstFissionFront(event) { // FFron/AFron пришедшие после первого
+                    self.storeFissionAlphaFront(event, isFirst: false, deltaTime: deltaTime)
+                }
             }
         }
     }
@@ -1115,7 +1123,7 @@ class Processor: NSObject {
                 case 17:
                     if row < gammaPerAct.count {
                         if let deltaTime = getValueFrom(array: gammaPerAct, row: row, key: kDeltaTime) {
-                            field = String(format: "%llu", deltaTime as! CLongLong)
+                            field = String(format: "%lld", deltaTime as! CLongLong)
                         }
                     }
                 case 18:
