@@ -37,6 +37,7 @@ class Processor: NSObject {
     fileprivate let kDeltaTime = "delta_time"
     fileprivate let kChannel = "channel"
     fileprivate let kEventNumber = "event_number"
+    fileprivate let kMarker = "marker"
     
     // public during migration to Swift phase
     fileprivate var file: UnsafeMutablePointer<FILE>!
@@ -639,7 +640,8 @@ class Processor: NSObject {
                     kStrip0_15: strip_0_15,
                     kEnergy: energy,
                     kEventNumber: eventNumber(),
-                    kDeltaTime: deltaTime] as [String : Any]
+                    kDeltaTime: deltaTime,
+                    kMarker: getMarker(event)] as [String : Any]
         fissionsAlphaBackPerAct.append(info)
     }
     
@@ -663,7 +665,8 @@ class Processor: NSObject {
                     kChannel: channel,
                     kEnergy: energy,
                     kEventNumber: eventNumber(),
-                    kDeltaTime: deltaTime] as [String : Any]
+                    kDeltaTime: deltaTime,
+                    kMarker: getMarker(event)] as [String : Any]
         fissionsAlphaFrontPerAct.append(info)
         
         if isFirst {
@@ -687,7 +690,8 @@ class Processor: NSObject {
         let energy = getEnergy(event, type: .recoil)
         let info = [kEnergy: energy,
                     kDeltaTime: deltaTime,
-                    kEventNumber: eventNumber()] as [String : Any]
+                    kEventNumber: eventNumber(),
+                    kMarker: getMarker(event)] as [String : Any]
         recoilsFrontPerAct.append(info)
     }
     
@@ -695,7 +699,8 @@ class Processor: NSObject {
         let energy = getEnergy(event, type: .alpha)
         let info = [kEnergy: energy,
                     kDeltaTime: deltaTime,
-                    kEventNumber: eventNumber()] as [String : Any]
+                    kEventNumber: eventNumber(),
+                    kMarker: getMarker(event)] as [String : Any]
         alpha2FrontPerAct.append(info)
     }
     
@@ -711,7 +716,8 @@ class Processor: NSObject {
         let strip_0_15 = event.param2 >> 12  // value from 0 to 15
         let info = [kEncoder: encoder,
                     kStrip0_15: strip_0_15,
-                    kEnergy: energy] as [String : Any]
+                    kEnergy: energy,
+                    kMarker: getMarker(event)] as [String : Any]
         fissionsAlphaWelPerAct.append(info)
     }
     
@@ -837,13 +843,17 @@ class Processor: NSObject {
         return (strip_0_15 * 3) + (encoder - 1) + 1
     }
     
+    func getMarker(_ event: ISAEvent) -> CUnsignedShort {
+        return event.param3 >> 13
+    }
+    
     /**
-     Чтобы различить рекоил и осколок/альфу используем первые 3 бита из param3:
-     000 - осколок,
-     100 - рекоил
+     Чтобы различить рекоил и осколок/альфу используем первый бит из param3:
+     0 - осколок,
+     1 - рекоил
      */
-    func getMarker(_ value_16_bits: CUnsignedShort) -> CUnsignedShort {
-        return value_16_bits >> 13
+    func isRecoil(_ event: ISAEvent) -> Bool {
+        return (event.param3 >> 15) == 1
     }
     
     func fissionAlphaRecoilEncoderForEventId(_ eventId: Int) -> CUnsignedShort {
@@ -862,12 +872,6 @@ class Processor: NSObject {
         return 0
     }
     
-    /**
-     Маркер отличающий осколок/альфу (0) от рекойла (4), записывается в первые 3 бита param3.
-     */
-    fileprivate let kFissionOrAlphaMarker: CUnsignedShort = 0b000
-    fileprivate let kRecoilMarker: CUnsignedShort = 0b100
-    
     func isGammaEvent(_ event: ISAEvent) -> Bool {
         let eventId = Int(event.eventId)
         return dataProtocol.Gam(1) == eventId || dataProtocol.Gam(2) == eventId || dataProtocol.Gam == eventId
@@ -875,22 +879,23 @@ class Processor: NSObject {
     
     func isFront(_ event: ISAEvent, type: SearchType) -> Bool {
         let eventId = Int(event.eventId)
-        let marker = getMarker(event.param3)
-        let typeMarker = type == .recoil ? kRecoilMarker : kFissionOrAlphaMarker
-        return (typeMarker == marker) && (dataProtocol.AFron(1) == eventId || dataProtocol.AFron(2) == eventId || dataProtocol.AFron(3) == eventId || dataProtocol.AdFr(1) == eventId || dataProtocol.AdFr(2) == eventId || dataProtocol.AdFr(3) == eventId)
+        let searchRecoil = type == .recoil
+        let currentRecoil = isRecoil(event)
+        let sameType = (searchRecoil && currentRecoil) || (!searchRecoil && !currentRecoil)
+        return sameType && (dataProtocol.AFron(1) == eventId || dataProtocol.AFron(2) == eventId || dataProtocol.AFron(3) == eventId || dataProtocol.AdFr(1) == eventId || dataProtocol.AdFr(2) == eventId || dataProtocol.AdFr(3) == eventId)
     }
     
     func isFissionOrAlphaWel(_ event: ISAEvent) -> Bool {
         let eventId = Int(event.eventId)
-        let marker = getMarker(event.param3)
-        return (kFissionOrAlphaMarker == marker) && (dataProtocol.AWel == eventId || dataProtocol.AWel(1) == eventId || dataProtocol.AWel(2) == eventId || dataProtocol.AWel(3) == eventId || dataProtocol.AWel(4) == eventId)
+        return !isRecoil(event) && (dataProtocol.AWel == eventId || dataProtocol.AWel(1) == eventId || dataProtocol.AWel(2) == eventId || dataProtocol.AWel(3) == eventId || dataProtocol.AWel(4) == eventId)
     }
     
     func isBack(_ event: ISAEvent, type: SearchType) -> Bool {
         let eventId = Int(event.eventId)
-        let marker = getMarker(event.param3)
-        let typeMarker = type == .recoil ? kRecoilMarker : kFissionOrAlphaMarker
-        return (typeMarker == marker) && (dataProtocol.ABack(1) == eventId || dataProtocol.ABack(2) == eventId || dataProtocol.ABack(3) == eventId || dataProtocol.AdBk(1) == eventId || dataProtocol.AdBk(2) == eventId || dataProtocol.AdBk(3) == eventId)
+        let searchRecoil = type == .recoil
+        let currentRecoil = isRecoil(event)
+        let sameType = (searchRecoil && currentRecoil) || (!searchRecoil && !currentRecoil)
+        return sameType && (dataProtocol.ABack(1) == eventId || dataProtocol.ABack(2) == eventId || dataProtocol.ABack(3) == eventId || dataProtocol.AdBk(1) == eventId || dataProtocol.AdBk(2) == eventId || dataProtocol.AdBk(3) == eventId)
     }
     
     func eventNumber() -> CUnsignedLongLong {
@@ -978,9 +983,9 @@ class Processor: NSObject {
     
     func logResultsHeader() {
         let startParticle = startParticleType == .fission ? "F" : "A"
-        var header = String(format: "Event(Recoil),E(RFron),dT(RFron-$Fron),TOF,dT(TOF-RFron),Event($),Summ($Fron),$Fron,dT($FronFirst-Next),Strip($Fron),$Back,dT($Fron-$Back),Strip($Back),$Wel,$WelPos,Neutrons,Gamma,dT($Fron-Gamma),FON,Recoil(Special)")
+        var header = String(format: "Event(Recoil),E(RFron),RFronMarker,dT(RFron-$Fron),TOF,dT(TOF-RFron),Event($),Summ($Fron),$Fron,$FronMarker,dT($FronFirst-Next),Strip($Fron),$Back,$BackMarker,dT($Fron-$Back),Strip($Back),$Wel,$WelMarker,$WelPos,Neutrons,Gamma,dT($Fron-Gamma),FON,Recoil(Special)")
         if searchAlpha2 {
-            header += ",Event(Alpha2),E(Alpha2),dT(Alpha1-Alpha2)"
+            header += ",Event(Alpha2),E(Alpha2),Alpha2Marker,dT(Alpha1-Alpha2)"
         }
         header = header.replacingOccurrences(of: "$", with: startParticle)
         let components = header.components(separatedBy: ",")
@@ -993,9 +998,9 @@ class Processor: NSObject {
             return (array[row] as? [String: Any])?[key]
         }
         
-        var columnsCount = 19
+        var columnsCount = 23
         if searchAlpha2 {
-            columnsCount += 3
+            columnsCount += 4
         }
         let rowsMax = max(max(max(max(max(1, gammaPerAct.count), fissionsAlphaWelPerAct.count), recoilsFrontPerAct.count), fissionsAlphaBackPerAct.count), fissionsAlphaFrontPerAct.count)
         for row in 0 ..< rowsMax {
@@ -1016,30 +1021,36 @@ class Processor: NSObject {
                     }
                 case 2:
                     if row < recoilsFrontPerAct.count {
+                        if let marker = getValueFrom(array: recoilsFrontPerAct, row: row, key: kMarker) {
+                            field = String(format: "%hu", marker as! CUnsignedShort)
+                        }
+                    }
+                case 3:
+                    if row < recoilsFrontPerAct.count {
                         if let deltaTimeRecoilFission = getValueFrom(array: recoilsFrontPerAct, row: row, key: kDeltaTime) {
                             field = String(format: "%lld", deltaTimeRecoilFission as! CLongLong)
                         }
                     }
-                case 3:
+                case 4:
                     if row < tofRealPerAct.count {
                         if let tof = getValueFrom(array: tofRealPerAct, row: row, key: kValue) {
                             let format = "%." + (unitsTOF == .channels ? "0" : "7") + "f"
                             field = String(format: format, tof as! Double)
                         }
                     }
-                case 4:
+                case 5:
                     if row < tofRealPerAct.count {
                         if let deltaTimeTOFRecoil = getValueFrom(array: tofRealPerAct, row: row, key: kDeltaTime) {
                             field = String(format: "%lld", deltaTimeTOFRecoil as! CLongLong)
                         }
                     }
-                case 5:
+                case 6:
                     if row < fissionsAlphaFrontPerAct.count {
                         if let eventNumber = getValueFrom(array: fissionsAlphaFrontPerAct, row: row, key: kEventNumber) {
                             field = currentFileEventNumber(eventNumber as! CUnsignedLongLong)
                         }
                     }
-                case 6:
+                case 7:
                     if row == 0 {
                         var summ: Double = 0
                         for info in fissionsAlphaFrontPerAct {
@@ -1049,97 +1060,121 @@ class Processor: NSObject {
                         }
                         field = String(format: "%.7f", summ)
                     }
-                case 7:
+                case 8:
                     if row < fissionsAlphaFrontPerAct.count {
                         if let energy = getValueFrom(array: fissionsAlphaFrontPerAct, row: row, key: kEnergy) {
                             field = String(format: "%.7f", energy as! Double)
                         }
                     }
-                case 8:
+                case 9:
+                    if row < fissionsAlphaFrontPerAct.count {
+                        if let marker = getValueFrom(array: fissionsAlphaFrontPerAct, row: row, key: kMarker) {
+                            field = String(format: "%hu", marker as! CUnsignedShort)
+                        }
+                    }
+                case 10:
                     if row < fissionsAlphaFrontPerAct.count {
                         if let deltaTime = getValueFrom(array: fissionsAlphaFrontPerAct, row: row, key: kDeltaTime) {
                             field = String(format: "%lld", deltaTime as! CLongLong)
                         }
                     }
-                case 9:
+                case 11:
                     if row < fissionsAlphaFrontPerAct.count {
                         if let info = fissionsAlphaFrontPerAct[row] as? [String: Any], let strip_0_15 = info[kStrip0_15], let encoder = info[kEncoder] {
                             let strip = stripConvertToFormat_1_48(strip_0_15 as! CUnsignedShort, encoder: encoder as! CUnsignedShort)
                             field = String(format: "%d", strip)
                         }
                     }
-                case 10:
+                case 12:
                     if row < fissionsAlphaBackPerAct.count {
                         if let energy = getValueFrom(array: fissionsAlphaBackPerAct, row: row, key: kEnergy) {
                             field = String(format: "%.7f", energy as! Double)
                         }
                     }
-                case 11:
+                case 13:
+                    if row < fissionsAlphaBackPerAct.count {
+                        if let marker = getValueFrom(array: fissionsAlphaBackPerAct, row: row, key: kMarker) {
+                            field = String(format: "%hu", marker as! CUnsignedShort)
+                        }
+                    }
+                case 14:
                     if row < fissionsAlphaBackPerAct.count {
                         if let deltaTime = getValueFrom(array: fissionsAlphaBackPerAct, row: row, key: kDeltaTime) {
                             field = String(format: "%lld", deltaTime as! CLongLong)
                         }
                     }
-                case 12:
+                case 15:
                     if row < fissionsAlphaBackPerAct.count {
                         if let info = fissionsAlphaBackPerAct[row] as? [String: Any], let strip_0_15 = info[kStrip0_15], let encoder = info[kEncoder] {
                             let strip = stripConvertToFormat_1_48(strip_0_15 as! CUnsignedShort, encoder: encoder as! CUnsignedShort)
                             field = String(format: "%d", strip)
                         }
                     }
-                case 13:
+                case 16:
                     if row < fissionsAlphaWelPerAct.count {
                         if let energy = getValueFrom(array: fissionsAlphaWelPerAct, row: row, key: kEnergy) {
                             field = String(format: "%.7f", energy as! Double)
                         }
                     }
-                case 14:
+                case 17:
+                    if row < fissionsAlphaWelPerAct.count {
+                        if let marker = getValueFrom(array: fissionsAlphaWelPerAct, row: row, key: kMarker) {
+                            field = String(format: "%hu", marker as! CUnsignedShort)
+                        }
+                    }
+                case 18:
                     if row < fissionsAlphaWelPerAct.count {
                         if let info = fissionsAlphaWelPerAct[row] as? [String: Any], let strip_0_15 = info[kStrip0_15], let encoder = info[kEncoder] {
                             field = String(format: "FWel%d.%d", encoder as! CUnsignedShort, (strip_0_15  as! CUnsignedShort) + 1)
                         }
                     }
-                case 15:
+                case 19:
                     if row == 0 && searchNeutrons {
                         field = String(format: "%llu", neutronsSummPerAct)
                     }
-                case 16:
+                case 20:
                     if row < gammaPerAct.count {
                         if let energy = getValueFrom(array: gammaPerAct, row: row, key: kEnergy) {
                             field = String(format: "%.7f", energy as! Double)
                         }
                     }
-                case 17:
+                case 21:
                     if row < gammaPerAct.count {
                         if let deltaTime = getValueFrom(array: gammaPerAct, row: row, key: kDeltaTime) {
                             field = String(format: "%lld", deltaTime as! CLongLong)
                         }
                     }
-                case 18:
+                case 22:
                     if row == 0 {
                         if let v = fonPerAct {
                             field = String(format: "%hu", v)
                         }
                     }
-                case 19:
+                case 23:
                     if row == 0 {
                         if let v = recoilSpecialPerAct {
                             field = String(format: "%hu", v)
                         }
                     }
-                case 20:
+                case 24:
                     if row < alpha2FrontPerAct.count {
                         if let eventNumber = getValueFrom(array: alpha2FrontPerAct, row: row, key: kEventNumber) {
                             field = currentFileEventNumber(eventNumber as! CUnsignedLongLong)
                         }
                     }
-                case 21:
+                case 25:
                     if row < alpha2FrontPerAct.count {
                         if let energy = getValueFrom(array: alpha2FrontPerAct, row: row, key: kEnergy) {
                             field = String(format: "%.7f", energy as! Double)
                         }
                     }
-                case 22:
+                case 26:
+                    if row < alpha2FrontPerAct.count {
+                        if let marker = getValueFrom(array: alpha2FrontPerAct, row: row, key: kMarker) {
+                            field = String(format: "%hu", marker as! CUnsignedShort)
+                        }
+                    }
+                case 27:
                     if row < alpha2FrontPerAct.count {
                         if let deltaTime = getValueFrom(array: alpha2FrontPerAct, row: row, key: kDeltaTime) {
                             field = String(format: "%lld", deltaTime as! CLongLong)
