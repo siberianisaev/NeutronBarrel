@@ -200,9 +200,9 @@ class Processor: NSObject {
                         break
                     }
                 }
-                
-                fseek(file, Int(initial), SEEK_SET)
             }
+            
+            fseek(file, Int(initial), SEEK_SET)
         }
         
         if directions.contains(.forward) {
