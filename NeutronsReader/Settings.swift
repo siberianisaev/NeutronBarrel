@@ -40,7 +40,9 @@ class Settings {
         MaxAlpha2Energy = "MaxAlpha2Energy",
         MinAlpha2Time = "MinAlpha2Time",
         MaxAlpha2Time = "MaxAlpha2Time",
-        MaxAlpha2FrontDeltaStrips = "MaxAlpha2FrontDeltaStrips"
+        MaxAlpha2FrontDeltaStrips = "MaxAlpha2FrontDeltaStrips",
+        SearchSpecialEvents = "SearchSpecialEvents",
+        SpecialEventIds = "SpecialEventIds"
         
         func key() -> String {
             return "Setting.\(self.rawValue)"
@@ -52,6 +54,13 @@ class Settings {
             let key = setting.key()
             UserDefaults.standard.set(object, forKey: key)
         }
+    }
+    
+    class func getStringSetting(_ setting: Setting) -> NSString? {
+        if let object = (getSetting(setting) as? NSString) {
+            return object
+        }
+        return nil
     }
     
     class func getDoubleSetting(_ setting: Setting) -> Double {
@@ -138,6 +147,10 @@ class Settings {
             return 1000
         case .MaxAlpha2FrontDeltaStrips:
             return 0
+        case .SearchSpecialEvents:
+            return false
+        case .SpecialEventIds:
+            return nil
         }
     }
     

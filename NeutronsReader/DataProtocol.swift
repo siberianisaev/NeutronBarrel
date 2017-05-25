@@ -58,7 +58,16 @@ class DataProtocol: NSObject {
         return (eventId <= AWel(4) || eventId <= AWel(3) || eventId <= AWel(2) || eventId <= AWel(1) || eventId <= AWel || eventId == TOF  || eventId == Gam(1) || eventId == Gam(2) || eventId == Gam || eventId == Neutrons)
     }
     
-    fileprivate func value(_ key: String) -> Int {
+    func keyFor(value: Int) -> String? {
+        for (k, v) in dict {
+            if v == value {
+                return k
+            }
+        }
+        return nil
+    }
+    
+    func value(_ key: String) -> Int {
         return dict[key] ?? -1
     }
     
@@ -106,14 +115,6 @@ class DataProtocol: NSObject {
     
     var CycleTime: Int {
         return value("THi")
-    }
-    
-    var FON: Int {
-        return value("Fon")
-    }
-    
-    var RecoilSpecial: Int {
-        return value("Recoil")
     }
     
 }

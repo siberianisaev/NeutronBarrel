@@ -56,9 +56,7 @@ class Processor: NSObject {
     fileprivate var fissionsAlphaBackPerAct = [Any]()
     fileprivate var fissionsAlphaWelPerAct = [Any]()
     fileprivate var gammaPerAct = [Any]()
-    fileprivate var tofGenerationsPerAct = [Any]()
-    fileprivate var fonPerAct: CUnsignedShort?
-    fileprivate var recoilSpecialPerAct: CUnsignedShort?
+    fileprivate var specialPerAct = [Int: CUnsignedShort]()
     fileprivate var firstFissionAlphaInfo: [String: Any]? // информация о главном осколке/альфе в цикле
     fileprivate var stoped: Bool = false
     fileprivate var logger: Logger!
@@ -92,6 +90,9 @@ class Processor: NSObject {
     var alpha2MinTime: CUnsignedLongLong = 0
     var alpha2MaxTime: CUnsignedLongLong = 0
     var alpha2MaxDeltaStrips: Int = 0
+    
+    var searchSpecialEvents: Bool = false
+    var specialEventIds = [Int]()
     
     var startParticleType: SearchType = .fission
     var unitsTOF: TOFUnits = .channels
@@ -268,7 +269,7 @@ class Processor: NSObject {
         fissionsAlphaFrontPerAct.removeAll()
         fissionsAlphaBackPerAct.removeAll()
         gammaPerAct.removeAll()
-        tofGenerationsPerAct.removeAll()
+        specialPerAct.removeAll()
         fissionsAlphaWelPerAct.removeAll()
         totalEventNumber = 0
         
@@ -385,9 +386,13 @@ class Processor: NSObject {
                 fseek(file, Int(position), SEEK_SET)
             }
             
-            // FON & Recoil Special && TOF Generations
-            findFONEvents()
+            findSpecialEvents()
             fseek(file, Int(position), SEEK_SET)
+            
+            if searchSpecialEvents {
+                findSpecialEvents()
+                fseek(file, Int(position), SEEK_SET)
+            }
             
             // FWel or AWel
             findFissionsAlphaWel()
@@ -580,35 +585,20 @@ class Processor: NSObject {
         return found
     }
     
-    fileprivate let kTOFGenerationsMaxTime: Double = 2 // from t(FF) (случайные генерации, а не отмеки рекойлов)
-    /**
-     Поиск первых событий FON, Recoil Special, TOF (случайные генерации) осуществляется с позиции файла где найден главный осколок.
-     */
-    func findFONEvents() {
-        var fonFound: Bool = false
-        var recoilFound: Bool = false
-        var tofFound: Bool = false
+    func findSpecialEvents() {
+        let setIds = Set<Int>(specialEventIds)
+        if setIds.count == 0 {
+            return
+        }
+        
+        var found = Set<Int>()
         forwardSearch { (event: Event, stop: UnsafeMutablePointer<Bool>) in
-            if self.dataProtocol.FON == Int(event.eventId) {
-                if !fonFound {
-                    self.storeFON(event)
-                    fonFound = true
-                }
-            } else if self.dataProtocol.RecoilSpecial == Int(event.eventId) {
-                if !recoilFound {
-                    self.storeRecoilSpecial(event)
-                    recoilFound = true
-                }
-            } else if self.dataProtocol.TOF == Int(event.eventId) {
-                if !tofFound {
-                    let deltaTime = fabs(Double(event.param1) - Double(self.firstFissionAlphaTime))
-                    if deltaTime <= self.kTOFGenerationsMaxTime {
-                        self.storeTOFGenerations(event)
-                    }
-                    tofFound = true
-                }
+            let id = Int(event.eventId)
+            if setIds.contains(id) && !found.contains(id) {
+                self.storeSpecial(event, id: id)
+                found.insert(id)
             }
-            if fonFound && recoilFound && tofFound {
+            if found.count == setIds.count {
                 stop.initialize(to: true)
             }
         }
@@ -721,19 +711,9 @@ class Processor: NSObject {
         fissionsAlphaWelPerAct.append(info)
     }
     
-    func storeTOFGenerations(_ event: Event) {
-        let channel = event.param3 & Mask.TOF.rawValue
-        tofGenerationsPerAct.append(channel)
-    }
-    
-    func storeFON(_ event: Event) {
-        let channel = event.param3 & Mask.FON.rawValue
-        fonPerAct = channel
-    }
-    
-    func storeRecoilSpecial(_ event: Event) {
-        let channel = event.param3 & Mask.recoilSpecial.rawValue
-        recoilSpecialPerAct = channel
+    func storeSpecial(_ event: Event, id: Int) {
+        let channel = event.param3 & Mask.special.rawValue
+        specialPerAct[id] = channel
     }
     
     func clearActInfo() {
@@ -741,14 +721,12 @@ class Processor: NSObject {
         fissionsAlphaFrontPerAct.removeAll()
         fissionsAlphaBackPerAct.removeAll()
         gammaPerAct.removeAll()
-        tofGenerationsPerAct.removeAll()
+        specialPerAct.removeAll()
         fissionsAlphaWelPerAct.removeAll()
         recoilsFrontPerAct.removeAll()
         alpha2FrontPerAct.removeAll()
         tofRealPerAct.removeAll()
         firstFissionAlphaInfo = nil
-        fonPerAct = nil
-        recoilSpecialPerAct = nil
     }
     
     // MARK: - Helpers
@@ -982,8 +960,20 @@ class Processor: NSObject {
     }
     
     func logResultsHeader() {
+        var special1: Int = 0
+        var special2: Int = 0
+        var special3: Int = 0
+        if specialEventIds.count >= 1 {
+            special1 = specialEventIds[0]
+        }
+        if specialEventIds.count >= 2 {
+            special2 = specialEventIds[1]
+        }
+        if specialEventIds.count >= 3 {
+            special3 = specialEventIds[2]
+        }
         let startParticle = startParticleType == .fission ? "F" : "A"
-        var header = String(format: "Event(Recoil),E(RFron),RFronMarker,dT(RFron-$Fron),TOF,dT(TOF-RFron),Event($),Summ($Fron),$Fron,$FronMarker,dT($FronFirst-Next),Strip($Fron),$Back,$BackMarker,dT($Fron-$Back),Strip($Back),$Wel,$WelMarker,$WelPos,Neutrons,Gamma,dT($Fron-Gamma),FON,Recoil(Special)")
+        var header = String(format: "Event(Recoil),E(RFron),RFronMarker,dT(RFron-$Fron),TOF,dT(TOF-RFron),Event($),Summ($Fron),$Fron,$FronMarker,dT($FronFirst-Next),Strip($Fron),$Back,$BackMarker,dT($Fron-$Back),Strip($Back),$Wel,$WelMarker,$WelPos,Neutrons,Gamma,dT($Fron-Gamma),Special\(special1),Special\(special2),Special\(special3)")
         if searchAlpha2 {
             header += ",Event(Alpha2),E(Alpha2),Alpha2Marker,dT(Alpha1-Alpha2)"
         }
@@ -994,11 +984,19 @@ class Processor: NSObject {
     }
     
     func logActResults() {
+        func specialValue(_ index: Int) -> CUnsignedShort? {
+            if specialEventIds.count >= index+1 {
+                if let v = specialPerAct[specialEventIds[index]] {
+                    return v
+                }
+            }
+            return nil
+        }
         func getValueFrom(array: [Any], row: Int, key: String) -> Any? {
             return (array[row] as? [String: Any])?[key]
         }
         
-        var columnsCount = 23
+        var columnsCount = 24
         if searchAlpha2 {
             columnsCount += 4
         }
@@ -1146,35 +1144,41 @@ class Processor: NSObject {
                     }
                 case 22:
                     if row == 0 {
-                        if let v = fonPerAct {
+                        if let v = specialValue(0) {
                             field = String(format: "%hu", v)
                         }
                     }
                 case 23:
                     if row == 0 {
-                        if let v = recoilSpecialPerAct {
+                        if let v = specialValue(1) {
                             field = String(format: "%hu", v)
                         }
                     }
                 case 24:
+                    if row == 0 {
+                        if let v = specialValue(2) {
+                            field = String(format: "%hu", v)
+                        }
+                    }
+                case 25:
                     if row < alpha2FrontPerAct.count {
                         if let eventNumber = getValueFrom(array: alpha2FrontPerAct, row: row, key: kEventNumber) {
                             field = currentFileEventNumber(eventNumber as! CUnsignedLongLong)
                         }
                     }
-                case 25:
+                case 26:
                     if row < alpha2FrontPerAct.count {
                         if let energy = getValueFrom(array: alpha2FrontPerAct, row: row, key: kEnergy) {
                             field = String(format: "%.7f", energy as! Double)
                         }
                     }
-                case 26:
+                case 27:
                     if row < alpha2FrontPerAct.count {
                         if let marker = getValueFrom(array: alpha2FrontPerAct, row: row, key: kMarker) {
                             field = String(format: "%hu", marker as! CUnsignedShort)
                         }
                     }
-                case 27:
+                case 28:
                     if row < alpha2FrontPerAct.count {
                         if let deltaTime = getValueFrom(array: alpha2FrontPerAct, row: row, key: kDeltaTime) {
                             field = String(format: "%lld", deltaTime as! CLongLong)

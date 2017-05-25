@@ -55,6 +55,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     var sMinAlpha2Time: NSString = NSString(format: "%d", Settings.getIntSetting(.MinAlpha2Time)) // mks
     var sMaxAlpha2Time: NSString = NSString(format: "%d", Settings.getIntSetting(.MaxAlpha2Time)) // mks
     var sMaxAlpha2FrontDeltaStrips: NSString = NSString(format: "%d", Settings.getIntSetting(.MaxAlpha2FrontDeltaStrips))
+    var searchSpecialEvents: Bool = Settings.getBoolSetting(.SearchSpecialEvents)
+    var specialEventIds: NSString = Settings.getStringSetting(.SpecialEventIds) ?? ""
     
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         fissionAlphaControl.selectedSegment = Settings.getIntSetting(.SearchType)
@@ -121,6 +123,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             
             processor.searchNeutrons = searchNeutrons
             processor.maxNeutronTime = UInt64(sMaxNeutronTime.doubleValue)
+            
+            processor.searchSpecialEvents = searchSpecialEvents
+            let ids = specialEventIds.components(separatedBy: ",").map({ (s: String) -> Int in
+                return Int(s) ?? 0
+            }).filter({ (i: Int) -> Bool in
+                return i > 0
+            })
+            processor.specialEventIds = ids
             
             processor.delegate = self
             processor.processDataWithCompletion({ [weak self] in
