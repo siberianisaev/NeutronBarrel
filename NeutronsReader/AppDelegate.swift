@@ -242,6 +242,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         Settings.setObject(sMinAlpha2Time.integerValue, forSetting: .MinAlpha2Time)
         Settings.setObject(sMaxAlpha2Time.integerValue, forSetting: .MaxAlpha2Time)
         Settings.setObject(sMaxAlpha2FrontDeltaStrips.integerValue, forSetting: .MaxAlpha2FrontDeltaStrips)
+        Settings.setObject(searchSpecialEvents, forSetting: .SearchSpecialEvents)
+        Settings.setObject(specialEventIds, forSetting: .SpecialEventIds)
     }
     
     // MARK: - App Version
