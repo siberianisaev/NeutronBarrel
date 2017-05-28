@@ -19,6 +19,6 @@ typedef NS_ENUM(unsigned short, Mask) {
     MaskHeavyOrFission = 0x0FFF,
     MaskGamma = 0x1FFF,
     MaskTOF = 0x1FFF,
-    MaskRecoilOrAlpha = 0x1FFF, // Alpha or Recoil
+    MaskRecoilOrAlpha = 0x1FFF,
     MaskSpecial = 0xFFFF
 };
