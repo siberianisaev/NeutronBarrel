@@ -16,9 +16,9 @@ typedef struct {
 } Event;
 
 typedef NS_ENUM(unsigned short, Mask) {
-    MaskFission = 0x0FFF,
+    MaskHeavyOrFission = 0x0FFF,
     MaskGamma = 0x1FFF,
     MaskTOF = 0x1FFF,
-    MaskRecoilAlpha = 0x1FFF, // Alpha or Recoil
+    MaskRecoilOrAlpha = 0x1FFF, // Alpha or Recoil
     MaskSpecial = 0xFFFF
 };
