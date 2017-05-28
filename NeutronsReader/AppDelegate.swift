@@ -24,6 +24,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBOutlet weak var indicatorCalibration: NSTextField!
     @IBOutlet weak var buttonRun: NSButton!
     
+    fileprivate var viewerController: ViewerController?
     fileprivate var totalTime: TimeInterval = 0
     fileprivate var timer: Timer?
     
@@ -66,6 +67,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         }
         showAppVersion()
         run = false
+    }
+    
+    @IBAction func viewer(_ sender: Any) {
+        if nil == viewerController {
+            viewerController = ViewerController(windowNibName: "ViewerController")
+        }
+        viewerController?.showWindow(nil)
     }
     
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
@@ -161,6 +169,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBAction func selectData(_ sender: AnyObject?) {
         Processor.singleton.selectDataWithCompletion { [weak self] (success: Bool) in
             self?.setSelected(success, indicator: self?.indicatorData)
+            self?.viewerController?.loadFile()
         }
     }
     

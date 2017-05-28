@@ -76,6 +76,19 @@
                         </items>
                     </menu>
                 </menuItem>
+                <menuItem title="Viewer" id="YXV-1M-GmV">
+                    <modifierMask key="keyEquivalentModifierMask"/>
+                    <menu key="submenu" title="Viewer" id="PK9-PR-mCn">
+                        <items>
+                            <menuItem title="Show" id="tV6-wS-lmP">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="viewer:" target="Voe-Tx-rLC" id="y0T-we-B8q"/>
+                                </connections>
+                            </menuItem>
+                        </items>
+                    </menu>
+                </menuItem>
                 <menuItem title="File" id="dMs-cI-mzQ">
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <menu key="submenu" title="File" id="bib-Uj-vzu">
@@ -678,7 +691,7 @@
                     </menu>
                 </menuItem>
             </items>
-            <point key="canvasLocation" x="45" y="76"/>
+            <point key="canvasLocation" x="56" y="75"/>
         </menu>
         <window title="NeutronsReader" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" animationBehavior="default" id="QvC-M9-y7g">
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
@@ -1161,6 +1174,17 @@
                             <binding destination="Voe-Tx-rLC" name="value" keyPath="self.searchNeutrons" id="MsH-mc-8Oi"/>
                         </connections>
                     </button>
+                    <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="0iN-ES-PsF">
+                        <rect key="frame" x="866" y="198" width="178" height="17"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="check" title="Gamma required" bezelStyle="regularSquare" imagePosition="left" inset="2" id="qqL-ji-47x">
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                            <font key="font" size="15" name="HelveticaNeue-Bold"/>
+                        </buttonCell>
+                        <connections>
+                            <binding destination="Voe-Tx-rLC" name="value" keyPath="self.requiredGamma" id="b7b-Fl-bme"/>
+                        </connections>
+                    </button>
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" allowsCharacterPickerTouchBarItem="NO" translatesAutoresizingMaskIntoConstraints="NO" id="jfl-jg-Ks4">
                         <rect key="frame" x="284" y="391" width="250" height="17"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
@@ -1361,17 +1385,6 @@
                             <binding destination="Voe-Tx-rLC" name="value" keyPath="self.specialEventIds" id="cT2-J6-nrt"/>
                         </connections>
                     </textField>
-                    <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="0iN-ES-PsF">
-                        <rect key="frame" x="866" y="198" width="178" height="17"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                        <buttonCell key="cell" type="check" title="Gamma required" bezelStyle="regularSquare" imagePosition="left" inset="2" id="qqL-ji-47x">
-                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                            <font key="font" size="15" name="HelveticaNeue-Bold"/>
-                        </buttonCell>
-                        <connections>
-                            <binding destination="Voe-Tx-rLC" name="value" keyPath="self.requiredGamma" id="b7b-Fl-bme"/>
-                        </connections>
-                    </button>
                 </subviews>
             </view>
             <point key="canvasLocation" x="488.5" y="444.5"/>

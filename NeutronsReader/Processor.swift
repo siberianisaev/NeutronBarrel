@@ -48,7 +48,7 @@ class Processor: NSObject {
     fileprivate var totalEventNumber: CUnsignedLongLong = 0
     fileprivate var firstFissionAlphaTime: CUnsignedLongLong = 0 // время главного осколка/альфы в цикле
     fileprivate var neutronsSummPerAct: CUnsignedLongLong = 0
-    fileprivate var files = [String]()
+    var files = [String]()
     fileprivate var currentFileName: String?
     fileprivate var neutronsMultiplicityTotal = [Int : Int]()
     fileprivate var recoilsFrontPerAct = [Any]()
@@ -303,11 +303,7 @@ class Processor: NSObject {
                     exit(-1)
                 }
                 
-                fseek(file, 0, SEEK_END)
-                var lastNumber = fpos_t()
-                fgetpos(file, &lastNumber)
-                totalEventNumber += CUnsignedLongLong(lastNumber)/CUnsignedLongLong(eventSize)
-                
+                totalEventNumber += calculateTotalEventNumberForFile(file)
                 fclose(file)
                 
                 DispatchQueue.main.async { [weak self] in
@@ -319,6 +315,13 @@ class Processor: NSObject {
         if searchNeutrons {
             logger.logMultiplicity(neutronsMultiplicityTotal)
         }
+    }
+    
+    func calculateTotalEventNumberForFile(_ file: UnsafeMutablePointer<FILE>!) -> CUnsignedLongLong {
+        fseek(file, 0, SEEK_END)
+        var lastNumber = fpos_t()
+        fgetpos(file, &lastNumber)
+        return CUnsignedLongLong(lastNumber)/CUnsignedLongLong(eventSize)
     }
     
     func mainCycleEventCheck(_ event: Event) {
@@ -723,9 +726,7 @@ class Processor: NSObject {
     
     // MARK: - Helpers
     
-    fileprivate var eventSize: Int {
-        return MemoryLayout<Event>.size
-    }
+    let eventSize: Int = MemoryLayout<Event>.size
     
     func fissionAlphaBackWithMaxEnergyInAct() -> [String: Any]? {
         var fission: [String: Any]?
