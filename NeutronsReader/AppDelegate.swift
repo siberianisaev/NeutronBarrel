@@ -23,6 +23,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBOutlet weak var indicatorData: NSTextField!
     @IBOutlet weak var indicatorCalibration: NSTextField!
     @IBOutlet weak var buttonRun: NSButton!
+    @IBOutlet weak var alpha2View: NSView!
     
     fileprivate var viewerController: ViewerController?
     fileprivate var totalTime: TimeInterval = 0
@@ -61,12 +62,21 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         fissionAlphaControl.selectedSegment = Settings.getIntSetting(.SearchType)
+        setupAlpha2View()
         tofUnitsControl.selectedSegment = Settings.getIntSetting(.TOFUnits)
         for i in [indicatorData, indicatorCalibration] {
             setSelected(false, indicator: i)
         }
         showAppVersion()
         run = false
+    }
+    
+    @IBAction func fissionAlphaControlValueChanged(_ sender: Any) {
+        setupAlpha2View()
+    }
+    
+    fileprivate func setupAlpha2View() {
+        alpha2View.isHidden = fissionAlphaControl.selectedSegment == 0
     }
     
     @IBAction func viewer(_ sender: Any) {

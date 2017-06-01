@@ -520,8 +520,7 @@ class Processor: NSObject {
             if isRecoil {
                 let isNear = self.isEventFrontNearToFirstFissionAlphaFront(event, maxDelta: Int(self.recoilFrontMaxDeltaStrips))
                 if isNear {
-                    let type: SearchType = self.getChannel(event, type: .recoil) == Mask.recoilOrAlpha.rawValue ? .heavy : .recoil
-                    let energy = self.getEnergy(event, type: type)
+                    let energy = self.getEnergy(event, type: .recoil)
                     if energy >= self.recoilFrontMinEnergy && energy <= self.recoilFrontMaxEnergy {
                         // Сохраняем рекойл только если к нему найден Recoil Back и TOF (если required)
                         var position = fpos_t()
@@ -533,7 +532,8 @@ class Processor: NSObject {
                             let isTOFFounded = self.findTOFForRecoil(event, timeRecoil: t)
                             fseek(self.file, Int(position), SEEK_SET)
                             if (!self.requiredTOF || isTOFFounded) {
-                                self.storeRecoil(event, energy: energy, type: type, deltaTime: deltaTime)
+                                let heavy = self.getEnergy(event, type: .heavy)
+                                self.storeRecoil(event, energy: energy, heavy: heavy, deltaTime: deltaTime)
                             }
                         }
                     }
@@ -671,12 +671,12 @@ class Processor: NSObject {
         gammaPerAct.append(info)
     }
     
-    func storeRecoil(_ event: Event, energy: Double, type: SearchType, deltaTime: CLongLong) {
-        let energyKey = type == .recoil ? kEnergy : kHeavy
+    func storeRecoil(_ event: Event, energy: Double, heavy: Double, deltaTime: CLongLong) {
         let info = [kDeltaTime: deltaTime,
                     kEventNumber: eventNumber(),
                     kMarker: getMarker(event),
-                    energyKey: energy] as [String : Any]
+                    kEnergy: energy,
+                    kHeavy: heavy] as [String : Any]
         recoilsFrontPerAct.append(info)
     }
     
