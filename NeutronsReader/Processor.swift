@@ -48,6 +48,7 @@ class Processor: NSObject {
     fileprivate var totalEventNumber: CUnsignedLongLong = 0
     fileprivate var firstFissionAlphaTime: CUnsignedLongLong = 0 // время главного осколка/альфы в цикле
     fileprivate var neutronsSummPerAct: CUnsignedLongLong = 0
+    fileprivate var neutronsBackwardSummPerAct: CUnsignedLongLong = 0
     var files = [String]()
     fileprivate var currentFileName: String?
     fileprivate var neutronsMultiplicityTotal = [Int : Int]()
@@ -379,6 +380,8 @@ class Processor: NSObject {
             if searchNeutrons {
                 findNeutrons()
                 fseek(file, Int(position), SEEK_SET)
+                findNeutronsBack()
+                fseek(file, Int(position), SEEK_SET)
             }
             
             findSpecialEvents()
@@ -431,6 +434,15 @@ class Processor: NSObject {
         search(directions: directions, startTime: firstFissionAlphaTime, minDeltaTime: 0, maxDeltaTime: maxNeutronTime, useCycleTime: false, updateCycleEvent: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
             if self.dataProtocol.Neutrons == Int(event.eventId) {
                 self.neutronsSummPerAct += 1
+            }
+        }
+    }
+    
+    func findNeutronsBack() {
+        let directions: Set<SearchDirection> = [.backward]
+        search(directions: directions, startTime: firstFissionAlphaTime, minDeltaTime: 0, maxDeltaTime: 10, useCycleTime: false, updateCycleEvent: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
+            if self.dataProtocol.Neutrons == Int(event.eventId) {
+                self.neutronsBackwardSummPerAct += 1
             }
         }
     }
@@ -713,6 +725,7 @@ class Processor: NSObject {
     
     func clearActInfo() {
         neutronsSummPerAct = 0
+        neutronsBackwardSummPerAct = 0
         fissionsAlphaFrontPerAct.removeAll()
         fissionsAlphaBackPerAct.removeAll()
         gammaPerAct.removeAll()
@@ -972,7 +985,7 @@ class Processor: NSObject {
             special3 = specialEventIds[2]
         }
         let startParticle = startParticleType == .fission ? "F" : "A"
-        var header = String(format: "Event(Recoil),E(RFron),E(HRFron),RFronMarker,dT(RFron-$Fron),TOF,dT(TOF-RFron),Event($),Summ($Fron),$Fron,$FronMarker,dT($FronFirst-Next),Strip($Fron),$Back,$BackMarker,dT($Fron-$Back),Strip($Back),$Wel,$WelMarker,$WelPos,Neutrons,Gamma,dT($Fron-Gamma),Special\(special1),Special\(special2),Special\(special3)")
+        var header = String(format: "Event(Recoil),E(RFron),E(HRFron),RFronMarker,dT(RFron-$Fron),TOF,dT(TOF-RFron),Event($),Summ($Fron),$Fron,$FronMarker,dT($FronFirst-Next),Strip($Fron),$Back,$BackMarker,dT($Fron-$Back),Strip($Back),$Wel,$WelMarker,$WelPos,Neutrons,Neutrons(Backward),Gamma,dT($Fron-Gamma),Special\(special1),Special\(special2),Special\(special3)")
         if searchAlpha2 {
             header += ",Event(Alpha2),E(Alpha2),Alpha2Marker,dT(Alpha1-Alpha2)"
         }
@@ -1136,54 +1149,58 @@ class Processor: NSObject {
                         field = String(format: "%llu", neutronsSummPerAct)
                     }
                 case 21:
+                    if row == 0 && searchNeutrons {
+                        field = String(format: "%llu", neutronsBackwardSummPerAct)
+                    }
+                case 22:
                     if row < gammaPerAct.count {
                         if let energy = getValueFrom(array: gammaPerAct, row: row, key: kEnergy) {
                             field = String(format: "%.7f", energy as! Double)
                         }
                     }
-                case 22:
+                case 23:
                     if row < gammaPerAct.count {
                         if let deltaTime = getValueFrom(array: gammaPerAct, row: row, key: kDeltaTime) {
                             field = String(format: "%lld", deltaTime as! CLongLong)
                         }
                     }
-                case 23:
+                case 24:
                     if row == 0 {
                         if let v = specialValue(0) {
                             field = String(format: "%hu", v)
                         }
                     }
-                case 24:
+                case 25:
                     if row == 0 {
                         if let v = specialValue(1) {
                             field = String(format: "%hu", v)
                         }
                     }
-                case 25:
+                case 26:
                     if row == 0 {
                         if let v = specialValue(2) {
                             field = String(format: "%hu", v)
                         }
                     }
-                case 26:
+                case 27:
                     if row < alpha2FrontPerAct.count {
                         if let eventNumber = getValueFrom(array: alpha2FrontPerAct, row: row, key: kEventNumber) {
                             field = currentFileEventNumber(eventNumber as! CUnsignedLongLong)
                         }
                     }
-                case 27:
+                case 28:
                     if row < alpha2FrontPerAct.count {
                         if let energy = getValueFrom(array: alpha2FrontPerAct, row: row, key: kEnergy) {
                             field = String(format: "%.7f", energy as! Double)
                         }
                     }
-                case 28:
+                case 29:
                     if row < alpha2FrontPerAct.count {
                         if let marker = getValueFrom(array: alpha2FrontPerAct, row: row, key: kMarker) {
                             field = String(format: "%hu", marker as! CUnsignedShort)
                         }
                     }
-                case 29:
+                case 30:
                     if row < alpha2FrontPerAct.count {
                         if let deltaTime = getValueFrom(array: alpha2FrontPerAct, row: row, key: kDeltaTime) {
                             field = String(format: "%lld", deltaTime as! CLongLong)
