@@ -1008,7 +1008,7 @@ class Processor: NSObject {
             return (array[row] as? [String: Any])?[key]
         }
         
-        var columnsCount = 25
+        var columnsCount = 26
         if searchAlpha2 {
             columnsCount += 4
         }
