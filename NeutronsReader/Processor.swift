@@ -289,16 +289,18 @@ class Processor: NSObject {
                 if let file = file {
                     setvbuf(file, nil, _IONBF, 0) // disable buffering
                     forwardSearch(checker: { [weak self] (event: Event, stop: UnsafeMutablePointer<Bool>) in
-                        if let file = self?.file, let currentFileName = self?.currentFileName, let stoped = self?.stoped {
-                            if ferror(file) != 0 {
-                                print("\nERROR while reading file \(currentFileName)\n")
-                                exit(-1)
+                        autoreleasepool {
+                            if let file = self?.file, let currentFileName = self?.currentFileName, let stoped = self?.stoped {
+                                if ferror(file) != 0 {
+                                    print("\nERROR while reading file \(currentFileName)\n")
+                                    exit(-1)
+                                }
+                                if stoped {
+                                    stop.initialize(to: true)
+                                }
                             }
-                            if stoped {
-                                stop.initialize(to: true)
-                            }
+                            self?.mainCycleEventCheck(event)
                         }
-                        self?.mainCycleEventCheck(event)
                     })
                 } else {
                     exit(-1)
