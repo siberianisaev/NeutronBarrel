@@ -16,20 +16,20 @@ protocol ProcessorDelegate: class {
     
 }
 
+enum SearchType {
+    case fission
+    case alpha
+    case recoil
+    case heavy
+    case veto
+}
+
+enum TOFUnits {
+    case channels
+    case nanoseconds
+}
+
 class Processor: NSObject {
-    
-    enum SearchType {
-        case fission
-        case alpha
-        case recoil
-        case heavy
-        case veto
-    }
-    
-    enum TOFUnits {
-        case channels
-        case nanoseconds
-    }
     
     fileprivate let kEncoder = "encoder"
     fileprivate let kStrip0_15 = "strip_0_15"
@@ -337,14 +337,20 @@ class Processor: NSObject {
             mainCycleTimeEvent = event
         }
         
-        // FFron or AFron
         if isFront(event, type: startParticleType) {
-            // Запускаем новый цикл поиска, только если энергия осколка/альфы на лицевой стороне детектора выше минимальной
-            let energy = getEnergy(event, type: startParticleType)
-            if energy < fissionAlphaFrontMinEnergy || energy > fissionAlphaFrontMaxEnergy {
-                return
+            let isRecoilSearch = startParticleType == .recoil
+            if isRecoilSearch {
+                if !validateRecoil(event, deltaTime: 0) {
+                    return
+                }
+            } else { // FFron or AFron
+                // Запускаем новый цикл поиска, только если энергия осколка/альфы на лицевой стороне детектора выше минимальной
+                let energy = getEnergy(event, type: startParticleType)
+                if energy < fissionAlphaFrontMinEnergy || energy > fissionAlphaFrontMaxEnergy {
+                    return
+                }
+                storeFissionAlphaFront(event, isFirst: true, deltaTime: 0)
             }
-            storeFissionAlphaFront(event, isFirst: true, deltaTime: 0)
             
             var position = fpos_t()
             fgetpos(file, &position)
@@ -377,20 +383,26 @@ class Processor: NSObject {
                 return
             }
             
-            // FBack or ABack
-            findFissionsAlphaBack()
-            fseek(file, Int(position), SEEK_SET)
-            if requiredFissionRecoilBack && 0 == fissionsAlphaBackPerAct.count {
-                clearActInfo()
-                return
-            }
-            
-            // Recoil (Ищем рекойлы только после поиска всех FBack/ABack!)
-            findRecoil()
-            fseek(file, Int(position), SEEK_SET)
-            if requiredRecoil && 0 == recoilsFrontPerAct.count {
-                clearActInfo()
-                return
+            if !isRecoilSearch {
+                // FBack or ABack
+                findFissionsAlphaBack()
+                fseek(file, Int(position), SEEK_SET)
+                if requiredFissionRecoilBack && 0 == fissionsAlphaBackPerAct.count {
+                    clearActInfo()
+                    return
+                }
+                
+                // Recoil (Ищем рекойлы только после поиска всех FBack/ABack!)
+                findRecoil()
+                fseek(file, Int(position), SEEK_SET)
+                if requiredRecoil && 0 == recoilsFrontPerAct.count {
+                    clearActInfo()
+                    return
+                }
+                
+                // FWel or AWel
+                findFissionsAlphaWel()
+                fseek(file, Int(position), SEEK_SET)
             }
             
             // Neutrons
@@ -401,24 +413,17 @@ class Processor: NSObject {
                 fseek(file, Int(position), SEEK_SET)
             }
             
-            findSpecialEvents()
-            fseek(file, Int(position), SEEK_SET)
-            
             if searchSpecialEvents {
                 findSpecialEvents()
                 fseek(file, Int(position), SEEK_SET)
             }
-            
-            // FWel or AWel
-            findFissionsAlphaWel()
-            fseek(file, Int(position), SEEK_SET)
             
             /*
              ВАЖНО: тут не делаем репозиционирование в потоке после поиска!
              Этот подцикл поиска всегда должен быть последним!
              */
             // Summ(FFron or AFron)
-            if summarizeFissionsAlphaFront {
+            if !isRecoilSearch && summarizeFissionsAlphaFront {
                 findFissionsAlphaFront()
             }
             
@@ -426,6 +431,7 @@ class Processor: NSObject {
             if searchNeutrons {
                 updateNeutronsMultiplicity()
             }
+            
             logActResults()
             clearActInfo()
         }
@@ -551,26 +557,32 @@ class Processor: NSObject {
             if isRecoil {
                 let isNear = self.isEventFrontNearToFirstFissionAlphaFront(event, maxDelta: Int(self.recoilFrontMaxDeltaStrips))
                 if isNear {
-                    let energy = self.getEnergy(event, type: .recoil)
-                    if energy >= self.recoilFrontMinEnergy && energy <= self.recoilFrontMaxEnergy {
-                        // Сохраняем рекойл только если к нему найден Recoil Back и TOF (если required)
-                        var position = fpos_t()
-                        fgetpos(self.file, &position)
-                        let t = CUnsignedLongLong(event.param1)
-                        let isRecoilBackFounded = self.findRecoilBack(t)
-                        fseek(self.file, Int(position), SEEK_SET)
-                        if (isRecoilBackFounded) {
-                            let isTOFFounded = self.findTOFForRecoil(event, timeRecoil: t)
-                            fseek(self.file, Int(position), SEEK_SET)
-                            if (!self.requiredTOF || isTOFFounded) {
-                                let heavy = self.getEnergy(event, type: .heavy)
-                                self.storeRecoil(event, energy: energy, heavy: heavy, deltaTime: deltaTime)
-                            }
-                        }
-                    }
+                    self.validateRecoil(event, deltaTime: deltaTime)
                 }
             }
         }
+    }
+    
+    @discardableResult fileprivate func validateRecoil(_ event: Event, deltaTime: CLongLong) -> Bool {
+        let energy = self.getEnergy(event, type: .recoil)
+        if energy >= self.recoilFrontMinEnergy && energy <= self.recoilFrontMaxEnergy {
+            // Сохраняем рекойл только если к нему найден Recoil Back и TOF (если required)
+            var position = fpos_t()
+            fgetpos(self.file, &position)
+            let t = CUnsignedLongLong(event.param1)
+            let isRecoilBackFounded = self.findRecoilBack(t)
+            fseek(self.file, Int(position), SEEK_SET)
+            if (isRecoilBackFounded) {
+                let isTOFFounded = self.findTOFForRecoil(event, timeRecoil: t)
+                fseek(self.file, Int(position), SEEK_SET)
+                if (!self.requiredTOF || isTOFFounded) {
+                    let heavy = self.getEnergy(event, type: .heavy)
+                    self.storeRecoil(event, energy: energy, heavy: heavy, deltaTime: deltaTime)
+                    return true
+                }
+            }
+        }
+        return false
     }
     
     func findTOFForRecoil(_ eventRecoil: Event, timeRecoil: CUnsignedLongLong) -> Bool {

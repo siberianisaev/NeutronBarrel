@@ -18,13 +18,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBOutlet weak var labelBranch: NSTextField!
     @IBOutlet weak var labelTotalTime: NSTextField!
     @IBOutlet weak var labelProcessingFileName: NSTextField!
-    @IBOutlet weak var fissionAlphaControl: NSSegmentedControl!
+    @IBOutlet weak var startParticleControl: NSSegmentedControl!
     @IBOutlet weak var tofUnitsControl: NSSegmentedControl!
     @IBOutlet weak var indicatorData: NSTextField!
     @IBOutlet weak var indicatorCalibration: NSTextField!
     @IBOutlet weak var buttonRun: NSButton!
     @IBOutlet weak var alpha2View: NSView!
     @IBOutlet weak var vetoView: NSView!
+    @IBOutlet weak var fissionAlpha1View: NSView!
     
     fileprivate var viewerController: ViewerController?
     fileprivate var totalTime: TimeInterval = 0
@@ -69,9 +70,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     }
     
     func applicationDidFinishLaunching(_ aNotification: Notification) {
-        fissionAlphaControl.selectedSegment = Settings.getIntSetting(.SearchType)
+        startParticleControl.selectedSegment = Settings.getIntSetting(.SearchType)
         setupAlpha2View()
         setupVETOView()
+        setupFissionAlpha1View()
         tofUnitsControl.selectedSegment = Settings.getIntSetting(.TOFUnits)
         for i in [indicatorData, indicatorCalibration] {
             setSelected(false, indicator: i)
@@ -80,16 +82,21 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         run = false
     }
     
-    @IBAction func fissionAlphaControlValueChanged(_ sender: Any) {
+    @IBAction func startParticleChanged(_ sender: Any) {
         setupAlpha2View()
+        setupFissionAlpha1View()
     }
     
     fileprivate func setupAlpha2View() {
-        alpha2View.isHidden = fissionAlphaControl.selectedSegment == 0
+        alpha2View.isHidden = startParticleControl.selectedSegment != 1
     }
     
     fileprivate func setupVETOView() {
         vetoView.isHidden = !searchVETO
+    }
+    
+    fileprivate func setupFissionAlpha1View() {
+        fissionAlpha1View.isHidden = startParticleControl.selectedSegment == 2
     }
     
     @IBAction func viewer(_ sender: Any) {
@@ -120,7 +127,16 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         } else {
             run = true
             
-            processor.startParticleType = fissionAlphaControl.selectedSegment == 0 ? .fission : .alpha
+            var startType: SearchType
+            switch startParticleControl.selectedSegment {
+            case 0:
+                startType = .fission
+            case 1:
+                startType = .alpha
+            default:
+                startType = .recoil
+            }
+            processor.startParticleType = startType
             processor.fissionAlphaFrontMinEnergy = sMinFissionEnergy.doubleValue
             processor.fissionAlphaFrontMaxEnergy = sMaxFissionEnergy.doubleValue
             processor.fissionAlphaMaxTime = UInt64(sMaxFissionTime.longLongValue)
@@ -180,7 +196,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
                 progressIndicator.stopAnimation(self)
                 progressIndicator?.doubleValue = 0.0
             }
-            fissionAlphaControl?.isEnabled = !run
+            startParticleControl?.isEnabled = !run
             tofUnitsControl?.isEnabled = !run
         }
     }
@@ -266,7 +282,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         Settings.setObject(requiredVETO, forSetting: .RequiredVETO)
         Settings.setObject(searchNeutrons, forSetting: .SearchNeutrons)
         Settings.setObject(searchVETO, forSetting: .SearchVETO)
-        Settings.setObject(fissionAlphaControl.selectedSegment, forSetting: .SearchType)
+        Settings.setObject(startParticleControl.selectedSegment, forSetting: .SearchType)
         Settings.setObject(searchAlpha2, forSetting: .SearchAlpha2)
         Settings.setObject(sMinAlpha2Energy.doubleValue, forSetting: .MinAlpha2Energy)
         Settings.setObject(sMaxAlpha2Energy.doubleValue, forSetting: .MaxAlpha2Energy)
