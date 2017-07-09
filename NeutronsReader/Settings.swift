@@ -24,6 +24,7 @@ class Settings {
         MaxRecoilBackTime = "MaxRecoilBackTime",
         MaxFissionTime = "MaxFissionTime",
         MaxTOFTime = "MaxTOFTime",
+        MaxVETOTime = "MaxVETOTime",
         MaxGammaTime = "MaxGammaTime",
         MaxNeutronTime = "MaxNeutronTime",
         MaxRecoilFrontDeltaStrips = "MaxRecoilFrontDeltaStrips",
@@ -33,9 +34,11 @@ class Settings {
         RequiredRecoil = "RequiredRecoil",
         RequiredGamma = "RequiredGamma",
         RequiredTOF = "RequiredTOF",
+        RequiredVETO = "RequiredVETO",
         SearchNeutrons = "SearchNeutrons",
         SearchType = "SearchType",
         SearchAlpha2 = "SearchAlpha2",
+        SearchVETO = "SearchVETO",
         MinAlpha2Energy = "MinAlpha2Energy",
         MaxAlpha2Energy = "MaxAlpha2Energy",
         MinAlpha2Time = "MinAlpha2Time",
@@ -113,6 +116,8 @@ class Settings {
             return 5
         case .MaxTOFTime:
             return 4
+        case .MaxVETOTime:
+            return 5
         case .MaxGammaTime:
             return 5
         case .MaxNeutronTime:
@@ -131,6 +136,8 @@ class Settings {
             return false
         case .RequiredTOF:
             return false
+        case .RequiredVETO:
+            return false
         case .SearchNeutrons:
             return true
         case .SearchType, .TOFUnits:
@@ -148,6 +155,8 @@ class Settings {
         case .MaxAlpha2FrontDeltaStrips:
             return 0
         case .SearchSpecialEvents:
+            return false
+        case .SearchVETO:
             return false
         case .SpecialEventIds:
             return nil

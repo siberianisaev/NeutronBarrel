@@ -21,6 +21,7 @@ class DataProtocol: NSObject {
                 var content = try String(contentsOfFile: path, encoding: String.Encoding.utf8)
                 content = content.replacingOccurrences(of: " ", with: "")
                 
+                let words = Processor.singleton.eventWords
                 for line in content.components(separatedBy: CharacterSet.newlines) {
                     if false == line.contains(":") {
                         continue
@@ -28,8 +29,9 @@ class DataProtocol: NSObject {
                     
                     let set = CharacterSet(charactersIn: ":,")
                     let components = line.components(separatedBy: set).filter() { $0 != "" }
-                    if 4 == components.count {
-                        let key = components[3]
+                    let count = components.count
+                    if words == count {
+                        let key = components[count-1]
                         let value = Int(components[0])
                         p.dict[key] = value
                     }
@@ -91,6 +93,10 @@ class DataProtocol: NSObject {
     
     var AWel: Int {
         return value("AWel")
+    }
+    
+    var AVeto: Int {
+        return value("AVeto")
     }
     
     func AWel(_ i: Int) -> Int {
