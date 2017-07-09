@@ -977,9 +977,9 @@ class Processor: NSObject {
         
         var name = detector + position
         if encoder != 0 {
-            name += String(encoder)
+            name += "\(encoder)."
         }
-        name += ".\(strip_0_15+1)"
+        name += String(strip_0_15+1)
         
         return calibration.calibratedValueForAmplitude(Double(channel), eventName: name)
     }
@@ -1036,7 +1036,17 @@ class Processor: NSObject {
         if specialEventIds.count >= 3 {
             special3 = specialEventIds[2]
         }
-        let startParticle = startParticleType == .fission ? "F" : "A"
+        var startParticle: String
+        switch startParticleType {
+        case .fission:
+            startParticle = "F"
+        case .alpha:
+            startParticle = "A"
+        case .recoil:
+            startParticle = "R"
+        default:
+            startParticle = ""
+        }
         var header = String(format: "Event(Recoil),E(RFron),E(HRFron),RFronMarker,dT(RFron-$Fron),TOF,dT(TOF-RFron),Event($),Summ($Fron),$Fron,$FronMarker,dT($FronFirst-Next),Strip($Fron),$Back,$BackMarker,dT($Fron-$Back),Strip($Back),$Wel,$WelMarker,$WelPos,Neutrons,Neutrons(Backward),Gamma,dT($Fron-Gamma),Special\(special1),Special\(special2),Special\(special3)")
         if searchVETO {
             header += ",Event(VETO),E(VETO),Strip(VETO),dT($Fron-VETO)"
@@ -1242,7 +1252,7 @@ class Processor: NSObject {
                     if searchVETO {
                         if row < vetoPerAct.count {
                             if let strip_0_15 = getValueFrom(array: vetoPerAct, row: row, key: kStrip0_15) {
-                                field = String(format: "%hu", strip_0_15 as! CUnsignedLongLong)
+                                field = String(format: "%hu", strip_0_15 as! CUnsignedShort)
                             }
                         }
                     } else {
