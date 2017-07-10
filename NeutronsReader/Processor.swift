@@ -42,7 +42,6 @@ class Processor: NSObject {
     fileprivate let kMarker = "marker"
     fileprivate let kHeavy = "heavy"
     
-    // public during migration to Swift phase
     fileprivate var file: UnsafeMutablePointer<FILE>!
     fileprivate var dataProtocol: DataProtocol!
     fileprivate var mainCycleTimeEvent = Event()
@@ -50,7 +49,6 @@ class Processor: NSObject {
     fileprivate var startEventTime: CUnsignedLongLong = 0
     fileprivate var neutronsSummPerAct: CUnsignedLongLong = 0
     fileprivate var neutronsBackwardSummPerAct: CUnsignedLongLong = 0
-    var files = [String]()
     fileprivate var currentFileName: String?
     fileprivate var neutronsMultiplicityTotal = [Int : Int]()
     fileprivate var recoilsFrontPerAct = [Any]()
@@ -62,11 +60,12 @@ class Processor: NSObject {
     fileprivate var fissionsAlphaWelPerAct = [Any]()
     fileprivate var gammaPerAct = [Any]()
     fileprivate var specialPerAct = [Int: CUnsignedShort]()
-    fileprivate var firstFissionAlphaInfo: [String: Any]? // информация о главном осколке/альфе в цикле
+    fileprivate var firstFissionAlphaInfo: [String: Any]?
     fileprivate var stoped: Bool = false
     fileprivate var logger: Logger!
     fileprivate var calibration: Calibration!
     
+    var files = [String]()
     var fissionAlphaFrontMinEnergy: Double = 0
     var fissionAlphaFrontMaxEnergy: Double = 0
     var recoilFrontMinEnergy: Double = 0
@@ -101,6 +100,7 @@ class Processor: NSObject {
     var specialEventIds = [Int]()
     var startParticleType: SearchType = .fission
     var unitsTOF: TOFUnits = .channels
+    
     weak var delegate: ProcessorDelegate!
     
     class var singleton : Processor {
@@ -164,11 +164,8 @@ class Processor: NSObject {
         }
     }
     
-    /**
-     Note: use SearchDirection values in 'directions'.
-     */
     func search(directions: Set<SearchDirection>, startTime: CUnsignedLongLong, minDeltaTime: CUnsignedLongLong, maxDeltaTime: CUnsignedLongLong, useCycleTime: Bool, updateCycleEvent: Bool, checker: @escaping ((Event, CUnsignedLongLong, CLongLong, UnsafeMutablePointer<Bool>)->())) {
-        //TODO: работает в пределах одного файла
+        //TODO: search over many files
         if directions.contains(.backward) {
             var initial = fpos_t()
             fgetpos(file, &initial)
@@ -346,7 +343,6 @@ class Processor: NSObject {
                     return
                 }
             } else { // FFron or AFron
-                // Запускаем новый цикл поиска, только если энергия осколка/альфы на лицевой стороне детектора выше минимальной
                 let energy = getEnergy(event, type: startParticleType)
                 if energy < fissionAlphaFrontMinEnergy || energy > fissionAlphaFrontMaxEnergy {
                     return
@@ -394,7 +390,7 @@ class Processor: NSObject {
                     return
                 }
                 
-                // Recoil (Ищем рекойлы только после поиска всех FBack/ABack!)
+                // Recoil (search them only after search all FBack/ABack)
                 findRecoil()
                 fseek(file, Int(position), SEEK_SET)
                 if requiredRecoil && 0 == recoilsFrontPerAct.count {
@@ -420,16 +416,12 @@ class Processor: NSObject {
                 fseek(file, Int(position), SEEK_SET)
             }
             
-            /*
-             ВАЖНО: тут не делаем репозиционирование в потоке после поиска!
-             Этот подцикл поиска всегда должен быть последним!
-             */
+            // Important: this search must be last because we don't do file repositioning here
             // Summ(FFron or AFron)
             if !isRecoilSearch && summarizeFissionsAlphaFront {
-                findFissionsAlphaFront()
+                findNextFissionsAlphaFront()
             }
             
-            // Завершили поиск корреляций
             if searchNeutrons {
                 updateNeutronsMultiplicity()
             }
@@ -439,9 +431,6 @@ class Processor: NSObject {
         }
     }
     
-    /**
-     Ищем все FWel/AWel в направлении до +_fissionAlphaMaxTime относительно времени T(Fission/Alpha First).
-     */
     func findFissionsAlphaWel() {
         let directions: Set<SearchDirection> = [.forward]
         search(directions: directions, startTime: startEventTime, minDeltaTime: 0, maxDeltaTime: fissionAlphaMaxTime, useCycleTime: false, updateCycleEvent: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
@@ -451,9 +440,6 @@ class Processor: NSObject {
         }
     }
     
-    /**
-     Ищем все Neutrons в окне <= _maxNeutronTime относительно времени FFron.
-     */
     func findNeutrons() {
         let directions: Set<SearchDirection> = [.forward]
         search(directions: directions, startTime: startEventTime, minDeltaTime: 0, maxDeltaTime: maxNeutronTime, useCycleTime: false, updateCycleEvent: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
@@ -472,11 +458,7 @@ class Processor: NSObject {
         }
     }
     
-    /**
-     Важно: _mainCycleTimeEvent обновляется при поиске в прямом направлении,
-     так как эта часть относится к основному циклу и после поиска не производится репозиционирование потока!
-     */
-    func findFissionsAlphaFront() {
+    func findNextFissionsAlphaFront() {
         var initial = fpos_t()
         fgetpos(file, &initial)
         var current = initial
@@ -484,7 +466,7 @@ class Processor: NSObject {
         search(directions: directions, startTime: startEventTime, minDeltaTime: 0, maxDeltaTime: fissionAlphaMaxTime, useCycleTime: false, updateCycleEvent: true) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
             // File-position check is used for skip Fission/Alpha First event!
             fgetpos(self.file, &current)
-            if current != initial && self.isFront(event, type: self.startParticleType) && self.isFissionNearToFirstFissionFront(event) { // FFron/AFron пришедшие после первого
+            if current != initial && self.isFront(event, type: self.startParticleType) && self.isFissionStripNearToFirstFissionFront(event) {
                 self.storeFissionAlphaFront(event, isFirst: false, deltaTime: deltaTime)
             }
         }
@@ -548,16 +530,13 @@ class Processor: NSObject {
         }
     }
     
-    /**
-     Поиск рекойла осуществляется с позиции файла где найден главный осколок/альфа (возвращаемся назад по времени).
-     */
     func findRecoil() {
         let fissionTime = absTime(CUnsignedShort(startEventTime), cycleEvent:mainCycleTimeEvent)
         let directions: Set<SearchDirection> = [.backward]
         search(directions: directions, startTime: fissionTime, minDeltaTime: recoilMinTime, maxDeltaTime: recoilMaxTime, useCycleTime: true, updateCycleEvent: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
             let isRecoil = self.isFront(event, type: .recoil)
             if isRecoil {
-                let isNear = self.isEventFrontNearToFirstFissionAlphaFront(event, maxDelta: Int(self.recoilFrontMaxDeltaStrips))
+                let isNear = self.isEventFrontStripNearToFirstFissionAlphaFront(event, maxDelta: Int(self.recoilFrontMaxDeltaStrips))
                 if isNear {
                     self.validateRecoil(event, deltaTime: deltaTime)
                 }
@@ -568,7 +547,6 @@ class Processor: NSObject {
     @discardableResult fileprivate func validateRecoil(_ event: Event, deltaTime: CLongLong) -> Bool {
         let energy = self.getEnergy(event, type: .recoil)
         if energy >= self.recoilFrontMinEnergy && energy <= self.recoilFrontMaxEnergy {
-            // Сохраняем рекойл только если к нему найден Recoil Back и TOF (если required)
             var position = fpos_t()
             fgetpos(self.file, &position)
             let t = CUnsignedLongLong(event.param1)
@@ -609,7 +587,7 @@ class Processor: NSObject {
         search(directions: directions, startTime: timeRecoilFront, minDeltaTime: 0, maxDeltaTime: recoilBackMaxTime, useCycleTime: false, updateCycleEvent: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
             if self.isBack(event, type: .recoil) {
                 if (self.requiredFissionRecoilBack) {
-                    found = self.isRecoilBackNearToFissionAlphaBack(event)
+                    found = self.isRecoilBackStripNearToFissionAlphaBack(event)
                 } else {
                     found = true
                 }
@@ -638,16 +616,13 @@ class Processor: NSObject {
         }
     }
     
-    /**
-     Поиск альфы 2 осуществляется с позиции файла где найдена альфа 1 (вперед по времени).
-     */
     func findAlpha2() {
         let alphaTime = absTime(CUnsignedShort(startEventTime), cycleEvent: mainCycleTimeEvent)
         let directions: Set<SearchDirection> = [.forward]
         search(directions: directions, startTime: alphaTime, minDeltaTime: alpha2MinTime, maxDeltaTime: alpha2MaxTime, useCycleTime: true, updateCycleEvent: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
             if self.isFront(event, type: .alpha) {
                 let energy = self.getEnergy(event, type: .alpha)
-                if energy >= self.alpha2MinEnergy && energy <= self.alpha2MaxEnergy && self.isEventFrontNearToFirstFissionAlphaFront(event, maxDelta: Int(self.alpha2MaxDeltaStrips)) {
+                if energy >= self.alpha2MinEnergy && energy <= self.alpha2MaxEnergy && self.isEventFrontStripNearToFirstFissionAlphaFront(event, maxDelta: Int(self.alpha2MaxDeltaStrips)) {
                     self.storeAlpha2(event, deltaTime: deltaTime)
                 }
             }
@@ -670,12 +645,12 @@ class Processor: NSObject {
     }
     
     /**
-     Используется для определения суммарной множественности нейтронов во всех файлах
+     Summar multiplicity of neutrons calculation over all files
      */
     func updateNeutronsMultiplicity() {
         let key = neutronsSummPerAct
         var summ = neutronsMultiplicityTotal[Int(key)] ?? 0
-        summ += 1 // Одно событие для всех нейтронов в одном акте деления
+        summ += 1 // One event for all neutrons in one act of fission
         neutronsMultiplicityTotal[Int(key)] = summ
     }
     
@@ -796,10 +771,7 @@ class Processor: NSObject {
         return fission
     }
     
-    /**
-     Метод проверяет находится ли ! рекоил/альфа ! event на близких стрипах относительно первого осколка/альфы.
-     */
-    func isEventFrontNearToFirstFissionAlphaFront(_ event: Event, maxDelta: Int) -> Bool {
+    func isEventFrontStripNearToFirstFissionAlphaFront(_ event: Event, maxDelta: Int) -> Bool {
         let strip_0_15 = event.param2 >> 12
         let strip_1_48 = focalStripConvertToFormat_1_48(strip_0_15, eventId:event.eventId)
         if let n = firstFissionAlphaInfo?[kStrip1_48] {
@@ -809,10 +781,7 @@ class Processor: NSObject {
         return false
     }
     
-    /**
-     Метод проверяет находится ли рекоил event на близких стрипах (_recoilBackMaxDeltaStrips) относительно заднего осколка с макимальной энергией.
-     */
-    func isRecoilBackNearToFissionAlphaBack(_ event: Event) -> Bool {
+    func isRecoilBackStripNearToFissionAlphaBack(_ event: Event) -> Bool {
         if let fissionBackInfo = fissionAlphaBackWithMaxEnergyInAct() {
             let strip_0_15 = event.param2 >> 12
             let strip_1_48 = focalStripConvertToFormat_1_48(strip_0_15, eventId:event.eventId)
@@ -826,37 +795,37 @@ class Processor: NSObject {
     }
     
     /**
-     Метод проверяет находится ли осколок event на соседних стрипах относительно первого осколка.
+     +/-1 strips check at this moment.
      */
-    func isFissionNearToFirstFissionFront(_ event: Event) -> Bool {
+    func isFissionStripNearToFirstFissionFront(_ event: Event) -> Bool {
         let strip_0_15 = event.param2 >> 12
         if let n = firstFissionAlphaInfo?[kStrip0_15] {
             let s = n as! CUnsignedShort
-            if strip_0_15 == s { // совпадают
+            if strip_0_15 == s {
                 return true
             }
             
             let strip_1_48 = focalStripConvertToFormat_1_48(strip_0_15, eventId: event.eventId)
             if let n = firstFissionAlphaInfo?[kStrip1_48] {
                 let s = n as! CUnsignedShort
-                return Int(abs(Int32(strip_1_48) - Int32(s))) <= 1 // +/- 1 стрип
+                return Int(abs(Int32(strip_1_48) - Int32(s))) <= 1
             }
         }
         return false
     }
     
     /**
-     У осколков/рекойлов записывается только время относительно начала нового счетчика времени (счетчик обновляется каждые 0xFFFF мкс).
-     Для вычисления времени от запуска файла используем время цикла.
+     Time stored in events are relative time (timer from 0x0000 to xFFFF mks resettable on overflow).
+     We use special event 'dataProtocol.CycleTime' to calculate time from file start.
      */
     func absTime(_ relativeTime: CUnsignedShort, cycleEvent: Event) -> CUnsignedLongLong {
         return (CUnsignedLongLong(cycleEvent.param3) << 16) + CUnsignedLongLong(cycleEvent.param1) + CUnsignedLongLong(relativeTime)
     }
     
     /**
-     В фокальном детекторе cтрипы подключены поочередно к трем 16-канальным кодировщикам:
-     | 1.0 | 2.0 | 3.0 | 1.1 | 2.1 | 3.1 | 1.1 ... (encoder.strip_0_15)
-     Метод переводит стрип из формата "кодировщик + стрип от 0 до 15" в формат "стрип от 1 до 48".
+     Strips in focal plane detector are connected alternately to 3 16-channel encoders:
+     | 1.0 | 2.0 | 3.0 | 1.1 | 2.1 | 3.1 | ... | encoder.strip_0_15 |
+     This method used for convert strip from format "encoder + strip 0-15" to format "strip 1-48".
      */
     func focalStripConvertToFormat_1_48(_ strip_0_15: CUnsignedShort, eventId: CUnsignedShort) -> CUnsignedShort {
         let encoder = fissionAlphaRecoilEncoderForEventId(Int(eventId))
@@ -872,9 +841,9 @@ class Processor: NSObject {
     }
     
     /**
-     Чтобы различить рекоил и осколок/альфу используем первый бит из param3:
-     0 - осколок,
-     1 - рекоил
+     First bit from param3 used to separate recoil and fission/alpha events:
+     0 - fission fragment,
+     1 - recoil
      */
     func isRecoil(_ event: Event) -> Bool {
         return (event.param3 >> 15) == 1
@@ -945,7 +914,7 @@ class Processor: NSObject {
     fileprivate func getEnergy(_ event: Event, type: SearchType) -> Double {
         let channel = getChannel(event, type: type)
         let eventId = Int(event.eventId)
-        let strip_0_15 = event.param2 >> 12  // value from 0 to 15
+        let strip_0_15 = event.param2 >> 12
         let encoder = fissionAlphaRecoilEncoderForEventId(eventId)
         
         var detector: String
@@ -990,7 +959,7 @@ class Processor: NSObject {
     
     func nanosecondsForTOFChannel(_ channelTOF: CUnsignedShort, eventRecoil: Event) -> Double {
         let eventId = Int(eventRecoil.eventId)
-        let strip_0_15 = eventRecoil.param2 >> 12  // value from 0 to 15
+        let strip_0_15 = eventRecoil.param2 >> 12
         let encoder = fissionAlphaRecoilEncoderForEventId(eventId)
         var position: String
         if dataProtocol.AFron(1) == eventId || dataProtocol.AFron(2) == eventId || dataProtocol.AFron(3) == eventId {

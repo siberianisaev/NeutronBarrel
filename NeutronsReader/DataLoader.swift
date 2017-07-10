@@ -30,7 +30,7 @@ class DataLoader: NSObject {
                     }
                 }
                 
-                //TODO: множественные протоколы
+                //TODO: show alert for data with many different protocols
                 let protocolURLString = selected.filter() { $0.hasSuffix(".PRO") }.first
                 let protocolObject = DataProtocol.load(protocolURLString)
                 
@@ -44,7 +44,7 @@ class DataLoader: NSObject {
     }
     
     /**
-    Метод рекурсивно обходит папки вложенные в directoryPath и возвращает все файлы в ней содержащиеся.
+     Recursive bypasses folders in 'directoryPath' and then return all files in these folders.
     */
     class func recursiveGetFilesFromDirectory(_ directoryPath: String) -> [String] {
         var results = [String]()

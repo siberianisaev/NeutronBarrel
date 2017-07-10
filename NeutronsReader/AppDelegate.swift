@@ -54,7 +54,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     var requiredTOF: Bool = Settings.getBoolSetting(.RequiredTOF)
     var requiredVETO: Bool = Settings.getBoolSetting(.RequiredVETO)
     var searchNeutrons: Bool = Settings.getBoolSetting(.SearchNeutrons)
-    // Alpha 2
     var searchAlpha2: Bool = Settings.getBoolSetting(.SearchAlpha2)
     var sMinAlpha2Energy: NSString = NSString(format: "%.1f", Settings.getDoubleSetting(.MinAlpha2Energy)) // MeV
     var sMaxAlpha2Energy: NSString = NSString(format: "%.1f", Settings.getDoubleSetting(.MaxAlpha2Energy)) // MeV
