@@ -1231,7 +1231,7 @@ class Processor: NSObject {
                     if searchVETO {
                         if row < vetoPerAct.count {
                             if let strip_0_15 = getValueFrom(array: vetoPerAct, row: row, key: kStrip0_15) {
-                                field = String(format: "%hu", strip_0_15 as! CUnsignedShort)
+                                field = String(format: "%hu", (strip_0_15 as! CUnsignedShort) + 1)
                             }
                         }
                     } else {
