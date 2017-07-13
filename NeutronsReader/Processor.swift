@@ -555,12 +555,12 @@ class Processor: NSObject {
             
             let isRecoilBackFounded = self.findRecoilBack(t)
             fseek(self.file, Int(position), SEEK_SET)
-            if (self.requiredRecoilBack) {
-                if !isRecoilBackFounded {
-                    return false
-                } else if self.startParticleType == .recoil {
+            if isRecoilBackFounded {
+                if self.startParticleType == .recoil {
                     self.storeFissionAlphaRecoilBack(event, deltaTime: deltaTime)
                 }
+            } else if (self.requiredRecoilBack) {
+                return false
             }
             
             let isTOFFounded = self.findTOFForRecoil(event, timeRecoil: t)
