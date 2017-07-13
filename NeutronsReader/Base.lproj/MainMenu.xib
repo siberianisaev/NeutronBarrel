@@ -26,6 +26,7 @@
                 <outlet property="labelTotalTime" destination="2Ow-sS-sNC" id="iCu-v0-Oyd"/>
                 <outlet property="labelVersion" destination="Jp9-e5-rtp" id="VMy-Bb-Lfg"/>
                 <outlet property="progressIndicator" destination="jRb-3t-cUo" id="TTa-Pk-rm0"/>
+                <outlet property="requiredRecoilButton" destination="9vQ-Df-vN2" id="hBy-6g-kHn"/>
                 <outlet property="startParticleControl" destination="uWj-m9-lqI" id="R74-Ux-qBB"/>
                 <outlet property="tofUnitsControl" destination="2QM-Jn-ZjV" id="EPI-g8-gt3"/>
                 <outlet property="vetoView" destination="tLu-c6-18P" id="Tjw-u4-Ohc"/>

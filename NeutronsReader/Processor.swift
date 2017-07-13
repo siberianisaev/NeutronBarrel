@@ -16,7 +16,7 @@ protocol ProcessorDelegate: class {
     
 }
 
-enum SearchType {
+enum SearchType: Int {
     case fission
     case alpha
     case recoil
@@ -586,7 +586,7 @@ class Processor: NSObject {
         let directions: Set<SearchDirection> = [.forward]
         search(directions: directions, startTime: timeRecoilFront, minDeltaTime: 0, maxDeltaTime: recoilBackMaxTime, useCycleTime: false, updateCycleEvent: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
             if self.isBack(event, type: .recoil) {
-                if (self.requiredFissionRecoilBack) {
+                if (self.requiredFissionRecoilBack && self.startParticleType != .recoil) {
                     found = self.isRecoilBackStripNearToFissionAlphaBack(event)
                 } else {
                     found = true
@@ -1220,8 +1220,8 @@ class Processor: NSObject {
                 case 28:
                     if searchVETO {
                         if row < vetoPerAct.count {
-                            if let strip_0_15 = getValueFrom(array: vetoPerAct, row: row, key: kStrip0_15) {
-                                field = String(format: "%hu", strip_0_15 as! CUnsignedShort)
+                            if let energy = getValueFrom(array: vetoPerAct, row: row, key: kEnergy) {
+                                field = String(format: "%.7f", energy as! Double)
                             }
                         }
                     } else {
@@ -1230,8 +1230,8 @@ class Processor: NSObject {
                 case 29:
                     if searchVETO {
                         if row < vetoPerAct.count {
-                            if let energy = getValueFrom(array: vetoPerAct, row: row, key: kEnergy) {
-                                field = String(format: "%.7f", energy as! Double)
+                            if let strip_0_15 = getValueFrom(array: vetoPerAct, row: row, key: kStrip0_15) {
+                                field = String(format: "%hu", strip_0_15 as! CUnsignedShort)
                             }
                         }
                     } else {

@@ -26,6 +26,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBOutlet weak var alpha2View: NSView!
     @IBOutlet weak var vetoView: NSView!
     @IBOutlet weak var fissionAlpha1View: NSView!
+    @IBOutlet weak var requiredRecoilButton: NSButton!
     
     fileprivate var viewerController: ViewerController?
     fileprivate var totalTime: TimeInterval = 0
@@ -70,9 +71,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         startParticleControl.selectedSegment = Settings.getIntSetting(.SearchType)
-        setupAlpha2View()
+        startParticleChanged(nil)
         setupVETOView()
-        setupFissionAlpha1View()
         tofUnitsControl.selectedSegment = Settings.getIntSetting(.TOFUnits)
         for i in [indicatorData, indicatorCalibration] {
             setSelected(false, indicator: i)
@@ -81,21 +81,16 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         run = false
     }
     
-    @IBAction func startParticleChanged(_ sender: Any) {
-        setupAlpha2View()
-        setupFissionAlpha1View()
-    }
-    
-    fileprivate func setupAlpha2View() {
-        alpha2View.isHidden = startParticleControl.selectedSegment != 1
+    @IBAction func startParticleChanged(_ sender: Any?) {
+        if let type = SearchType(rawValue: startParticleControl.selectedSegment) {
+            alpha2View.isHidden = type != .alpha
+            requiredRecoilButton.isHidden = type == .recoil
+            fissionAlpha1View.isHidden = type == .recoil
+        }
     }
     
     fileprivate func setupVETOView() {
         vetoView.isHidden = !searchVETO
-    }
-    
-    fileprivate func setupFissionAlpha1View() {
-        fissionAlpha1View.isHidden = startParticleControl.selectedSegment == 2
     }
     
     @IBAction func viewer(_ sender: Any) {
