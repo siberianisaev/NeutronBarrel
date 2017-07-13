@@ -49,7 +49,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     var sMaxRecoilFrontDeltaStrips: NSString = NSString(format: "%d", Settings.getIntSetting(.MaxRecoilFrontDeltaStrips))
     var sMaxRecoilBackDeltaStrips: NSString = NSString(format: "%d", Settings.getIntSetting(.MaxRecoilBackDeltaStrips))
     var summarizeFissionsFront: Bool = Settings.getBoolSetting(.SummarizeFissionsFront)
-    var requiredFissionRecoilBack: Bool = Settings.getBoolSetting(.RequiredFissionRecoilBack)
+    var requiredFissionAlphaBack: Bool = Settings.getBoolSetting(.RequiredFissionAlphaBack)
+    var requiredRecoilBack: Bool = Settings.getBoolSetting(.RequiredRecoilBack)
     var requiredRecoil: Bool = Settings.getBoolSetting(.RequiredRecoil)
     var requiredGamma: Bool = Settings.getBoolSetting(.RequiredGamma)
     var requiredTOF: Bool = Settings.getBoolSetting(.RequiredTOF)
@@ -84,7 +85,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBAction func startParticleChanged(_ sender: Any?) {
         if let type = SearchType(rawValue: startParticleControl.selectedSegment) {
             alpha2View.isHidden = type != .alpha
-            requiredRecoilButton.isHidden = type == .recoil
+            requiredRecoil = requiredRecoil || type == .recoil
+            requiredRecoilButton.state = requiredRecoil ? 1 : 0
+            requiredRecoilButton.isEnabled = type != .recoil
             fissionAlpha1View.isHidden = type == .recoil
         }
     }
@@ -143,7 +146,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             processor.alpha2MaxDeltaStrips = sMaxAlpha2FrontDeltaStrips.integerValue
             processor.recoilFrontMaxDeltaStrips = sMaxRecoilFrontDeltaStrips.integerValue
             processor.recoilBackMaxDeltaStrips = sMaxRecoilBackDeltaStrips.integerValue
-            processor.requiredFissionRecoilBack = requiredFissionRecoilBack
+            processor.requiredFissionAlphaBack = requiredFissionAlphaBack
+            processor.requiredRecoilBack = requiredRecoilBack
             processor.requiredRecoil = requiredRecoil
             processor.recoilFrontMinEnergy = sMinRecoilEnergy.doubleValue
             processor.recoilFrontMaxEnergy = sMaxRecoilEnergy.doubleValue
@@ -269,7 +273,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         Settings.setObject(sMaxRecoilFrontDeltaStrips.integerValue, forSetting: .MaxRecoilFrontDeltaStrips)
         Settings.setObject(sMaxRecoilBackDeltaStrips.integerValue, forSetting: .MaxRecoilBackDeltaStrips)
         Settings.setObject(summarizeFissionsFront, forSetting: .SummarizeFissionsFront)
-        Settings.setObject(requiredFissionRecoilBack, forSetting: .RequiredFissionRecoilBack)
+        Settings.setObject(requiredFissionAlphaBack, forSetting: .RequiredFissionAlphaBack)
+        Settings.setObject(requiredRecoilBack, forSetting: .RequiredRecoilBack)
         Settings.setObject(requiredRecoil, forSetting: .RequiredRecoil)
         Settings.setObject(requiredGamma, forSetting: .RequiredGamma)
         Settings.setObject(requiredTOF, forSetting: .RequiredTOF)

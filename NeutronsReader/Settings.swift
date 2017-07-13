@@ -30,7 +30,8 @@ class Settings {
         MaxRecoilFrontDeltaStrips = "MaxRecoilFrontDeltaStrips",
         MaxRecoilBackDeltaStrips = "MaxRecoilBackDeltaStrips",
         SummarizeFissionsFront = "SummarizeFissionsFront",
-        RequiredFissionRecoilBack = "RequiredFissionRecoilBack",
+        RequiredFissionAlphaBack = "RequiredFissionAlphaBack",
+        RequiredRecoilBack = "RequiredRecoilBack",
         RequiredRecoil = "RequiredRecoil",
         RequiredGamma = "RequiredGamma",
         RequiredTOF = "RequiredTOF",
@@ -128,7 +129,7 @@ class Settings {
             return 0
         case .SummarizeFissionsFront:
             return false
-        case .RequiredFissionRecoilBack:
+        case .RequiredFissionAlphaBack, .RequiredRecoilBack:
             return true
         case .RequiredRecoil:
             return false

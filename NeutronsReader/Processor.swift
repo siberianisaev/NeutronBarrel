@@ -52,6 +52,7 @@ class Processor: NSObject {
     fileprivate var currentFileName: String?
     fileprivate var neutronsMultiplicityTotal = [Int : Int]()
     fileprivate var recoilsFrontPerAct = [Any]()
+    fileprivate var recoilsBackPerAct = [Any]()
     fileprivate var alpha2FrontPerAct = [Any]()
     fileprivate var tofRealPerAct = [Any]()
     fileprivate var vetoPerAct = [Any]()
@@ -83,7 +84,8 @@ class Processor: NSObject {
     var recoilFrontMaxDeltaStrips: Int = 0
     var recoilBackMaxDeltaStrips: Int = 0
     var summarizeFissionsAlphaFront: Bool = false
-    var requiredFissionRecoilBack: Bool = false
+    var requiredFissionAlphaBack: Bool = false
+    var requiredRecoilBack: Bool = false
     var requiredRecoil: Bool = false
     var requiredGamma: Bool = false
     var requiredTOF: Bool = false
@@ -385,7 +387,7 @@ class Processor: NSObject {
                 // FBack or ABack
                 findFissionsAlphaBack()
                 fseek(file, Int(position), SEEK_SET)
-                if requiredFissionRecoilBack && 0 == fissionsAlphaBackPerAct.count {
+                if requiredFissionAlphaBack && 0 == fissionsAlphaBackPerAct.count {
                     clearActInfo()
                     return
                 }
@@ -550,17 +552,27 @@ class Processor: NSObject {
             var position = fpos_t()
             fgetpos(self.file, &position)
             let t = CUnsignedLongLong(event.param1)
+            
             let isRecoilBackFounded = self.findRecoilBack(t)
             fseek(self.file, Int(position), SEEK_SET)
-            if (isRecoilBackFounded) {
-                let isTOFFounded = self.findTOFForRecoil(event, timeRecoil: t)
-                fseek(self.file, Int(position), SEEK_SET)
-                if (!self.requiredTOF || isTOFFounded) {
-                    let heavy = self.getEnergy(event, type: .heavy)
-                    self.storeRecoil(event, energy: energy, heavy: heavy, deltaTime: deltaTime)
-                    return true
+            if (self.requiredRecoilBack) {
+                if !isRecoilBackFounded {
+                    return false
+                } else if self.startParticleType == .recoil {
+                    let energy = self.getEnergy(event, type: .recoil)
+                    self.storeRecoilBack(event, energy: energy, deltaTime: deltaTime)
                 }
             }
+            
+            let isTOFFounded = self.findTOFForRecoil(event, timeRecoil: t)
+            fseek(self.file, Int(position), SEEK_SET)
+            if (self.requiredTOF && !isTOFFounded) {
+                return false
+            }
+            
+            let heavy = self.getEnergy(event, type: .heavy)
+            self.storeRecoil(event, energy: energy, heavy: heavy, deltaTime: deltaTime)
+            return true
         }
         return false
     }
@@ -586,7 +598,7 @@ class Processor: NSObject {
         let directions: Set<SearchDirection> = [.forward]
         search(directions: directions, startTime: timeRecoilFront, minDeltaTime: 0, maxDeltaTime: recoilBackMaxTime, useCycleTime: false, updateCycleEvent: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
             if self.isBack(event, type: .recoil) {
-                if (self.requiredFissionRecoilBack && self.startParticleType != .recoil) {
+                if (self.requiredRecoilBack && self.startParticleType != .recoil) {
                     found = self.isRecoilBackStripNearToFissionAlphaBack(event)
                 } else {
                     found = true
@@ -693,6 +705,13 @@ class Processor: NSObject {
         recoilsFrontPerAct.append(info)
     }
     
+    func storeRecoilBack(_ event: Event, energy: Double, deltaTime: CLongLong) {
+        let info = [kDeltaTime: deltaTime,
+                    kMarker: getMarker(event),
+                    kEnergy: energy] as [String : Any]
+        recoilsBackPerAct.append(info)
+    }
+    
     func storeAlpha2(_ event: Event, deltaTime: CLongLong) {
         let energy = getEnergy(event, type: .alpha)
         let info = [kEnergy: energy,
@@ -743,6 +762,7 @@ class Processor: NSObject {
         specialPerAct.removeAll()
         fissionsAlphaWelPerAct.removeAll()
         recoilsFrontPerAct.removeAll()
+        recoilsBackPerAct.removeAll()
         alpha2FrontPerAct.removeAll()
         tofRealPerAct.removeAll()
         vetoPerAct.removeAll()
@@ -1037,7 +1057,7 @@ class Processor: NSObject {
         if searchAlpha2 {
             columnsCount += 4
         }
-        let rowsMax = max(max(max(max(max(max(1, gammaPerAct.count), fissionsAlphaWelPerAct.count), recoilsFrontPerAct.count), fissionsAlphaBackPerAct.count), fissionsAlphaFrontPerAct.count), vetoPerAct.count)
+        let rowsMax = max(max(max(max(max(max(max(1, gammaPerAct.count), fissionsAlphaWelPerAct.count), recoilsFrontPerAct.count), fissionsAlphaBackPerAct.count), fissionsAlphaFrontPerAct.count), vetoPerAct.count), recoilsBackPerAct.count)
         for row in 0 ..< rowsMax {
             for column in 0...columnsCount {
                 var field = ""
@@ -1092,7 +1112,7 @@ class Processor: NSObject {
                         }
                     }
                 case 8:
-                    if row == 0 {
+                    if startParticleType != .recoil && row == 0 {
                         var summ: Double = 0
                         for info in fissionsAlphaFrontPerAct {
                             if let energy = (info as? [String: Any])?[kEnergy] {
@@ -1127,26 +1147,30 @@ class Processor: NSObject {
                         }
                     }
                 case 13:
-                    if row < fissionsAlphaBackPerAct.count {
-                        if let energy = getValueFrom(array: fissionsAlphaBackPerAct, row: row, key: kEnergy) {
+                    let array = startParticleType == .recoil ? recoilsBackPerAct : fissionsAlphaBackPerAct
+                    if row < array.count {
+                        if let energy = getValueFrom(array: array, row: row, key: kEnergy) {
                             field = String(format: "%.7f", energy as! Double)
                         }
                     }
                 case 14:
-                    if row < fissionsAlphaBackPerAct.count {
-                        if let marker = getValueFrom(array: fissionsAlphaBackPerAct, row: row, key: kMarker) {
+                    let array = startParticleType == .recoil ? recoilsBackPerAct : fissionsAlphaBackPerAct
+                    if row < array.count {
+                        if let marker = getValueFrom(array: array, row: row, key: kMarker) {
                             field = String(format: "%hu", marker as! CUnsignedShort)
                         }
                     }
                 case 15:
-                    if row < fissionsAlphaBackPerAct.count {
-                        if let deltaTime = getValueFrom(array: fissionsAlphaBackPerAct, row: row, key: kDeltaTime) {
+                    let array = startParticleType == .recoil ? recoilsBackPerAct : fissionsAlphaBackPerAct
+                    if row < array.count {
+                        if let deltaTime = getValueFrom(array: array, row: row, key: kDeltaTime) {
                             field = String(format: "%lld", deltaTime as! CLongLong)
                         }
                     }
                 case 16:
-                    if row < fissionsAlphaBackPerAct.count {
-                        if let info = fissionsAlphaBackPerAct[row] as? [String: Any], let strip_0_15 = info[kStrip0_15], let encoder = info[kEncoder] {
+                    let array = startParticleType == .recoil ? recoilsBackPerAct : fissionsAlphaBackPerAct
+                    if row < array.count {
+                        if let info = array[row] as? [String: Any], let strip_0_15 = info[kStrip0_15], let encoder = info[kEncoder] {
                             let strip = stripConvertToFormat_1_48(strip_0_15 as! CUnsignedShort, encoder: encoder as! CUnsignedShort)
                             field = String(format: "%d", strip)
                         }
