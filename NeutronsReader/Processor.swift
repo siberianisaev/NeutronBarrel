@@ -499,7 +499,7 @@ class Processor: NSObject {
             if self.isBack(event, type: type) {
                 let energy = self.getEnergy(event, type: type)
                 if energy >= self.fissionAlphaFrontMinEnergy && energy <= self.fissionAlphaFrontMaxEnergy {
-                    self.storeFissionAlphaBack(event, deltaTime: deltaTime)
+                    self.storeFissionAlphaRecoilBack(event, deltaTime: deltaTime)
                 }
             }
         }
@@ -559,8 +559,7 @@ class Processor: NSObject {
                 if !isRecoilBackFounded {
                     return false
                 } else if self.startParticleType == .recoil {
-                    let energy = self.getEnergy(event, type: .recoil)
-                    self.storeRecoilBack(event, energy: energy, deltaTime: deltaTime)
+                    self.storeFissionAlphaRecoilBack(event, deltaTime: deltaTime)
                 }
             }
             
@@ -643,7 +642,7 @@ class Processor: NSObject {
     
     // MARK: - Storage
     
-    func storeFissionAlphaBack(_ event: Event, deltaTime: CLongLong) {
+    func storeFissionAlphaRecoilBack(_ event: Event, deltaTime: CLongLong) {
         let encoder = fissionAlphaRecoilEncoderForEventId(Int(event.eventId))
         let strip_0_15 = event.param2 >> 12
         let energy = getEnergy(event, type: startParticleType)
@@ -653,7 +652,11 @@ class Processor: NSObject {
                     kEventNumber: eventNumber(),
                     kDeltaTime: deltaTime,
                     kMarker: getMarker(event)] as [String : Any]
-        fissionsAlphaBackPerAct.append(info)
+        if isRecoil(event) {
+            recoilsBackPerAct.append(info)
+        } else {
+            fissionsAlphaBackPerAct.append(info)
+        }
     }
     
     /**
@@ -703,13 +706,6 @@ class Processor: NSObject {
                     kEnergy: energy,
                     kHeavy: heavy] as [String : Any]
         recoilsFrontPerAct.append(info)
-    }
-    
-    func storeRecoilBack(_ event: Event, energy: Double, deltaTime: CLongLong) {
-        let info = [kDeltaTime: deltaTime,
-                    kMarker: getMarker(event),
-                    kEnergy: energy] as [String : Any]
-        recoilsBackPerAct.append(info)
     }
     
     func storeAlpha2(_ event: Event, deltaTime: CLongLong) {
