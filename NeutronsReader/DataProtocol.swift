@@ -123,4 +123,20 @@ class DataProtocol: NSObject {
         return value("THi")
     }
     
+    var BeamEnergy: Int {
+        return value("EnergyHi")
+    }
+    
+    var BeamCurrent: Int {
+        return value("BeamTokHi")
+    }
+    
+    var BeamBackground: Int {
+        return value("BeamFonHi")
+    }
+    
+    var BeamIntegral: Int {
+        return value("IntegralHi")
+    }
+    
 }

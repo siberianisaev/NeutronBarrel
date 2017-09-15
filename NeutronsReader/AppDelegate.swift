@@ -69,6 +69,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             setupVETOView()
         }
     }
+    var trackBeamEnergy: Bool = Settings.getBoolSetting(.TrackBeamEnergy)
+    var trackBeamCurrent: Bool = Settings.getBoolSetting(.TrackBeamCurrent)
+    var trackBeamBackground: Bool = Settings.getBoolSetting(.TrackBeamBackground)
+    var trackBeamIntegral: Bool = Settings.getBoolSetting(.TrackBeamIntegral)
     
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         startParticleControl.selectedSegment = Settings.getIntSetting(.SearchType)
@@ -167,6 +171,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             processor.maxNeutronTime = UInt64(sMaxNeutronTime.doubleValue)
             processor.searchSpecialEvents = searchSpecialEvents
             processor.searchVETO = searchVETO
+            processor.trackBeamEnergy = trackBeamEnergy
+            processor.trackBeamCurrent = trackBeamCurrent
+            processor.trackBeamBackground = trackBeamBackground
+            processor.trackBeamIntegral = trackBeamIntegral
             let ids = specialEventIds.components(separatedBy: ",").map({ (s: String) -> Int in
                 return Int(s) ?? 0
             }).filter({ (i: Int) -> Bool in
@@ -281,6 +289,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         Settings.setObject(requiredVETO, forSetting: .RequiredVETO)
         Settings.setObject(searchNeutrons, forSetting: .SearchNeutrons)
         Settings.setObject(searchVETO, forSetting: .SearchVETO)
+        Settings.setObject(trackBeamEnergy, forSetting: .TrackBeamEnergy)
+        Settings.setObject(trackBeamCurrent, forSetting: .TrackBeamCurrent)
+        Settings.setObject(trackBeamBackground, forSetting: .TrackBeamBackground)
+        Settings.setObject(trackBeamIntegral, forSetting: .TrackBeamIntegral)
         Settings.setObject(startParticleControl.selectedSegment, forSetting: .SearchType)
         Settings.setObject(searchAlpha2, forSetting: .SearchAlpha2)
         Settings.setObject(sMinAlpha2Energy.doubleValue, forSetting: .MinAlpha2Energy)

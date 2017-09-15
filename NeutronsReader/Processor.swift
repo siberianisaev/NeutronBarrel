@@ -61,6 +61,7 @@ class Processor: NSObject {
     fileprivate var fissionsAlphaWelPerAct = [Any]()
     fileprivate var gammaPerAct = [Any]()
     fileprivate var specialPerAct = [Int: CUnsignedShort]()
+    fileprivate var beamRelatedValuesPerAct = [Int: Float]()
     fileprivate var firstFissionAlphaInfo: [String: Any]?
     fileprivate var stoped: Bool = false
     fileprivate var logger: Logger!
@@ -91,6 +92,10 @@ class Processor: NSObject {
     var requiredTOF: Bool = false
     var requiredVETO: Bool = false
     var searchVETO: Bool = false
+    var trackBeamEnergy: Bool = false
+    var trackBeamCurrent: Bool = false
+    var trackBeamBackground: Bool = false
+    var trackBeamIntegral: Bool = false
     var searchNeutrons: Bool = false
     var searchAlpha2: Bool = false
     var alpha2MinEnergy: Double = 0
@@ -123,7 +128,7 @@ class Processor: NSObject {
     
     func processDataWithCompletion(_ completion: @escaping (()->())) {
         stoped = false
-    
+        
         DispatchQueue.global(qos: .default).async { [weak self] in
             self?.processData()
             DispatchQueue.main.async {
@@ -224,7 +229,7 @@ class Processor: NSObject {
                     cycleEvent = event
                     continue
                 }
-            
+                
                 if dataProtocol.isValidEventIdForTimeCheck(id) {
                     let relativeTime = event.param1
                     let time = useCycleTime ? absTime(relativeTime, cycleEvent: cycleEvent) : CUnsignedLongLong(relativeTime)
@@ -418,6 +423,9 @@ class Processor: NSObject {
                 fseek(file, Int(position), SEEK_SET)
             }
             
+            findBeamEvents()
+            fseek(file, Int(position), SEEK_SET)
+            
             // Important: this search must be last because we don't do file repositioning here
             // Summ(FFron or AFron)
             if !isRecoilSearch && summarizeFissionsAlphaFront {
@@ -609,19 +617,48 @@ class Processor: NSObject {
     }
     
     func findSpecialEvents() {
-        let setIds = Set<Int>(specialEventIds)
+        var setIds = Set<Int>(specialEventIds)
         if setIds.count == 0 {
             return
         }
         
-        var found = Set<Int>()
         forwardSearch { (event: Event, stop: UnsafeMutablePointer<Bool>) in
             let id = Int(event.eventId)
-            if setIds.contains(id) && !found.contains(id) {
+            if setIds.contains(id) {
                 self.storeSpecial(event, id: id)
-                found.insert(id)
+                setIds.remove(id)
             }
-            if found.count == setIds.count {
+            if setIds.count == 0 {
+                stop.initialize(to: true)
+            }
+        }
+    }
+    
+    func findBeamEvents() {
+        var setIds = Set<Int>()
+        if trackBeamEnergy {
+            setIds.insert(dataProtocol.BeamEnergy)
+        }
+        if trackBeamCurrent {
+            setIds.insert(dataProtocol.BeamCurrent)
+        }
+        if trackBeamBackground {
+            setIds.insert(dataProtocol.BeamBackground)
+        }
+        if trackBeamIntegral {
+            setIds.insert(dataProtocol.BeamIntegral)
+        }
+        if setIds.count == 0 {
+            return
+        }
+        
+        forwardSearch { (event: Event, stop: UnsafeMutablePointer<Bool>) in
+            let id = Int(event.eventId)
+            if setIds.contains(id) {
+                self.storeBeamRelated(event)
+                setIds.remove(id)
+            }
+            if setIds.count == 0 {
                 stop.initialize(to: true)
             }
         }
@@ -749,6 +786,11 @@ class Processor: NSObject {
         specialPerAct[id] = channel
     }
     
+    func storeBeamRelated(_ event: Event) {
+        let value = getFloatValueFrom(event: event)
+        beamRelatedValuesPerAct[Int(event.eventId)] = value
+    }
+    
     func clearActInfo() {
         neutronsSummPerAct = 0
         neutronsBackwardSummPerAct = 0
@@ -756,6 +798,7 @@ class Processor: NSObject {
         fissionsAlphaBackPerAct.removeAll()
         gammaPerAct.removeAll()
         specialPerAct.removeAll()
+        beamRelatedValuesPerAct.removeAll()
         fissionsAlphaWelPerAct.removeAll()
         recoilsFrontPerAct.removeAll()
         recoilsBackPerAct.removeAll()
@@ -770,14 +813,14 @@ class Processor: NSObject {
     /**
      Events: Beam Current, Integral, Energy, Background.
      */
-    fileprivate func getFloatValueFromSpecial(event: Event) -> Float {
+    fileprivate func getFloatValueFrom(event: Event) -> Float {
         let hi = event.param3
         let lo = event.param2
         let word = (UInt32(hi) << 16) + UInt32(lo)
-//        let sign: Int = (word >> 31) == 1 ? 1 : -1
-//        let exponenta = Int((word >> 23) & 0xFF)
-//        let mantissa = exponenta != 0 ? ((word & 0x7FFFFF) | 0x800000) : ((word & 0x7FFFFF) << 1)
-//        let value = Float(sign) * (Float(mantissa) * pow(Float(2),Float(-23)) * pow(Float(2),Float(exponenta-127)))
+        //        let sign: Int = (word >> 31) == 1 ? 1 : -1
+        //        let exponenta = Int((word >> 23) & 0xFF)
+        //        let mantissa = exponenta != 0 ? ((word & 0x7FFFFF) | 0x800000) : ((word & 0x7FFFFF) << 1)
+        //        let value = Float(sign) * (Float(mantissa) * pow(Float(2),Float(-23)) * pow(Float(2),Float(exponenta-127)))
         let value = Float(bitPattern: word)
         return value
     }
@@ -1047,7 +1090,7 @@ class Processor: NSObject {
         default:
             startParticle = ""
         }
-        var header = String(format: "Event(Recoil),E(RFron),E(HRFron),RFronMarker,dT(RFron-$Fron),TOF,dT(TOF-RFron),Event($),Summ($Fron),$Fron,$FronMarker,dT($FronFirst-Next),Strip($Fron),$Back,$BackMarker,dT($Fron-$Back),Strip($Back),$Wel,$WelMarker,$WelPos,Neutrons,Neutrons(Backward),Gamma,dT($Fron-Gamma),Special\(special1),Special\(special2),Special\(special3)")
+        var header = String(format: "Event(Recoil),E(RFron),E(HRFron),RFronMarker,dT(RFron-$Fron),TOF,dT(TOF-RFron),Event($),Summ($Fron),$Fron,$FronMarker,dT($FronFirst-Next),Strip($Fron),$Back,$BackMarker,dT($Fron-$Back),Strip($Back),$Wel,$WelMarker,$WelPos,Neutrons,Neutrons(Backward),Gamma,dT($Fron-Gamma),Special\(special1),Special\(special2),Special\(special3),BeamEnergy,BeamCurrent,BeamBackground,BeamIntegral")
         if searchVETO {
             header += ",Event(VETO),E(VETO),Strip(VETO),dT($Fron-VETO)"
         }
@@ -1061,7 +1104,7 @@ class Processor: NSObject {
     }
     
     func logActResults() {
-        var columnsCount = 26
+        var columnsCount = 30
         if searchVETO {
             columnsCount += 4
         }
@@ -1243,6 +1286,30 @@ class Processor: NSObject {
                         }
                     }
                 case 27:
+                    if row == 0 {
+                        if let f = beamRelatedValuesPerAct[dataProtocol.BeamEnergy] {
+                            field = String(format: "%.1f", f)
+                        }
+                    }
+                case 28:
+                    if row == 0 {
+                        if let f = beamRelatedValuesPerAct[dataProtocol.BeamCurrent] {
+                            field = String(format: "%.2f", f)
+                        }
+                    }
+                case 29:
+                    if row == 0 {
+                        if let f = beamRelatedValuesPerAct[dataProtocol.BeamBackground] {
+                            field = String(format: "%.1f", f)
+                        }
+                    }
+                case 30:
+                    if row == 0 {
+                        if let f = beamRelatedValuesPerAct[dataProtocol.BeamIntegral] {
+                            field = String(format: "%.1f", f)
+                        }
+                    }
+                case 31:
                     if searchVETO {
                         if row < vetoPerAct.count {
                             if let eventNumber = getValueFrom(array: vetoPerAct, row: row, key: kEventNumber) {
@@ -1252,7 +1319,7 @@ class Processor: NSObject {
                     } else {
                         field = alpha2EventNumber(row)
                     }
-                case 28:
+                case 32:
                     if searchVETO {
                         if row < vetoPerAct.count {
                             if let energy = getValueFrom(array: vetoPerAct, row: row, key: kEnergy) {
@@ -1262,7 +1329,7 @@ class Processor: NSObject {
                     } else {
                         field = alpha2Energy(row)
                     }
-                case 29:
+                case 33:
                     if searchVETO {
                         if row < vetoPerAct.count {
                             if let strip_0_15 = getValueFrom(array: vetoPerAct, row: row, key: kStrip0_15) {
@@ -1272,7 +1339,7 @@ class Processor: NSObject {
                     } else {
                         field = alpha2Marker(row)
                     }
-                case 30:
+                case 34:
                     if searchVETO {
                         if row < vetoPerAct.count {
                             if let deltaTime = getValueFrom(array: vetoPerAct, row: row, key: kDeltaTime) {
@@ -1282,13 +1349,13 @@ class Processor: NSObject {
                     } else {
                         field = alphs2DeltaTime(row)
                     }
-                case 31:
+                case 35:
                     field = alpha2EventNumber(row)
-                case 32:
+                case 36:
                     field = alpha2Energy(row)
-                case 33:
+                case 37:
                     field = alpha2Marker(row)
-                case 34:
+                case 38:
                     field = alphs2DeltaTime(row)
                 default:
                     break
@@ -1347,5 +1414,5 @@ class Processor: NSObject {
         }
         return ""
     }
-
+    
 }

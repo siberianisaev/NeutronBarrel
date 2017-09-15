@@ -40,6 +40,10 @@ class Settings {
         SearchType = "SearchType",
         SearchAlpha2 = "SearchAlpha2",
         SearchVETO = "SearchVETO",
+        TrackBeamEnergy = "TrackBeamEnergy",
+        TrackBeamCurrent = "TrackBeamCurrent",
+        TrackBeamBackground = "TrackBeamBackground",
+        TrackBeamIntegral = "TrackBeamIntegral",
         MinAlpha2Energy = "MinAlpha2Energy",
         MaxAlpha2Energy = "MaxAlpha2Energy",
         MinAlpha2Time = "MinAlpha2Time",
@@ -161,6 +165,8 @@ class Settings {
             return false
         case .SpecialEventIds:
             return nil
+        case .TrackBeamEnergy, .TrackBeamCurrent, .TrackBeamBackground, .TrackBeamIntegral:
+            return true
         }
     }
     
