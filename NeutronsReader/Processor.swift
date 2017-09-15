@@ -817,10 +817,6 @@ class Processor: NSObject {
         let hi = event.param3
         let lo = event.param2
         let word = (UInt32(hi) << 16) + UInt32(lo)
-        //        let sign: Int = (word >> 31) == 1 ? 1 : -1
-        //        let exponenta = Int((word >> 23) & 0xFF)
-        //        let mantissa = exponenta != 0 ? ((word & 0x7FFFFF) | 0x800000) : ((word & 0x7FFFFF) << 1)
-        //        let value = Float(sign) * (Float(mantissa) * pow(Float(2),Float(-23)) * pow(Float(2),Float(exponenta-127)))
         let value = Float(bitPattern: word)
         return value
     }
