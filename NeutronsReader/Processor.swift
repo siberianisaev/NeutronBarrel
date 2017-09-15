@@ -301,7 +301,7 @@ class Processor: NSObject {
                         autoreleasepool {
                             if let file = self?.file, let currentFileName = self?.currentFileName, let stoped = self?.stoped {
                                 if ferror(file) != 0 {
-                                    print("\nERROR while reading file \(currentFileName)\n")
+                                    print("\nError while reading file \(currentFileName)\n")
                                     exit(-1)
                                 }
                                 if stoped {
@@ -360,7 +360,6 @@ class Processor: NSObject {
             var position = fpos_t()
             fgetpos(file, &position)
             
-            // VETO
             if searchVETO {
                 findVETO()
                 fseek(file, Int(position), SEEK_SET)
@@ -370,7 +369,6 @@ class Processor: NSObject {
                 }
             }
             
-            // Alpha 2
             if searchAlpha2 {
                 findAlpha2()
                 fseek(file, Int(position), SEEK_SET)
@@ -380,7 +378,6 @@ class Processor: NSObject {
                 }
             }
             
-            // Gamma
             findGamma()
             fseek(file, Int(position), SEEK_SET)
             if requiredGamma && 0 == gammaPerAct.count {
@@ -389,7 +386,6 @@ class Processor: NSObject {
             }
             
             if !isRecoilSearch {
-                // FBack or ABack
                 findFissionsAlphaBack()
                 fseek(file, Int(position), SEEK_SET)
                 if requiredFissionAlphaBack && 0 == fissionsAlphaBackPerAct.count {
@@ -397,7 +393,7 @@ class Processor: NSObject {
                     return
                 }
                 
-                // Recoil (search them only after search all FBack/ABack)
+                // Search them only after search all FBack/ABack
                 findRecoil()
                 fseek(file, Int(position), SEEK_SET)
                 if requiredRecoil && 0 == recoilsFrontPerAct.count {
@@ -405,12 +401,10 @@ class Processor: NSObject {
                     return
                 }
                 
-                // FWel or AWel
                 findFissionsAlphaWel()
                 fseek(file, Int(position), SEEK_SET)
             }
             
-            // Neutrons
             if searchNeutrons {
                 findNeutrons()
                 fseek(file, Int(position), SEEK_SET)
@@ -810,9 +804,6 @@ class Processor: NSObject {
     
     // MARK: - Helpers
     
-    /**
-     Events: Beam Current, Integral, Energy, Background.
-     */
     fileprivate func getFloatValueFrom(event: Event) -> Float {
         let hi = event.param3
         let lo = event.param2
@@ -1107,7 +1098,7 @@ class Processor: NSObject {
         if searchAlpha2 {
             columnsCount += 4
         }
-        let rowsMax = max(max(max(max(max(max(max(1, gammaPerAct.count), fissionsAlphaWelPerAct.count), recoilsFrontPerAct.count), fissionsAlphaBackPerAct.count), fissionsAlphaFrontPerAct.count), vetoPerAct.count), recoilsBackPerAct.count)
+        let rowsMax = max(1, [gammaPerAct, fissionsAlphaWelPerAct, recoilsFrontPerAct, fissionsAlphaBackPerAct, fissionsAlphaFrontPerAct, vetoPerAct, recoilsBackPerAct].max(by: { $0.count < $1.count })!.count)
         for row in 0 ..< rowsMax {
             for column in 0...columnsCount {
                 var field = ""
