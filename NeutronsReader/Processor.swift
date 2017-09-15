@@ -1053,19 +1053,67 @@ class Processor: NSObject {
         logger.logCalibration(calibration.stringValue ?? "")
     }
     
-    func logResultsHeader() {
+    fileprivate var columns = [String]()
+    fileprivate var keyColumnRecoilEvent = "Event(Recoil)"
+    fileprivate var keyColumnRecoilEnergy = "E(RFron)"
+    fileprivate var keyColumnRecoilHeavyEnergy = "E(HRFron)"
+    fileprivate var keyColumnRecoilFrontMarker = "RFronMarker"
+    fileprivate var keyColumnRecoilDeltaTime = "dT(RFron-$Fron)"
+    fileprivate var keyColumnTof = "TOF"
+    fileprivate var keyColumnTofDeltaTime = "dT(TOF-RFron)"
+    fileprivate var keyColumnStartEvent = "Event($)"
+    fileprivate var keyColumnStartFrontSumm = "Summ($Fron)"
+    fileprivate var keyColumnStartFrontEnergy = "$Fron"
+    fileprivate var keyColumnStartFrontMarker = "$FronMarker"
+    fileprivate var keyColumnStartFrontDeltaTime = "dT($FronFirst-Next)"
+    fileprivate var keyColumnStartFrontStrip = "Strip($Fron)"
+    fileprivate var keyColumnStartBackEnergy = "$Back"
+    fileprivate var keyColumnStartBackMarker = "$BackMarker"
+    fileprivate var keyColumnStartBackDeltaTime = "dT($Fron-$Back)"
+    fileprivate var keyColumnStartBackStrip = "Strip($Back)"
+    fileprivate var keyColumnStartWelSumm = "Summ($Wel)"
+    fileprivate var keyColumnStartWelEnergy = "$Wel"
+    fileprivate var keyColumnStartWelMarker = "$WelMarker"
+    fileprivate var keyColumnStartWelPosition = "$WelPos"
+    fileprivate var keyColumnNeutrons = "Neutrons"
+    fileprivate var keyColumnNeutronsBackward = "Neutrons(Backward)"
+    fileprivate var keyColumnGammaEnergy = "Gamma"
+    fileprivate var keyColumnGammaDeltaTime = "dT($Fron-Gamma)"
+    fileprivate var keyColumnSpecial1: String {
         var special1: Int = 0
-        var special2: Int = 0
-        var special3: Int = 0
         if specialEventIds.count >= 1 {
             special1 = specialEventIds[0]
         }
+        return "Special\(special1)"
+    }
+    fileprivate var keyColumnSpecial2: String {
+        var special2: Int = 0
         if specialEventIds.count >= 2 {
             special2 = specialEventIds[1]
         }
+        return "Special\(special2)"
+    }
+    fileprivate var keyColumnSpecial3: String {
+        var special3: Int = 0
         if specialEventIds.count >= 3 {
             special3 = specialEventIds[2]
         }
+        return "Special\(special3)"
+    }
+    fileprivate var keyColumnBeamEnergy = "BeamEnergy"
+    fileprivate var keyColumnBeamCurrent = "BeamCurrent"
+    fileprivate var keyColumnBeamBackground = "BeamBackground"
+    fileprivate var keyColumnBeamIntegral = "BeamIntegral"
+    fileprivate var keyColumnVetoEvent = "Event(VETO)"
+    fileprivate var keyColumnVetoEnergy = "E(VETO)"
+    fileprivate var keyColumnVetoStrip = "Strip(VETO)"
+    fileprivate var keyColumnVetoDeltaTime = "dT($Fron-VETO)"
+    fileprivate var keyColumnAlpha2Event = "Event(Alpha2)"
+    fileprivate var keyColumnAlpha2Energy = "E(Alpha2)"
+    fileprivate var keyColumnAlpha2Marker = "Alpha2Marker"
+    fileprivate var keyColumnAlpha2DeltaTime = "dT(Alpha1-Alpha2)"
+    
+    func logResultsHeader() {
         var startParticle: String
         switch startParticleType {
         case .fission:
@@ -1077,133 +1125,170 @@ class Processor: NSObject {
         default:
             startParticle = ""
         }
-        var header = String(format: "Event(Recoil),E(RFron),E(HRFron),RFronMarker,dT(RFron-$Fron),TOF,dT(TOF-RFron),Event($),Summ($Fron),$Fron,$FronMarker,dT($FronFirst-Next),Strip($Fron),$Back,$BackMarker,dT($Fron-$Back),Strip($Back),Summ($Wel),$Wel,$WelMarker,$WelPos,Neutrons,Neutrons(Backward),Gamma,dT($Fron-Gamma),Special\(special1),Special\(special2),Special\(special3),BeamEnergy,BeamCurrent,BeamBackground,BeamIntegral")
+        
+        columns = [
+            keyColumnRecoilEvent,
+            keyColumnRecoilEnergy,
+            keyColumnRecoilHeavyEnergy,
+            keyColumnRecoilFrontMarker,
+            keyColumnRecoilDeltaTime,
+            keyColumnTof,
+            keyColumnTofDeltaTime,
+            keyColumnStartEvent,
+            keyColumnStartFrontSumm,
+            keyColumnStartFrontEnergy,
+            keyColumnStartFrontMarker,
+            keyColumnStartFrontDeltaTime,
+            keyColumnStartFrontStrip,
+            keyColumnStartBackEnergy,
+            keyColumnStartBackMarker,
+            keyColumnStartBackDeltaTime,
+            keyColumnStartBackStrip,
+            keyColumnStartWelSumm,
+            keyColumnStartWelEnergy,
+            keyColumnStartWelMarker,
+            keyColumnStartWelPosition,
+            keyColumnNeutrons,
+            keyColumnNeutronsBackward,
+            keyColumnGammaEnergy,
+            keyColumnGammaDeltaTime,
+            keyColumnSpecial1,
+            keyColumnSpecial2,
+            keyColumnSpecial3,
+            keyColumnBeamEnergy,
+            keyColumnBeamCurrent,
+            keyColumnBeamBackground,
+            keyColumnBeamIntegral
+        ]
         if searchVETO {
-            header += ",Event(VETO),E(VETO),Strip(VETO),dT($Fron-VETO)"
+            columns.append(contentsOf: [
+                keyColumnVetoEvent,
+                keyColumnVetoEnergy,
+                keyColumnVetoStrip,
+                keyColumnVetoDeltaTime
+                ])
         }
         if searchAlpha2 {
-            header += ",Event(Alpha2),E(Alpha2),Alpha2Marker,dT(Alpha1-Alpha2)"
+            columns.append(contentsOf: [
+                keyColumnAlpha2Event,
+                keyColumnAlpha2Energy,
+                keyColumnAlpha2Marker,
+                keyColumnAlpha2DeltaTime
+                ])
         }
-        header = header.replacingOccurrences(of: "$", with: startParticle)
-        let components = header.components(separatedBy: ",")
-        logger.writeLineOfFields(components as [AnyObject])
+        
+        let headers = columns.joined(separator: ",").replacingOccurrences(of: "$", with: startParticle).components(separatedBy: ",") as [AnyObject]
+        logger.writeLineOfFields(headers)
         logger.finishLine() // +1 line padding
     }
     
     func logActResults() {
-        var columnsCount = 31
-        if searchVETO {
-            columnsCount += 4
-        }
-        if searchAlpha2 {
-            columnsCount += 4
-        }
         let rowsMax = max(1, [gammaPerAct, fissionsAlphaWelPerAct, recoilsFrontPerAct, fissionsAlphaBackPerAct, fissionsAlphaFrontPerAct, vetoPerAct, recoilsBackPerAct].max(by: { $0.count < $1.count })!.count)
         for row in 0 ..< rowsMax {
-            for column in 0...columnsCount {
+            for column in columns {
                 var field = ""
                 switch column {
-                case 0:
+                case keyColumnRecoilEvent:
                     if row < recoilsFrontPerAct.count {
                         if let eventNumberObject = getValueFrom(array: recoilsFrontPerAct, row: row, key: kEventNumber) {
                             field = currentFileEventNumber(eventNumberObject as! CUnsignedLongLong)
                         }
                     }
-                case 1:
+                case keyColumnRecoilEnergy:
                     if row < recoilsFrontPerAct.count {
                         if let recoilEnergy = getValueFrom(array: recoilsFrontPerAct, row: row, key: kEnergy) {
                             field = String(format: "%.7f", recoilEnergy as! Double)
                         }
                     }
-                case 2:
+                case keyColumnRecoilHeavyEnergy:
                     if row < recoilsFrontPerAct.count {
                         if let recoilHeavy = getValueFrom(array: recoilsFrontPerAct, row: row, key: kHeavy) {
                             field = String(format: "%.7f", recoilHeavy as! Double)
                         }
                     }
-                case 3:
+                case keyColumnRecoilFrontMarker:
                     if row < recoilsFrontPerAct.count {
                         if let marker = getValueFrom(array: recoilsFrontPerAct, row: row, key: kMarker) {
                             field = String(format: "%hu", marker as! CUnsignedShort)
                         }
                     }
-                case 4:
+                case keyColumnRecoilDeltaTime:
                     if row < recoilsFrontPerAct.count {
                         if let deltaTimeRecoilFission = getValueFrom(array: recoilsFrontPerAct, row: row, key: kDeltaTime) {
                             field = String(format: "%lld", deltaTimeRecoilFission as! CLongLong)
                         }
                     }
-                case 5:
+                case keyColumnTof:
                     if row < tofRealPerAct.count {
                         if let tof = getValueFrom(array: tofRealPerAct, row: row, key: kValue) {
                             let format = "%." + (unitsTOF == .channels ? "0" : "7") + "f"
                             field = String(format: format, tof as! Double)
                         }
                     }
-                case 6:
+                case keyColumnTofDeltaTime:
                     if row < tofRealPerAct.count {
                         if let deltaTimeTOFRecoil = getValueFrom(array: tofRealPerAct, row: row, key: kDeltaTime) {
                             field = String(format: "%lld", deltaTimeTOFRecoil as! CLongLong)
                         }
                     }
-                case 7:
+                case keyColumnStartEvent:
                     if row < fissionsAlphaFrontPerAct.count {
                         if let eventNumber = getValueFrom(array: fissionsAlphaFrontPerAct, row: row, key: kEventNumber) {
                             field = currentFileEventNumber(eventNumber as! CUnsignedLongLong)
                         }
                     }
-                case 8:
+                case keyColumnStartFrontSumm:
                     if row == 0 && startParticleType != .recoil {
                         let summ = getSummEnergyFrom(fissionsAlphaFrontPerAct)
                         field = String(format: "%.7f", summ)
                     }
-                case 9:
+                case keyColumnStartFrontEnergy:
                     if row < fissionsAlphaFrontPerAct.count {
                         if let energy = getValueFrom(array: fissionsAlphaFrontPerAct, row: row, key: kEnergy) {
                             field = String(format: "%.7f", energy as! Double)
                         }
                     }
-                case 10:
+                case keyColumnStartFrontMarker:
                     if row < fissionsAlphaFrontPerAct.count {
                         if let marker = getValueFrom(array: fissionsAlphaFrontPerAct, row: row, key: kMarker) {
                             field = String(format: "%hu", marker as! CUnsignedShort)
                         }
                     }
-                case 11:
+                case keyColumnStartFrontDeltaTime:
                     if row < fissionsAlphaFrontPerAct.count {
                         if let deltaTime = getValueFrom(array: fissionsAlphaFrontPerAct, row: row, key: kDeltaTime) {
                             field = String(format: "%lld", deltaTime as! CLongLong)
                         }
                     }
-                case 12:
+                case keyColumnStartFrontStrip:
                     if row < fissionsAlphaFrontPerAct.count {
                         if let info = fissionsAlphaFrontPerAct[row] as? [String: Any], let strip_0_15 = info[kStrip0_15], let encoder = info[kEncoder] {
                             let strip = stripConvertToFormat_1_48(strip_0_15 as! CUnsignedShort, encoder: encoder as! CUnsignedShort)
                             field = String(format: "%d", strip)
                         }
                     }
-                case 13:
+                case keyColumnStartBackEnergy:
                     let array = startParticleType == .recoil ? recoilsBackPerAct : fissionsAlphaBackPerAct
                     if row < array.count {
                         if let energy = getValueFrom(array: array, row: row, key: kEnergy) {
                             field = String(format: "%.7f", energy as! Double)
                         }
                     }
-                case 14:
+                case keyColumnStartBackMarker:
                     let array = startParticleType == .recoil ? recoilsBackPerAct : fissionsAlphaBackPerAct
                     if row < array.count {
                         if let marker = getValueFrom(array: array, row: row, key: kMarker) {
                             field = String(format: "%hu", marker as! CUnsignedShort)
                         }
                     }
-                case 15:
+                case keyColumnStartBackDeltaTime:
                     let array = startParticleType == .recoil ? recoilsBackPerAct : fissionsAlphaBackPerAct
                     if row < array.count {
                         if let deltaTime = getValueFrom(array: array, row: row, key: kDeltaTime) {
                             field = String(format: "%lld", deltaTime as! CLongLong)
                         }
                     }
-                case 16:
+                case keyColumnStartBackStrip:
                     let array = startParticleType == .recoil ? recoilsBackPerAct : fissionsAlphaBackPerAct
                     if row < array.count {
                         if let info = array[row] as? [String: Any], let strip_0_15 = info[kStrip0_15], let encoder = info[kEncoder] {
@@ -1211,138 +1296,122 @@ class Processor: NSObject {
                             field = String(format: "%d", strip)
                         }
                     }
-                case 17:
+                case keyColumnStartWelSumm:
                     if row == 0 && startParticleType != .recoil {
                         let summ = getSummEnergyFrom(fissionsAlphaWelPerAct)
                         field = String(format: "%.7f", summ)
                     }
-                case 18:
+                case keyColumnStartWelEnergy:
                     if row < fissionsAlphaWelPerAct.count {
                         if let energy = getValueFrom(array: fissionsAlphaWelPerAct, row: row, key: kEnergy) {
                             field = String(format: "%.7f", energy as! Double)
                         }
                     }
-                case 19:
+                case keyColumnStartWelMarker:
                     if row < fissionsAlphaWelPerAct.count {
                         if let marker = getValueFrom(array: fissionsAlphaWelPerAct, row: row, key: kMarker) {
                             field = String(format: "%hu", marker as! CUnsignedShort)
                         }
                     }
-                case 20:
+                case keyColumnStartWelPosition:
                     if row < fissionsAlphaWelPerAct.count {
                         if let info = fissionsAlphaWelPerAct[row] as? [String: Any], let strip_0_15 = info[kStrip0_15], let encoder = info[kEncoder] {
                             field = String(format: "FWel%d.%d", encoder as! CUnsignedShort, (strip_0_15  as! CUnsignedShort) + 1)
                         }
                     }
-                case 21:
+                case keyColumnNeutrons:
                     if row == 0 && searchNeutrons {
                         field = String(format: "%llu", neutronsSummPerAct)
                     }
-                case 22:
+                case keyColumnNeutronsBackward:
                     if row == 0 && searchNeutrons {
                         field = String(format: "%llu", neutronsBackwardSummPerAct)
                     }
-                case 23:
+                case keyColumnGammaEnergy:
                     if row < gammaPerAct.count {
                         if let energy = getValueFrom(array: gammaPerAct, row: row, key: kEnergy) {
                             field = String(format: "%.7f", energy as! Double)
                         }
                     }
-                case 24:
+                case keyColumnGammaDeltaTime:
                     if row < gammaPerAct.count {
                         if let deltaTime = getValueFrom(array: gammaPerAct, row: row, key: kDeltaTime) {
                             field = String(format: "%lld", deltaTime as! CLongLong)
                         }
                     }
-                case 25:
+                case keyColumnSpecial1:
                     if row == 0 {
                         if let v = specialValue(0) {
                             field = String(format: "%hu", v)
                         }
                     }
-                case 26:
+                case keyColumnSpecial2:
                     if row == 0 {
                         if let v = specialValue(1) {
                             field = String(format: "%hu", v)
                         }
                     }
-                case 27:
+                case keyColumnSpecial3:
                     if row == 0 {
                         if let v = specialValue(2) {
                             field = String(format: "%hu", v)
                         }
                     }
-                case 28:
+                case keyColumnBeamEnergy:
                     if row == 0 {
                         if let f = beamRelatedValuesPerAct[dataProtocol.BeamEnergy] {
                             field = String(format: "%.1f", f)
                         }
                     }
-                case 29:
+                case keyColumnBeamCurrent:
                     if row == 0 {
                         if let f = beamRelatedValuesPerAct[dataProtocol.BeamCurrent] {
                             field = String(format: "%.2f", f)
                         }
                     }
-                case 30:
+                case keyColumnBeamBackground:
                     if row == 0 {
                         if let f = beamRelatedValuesPerAct[dataProtocol.BeamBackground] {
                             field = String(format: "%.1f", f)
                         }
                     }
-                case 31:
+                case keyColumnBeamIntegral:
                     if row == 0 {
                         if let f = beamRelatedValuesPerAct[dataProtocol.BeamIntegral] {
                             field = String(format: "%.1f", f)
                         }
                     }
-                case 32:
-                    if searchVETO {
-                        if row < vetoPerAct.count {
-                            if let eventNumber = getValueFrom(array: vetoPerAct, row: row, key: kEventNumber) {
-                                field = currentFileEventNumber(eventNumber as! CUnsignedLongLong)
-                            }
+                case keyColumnVetoEvent:
+                    if row < vetoPerAct.count {
+                        if let eventNumber = getValueFrom(array: vetoPerAct, row: row, key: kEventNumber) {
+                            field = currentFileEventNumber(eventNumber as! CUnsignedLongLong)
                         }
-                    } else {
-                        field = alpha2EventNumber(row)
                     }
-                case 33:
-                    if searchVETO {
-                        if row < vetoPerAct.count {
-                            if let energy = getValueFrom(array: vetoPerAct, row: row, key: kEnergy) {
-                                field = String(format: "%.7f", energy as! Double)
-                            }
-                        }
-                    } else {
-                        field = alpha2Energy(row)
-                    }
-                case 34:
-                    if searchVETO {
-                        if row < vetoPerAct.count {
-                            if let strip_0_15 = getValueFrom(array: vetoPerAct, row: row, key: kStrip0_15) {
-                                field = String(format: "%hu", (strip_0_15 as! CUnsignedShort) + 1)
-                            }
-                        }
-                    } else {
-                        field = alpha2Marker(row)
-                    }
-                case 35:
-                    if searchVETO {
-                        if row < vetoPerAct.count {
-                            if let deltaTime = getValueFrom(array: vetoPerAct, row: row, key: kDeltaTime) {
-                                field = String(format: "%lld", deltaTime as! CLongLong)
-                            }
-                        }
-                    } else {
-                        field = alphs2DeltaTime(row)
-                    }
-                case 36:
+                case keyColumnAlpha2Event:
                     field = alpha2EventNumber(row)
-                case 37:
+                case keyColumnVetoEnergy:
+                    if row < vetoPerAct.count {
+                        if let energy = getValueFrom(array: vetoPerAct, row: row, key: kEnergy) {
+                            field = String(format: "%.7f", energy as! Double)
+                        }
+                    }
+                case keyColumnAlpha2Energy:
                     field = alpha2Energy(row)
-                case 38:
+                case keyColumnVetoStrip:
+                    if row < vetoPerAct.count {
+                        if let strip_0_15 = getValueFrom(array: vetoPerAct, row: row, key: kStrip0_15) {
+                            field = String(format: "%hu", (strip_0_15 as! CUnsignedShort) + 1)
+                        }
+                    }
+                case keyColumnAlpha2Marker:
                     field = alpha2Marker(row)
-                case 39:
+                case keyColumnVetoDeltaTime:
+                    if row < vetoPerAct.count {
+                        if let deltaTime = getValueFrom(array: vetoPerAct, row: row, key: kDeltaTime) {
+                            field = String(format: "%lld", deltaTime as! CLongLong)
+                        }
+                    }
+                case keyColumnAlpha2DeltaTime:
                     field = alphs2DeltaTime(row)
                 default:
                     break
