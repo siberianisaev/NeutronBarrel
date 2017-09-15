@@ -1077,7 +1077,7 @@ class Processor: NSObject {
         default:
             startParticle = ""
         }
-        var header = String(format: "Event(Recoil),E(RFron),E(HRFron),RFronMarker,dT(RFron-$Fron),TOF,dT(TOF-RFron),Event($),Summ($Fron),$Fron,$FronMarker,dT($FronFirst-Next),Strip($Fron),$Back,$BackMarker,dT($Fron-$Back),Strip($Back),$Wel,$WelMarker,$WelPos,Neutrons,Neutrons(Backward),Gamma,dT($Fron-Gamma),Special\(special1),Special\(special2),Special\(special3),BeamEnergy,BeamCurrent,BeamBackground,BeamIntegral")
+        var header = String(format: "Event(Recoil),E(RFron),E(HRFron),RFronMarker,dT(RFron-$Fron),TOF,dT(TOF-RFron),Event($),Summ($Fron),$Fron,$FronMarker,dT($FronFirst-Next),Strip($Fron),$Back,$BackMarker,dT($Fron-$Back),Strip($Back),Summ($Wel),$Wel,$WelMarker,$WelPos,Neutrons,Neutrons(Backward),Gamma,dT($Fron-Gamma),Special\(special1),Special\(special2),Special\(special3),BeamEnergy,BeamCurrent,BeamBackground,BeamIntegral")
         if searchVETO {
             header += ",Event(VETO),E(VETO),Strip(VETO),dT($Fron-VETO)"
         }
@@ -1091,7 +1091,7 @@ class Processor: NSObject {
     }
     
     func logActResults() {
-        var columnsCount = 30
+        var columnsCount = 31
         if searchVETO {
             columnsCount += 4
         }
@@ -1153,13 +1153,8 @@ class Processor: NSObject {
                         }
                     }
                 case 8:
-                    if startParticleType != .recoil && row == 0 {
-                        var summ: Double = 0
-                        for info in fissionsAlphaFrontPerAct {
-                            if let energy = (info as? [String: Any])?[kEnergy] {
-                                summ += energy as! Double
-                            }
-                        }
+                    if row == 0 && startParticleType != .recoil {
+                        let summ = getSummEnergyFrom(fissionsAlphaFrontPerAct)
                         field = String(format: "%.7f", summ)
                     }
                 case 9:
@@ -1217,86 +1212,91 @@ class Processor: NSObject {
                         }
                     }
                 case 17:
+                    if row == 0 && startParticleType != .recoil {
+                        let summ = getSummEnergyFrom(fissionsAlphaWelPerAct)
+                        field = String(format: "%.7f", summ)
+                    }
+                case 18:
                     if row < fissionsAlphaWelPerAct.count {
                         if let energy = getValueFrom(array: fissionsAlphaWelPerAct, row: row, key: kEnergy) {
                             field = String(format: "%.7f", energy as! Double)
                         }
                     }
-                case 18:
+                case 19:
                     if row < fissionsAlphaWelPerAct.count {
                         if let marker = getValueFrom(array: fissionsAlphaWelPerAct, row: row, key: kMarker) {
                             field = String(format: "%hu", marker as! CUnsignedShort)
                         }
                     }
-                case 19:
+                case 20:
                     if row < fissionsAlphaWelPerAct.count {
                         if let info = fissionsAlphaWelPerAct[row] as? [String: Any], let strip_0_15 = info[kStrip0_15], let encoder = info[kEncoder] {
                             field = String(format: "FWel%d.%d", encoder as! CUnsignedShort, (strip_0_15  as! CUnsignedShort) + 1)
                         }
                     }
-                case 20:
+                case 21:
                     if row == 0 && searchNeutrons {
                         field = String(format: "%llu", neutronsSummPerAct)
                     }
-                case 21:
+                case 22:
                     if row == 0 && searchNeutrons {
                         field = String(format: "%llu", neutronsBackwardSummPerAct)
                     }
-                case 22:
+                case 23:
                     if row < gammaPerAct.count {
                         if let energy = getValueFrom(array: gammaPerAct, row: row, key: kEnergy) {
                             field = String(format: "%.7f", energy as! Double)
                         }
                     }
-                case 23:
+                case 24:
                     if row < gammaPerAct.count {
                         if let deltaTime = getValueFrom(array: gammaPerAct, row: row, key: kDeltaTime) {
                             field = String(format: "%lld", deltaTime as! CLongLong)
                         }
                     }
-                case 24:
+                case 25:
                     if row == 0 {
                         if let v = specialValue(0) {
                             field = String(format: "%hu", v)
                         }
                     }
-                case 25:
+                case 26:
                     if row == 0 {
                         if let v = specialValue(1) {
                             field = String(format: "%hu", v)
                         }
                     }
-                case 26:
+                case 27:
                     if row == 0 {
                         if let v = specialValue(2) {
                             field = String(format: "%hu", v)
                         }
                     }
-                case 27:
+                case 28:
                     if row == 0 {
                         if let f = beamRelatedValuesPerAct[dataProtocol.BeamEnergy] {
                             field = String(format: "%.1f", f)
                         }
                     }
-                case 28:
+                case 29:
                     if row == 0 {
                         if let f = beamRelatedValuesPerAct[dataProtocol.BeamCurrent] {
                             field = String(format: "%.2f", f)
                         }
                     }
-                case 29:
+                case 30:
                     if row == 0 {
                         if let f = beamRelatedValuesPerAct[dataProtocol.BeamBackground] {
                             field = String(format: "%.1f", f)
                         }
                     }
-                case 30:
+                case 31:
                     if row == 0 {
                         if let f = beamRelatedValuesPerAct[dataProtocol.BeamIntegral] {
                             field = String(format: "%.1f", f)
                         }
                     }
-                case 31:
+                case 32:
                     if searchVETO {
                         if row < vetoPerAct.count {
                             if let eventNumber = getValueFrom(array: vetoPerAct, row: row, key: kEventNumber) {
@@ -1306,7 +1306,7 @@ class Processor: NSObject {
                     } else {
                         field = alpha2EventNumber(row)
                     }
-                case 32:
+                case 33:
                     if searchVETO {
                         if row < vetoPerAct.count {
                             if let energy = getValueFrom(array: vetoPerAct, row: row, key: kEnergy) {
@@ -1316,7 +1316,7 @@ class Processor: NSObject {
                     } else {
                         field = alpha2Energy(row)
                     }
-                case 33:
+                case 34:
                     if searchVETO {
                         if row < vetoPerAct.count {
                             if let strip_0_15 = getValueFrom(array: vetoPerAct, row: row, key: kStrip0_15) {
@@ -1326,7 +1326,7 @@ class Processor: NSObject {
                     } else {
                         field = alpha2Marker(row)
                     }
-                case 34:
+                case 35:
                     if searchVETO {
                         if row < vetoPerAct.count {
                             if let deltaTime = getValueFrom(array: vetoPerAct, row: row, key: kDeltaTime) {
@@ -1336,13 +1336,13 @@ class Processor: NSObject {
                     } else {
                         field = alphs2DeltaTime(row)
                     }
-                case 35:
-                    field = alpha2EventNumber(row)
                 case 36:
-                    field = alpha2Energy(row)
+                    field = alpha2EventNumber(row)
                 case 37:
-                    field = alpha2Marker(row)
+                    field = alpha2Energy(row)
                 case 38:
+                    field = alpha2Marker(row)
+                case 39:
                     field = alphs2DeltaTime(row)
                 default:
                     break
@@ -1360,6 +1360,16 @@ class Processor: NSObject {
             }
         }
         return nil
+    }
+    
+    fileprivate func getSummEnergyFrom(_ array: [Any]) -> Double {
+        var summ: Double = 0
+        for info in array {
+            if let energy = (info as? [String: Any])?[kEnergy] {
+                summ += energy as! Double
+            }
+        }
+        return summ
     }
     
     fileprivate func getValueFrom(array: [Any], row: Int, key: String) -> Any? {
