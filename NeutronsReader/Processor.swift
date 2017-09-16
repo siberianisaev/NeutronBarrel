@@ -1080,26 +1080,9 @@ class Processor: NSObject {
     fileprivate var keyColumnNeutronsBackward = "Neutrons(Backward)"
     fileprivate var keyColumnGammaEnergy = "Gamma"
     fileprivate var keyColumnGammaDeltaTime = "dT($Fron-Gamma)"
-    fileprivate var keyColumnSpecial1: String {
-        var special1: Int = 0
-        if specialEventIds.count >= 1 {
-            special1 = specialEventIds[0]
-        }
-        return "Special\(special1)"
-    }
-    fileprivate var keyColumnSpecial2: String {
-        var special2: Int = 0
-        if specialEventIds.count >= 2 {
-            special2 = specialEventIds[1]
-        }
-        return "Special\(special2)"
-    }
-    fileprivate var keyColumnSpecial3: String {
-        var special3: Int = 0
-        if specialEventIds.count >= 3 {
-            special3 = specialEventIds[2]
-        }
-        return "Special\(special3)"
+    fileprivate var keyColumnSpecial = "Special"
+    fileprivate func keyColumnSpecialFor(eventId: Int) -> String {
+        return keyColumnSpecial + String(eventId)
     }
     fileprivate var keyColumnBeamEnergy = "BeamEnergy"
     fileprivate var keyColumnBeamCurrent = "BeamCurrent"
@@ -1136,19 +1119,36 @@ class Processor: NSObject {
             keyColumnStartWelSumm,
             keyColumnStartWelEnergy,
             keyColumnStartWelMarker,
-            keyColumnStartWelPosition,
-            keyColumnNeutrons,
-            keyColumnNeutronsBackward,
-            keyColumnGammaEnergy,
-            keyColumnGammaDeltaTime,
-            keyColumnSpecial1,
-            keyColumnSpecial2,
-            keyColumnSpecial3,
-            keyColumnBeamEnergy,
-            keyColumnBeamCurrent,
-            keyColumnBeamBackground,
-            keyColumnBeamIntegral
+            keyColumnStartWelPosition
         ]
+        if searchNeutrons {
+            columns.append(contentsOf: [
+                keyColumnNeutrons,
+                keyColumnNeutronsBackward
+                ])
+        }
+        columns.append(contentsOf: [
+            keyColumnGammaEnergy,
+            keyColumnGammaDeltaTime
+            ])
+        if searchSpecialEvents {
+            let values = specialEventIds.map({ (i: Int) -> String in
+                return keyColumnSpecialFor(eventId: i)
+            })
+            columns.append(contentsOf: values)
+        }
+        if trackBeamEnergy {
+            columns.append(keyColumnBeamEnergy)
+        }
+        if trackBeamCurrent {
+            columns.append(keyColumnBeamCurrent)
+        }
+        if trackBeamBackground {
+            columns.append(keyColumnBeamBackground)
+        }
+        if trackBeamIntegral {
+            columns.append(keyColumnBeamIntegral)
+        }
         if searchVETO {
             columns.append(contentsOf: [
                 keyColumnVetoEvent,
@@ -1169,7 +1169,7 @@ class Processor: NSObject {
         let symbol = startParticleType.symbol()
         let headers = columns.map { (s: String) -> String in
             return s.replacingOccurrences(of: "$", with: symbol)
-        } as [AnyObject]
+            } as [AnyObject]
         logger.writeLineOfFields(headers)
         logger.finishLine() // +1 line padding
     }
@@ -1231,8 +1231,9 @@ class Processor: NSObject {
                     }
                 case keyColumnStartFrontSumm:
                     if row == 0 && startParticleType != .recoil {
-                        let summ = getSummEnergyFrom(fissionsAlphaFrontPerAct)
-                        field = String(format: "%.7f", summ)
+                        if let summ = getSummEnergyFrom(fissionsAlphaFrontPerAct) {
+                            field = String(format: "%.7f", summ)
+                        }
                     }
                 case keyColumnStartFrontEnergy:
                     if row < fissionsAlphaFrontPerAct.count {
@@ -1290,8 +1291,9 @@ class Processor: NSObject {
                     }
                 case keyColumnStartWelSumm:
                     if row == 0 && startParticleType != .recoil {
-                        let summ = getSummEnergyFrom(fissionsAlphaWelPerAct)
-                        field = String(format: "%.7f", summ)
+                        if let summ = getSummEnergyFrom(fissionsAlphaWelPerAct) {
+                            field = String(format: "%.7f", summ)
+                        }
                     }
                 case keyColumnStartWelEnergy:
                     if row < fissionsAlphaWelPerAct.count {
@@ -1312,11 +1314,11 @@ class Processor: NSObject {
                         }
                     }
                 case keyColumnNeutrons:
-                    if row == 0 && searchNeutrons {
+                    if row == 0 {
                         field = String(format: "%llu", neutronsSummPerAct)
                     }
                 case keyColumnNeutronsBackward:
-                    if row == 0 && searchNeutrons {
+                    if row == 0 {
                         field = String(format: "%llu", neutronsBackwardSummPerAct)
                     }
                 case keyColumnGammaEnergy:
@@ -1331,21 +1333,9 @@ class Processor: NSObject {
                             field = String(format: "%lld", deltaTime as! CLongLong)
                         }
                     }
-                case keyColumnSpecial1:
+                case _ where column.hasPrefix(keyColumnSpecial):
                     if row == 0 {
-                        if let v = specialValue(0) {
-                            field = String(format: "%hu", v)
-                        }
-                    }
-                case keyColumnSpecial2:
-                    if row == 0 {
-                        if let v = specialValue(1) {
-                            field = String(format: "%hu", v)
-                        }
-                    }
-                case keyColumnSpecial3:
-                    if row == 0 {
-                        if let v = specialValue(2) {
+                        if let eventId = Int(column.replacingOccurrences(of: keyColumnSpecial, with: "")), let v = specialPerAct[eventId] {
                             field = String(format: "%hu", v)
                         }
                     }
@@ -1414,16 +1404,11 @@ class Processor: NSObject {
         }
     }
     
-    fileprivate func specialValue(_ index: Int) -> CUnsignedShort? {
-        if specialEventIds.count >= index+1 {
-            if let v = specialPerAct[specialEventIds[index]] {
-                return v
-            }
+    fileprivate func getSummEnergyFrom(_ array: [Any]) -> Double? {
+        if array.count == 0 {
+            return nil
         }
-        return nil
-    }
-    
-    fileprivate func getSummEnergyFrom(_ array: [Any]) -> Double {
+        
         var summ: Double = 0
         for info in array {
             if let energy = (info as? [String: Any])?[kEnergy] {
