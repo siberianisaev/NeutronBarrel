@@ -22,6 +22,19 @@ enum SearchType: Int {
     case recoil
     case heavy
     case veto
+    
+    func symbol() -> String {
+        switch self {
+        case .fission:
+            return "F"
+        case .alpha, .veto:
+            return "A"
+        case .recoil:
+            return "R"
+        case .heavy:
+            return "H"
+        }
+    }
 }
 
 enum TOFUnits {
@@ -978,18 +991,6 @@ class Processor: NSObject {
         let strip_0_15 = event.param2 >> 12
         let encoder = fissionAlphaRecoilEncoderForEventId(eventId)
         
-        var detector: String
-        switch type {
-        case .fission:
-            detector = "F"
-        case .alpha, .veto:
-            detector = "A"
-        case .recoil:
-            detector = "R"
-        case .heavy:
-            detector = "H"
-        }
-        
         var position: String
         if dataProtocol.AFron(1) == eventId || dataProtocol.AFron(2) == eventId || dataProtocol.AFron(3) == eventId {
             position = "Fron"
@@ -1005,7 +1006,7 @@ class Processor: NSObject {
             position = "Wel"
         }
         
-        var name = detector + position
+        var name = type.symbol() + position
         if encoder != 0 {
             name += "\(encoder)."
         }
@@ -1114,18 +1115,6 @@ class Processor: NSObject {
     fileprivate var keyColumnAlpha2DeltaTime = "dT(Alpha1-Alpha2)"
     
     func logResultsHeader() {
-        var startParticle: String
-        switch startParticleType {
-        case .fission:
-            startParticle = "F"
-        case .alpha:
-            startParticle = "A"
-        case .recoil:
-            startParticle = "R"
-        default:
-            startParticle = ""
-        }
-        
         columns = [
             keyColumnRecoilEvent,
             keyColumnRecoilEnergy,
@@ -1177,7 +1166,10 @@ class Processor: NSObject {
                 ])
         }
         
-        let headers = columns.joined(separator: ",").replacingOccurrences(of: "$", with: startParticle).components(separatedBy: ",") as [AnyObject]
+        let symbol = startParticleType.symbol()
+        let headers = columns.map { (s: String) -> String in
+            return s.replacingOccurrences(of: "$", with: symbol)
+        } as [AnyObject]
         logger.writeLineOfFields(headers)
         logger.finishLine() // +1 line padding
     }
