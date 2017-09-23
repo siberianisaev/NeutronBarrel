@@ -32,7 +32,7 @@ class Calibration: NSObject {
         panel.canChooseFiles = true
         panel.allowsMultipleSelection = true
         panel.begin { (result) -> Void in
-            if result == NSFileHandlingPanelOKButton {
+            if result.rawValue == NSFileHandlingPanelOKButton {
                 let urls = panel.urls.filter() { $0.path.hasSuffix(".clb") }
                 onFinish(self.calibrationWithUrls(urls))
             }

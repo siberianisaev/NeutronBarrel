@@ -26,8 +26,7 @@ extension NSImage {
     
     func imagePNGRepresentation() -> Data? {
         if let imageTiffData = self.tiffRepresentation, let imageRep = NSBitmapImageRep(data: imageTiffData) {
-            let imageProps: [String: Any] = [NSImageInterlaced: NSNumber(value: true)]
-            let imageData = imageRep.representation(using: NSBitmapImageFileType.PNG, properties: imageProps)
+            let imageData = imageRep.representation(using: NSBitmapImageRep.FileType.png, properties: [NSBitmapImageRep.PropertyKey.interlaced: NSNumber(value: true)])
             return imageData
         }
         return nil

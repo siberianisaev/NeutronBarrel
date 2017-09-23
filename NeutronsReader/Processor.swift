@@ -1045,7 +1045,7 @@ class Processor: NSObject {
     // MARK: - Output
     
     func logInput() {
-        let appDelegate = NSApplication.shared().delegate as! AppDelegate
+        let appDelegate = NSApplication.shared.delegate as! AppDelegate
         let image = appDelegate.window.screenshot()
         logger.logInput(image)
     }

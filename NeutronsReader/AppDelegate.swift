@@ -32,47 +32,47 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     fileprivate var totalTime: TimeInterval = 0
     fileprivate var timer: Timer?
     
-    var sMinFissionEnergy: NSString = NSString(format: "%.1f", Settings.getDoubleSetting(.MinFissionEnergy)) // MeV
-    var sMaxFissionEnergy: NSString = NSString(format: "%.1f", Settings.getDoubleSetting(.MaxFissionEnergy)) // MeV
-    var sMinRecoilEnergy: NSString = NSString(format: "%.1f", Settings.getDoubleSetting(.MinRecoilEnergy)) // MeV
-    var sMaxRecoilEnergy: NSString = NSString(format: "%.1f", Settings.getDoubleSetting(.MaxRecoilEnergy)) // MeV
-    var sMinTOFValue: NSString = NSString(format: "%d", Settings.getIntSetting(.MinTOFValue)) // channel or ns
-    var sMaxTOFValue: NSString = NSString(format: "%d", Settings.getIntSetting(.MaxTOFValue)) // channel or ns
-    var sMinRecoilTime: NSString = NSString(format: "%d", Settings.getIntSetting(.MinRecoilTime)) // mks
-    var sMaxRecoilTime: NSString = NSString(format: "%d", Settings.getIntSetting(.MaxRecoilTime)) // mks
-    var sMaxRecoilBackTime: NSString = NSString(format: "%d", Settings.getIntSetting(.MaxRecoilBackTime)) // mks
-    var sMaxFissionTime: NSString = NSString(format: "%d", Settings.getIntSetting(.MaxFissionTime)) // mks
-    var sMaxTOFTime: NSString = NSString(format: "%d", Settings.getIntSetting(.MaxTOFTime)) // mks
-    var sMaxVETOTime: NSString = NSString(format: "%d", Settings.getIntSetting(.MaxVETOTime)) // mks
-    var sMaxGammaTime: NSString = NSString(format: "%d", Settings.getIntSetting(.MaxGammaTime)) // mks
-    var sMaxNeutronTime: NSString = NSString(format: "%d", Settings.getIntSetting(.MaxNeutronTime)) // mks
-    var sMaxRecoilFrontDeltaStrips: NSString = NSString(format: "%d", Settings.getIntSetting(.MaxRecoilFrontDeltaStrips))
-    var sMaxRecoilBackDeltaStrips: NSString = NSString(format: "%d", Settings.getIntSetting(.MaxRecoilBackDeltaStrips))
-    var summarizeFissionsFront: Bool = Settings.getBoolSetting(.SummarizeFissionsFront)
-    var requiredFissionAlphaBack: Bool = Settings.getBoolSetting(.RequiredFissionAlphaBack)
-    var requiredRecoilBack: Bool = Settings.getBoolSetting(.RequiredRecoilBack)
-    var requiredRecoil: Bool = Settings.getBoolSetting(.RequiredRecoil)
-    var requiredGamma: Bool = Settings.getBoolSetting(.RequiredGamma)
-    var requiredTOF: Bool = Settings.getBoolSetting(.RequiredTOF)
-    var requiredVETO: Bool = Settings.getBoolSetting(.RequiredVETO)
-    var searchNeutrons: Bool = Settings.getBoolSetting(.SearchNeutrons)
-    var searchAlpha2: Bool = Settings.getBoolSetting(.SearchAlpha2)
-    var sMinAlpha2Energy: NSString = NSString(format: "%.1f", Settings.getDoubleSetting(.MinAlpha2Energy)) // MeV
-    var sMaxAlpha2Energy: NSString = NSString(format: "%.1f", Settings.getDoubleSetting(.MaxAlpha2Energy)) // MeV
-    var sMinAlpha2Time: NSString = NSString(format: "%d", Settings.getIntSetting(.MinAlpha2Time)) // mks
-    var sMaxAlpha2Time: NSString = NSString(format: "%d", Settings.getIntSetting(.MaxAlpha2Time)) // mks
-    var sMaxAlpha2FrontDeltaStrips: NSString = NSString(format: "%d", Settings.getIntSetting(.MaxAlpha2FrontDeltaStrips))
-    var searchSpecialEvents: Bool = Settings.getBoolSetting(.SearchSpecialEvents)
-    var specialEventIds: NSString = Settings.getStringSetting(.SpecialEventIds) ?? ""
-    var searchVETO: Bool = Settings.getBoolSetting(.SearchVETO) {
+    @IBInspectable var sMinFissionEnergy: NSString = NSString(format: "%.1f", Settings.getDoubleSetting(.MinFissionEnergy)) // MeV
+    @IBInspectable var sMaxFissionEnergy: NSString = NSString(format: "%.1f", Settings.getDoubleSetting(.MaxFissionEnergy)) // MeV
+    @IBInspectable var sMinRecoilEnergy: NSString = NSString(format: "%.1f", Settings.getDoubleSetting(.MinRecoilEnergy)) // MeV
+    @IBInspectable var sMaxRecoilEnergy: NSString = NSString(format: "%.1f", Settings.getDoubleSetting(.MaxRecoilEnergy)) // MeV
+    @IBInspectable var sMinTOFValue: NSString = NSString(format: "%d", Settings.getIntSetting(.MinTOFValue)) // channel or ns
+    @IBInspectable var sMaxTOFValue: NSString = NSString(format: "%d", Settings.getIntSetting(.MaxTOFValue)) // channel or ns
+    @IBInspectable var sMinRecoilTime: NSString = NSString(format: "%d", Settings.getIntSetting(.MinRecoilTime)) // mks
+    @IBInspectable var sMaxRecoilTime: NSString = NSString(format: "%d", Settings.getIntSetting(.MaxRecoilTime)) // mks
+    @IBInspectable var sMaxRecoilBackTime: NSString = NSString(format: "%d", Settings.getIntSetting(.MaxRecoilBackTime)) // mks
+    @IBInspectable var sMaxFissionTime: NSString = NSString(format: "%d", Settings.getIntSetting(.MaxFissionTime)) // mks
+    @IBInspectable var sMaxTOFTime: NSString = NSString(format: "%d", Settings.getIntSetting(.MaxTOFTime)) // mks
+    @IBInspectable var sMaxVETOTime: NSString = NSString(format: "%d", Settings.getIntSetting(.MaxVETOTime)) // mks
+    @IBInspectable var sMaxGammaTime: NSString = NSString(format: "%d", Settings.getIntSetting(.MaxGammaTime)) // mks
+    @IBInspectable var sMaxNeutronTime: NSString = NSString(format: "%d", Settings.getIntSetting(.MaxNeutronTime)) // mks
+    @IBInspectable var sMaxRecoilFrontDeltaStrips: NSString = NSString(format: "%d", Settings.getIntSetting(.MaxRecoilFrontDeltaStrips))
+    @IBInspectable var sMaxRecoilBackDeltaStrips: NSString = NSString(format: "%d", Settings.getIntSetting(.MaxRecoilBackDeltaStrips))
+    @IBInspectable var summarizeFissionsFront: Bool = Settings.getBoolSetting(.SummarizeFissionsFront)
+    @IBInspectable var requiredFissionAlphaBack: Bool = Settings.getBoolSetting(.RequiredFissionAlphaBack)
+    @IBInspectable var requiredRecoilBack: Bool = Settings.getBoolSetting(.RequiredRecoilBack)
+    @IBInspectable var requiredRecoil: Bool = Settings.getBoolSetting(.RequiredRecoil)
+    @IBInspectable var requiredGamma: Bool = Settings.getBoolSetting(.RequiredGamma)
+    @IBInspectable var requiredTOF: Bool = Settings.getBoolSetting(.RequiredTOF)
+    @IBInspectable var requiredVETO: Bool = Settings.getBoolSetting(.RequiredVETO)
+    @IBInspectable var searchNeutrons: Bool = Settings.getBoolSetting(.SearchNeutrons)
+    @IBInspectable var searchAlpha2: Bool = Settings.getBoolSetting(.SearchAlpha2)
+    @IBInspectable var sMinAlpha2Energy: NSString = NSString(format: "%.1f", Settings.getDoubleSetting(.MinAlpha2Energy)) // MeV
+    @IBInspectable var sMaxAlpha2Energy: NSString = NSString(format: "%.1f", Settings.getDoubleSetting(.MaxAlpha2Energy)) // MeV
+    @IBInspectable var sMinAlpha2Time: NSString = NSString(format: "%d", Settings.getIntSetting(.MinAlpha2Time)) // mks
+    @IBInspectable var sMaxAlpha2Time: NSString = NSString(format: "%d", Settings.getIntSetting(.MaxAlpha2Time)) // mks
+    @IBInspectable var sMaxAlpha2FrontDeltaStrips: NSString = NSString(format: "%d", Settings.getIntSetting(.MaxAlpha2FrontDeltaStrips))
+    @IBInspectable var searchSpecialEvents: Bool = Settings.getBoolSetting(.SearchSpecialEvents)
+    @IBInspectable var specialEventIds: NSString = Settings.getStringSetting(.SpecialEventIds) ?? ""
+    @IBInspectable var searchVETO: Bool = Settings.getBoolSetting(.SearchVETO) {
         didSet {
             setupVETOView()
         }
     }
-    var trackBeamEnergy: Bool = Settings.getBoolSetting(.TrackBeamEnergy)
-    var trackBeamCurrent: Bool = Settings.getBoolSetting(.TrackBeamCurrent)
-    var trackBeamBackground: Bool = Settings.getBoolSetting(.TrackBeamBackground)
-    var trackBeamIntegral: Bool = Settings.getBoolSetting(.TrackBeamIntegral)
+    @IBInspectable var trackBeamEnergy: Bool = Settings.getBoolSetting(.TrackBeamEnergy)
+    @IBInspectable var trackBeamCurrent: Bool = Settings.getBoolSetting(.TrackBeamCurrent)
+    @IBInspectable var trackBeamBackground: Bool = Settings.getBoolSetting(.TrackBeamBackground)
+    @IBInspectable var trackBeamIntegral: Bool = Settings.getBoolSetting(.TrackBeamIntegral)
     
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         startParticleControl.selectedSegment = Settings.getIntSetting(.SearchType)
@@ -90,7 +90,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         if let type = SearchType(rawValue: startParticleControl.selectedSegment) {
             alpha2View.isHidden = type != .alpha
             requiredRecoil = requiredRecoil || type == .recoil
-            requiredRecoilButton.state = requiredRecoil ? 1 : 0
+            requiredRecoilButton.state = NSControl.StateValue(rawValue: requiredRecoil ? 1 : 0)
             requiredRecoilButton.isEnabled = type != .recoil
             fissionAlpha1View.isHidden = type == .recoil
         }
@@ -102,7 +102,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     
     @IBAction func viewer(_ sender: Any) {
         if nil == viewerController {
-            viewerController = ViewerController(windowNibName: "ViewerController")
+            viewerController = ViewerController(windowNibName: NSNib.Name(rawValue: "ViewerController"))
         }
         viewerController?.showWindow(nil)
     }
@@ -250,7 +250,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         return String(format: "%02d:%02d:%02d", hours, minutes, seconds)
     }
     
-    func incrementTotalTime() {
+    @objc func incrementTotalTime() {
         totalTime += 1
         labelTotalTime?.stringValue = stringTotalTime()
     }
