@@ -32,22 +32,22 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     fileprivate var totalTime: TimeInterval = 0
     fileprivate var timer: Timer?
     
-    @IBInspectable var sMinFissionEnergy: NSString = NSString(format: "%.1f", Settings.getDoubleSetting(.MinFissionEnergy)) // MeV
-    @IBInspectable var sMaxFissionEnergy: NSString = NSString(format: "%.1f", Settings.getDoubleSetting(.MaxFissionEnergy)) // MeV
-    @IBInspectable var sMinRecoilEnergy: NSString = NSString(format: "%.1f", Settings.getDoubleSetting(.MinRecoilEnergy)) // MeV
-    @IBInspectable var sMaxRecoilEnergy: NSString = NSString(format: "%.1f", Settings.getDoubleSetting(.MaxRecoilEnergy)) // MeV
-    @IBInspectable var sMinTOFValue: NSString = NSString(format: "%d", Settings.getIntSetting(.MinTOFValue)) // channel or ns
-    @IBInspectable var sMaxTOFValue: NSString = NSString(format: "%d", Settings.getIntSetting(.MaxTOFValue)) // channel or ns
-    @IBInspectable var sMinRecoilTime: NSString = NSString(format: "%d", Settings.getIntSetting(.MinRecoilTime)) // mks
-    @IBInspectable var sMaxRecoilTime: NSString = NSString(format: "%d", Settings.getIntSetting(.MaxRecoilTime)) // mks
-    @IBInspectable var sMaxRecoilBackTime: NSString = NSString(format: "%d", Settings.getIntSetting(.MaxRecoilBackTime)) // mks
-    @IBInspectable var sMaxFissionTime: NSString = NSString(format: "%d", Settings.getIntSetting(.MaxFissionTime)) // mks
-    @IBInspectable var sMaxTOFTime: NSString = NSString(format: "%d", Settings.getIntSetting(.MaxTOFTime)) // mks
-    @IBInspectable var sMaxVETOTime: NSString = NSString(format: "%d", Settings.getIntSetting(.MaxVETOTime)) // mks
-    @IBInspectable var sMaxGammaTime: NSString = NSString(format: "%d", Settings.getIntSetting(.MaxGammaTime)) // mks
-    @IBInspectable var sMaxNeutronTime: NSString = NSString(format: "%d", Settings.getIntSetting(.MaxNeutronTime)) // mks
-    @IBInspectable var sMaxRecoilFrontDeltaStrips: NSString = NSString(format: "%d", Settings.getIntSetting(.MaxRecoilFrontDeltaStrips))
-    @IBInspectable var sMaxRecoilBackDeltaStrips: NSString = NSString(format: "%d", Settings.getIntSetting(.MaxRecoilBackDeltaStrips))
+    @IBInspectable var sMinFissionEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MinFissionEnergy)) // MeV
+    @IBInspectable var sMaxFissionEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MaxFissionEnergy)) // MeV
+    @IBInspectable var sMinRecoilEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MinRecoilEnergy)) // MeV
+    @IBInspectable var sMaxRecoilEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MaxRecoilEnergy)) // MeV
+    @IBInspectable var sMinTOFValue = String(format: "%d", Settings.getIntSetting(.MinTOFValue)) // channel or ns
+    @IBInspectable var sMaxTOFValue = String(format: "%d", Settings.getIntSetting(.MaxTOFValue)) // channel or ns
+    @IBInspectable var sMinRecoilTime = String(format: "%d", Settings.getIntSetting(.MinRecoilTime)) // mks
+    @IBInspectable var sMaxRecoilTime = String(format: "%d", Settings.getIntSetting(.MaxRecoilTime)) // mks
+    @IBInspectable var sMaxRecoilBackTime = String(format: "%d", Settings.getIntSetting(.MaxRecoilBackTime)) // mks
+    @IBInspectable var sMaxFissionTime = String(format: "%d", Settings.getIntSetting(.MaxFissionTime)) // mks
+    @IBInspectable var sMaxTOFTime = String(format: "%d", Settings.getIntSetting(.MaxTOFTime)) // mks
+    @IBInspectable var sMaxVETOTime = String(format: "%d", Settings.getIntSetting(.MaxVETOTime)) // mks
+    @IBInspectable var sMaxGammaTime = String(format: "%d", Settings.getIntSetting(.MaxGammaTime)) // mks
+    @IBInspectable var sMaxNeutronTime = String(format: "%d", Settings.getIntSetting(.MaxNeutronTime)) // mks
+    @IBInspectable var sMaxRecoilFrontDeltaStrips = String(format: "%d", Settings.getIntSetting(.MaxRecoilFrontDeltaStrips))
+    @IBInspectable var sMaxRecoilBackDeltaStrips = String(format: "%d", Settings.getIntSetting(.MaxRecoilBackDeltaStrips))
     @IBInspectable var summarizeFissionsFront: Bool = Settings.getBoolSetting(.SummarizeFissionsFront)
     @IBInspectable var requiredFissionAlphaBack: Bool = Settings.getBoolSetting(.RequiredFissionAlphaBack)
     @IBInspectable var requiredRecoilBack: Bool = Settings.getBoolSetting(.RequiredRecoilBack)
@@ -57,13 +57,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBInspectable var requiredVETO: Bool = Settings.getBoolSetting(.RequiredVETO)
     @IBInspectable var searchNeutrons: Bool = Settings.getBoolSetting(.SearchNeutrons)
     @IBInspectable var searchAlpha2: Bool = Settings.getBoolSetting(.SearchAlpha2)
-    @IBInspectable var sMinAlpha2Energy: NSString = NSString(format: "%.1f", Settings.getDoubleSetting(.MinAlpha2Energy)) // MeV
-    @IBInspectable var sMaxAlpha2Energy: NSString = NSString(format: "%.1f", Settings.getDoubleSetting(.MaxAlpha2Energy)) // MeV
-    @IBInspectable var sMinAlpha2Time: NSString = NSString(format: "%d", Settings.getIntSetting(.MinAlpha2Time)) // mks
-    @IBInspectable var sMaxAlpha2Time: NSString = NSString(format: "%d", Settings.getIntSetting(.MaxAlpha2Time)) // mks
-    @IBInspectable var sMaxAlpha2FrontDeltaStrips: NSString = NSString(format: "%d", Settings.getIntSetting(.MaxAlpha2FrontDeltaStrips))
+    @IBInspectable var sMinAlpha2Energy = String(format: "%.1f", Settings.getDoubleSetting(.MinAlpha2Energy)) // MeV
+    @IBInspectable var sMaxAlpha2Energy = String(format: "%.1f", Settings.getDoubleSetting(.MaxAlpha2Energy)) // MeV
+    @IBInspectable var sMinAlpha2Time = String(format: "%d", Settings.getIntSetting(.MinAlpha2Time)) // mks
+    @IBInspectable var sMaxAlpha2Time = String(format: "%d", Settings.getIntSetting(.MaxAlpha2Time)) // mks
+    @IBInspectable var sMaxAlpha2FrontDeltaStrips = String(format: "%d", Settings.getIntSetting(.MaxAlpha2FrontDeltaStrips))
     @IBInspectable var searchSpecialEvents: Bool = Settings.getBoolSetting(.SearchSpecialEvents)
-    @IBInspectable var specialEventIds: NSString = Settings.getStringSetting(.SpecialEventIds) ?? ""
+    @IBInspectable var specialEventIds = Settings.getStringSetting(.SpecialEventIds) ?? ""
     @IBInspectable var searchVETO: Bool = Settings.getBoolSetting(.SearchVETO) {
         didSet {
             setupVETOView()
@@ -138,37 +138,37 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
                 startType = .recoil
             }
             processor.startParticleType = startType
-            processor.fissionAlphaFrontMinEnergy = sMinFissionEnergy.doubleValue
-            processor.fissionAlphaFrontMaxEnergy = sMaxFissionEnergy.doubleValue
-            processor.fissionAlphaMaxTime = UInt64(sMaxFissionTime.longLongValue)
+            processor.fissionAlphaFrontMinEnergy = Double(sMinFissionEnergy) ?? 0
+            processor.fissionAlphaFrontMaxEnergy = Double(sMaxFissionEnergy) ?? 0
+            processor.fissionAlphaMaxTime = UInt64(sMaxFissionTime) ?? 0
             processor.summarizeFissionsAlphaFront = summarizeFissionsFront
             processor.searchAlpha2 = searchAlpha2
-            processor.alpha2MinEnergy = sMinAlpha2Energy.doubleValue
-            processor.alpha2MaxEnergy = sMaxAlpha2Energy.doubleValue
-            processor.alpha2MinTime = UInt64(sMinAlpha2Time.doubleValue)
-            processor.alpha2MaxTime = UInt64(sMaxAlpha2Time.doubleValue)
-            processor.alpha2MaxDeltaStrips = sMaxAlpha2FrontDeltaStrips.integerValue
-            processor.recoilFrontMaxDeltaStrips = sMaxRecoilFrontDeltaStrips.integerValue
-            processor.recoilBackMaxDeltaStrips = sMaxRecoilBackDeltaStrips.integerValue
+            processor.alpha2MinEnergy = Double(sMinAlpha2Energy) ?? 0
+            processor.alpha2MaxEnergy = Double(sMaxAlpha2Energy) ?? 0
+            processor.alpha2MinTime = UInt64(sMinAlpha2Time) ?? 0
+            processor.alpha2MaxTime = UInt64(sMaxAlpha2Time) ?? 0
+            processor.alpha2MaxDeltaStrips = Int(sMaxAlpha2FrontDeltaStrips) ?? 0
+            processor.recoilFrontMaxDeltaStrips = Int(sMaxRecoilFrontDeltaStrips) ?? 0
+            processor.recoilBackMaxDeltaStrips = Int(sMaxRecoilBackDeltaStrips) ?? 0
             processor.requiredFissionAlphaBack = requiredFissionAlphaBack
             processor.requiredRecoilBack = requiredRecoilBack
             processor.requiredRecoil = requiredRecoil
-            processor.recoilFrontMinEnergy = sMinRecoilEnergy.doubleValue
-            processor.recoilFrontMaxEnergy = sMaxRecoilEnergy.doubleValue
-            processor.recoilMinTime = UInt64(sMinRecoilTime.doubleValue)
-            processor.recoilMaxTime = UInt64(sMaxRecoilTime.doubleValue)
-            processor.recoilBackMaxTime = UInt64(sMaxRecoilBackTime.doubleValue)
-            processor.minTOFValue = sMinTOFValue.doubleValue
-            processor.maxTOFValue = sMaxTOFValue.doubleValue
+            processor.recoilFrontMinEnergy = Double(sMinRecoilEnergy) ?? 0
+            processor.recoilFrontMaxEnergy = Double(sMaxRecoilEnergy) ?? 0
+            processor.recoilMinTime = UInt64(sMinRecoilTime) ?? 0
+            processor.recoilMaxTime = UInt64(sMaxRecoilTime) ?? 0
+            processor.recoilBackMaxTime = UInt64(sMaxRecoilBackTime) ?? 0
+            processor.minTOFValue = Double(sMinTOFValue) ?? 0
+            processor.maxTOFValue = Double(sMaxTOFValue) ?? 0
             processor.unitsTOF = tofUnitsControl.selectedSegment == 0 ? .channels : .nanoseconds
-            processor.maxTOFTime = UInt64(sMaxTOFTime.doubleValue)
+            processor.maxTOFTime = UInt64(sMaxTOFTime) ?? 0
             processor.requiredTOF = requiredTOF
-            processor.maxVETOTime = UInt64(sMaxVETOTime.doubleValue)
+            processor.maxVETOTime = UInt64(sMaxVETOTime) ?? 0
             processor.requiredVETO = requiredVETO
-            processor.maxGammaTime = UInt64(sMaxGammaTime.doubleValue)
+            processor.maxGammaTime = UInt64(sMaxGammaTime) ?? 0
             processor.requiredGamma = requiredGamma
             processor.searchNeutrons = searchNeutrons
-            processor.maxNeutronTime = UInt64(sMaxNeutronTime.doubleValue)
+            processor.maxNeutronTime = UInt64(sMaxNeutronTime) ?? 0
             processor.searchSpecialEvents = searchSpecialEvents
             processor.searchVETO = searchVETO
             processor.trackBeamEnergy = trackBeamEnergy
@@ -263,23 +263,23 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     // MARK: - Settings
     
     fileprivate func saveSettings() {
-        Settings.setObject(sMinFissionEnergy.doubleValue, forSetting: .MinFissionEnergy)
-        Settings.setObject(sMaxFissionEnergy.doubleValue, forSetting: .MaxFissionEnergy)
-        Settings.setObject(sMinRecoilEnergy.doubleValue, forSetting: .MinRecoilEnergy)
-        Settings.setObject(sMaxRecoilEnergy.doubleValue, forSetting: .MaxRecoilEnergy)
-        Settings.setObject(sMinTOFValue.integerValue, forSetting: .MinTOFValue)
-        Settings.setObject(sMaxTOFValue.integerValue, forSetting: .MaxTOFValue)
+        Settings.setObject(Double(sMinFissionEnergy), forSetting: .MinFissionEnergy)
+        Settings.setObject(Double(sMaxFissionEnergy), forSetting: .MaxFissionEnergy)
+        Settings.setObject(Double(sMinRecoilEnergy), forSetting: .MinRecoilEnergy)
+        Settings.setObject(Double(sMaxRecoilEnergy), forSetting: .MaxRecoilEnergy)
+        Settings.setObject(Int(sMinTOFValue), forSetting: .MinTOFValue)
+        Settings.setObject(Int(sMaxTOFValue), forSetting: .MaxTOFValue)
         Settings.setObject(tofUnitsControl.selectedSegment, forSetting: .TOFUnits)
-        Settings.setObject(sMinRecoilTime.integerValue, forSetting: .MinRecoilTime)
-        Settings.setObject(sMaxRecoilTime.integerValue, forSetting: .MaxRecoilTime)
-        Settings.setObject(sMaxRecoilBackTime.integerValue, forSetting: .MaxRecoilBackTime)
-        Settings.setObject(sMaxFissionTime.integerValue, forSetting: .MaxFissionTime)
-        Settings.setObject(sMaxTOFTime.integerValue, forSetting: .MaxTOFTime)
-        Settings.setObject(sMaxVETOTime.integerValue, forSetting: .MaxVETOTime)
-        Settings.setObject(sMaxGammaTime.integerValue, forSetting: .MaxGammaTime)
-        Settings.setObject(sMaxNeutronTime.integerValue, forSetting: .MaxNeutronTime)
-        Settings.setObject(sMaxRecoilFrontDeltaStrips.integerValue, forSetting: .MaxRecoilFrontDeltaStrips)
-        Settings.setObject(sMaxRecoilBackDeltaStrips.integerValue, forSetting: .MaxRecoilBackDeltaStrips)
+        Settings.setObject(Int(sMinRecoilTime), forSetting: .MinRecoilTime)
+        Settings.setObject(Int(sMaxRecoilTime), forSetting: .MaxRecoilTime)
+        Settings.setObject(Int(sMaxRecoilBackTime), forSetting: .MaxRecoilBackTime)
+        Settings.setObject(Int(sMaxFissionTime), forSetting: .MaxFissionTime)
+        Settings.setObject(Int(sMaxTOFTime), forSetting: .MaxTOFTime)
+        Settings.setObject(Int(sMaxVETOTime), forSetting: .MaxVETOTime)
+        Settings.setObject(Int(sMaxGammaTime), forSetting: .MaxGammaTime)
+        Settings.setObject(Int(sMaxNeutronTime), forSetting: .MaxNeutronTime)
+        Settings.setObject(Int(sMaxRecoilFrontDeltaStrips), forSetting: .MaxRecoilFrontDeltaStrips)
+        Settings.setObject(Int(sMaxRecoilBackDeltaStrips), forSetting: .MaxRecoilBackDeltaStrips)
         Settings.setObject(summarizeFissionsFront, forSetting: .SummarizeFissionsFront)
         Settings.setObject(requiredFissionAlphaBack, forSetting: .RequiredFissionAlphaBack)
         Settings.setObject(requiredRecoilBack, forSetting: .RequiredRecoilBack)
@@ -295,11 +295,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         Settings.setObject(trackBeamIntegral, forSetting: .TrackBeamIntegral)
         Settings.setObject(startParticleControl.selectedSegment, forSetting: .SearchType)
         Settings.setObject(searchAlpha2, forSetting: .SearchAlpha2)
-        Settings.setObject(sMinAlpha2Energy.doubleValue, forSetting: .MinAlpha2Energy)
-        Settings.setObject(sMaxAlpha2Energy.doubleValue, forSetting: .MaxAlpha2Energy)
-        Settings.setObject(sMinAlpha2Time.integerValue, forSetting: .MinAlpha2Time)
-        Settings.setObject(sMaxAlpha2Time.integerValue, forSetting: .MaxAlpha2Time)
-        Settings.setObject(sMaxAlpha2FrontDeltaStrips.integerValue, forSetting: .MaxAlpha2FrontDeltaStrips)
+        Settings.setObject(Double(sMinAlpha2Energy), forSetting: .MinAlpha2Energy)
+        Settings.setObject(Double(sMaxAlpha2Energy), forSetting: .MaxAlpha2Energy)
+        Settings.setObject(Int(sMinAlpha2Time), forSetting: .MinAlpha2Time)
+        Settings.setObject(Int(sMaxAlpha2Time), forSetting: .MaxAlpha2Time)
+        Settings.setObject(Int(sMaxAlpha2FrontDeltaStrips), forSetting: .MaxAlpha2FrontDeltaStrips)
         Settings.setObject(searchSpecialEvents, forSetting: .SearchSpecialEvents)
         Settings.setObject(specialEventIds, forSetting: .SpecialEventIds)
     }

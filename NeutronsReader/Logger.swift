@@ -8,14 +8,15 @@
 
 import Cocoa
 
-class Logger: NSObject {
-    fileprivate var resultsCSVWriter: CSVWriter!
-    fileprivate var timeStamp: String!
+class Logger {
     
-    override init() {
-        super.init()
-        timeStamp = TimeStamp.createTimeStamp()
-        resultsCSVWriter = CSVWriter(path: FileManager.resultsFilePath(timeStamp))
+    fileprivate var resultsCSVWriter: CSVWriter
+    fileprivate var timeStamp: String
+    
+    init() {
+        let stamp = String.timeStamp()
+        timeStamp = stamp
+        resultsCSVWriter = CSVWriter(path: FileManager.resultsFilePath(stamp))
     }
     
     func writeLineOfFields(_ fields: [AnyObject]?) {

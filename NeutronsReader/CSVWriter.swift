@@ -8,7 +8,7 @@
 
 import Foundation
 
-class CSVWriter: NSObject {
+class CSVWriter {
     
     fileprivate var stream: OutputStream!
     fileprivate var encoding: String.Encoding!
@@ -18,8 +18,6 @@ class CSVWriter: NSObject {
     fileprivate var currentField: UInt = 0
     
     init(path: String?) {
-        super.init()
-        
         if let path = path {
             encoding = String.Encoding.utf8
             

@@ -12,9 +12,7 @@ extension NSWindow {
     
     func screenshot() -> NSImage? {
         if let windowImage = CGWindowListCreateImage(CGRect.null, .optionIncludingWindow, CGWindowID(windowNumber), .nominalResolution) {
-            let imageRef: CGImage = windowImage
-            let image = NSImage(cgImage: imageRef, size: frame.size)
-            return image
+            return NSImage(cgImage: windowImage, size: frame.size)
         } else {
             return nil
         }
@@ -25,11 +23,20 @@ extension NSWindow {
 extension NSImage {
     
     func imagePNGRepresentation() -> Data? {
-        if let imageTiffData = self.tiffRepresentation, let imageRep = NSBitmapImageRep(data: imageTiffData) {
-            let imageData = imageRep.representation(using: NSBitmapImageRep.FileType.png, properties: [NSBitmapImageRep.PropertyKey.interlaced: NSNumber(value: true)])
-            return imageData
+        if let imageTiffData = tiffRepresentation, let imageRep = NSBitmapImageRep(data: imageTiffData) {
+            return imageRep.representation(using: NSBitmapImageRep.FileType.png, properties: [NSBitmapImageRep.PropertyKey.interlaced: NSNumber(value: true)])
         }
         return nil
+    }
+    
+}
+
+extension String {
+    
+    static func timeStamp() -> String {
+        let components = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute, .second], from: Date())
+        let sMonth = DateFormatter().monthSymbols[components.month! - 1]
+        return String(format: "%d_%@_%d_%02d-%02d-%02d", components.year!, sMonth, components.day!, components.hour!, components.minute!, components.second!)
     }
     
 }

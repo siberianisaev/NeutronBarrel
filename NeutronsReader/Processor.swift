@@ -42,7 +42,7 @@ enum TOFUnits {
     case nanoseconds
 }
 
-class Processor: NSObject {
+class Processor {
     
     fileprivate let kEncoder = "encoder"
     fileprivate let kStrip0_15 = "strip_0_15"
@@ -76,7 +76,7 @@ class Processor: NSObject {
     fileprivate var specialPerAct = [Int: CUnsignedShort]()
     fileprivate var beamRelatedValuesPerAct = [Int: Float]()
     fileprivate var firstFissionAlphaInfo: [String: Any]?
-    fileprivate var stoped: Bool = false
+    fileprivate var stoped = false
     fileprivate var logger: Logger!
     fileprivate var calibration: Calibration!
     
@@ -97,26 +97,26 @@ class Processor: NSObject {
     var maxNeutronTime: CUnsignedLongLong = 0
     var recoilFrontMaxDeltaStrips: Int = 0
     var recoilBackMaxDeltaStrips: Int = 0
-    var summarizeFissionsAlphaFront: Bool = false
-    var requiredFissionAlphaBack: Bool = false
-    var requiredRecoilBack: Bool = false
-    var requiredRecoil: Bool = false
-    var requiredGamma: Bool = false
-    var requiredTOF: Bool = false
-    var requiredVETO: Bool = false
-    var searchVETO: Bool = false
-    var trackBeamEnergy: Bool = false
-    var trackBeamCurrent: Bool = false
-    var trackBeamBackground: Bool = false
-    var trackBeamIntegral: Bool = false
-    var searchNeutrons: Bool = false
-    var searchAlpha2: Bool = false
+    var summarizeFissionsAlphaFront = false
+    var requiredFissionAlphaBack = false
+    var requiredRecoilBack = false
+    var requiredRecoil = false
+    var requiredGamma = false
+    var requiredTOF = false
+    var requiredVETO = false
+    var searchVETO = false
+    var trackBeamEnergy = false
+    var trackBeamCurrent = false
+    var trackBeamBackground = false
+    var trackBeamIntegral = false
+    var searchNeutrons = false
+    var searchAlpha2 = false
     var alpha2MinEnergy: Double = 0
     var alpha2MaxEnergy: Double = 0
     var alpha2MinTime: CUnsignedLongLong = 0
     var alpha2MaxTime: CUnsignedLongLong = 0
     var alpha2MaxDeltaStrips: Int = 0
-    var searchSpecialEvents: Bool = false
+    var searchSpecialEvents = false
     var specialEventIds = [Int]()
     var startParticleType: SearchType = .fission
     var unitsTOF: TOFUnits = .channels
@@ -130,9 +130,8 @@ class Processor: NSObject {
         return Static.sharedInstance
     }
     
-    override init() {
+    init() {
         calibration = Calibration()
-        super.init()
     }
     
     func stop() {

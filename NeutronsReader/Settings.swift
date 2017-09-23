@@ -10,7 +10,7 @@ import Foundation
 
 class Settings {
     
-    enum Setting : String {
+    enum Setting: String {
         case
         MinFissionEnergy = "MinFissionEnergy",
         MaxFissionEnergy = "MaxFissionEnergy",
@@ -64,32 +64,23 @@ class Settings {
         }
     }
     
-    class func getStringSetting(_ setting: Setting) -> NSString? {
-        if let object = (getSetting(setting) as? NSString) {
-            return object
-        }
-        return nil
+    class func getStringSetting(_ setting: Setting) -> String? {
+        return getSetting(setting) as? String
     }
     
     class func getDoubleSetting(_ setting: Setting) -> Double {
-        if let object = (getSetting(setting) as? Double) {
-            return object
-        }
-        return 0
+        let object = getSetting(setting) as? Double
+        return object ?? 0
     }
     
     class func getIntSetting(_ setting: Setting) -> Int {
-        if let object = (getSetting(setting) as? Int) {
-            return object
-        }
-        return 0
+        let object = getSetting(setting) as? Int
+        return object ?? 0
     }
     
     class func getBoolSetting(_ setting: Setting) -> Bool {
-        if let object = (getSetting(setting) as? Bool) {
-            return object
-        }
-        return false
+        let object = getSetting(setting) as? Bool
+        return object ?? false
     }
     
     fileprivate class func getSetting(_ setting: Setting) -> Any? {
@@ -99,74 +90,28 @@ class Settings {
         }
         
         switch setting {
-        case .MinFissionEnergy:
+        case .MinFissionEnergy, .MaxAlpha2Energy, .MaxRecoilEnergy:
             return 20
-        case .MaxFissionEnergy:
+        case .MaxAlpha2Time, .MaxFissionEnergy, .MaxRecoilTime:
             return 1000
         case .MinRecoilEnergy:
             return 1
-        case .MaxRecoilEnergy:
-            return 20
-        case .MinTOFValue:
-            return 0
         case .MaxTOFValue:
             return 10000
-        case .MinRecoilTime:
-            return 0
-        case .MaxRecoilTime:
-            return 1000
-        case .MaxRecoilBackTime:
-            return 5
-        case .MaxFissionTime:
+        case .MaxRecoilBackTime, .MaxFissionTime, .MaxVETOTime, .MaxGammaTime, .MinAlpha2Energy:
             return 5
         case .MaxTOFTime:
             return 4
-        case .MaxVETOTime:
-            return 5
-        case .MaxGammaTime:
-            return 5
         case .MaxNeutronTime:
             return 132
-        case .MaxRecoilFrontDeltaStrips:
+        case .MaxRecoilFrontDeltaStrips, .MaxRecoilBackDeltaStrips, .SearchAlpha2, .SearchType, .TOFUnits, .MinAlpha2Time, .MaxAlpha2FrontDeltaStrips, .MinRecoilTime, .MinTOFValue:
             return 0
-        case .MaxRecoilBackDeltaStrips:
-            return 0
-        case .SummarizeFissionsFront:
-            return false
-        case .RequiredFissionAlphaBack, .RequiredRecoilBack:
+        case .RequiredFissionAlphaBack, .RequiredRecoilBack, .SearchNeutrons, .TrackBeamEnergy, .TrackBeamCurrent, .TrackBeamBackground, .TrackBeamIntegral:
             return true
-        case .RequiredRecoil:
-            return false
-        case .RequiredGamma:
-            return false
-        case .RequiredTOF:
-            return false
-        case .RequiredVETO:
-            return false
-        case .SearchNeutrons:
-            return true
-        case .SearchType, .TOFUnits:
-            return 0
-        case .SearchAlpha2:
-            return 0
-        case .MinAlpha2Energy:
-            return 5
-        case .MaxAlpha2Energy:
-            return 20
-        case .MinAlpha2Time:
-            return 0
-        case .MaxAlpha2Time:
-            return 1000
-        case .MaxAlpha2FrontDeltaStrips:
-            return 0
-        case .SearchSpecialEvents:
-            return false
-        case .SearchVETO:
+        case .SummarizeFissionsFront, .RequiredRecoil, .RequiredGamma, .RequiredTOF, .RequiredVETO, .SearchSpecialEvents, .SearchVETO:
             return false
         case .SpecialEventIds:
             return nil
-        case .TrackBeamEnergy, .TrackBeamCurrent, .TrackBeamBackground, .TrackBeamIntegral:
-            return true
         }
     }
     

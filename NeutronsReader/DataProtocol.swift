@@ -9,7 +9,7 @@
 import Foundation
 import AppKit
 
-class DataProtocol: NSObject {
+class DataProtocol {
     
     fileprivate var dict = [String: Int]()
     

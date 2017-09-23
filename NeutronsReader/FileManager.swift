@@ -8,7 +8,7 @@
 
 import Foundation
 
-class FileManager: NSObject {
+class FileManager {
     
     fileprivate class func desktopFolder() -> NSString? {
         return NSSearchPathForDirectoriesInDomains(.desktopDirectory, .userDomainMask, true).first as NSString?

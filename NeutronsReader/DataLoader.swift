@@ -9,7 +9,7 @@
 import Foundation
 import AppKit
 
-class DataLoader: NSObject {
+class DataLoader {
     
     class func load(_ onFinish: @escaping (([String], DataProtocol) -> ())) {
         let panel = NSOpenPanel()

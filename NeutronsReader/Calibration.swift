@@ -9,7 +9,7 @@
 import Foundation
 import AppKit
 
-class Calibration: NSObject {
+class Calibration {
     
     fileprivate var kName: String {
         return "kName"
@@ -47,27 +47,24 @@ class Calibration: NSObject {
     
     fileprivate func load(_ URLs: [Foundation.URL]) {
         self.data.removeAll(keepingCapacity: true)
-    
         for URL in URLs {
             let path = URL.path
             do {
                 var content = try String(contentsOfFile: path, encoding: String.Encoding.utf8)
                 content = content.replacingOccurrences(of: "\r", with: "")
                 var string = "\nCALIBRATION\n----------\nLoad calibration from file: \((path as NSString).lastPathComponent)\n(B)\t\t(A)\t\t(Name)\n"
-                
                 let setSpaces = CharacterSet.whitespaces
                 let setLines = CharacterSet.newlines
                 for line in content.components(separatedBy: setLines) {
                     let components = line.components(separatedBy: setSpaces).filter() { $0 != "" }
                     if 3 == components.count {
-                        let b = (components[0] as NSString).floatValue
-                        let a = (components[1] as NSString).floatValue
+                        let b = Float(components[0]) ?? 0
+                        let a = Float(components[1]) ?? 0
                         let name = components[2] as String
-                        string += NSString(format: "%.6f\t%.6f\t%@\n", b, a, name) as String
+                        string += String(format: "%.6f\t%.6f\t%@\n", b, a, name)
                         self.data[name] = [kCoefficientB: b, kCoefficientA: a];
                     }
                 }
-                
                 stringValue = string
             } catch {
                 print("Error load calibration from file at path \(path): \(error)")
