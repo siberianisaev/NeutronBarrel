@@ -69,30 +69,80 @@ class DataProtocol {
         return nil
     }
     
+    func position(_ eventId: Int) -> String {
+        if isEvent(eventId, ofType: keyAFr) {
+            return "Fron"
+        } else if isEvent(eventId, ofType: keyABack) || isEvent(eventId, ofType: keyABk) {
+            return "Back"
+        } else if isEvent(eventId, ofType: keyAdFr) {
+            return "dFr"
+        } else if isEvent(eventId, ofType: keyAdBk) {
+            return "dBk"
+        } else if AVeto == eventId {
+            return "Veto"
+        } else {
+            return "Wel"
+        }
+    }
+    
     func value(_ key: String) -> Int {
         return dict[key] ?? -1
     }
     
+    fileprivate var keyAFr: String = "AFr"
+    fileprivate var keyAdFr: String = "AdFr"
+    fileprivate var keyABack: String = "ABack"
+    fileprivate var keyABk: String = "ABk"
+    fileprivate var keyAdBk: String = "AdBk"
+    fileprivate var keyAWel: String = "AWel"
+    
+    func isAlphaFronEvent(_ eventId: Int) -> Bool {
+        return isEvent(eventId, ofType: keyAFr) || isEvent(eventId, ofType: keyAdFr)
+    }
+    
+    func isAlphaBackEvent(_ eventId: Int) -> Bool {
+        return isEvent(eventId, ofType: keyABack) || isEvent(eventId, ofType: keyABk) || isEvent(eventId, ofType: keyAdBk)
+    }
+    
+    func isAlphaWelEvent(_ eventId: Int) -> Bool {
+        return isEvent(eventId, ofType: keyAWel)
+    }
+    
     func AFron(_ i: Int) -> Int {
-        let v = value("AFron\(i)")
-        return v != -1 ? v : value("AFr\(i)")
+        let v = value(keyAFr + "on" + String(i))
+        return v != -1 ? v : value(keyAFr + String(i))
+    }
+    
+    fileprivate func isEvent(_ eventId: Int, ofType type: String) -> Bool {
+        return keyFor(value: eventId)?.hasPrefix(type) == true
+    }
+    
+    func encoderForEventId(_ eventId: Int) -> CUnsignedShort {
+        if AWel == eventId {
+            return 1
+        }
+        if let key = keyFor(value: eventId), let rangeDigits = key.rangeOfCharacter(from: .decimalDigits), let substring = String(key[rangeDigits.lowerBound...]).components(separatedBy: CharacterSet.init(charactersIn: "., ")).first, let encoder = Int(substring) {
+            return CUnsignedShort(encoder)
+        } else {
+            return 0
+        }
     }
     
     func ABack(_ i: Int) -> Int {
-        let v = value("ABack\(i)")
-        return v != -1 ? v : value("ABk\(i)")
+        let v = value(keyABack + String(i))
+        return v != -1 ? v : value(keyABk + String(i))
     }
     
     func AdFr(_ i: Int) -> Int {
-        return value("AdFr\(i)")
+        return value(keyAdFr + String(i))
     }
     
     func AdBk(_ i: Int) -> Int {
-        return value("AdBk\(i)")
+        return value(keyAdBk + String(i))
     }
     
     var AWel: Int {
-        return value("AWel")
+        return value(keyAWel)
     }
     
     var AVeto: Int {
@@ -100,7 +150,7 @@ class DataProtocol {
     }
     
     func AWel(_ i: Int) -> Int {
-        return value("AWel\(i)")
+        return value(keyAWel + String(i))
     }
     
     var Gam: Int {

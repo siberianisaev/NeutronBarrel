@@ -22,6 +22,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBOutlet weak var tofUnitsControl: NSSegmentedControl!
     @IBOutlet weak var indicatorData: NSTextField!
     @IBOutlet weak var indicatorCalibration: NSTextField!
+    @IBOutlet weak var indicatorStripsConfig: NSTextField!
     @IBOutlet weak var buttonRun: NSButton!
     @IBOutlet weak var alpha2View: NSView!
     @IBOutlet weak var vetoView: NSView!
@@ -79,7 +80,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         startParticleChanged(nil)
         setupVETOView()
         tofUnitsControl.selectedSegment = Settings.getIntSetting(.TOFUnits)
-        for i in [indicatorData, indicatorCalibration] {
+        for i in [indicatorData, indicatorCalibration, indicatorStripsConfig] {
             setSelected(false, indicator: i)
         }
         showAppVersion()
@@ -217,6 +218,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBAction func selectCalibration(_ sender: AnyObject?) {
         Processor.singleton.selectCalibrationWithCompletion { [weak self] (success: Bool) in
             self?.setSelected(success, indicator: self?.indicatorCalibration)
+        }
+    }
+    
+    @IBAction func selectStripsConfiguration(_ sender: AnyObject?) {
+        Processor.singleton.selectStripsConfigurationWithCompletion { [weak self] (success: Bool) in
+            self?.setSelected(success, indicator: self?.indicatorStripsConfig)
         }
     }
     

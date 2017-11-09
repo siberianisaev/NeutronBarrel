@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		5A036F711EB0F5C80092D3C4 /* Processor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A036F701EB0F5C80092D3C4 /* Processor.swift */; };
+		5A8997571FB4F9F800DD9956 /* StripsConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A8997561FB4F9F800DD9956 /* StripsConfiguration.swift */; };
 		6512B00B1EDACBB20087131D /* ViewerController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6512B0091EDACBB20087131D /* ViewerController.swift */; };
 		6512B00C1EDACBB20087131D /* ViewerController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 6512B00A1EDACBB20087131D /* ViewerController.xib */; };
 		6513070C1A4E911300E33704 /* FileManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6513070B1A4E911300E33704 /* FileManager.swift */; };
@@ -26,6 +27,7 @@
 
 /* Begin PBXFileReference section */
 		5A036F701EB0F5C80092D3C4 /* Processor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Processor.swift; sourceTree = "<group>"; };
+		5A8997561FB4F9F800DD9956 /* StripsConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StripsConfiguration.swift; sourceTree = "<group>"; };
 		6512B0091EDACBB20087131D /* ViewerController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ViewerController.swift; sourceTree = "<group>"; };
 		6512B00A1EDACBB20087131D /* ViewerController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = ViewerController.xib; sourceTree = "<group>"; };
 		6513070B1A4E911300E33704 /* FileManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FileManager.swift; sourceTree = "<group>"; };
@@ -121,6 +123,7 @@
 				78FC51301A530D0300FE5737 /* DataLoader.swift */,
 				784B0B881ABB13F80041FA66 /* Settings.swift */,
 				656A05DB1EADEDD500677B0F /* DataProtocol.swift */,
+				5A8997561FB4F9F800DD9956 /* StripsConfiguration.swift */,
 				656A05DD1EAE03BC00677B0F /* Extensions.swift */,
 				5A036F701EB0F5C80092D3C4 /* Processor.swift */,
 				651FDD8F1EC1012F0041CDE8 /* Constants.h */,
@@ -241,6 +244,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				656A05DC1EADEDD500677B0F /* DataProtocol.swift in Sources */,
+				5A8997571FB4F9F800DD9956 /* StripsConfiguration.swift in Sources */,
 				784B0B891ABB13F80041FA66 /* Settings.swift in Sources */,
 				5A036F711EB0F5C80092D3C4 /* Processor.swift in Sources */,
 				651307121A4E94AB00E33704 /* Calibration.swift in Sources */,

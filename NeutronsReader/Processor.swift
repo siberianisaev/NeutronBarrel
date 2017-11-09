@@ -46,7 +46,7 @@ class Processor {
     
     fileprivate let kEncoder = "encoder"
     fileprivate let kStrip0_15 = "strip_0_15"
-    fileprivate let kStrip1_48 = "strip_1_48"
+    fileprivate let kStrip1_N = "strip_1_N"
     fileprivate let kEnergy = "energy"
     fileprivate let kValue = "value"
     fileprivate let kDeltaTime = "delta_time"
@@ -57,6 +57,7 @@ class Processor {
     
     fileprivate var file: UnsafeMutablePointer<FILE>!
     fileprivate var dataProtocol: DataProtocol!
+    fileprivate var stripsConfiguration: StripsConfiguration!
     fileprivate var mainCycleTimeEvent = Event()
     fileprivate var totalEventNumber: CUnsignedLongLong = 0
     fileprivate var startEventTime: CUnsignedLongLong = 0
@@ -161,6 +162,13 @@ class Processor {
         Calibration.openCalibration { [weak self] (calibration: Calibration?) in
             self?.calibration = calibration!
             completion(true)
+        }
+    }
+    
+    func selectStripsConfigurationWithCompletion(_ completion: @escaping ((Bool)->())) {
+        StripsConfiguration.openConfiguration { [weak self] (configuration: StripsConfiguration?) in
+            self?.stripsConfiguration = configuration!
+            completion(configuration!.loaded)
         }
     }
     
@@ -529,7 +537,7 @@ class Processor {
                 return energy(obj1) > energy(obj2)
             }).first as? [String: Any]
             if let dict = dict, let encoder = dict[kEncoder], let strip0_15 = dict[kStrip0_15] {
-                let strip1_48 = stripConvertToFormat_1_48(strip0_15 as! CUnsignedShort, encoder: encoder as! CUnsignedShort)
+                let strip1_N = stripConvertToFormat_1_N(strip0_15 as! CUnsignedShort, encoder: encoder as! CUnsignedShort, side: .back)
                 let array = (fissionsAlphaBackPerAct as [Any]).filter( { (obj: Any) -> Bool in
                     let item = obj as! [String: Any]
                     if NSDictionary(dictionary: item).isEqual(to: dict) {
@@ -537,9 +545,9 @@ class Processor {
                     }
                     let e = item[kEncoder] as! CUnsignedShort
                     let s0_15 = item[kStrip0_15] as! CUnsignedShort
-                    let s1_48 = self.stripConvertToFormat_1_48(s0_15, encoder: e)
+                    let s1_N = self.stripConvertToFormat_1_N(s0_15, encoder: e, side: .back)
                     // TODO: new input field for _fissionBackMaxDeltaStrips
-                    return abs(Int32(strip1_48) - Int32(s1_48)) <= Int32(recoilBackMaxDeltaStrips)
+                    return abs(Int32(strip1_N) - Int32(s1_N)) <= Int32(recoilBackMaxDeltaStrips)
                 })
                 fissionsAlphaBackPerAct = array
             }
@@ -686,7 +694,7 @@ class Processor {
     // MARK: - Storage
     
     func storeFissionAlphaRecoilBack(_ event: Event, deltaTime: CLongLong) {
-        let encoder = fissionAlphaRecoilEncoderForEventId(Int(event.eventId))
+        let encoder = dataProtocol.encoderForEventId(Int(event.eventId))
         let strip_0_15 = event.param2 >> 12
         let energy = getEnergy(event, type: startParticleType)
         let info = [kEncoder: encoder,
@@ -714,7 +722,7 @@ class Processor {
     
     func storeFissionAlphaFront(_ event: Event, isFirst: Bool, deltaTime: CLongLong) {
         let channel = getChannel(event, type: startParticleType)
-        let encoder = fissionAlphaRecoilEncoderForEventId(Int(event.eventId))
+        let encoder = dataProtocol.encoderForEventId(Int(event.eventId))
         let strip_0_15 = event.param2 >> 12
         let energy = getEnergy(event, type: startParticleType)
         let info = [kEncoder: encoder,
@@ -727,9 +735,9 @@ class Processor {
         fissionsAlphaFrontPerAct.append(info)
         
         if isFirst {
-            let strip_1_48 = focalStripConvertToFormat_1_48(strip_0_15, eventId: event.eventId)
+            let strip_1_N = focalStripConvertToFormat_1_N(strip_0_15, eventId: event.eventId)
             var extraInfo = info
-            extraInfo[kStrip1_48] = strip_1_48
+            extraInfo[kStrip1_N] = strip_1_N
             firstFissionAlphaInfo = extraInfo
         }
     }
@@ -778,7 +786,7 @@ class Processor {
     
     func storeFissionAlphaWell(_ event: Event) {
         let energy = getEnergy(event, type: startParticleType)
-        let encoder = fissionAlphaRecoilEncoderForEventId(Int(event.eventId))
+        let encoder = dataProtocol.encoderForEventId(Int(event.eventId))
         let strip_0_15 = event.param2 >> 12
         let info = [kEncoder: encoder,
                     kStrip0_15: strip_0_15,
@@ -846,10 +854,10 @@ class Processor {
     
     func isEventFrontStripNearToFirstFissionAlphaFront(_ event: Event, maxDelta: Int) -> Bool {
         let strip_0_15 = event.param2 >> 12
-        let strip_1_48 = focalStripConvertToFormat_1_48(strip_0_15, eventId:event.eventId)
-        if let n = firstFissionAlphaInfo?[kStrip1_48] {
+        let strip_1_N = focalStripConvertToFormat_1_N(strip_0_15, eventId:event.eventId)
+        if let n = firstFissionAlphaInfo?[kStrip1_N] {
             let s = n as! CUnsignedShort
-            return abs(Int32(strip_1_48) - Int32(s)) <= Int32(maxDelta)
+            return abs(Int32(strip_1_N) - Int32(s)) <= Int32(maxDelta)
         }
         return false
     }
@@ -857,11 +865,11 @@ class Processor {
     func isRecoilBackStripNearToFissionAlphaBack(_ event: Event) -> Bool {
         if let fissionBackInfo = fissionAlphaBackWithMaxEnergyInAct() {
             let strip_0_15 = event.param2 >> 12
-            let strip_1_48 = focalStripConvertToFormat_1_48(strip_0_15, eventId:event.eventId)
+            let strip_1_N = focalStripConvertToFormat_1_N(strip_0_15, eventId:event.eventId)
             let strip_0_15_back_fission = fissionBackInfo[kStrip0_15] as! CUnsignedShort
             let encoder_back_fission = fissionBackInfo[kEncoder] as! CUnsignedShort
-            let strip_1_48_back_fission = stripConvertToFormat_1_48(strip_0_15_back_fission, encoder: encoder_back_fission)
-            return abs(Int32(strip_1_48) - Int32(strip_1_48_back_fission)) <= Int32(recoilBackMaxDeltaStrips)
+            let strip_1_N_back_fission = stripConvertToFormat_1_N(strip_0_15_back_fission, encoder: encoder_back_fission, side: .back)
+            return abs(Int32(strip_1_N) - Int32(strip_1_N_back_fission)) <= Int32(recoilBackMaxDeltaStrips)
         } else {
             return false
         }
@@ -878,10 +886,10 @@ class Processor {
                 return true
             }
             
-            let strip_1_48 = focalStripConvertToFormat_1_48(strip_0_15, eventId: event.eventId)
-            if let n = firstFissionAlphaInfo?[kStrip1_48] {
+            let strip_1_N = focalStripConvertToFormat_1_N(strip_0_15, eventId: event.eventId)
+            if let n = firstFissionAlphaInfo?[kStrip1_N] {
                 let s = n as! CUnsignedShort
-                return Int(abs(Int32(strip_1_48) - Int32(s))) <= 1
+                return Int(abs(Int32(strip_1_N) - Int32(s))) <= 1
             }
         }
         return false
@@ -895,18 +903,13 @@ class Processor {
         return (CUnsignedLongLong(cycleEvent.param3) << 16) + CUnsignedLongLong(cycleEvent.param1) + CUnsignedLongLong(relativeTime)
     }
     
-    /**
-     Strips in focal plane detector are connected alternately to 3 16-channel encoders:
-     | 1.0 | 2.0 | 3.0 | 1.1 | 2.1 | 3.1 | ... | encoder.strip_0_15 |
-     This method used for convert strip from format "encoder + strip 0-15" to format "strip 1-48".
-     */
-    func focalStripConvertToFormat_1_48(_ strip_0_15: CUnsignedShort, eventId: CUnsignedShort) -> CUnsignedShort {
-        let encoder = fissionAlphaRecoilEncoderForEventId(Int(eventId))
-        return stripConvertToFormat_1_48(strip_0_15, encoder:encoder)
+    func focalStripConvertToFormat_1_N(_ strip_0_15: CUnsignedShort, eventId: CUnsignedShort) -> Int {
+        let encoder = dataProtocol.encoderForEventId(Int(eventId))
+        return stripConvertToFormat_1_N(strip_0_15, encoder: encoder, side: .front)
     }
     
-    func stripConvertToFormat_1_48(_ strip_0_15: CUnsignedShort, encoder: CUnsignedShort) -> CUnsignedShort {
-        return (strip_0_15 * 3) + (encoder - 1) + 1
+    func stripConvertToFormat_1_N(_ strip_0_15: CUnsignedShort, encoder: CUnsignedShort, side: StripsSide) -> Int {
+        return stripsConfiguration.strip_1_N_For(side: side, encoder: Int(encoder), strip_0_15: strip_0_15)
     }
     
     func getMarker(_ event: Event) -> CUnsignedShort {
@@ -920,22 +923,6 @@ class Processor {
      */
     func isRecoil(_ event: Event) -> Bool {
         return (event.param3 >> 15) == 1
-    }
-    
-    func fissionAlphaRecoilEncoderForEventId(_ eventId: Int) -> CUnsignedShort {
-        if (dataProtocol.AFron(1) == eventId || dataProtocol.ABack(1) == eventId || dataProtocol.AdFr(1) == eventId || dataProtocol.AdBk(1) == eventId || dataProtocol.AWel(1) == eventId || dataProtocol.AWel == eventId) {
-            return 1
-        }
-        if (dataProtocol.AFron(2) == eventId || dataProtocol.ABack(2) == eventId || dataProtocol.AdFr(2) == eventId || dataProtocol.AdBk(2) == eventId || dataProtocol.AWel(2) == eventId) {
-            return 2
-        }
-        if (dataProtocol.AFron(3) == eventId || dataProtocol.ABack(3) == eventId || dataProtocol.AdFr(3) == eventId || dataProtocol.AdBk(3) == eventId || dataProtocol.AWel(3) == eventId) {
-            return 3
-        }
-        if (dataProtocol.AWel(4) == eventId) {
-            return 4
-        }
-        return 0
     }
     
     func isGammaEvent(_ event: Event) -> Bool {
@@ -953,12 +940,12 @@ class Processor {
         let searchRecoil = type == .recoil
         let currentRecoil = isRecoil(event)
         let sameType = (searchRecoil && currentRecoil) || (!searchRecoil && !currentRecoil)
-        return sameType && (dataProtocol.AFron(1) == eventId || dataProtocol.AFron(2) == eventId || dataProtocol.AFron(3) == eventId || dataProtocol.AdFr(1) == eventId || dataProtocol.AdFr(2) == eventId || dataProtocol.AdFr(3) == eventId)
+        return sameType && dataProtocol.isAlphaFronEvent(eventId)
     }
     
     func isFissionOrAlphaWel(_ event: Event) -> Bool {
         let eventId = Int(event.eventId)
-        return !isRecoil(event) && (dataProtocol.AWel == eventId || dataProtocol.AWel(1) == eventId || dataProtocol.AWel(2) == eventId || dataProtocol.AWel(3) == eventId || dataProtocol.AWel(4) == eventId)
+        return !isRecoil(event) && dataProtocol.isAlphaWelEvent(eventId)
     }
     
     func isBack(_ event: Event, type: SearchType) -> Bool {
@@ -966,7 +953,7 @@ class Processor {
         let searchRecoil = type == .recoil
         let currentRecoil = isRecoil(event)
         let sameType = (searchRecoil && currentRecoil) || (!searchRecoil && !currentRecoil)
-        return sameType && (dataProtocol.ABack(1) == eventId || dataProtocol.ABack(2) == eventId || dataProtocol.ABack(3) == eventId || dataProtocol.AdBk(1) == eventId || dataProtocol.AdBk(2) == eventId || dataProtocol.AdBk(3) == eventId)
+        return sameType && dataProtocol.isAlphaBackEvent(eventId)
     }
     
     func eventNumber() -> CUnsignedLongLong {
@@ -988,23 +975,8 @@ class Processor {
         let channel = getChannel(event, type: type)
         let eventId = Int(event.eventId)
         let strip_0_15 = event.param2 >> 12
-        let encoder = fissionAlphaRecoilEncoderForEventId(eventId)
-        
-        var position: String
-        if dataProtocol.AFron(1) == eventId || dataProtocol.AFron(2) == eventId || dataProtocol.AFron(3) == eventId {
-            position = "Fron"
-        } else if dataProtocol.ABack(1) == eventId || dataProtocol.ABack(2) == eventId || dataProtocol.ABack(3) == eventId {
-            position = "Back"
-        } else if dataProtocol.AdFr(1) == eventId || dataProtocol.AdFr(2) == eventId || dataProtocol.AdFr(3) == eventId {
-            position = "dFr"
-        } else if dataProtocol.AdBk(1) == eventId || dataProtocol.AdBk(2) == eventId || dataProtocol.AdBk(3) == eventId {
-            position = "dBk"
-        } else if dataProtocol.AVeto == eventId {
-            position = "Veto"
-        } else {
-            position = "Wel"
-        }
-        
+        let encoder = dataProtocol.encoderForEventId(eventId)
+        let position = dataProtocol.position(eventId)
         var name = type.symbol() + position
         if encoder != 0 {
             name += "\(encoder)."
@@ -1021,9 +993,9 @@ class Processor {
     func nanosecondsForTOFChannel(_ channelTOF: CUnsignedShort, eventRecoil: Event) -> Double {
         let eventId = Int(eventRecoil.eventId)
         let strip_0_15 = eventRecoil.param2 >> 12
-        let encoder = fissionAlphaRecoilEncoderForEventId(eventId)
+        let encoder = dataProtocol.encoderForEventId(eventId)
         var position: String
-        if dataProtocol.AFron(1) == eventId || dataProtocol.AFron(2) == eventId || dataProtocol.AFron(3) == eventId {
+        if dataProtocol.isAlphaFronEvent(eventId) {
             position = "Fron"
         } else {
             position = "Back"
@@ -1255,7 +1227,7 @@ class Processor {
                 case keyColumnStartFrontStrip:
                     if row < fissionsAlphaFrontPerAct.count {
                         if let info = fissionsAlphaFrontPerAct[row] as? [String: Any], let strip_0_15 = info[kStrip0_15], let encoder = info[kEncoder] {
-                            let strip = stripConvertToFormat_1_48(strip_0_15 as! CUnsignedShort, encoder: encoder as! CUnsignedShort)
+                            let strip = stripConvertToFormat_1_N(strip_0_15 as! CUnsignedShort, encoder: encoder as! CUnsignedShort, side: .front)
                             field = String(format: "%d", strip)
                         }
                     }
@@ -1284,7 +1256,7 @@ class Processor {
                     let array = startParticleType == .recoil ? recoilsBackPerAct : fissionsAlphaBackPerAct
                     if row < array.count {
                         if let info = array[row] as? [String: Any], let strip_0_15 = info[kStrip0_15], let encoder = info[kEncoder] {
-                            let strip = stripConvertToFormat_1_48(strip_0_15 as! CUnsignedShort, encoder: encoder as! CUnsignedShort)
+                            let strip = stripConvertToFormat_1_N(strip_0_15 as! CUnsignedShort, encoder: encoder as! CUnsignedShort, side: .back)
                             field = String(format: "%d", strip)
                         }
                     }
