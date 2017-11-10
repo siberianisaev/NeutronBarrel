@@ -927,7 +927,7 @@ class Processor {
     
     func isGammaEvent(_ event: Event) -> Bool {
         let eventId = Int(event.eventId)
-        return dataProtocol.Gam(1) == eventId || dataProtocol.Gam(2) == eventId || dataProtocol.Gam == eventId
+        return dataProtocol.isGammaEvent(eventId)
     }
     
     func isVETOEvent(_ event: Event) -> Bool {

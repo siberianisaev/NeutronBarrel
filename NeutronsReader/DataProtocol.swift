@@ -12,6 +12,14 @@ import AppKit
 class DataProtocol {
     
     fileprivate var dict = [String: Int]()
+    fileprivate var alphaWelMinEventId: Int = 0
+    fileprivate var keyAFr: String = "AFr"
+    fileprivate var keyAdFr: String = "AdFr"
+    fileprivate var keyABack: String = "ABack"
+    fileprivate var keyABk: String = "ABk"
+    fileprivate var keyAdBk: String = "AdBk"
+    fileprivate var keyAWel: String = "AWel"
+    fileprivate var keyGam: String = "Gam"
     
     class func load(_ path: String?) -> DataProtocol {
         let p = DataProtocol()
@@ -50,14 +58,25 @@ class DataProtocol {
             alert.runModal()
         }
         
+        p.setMinAlphaWelId()
         return p
+    }
+    
+    fileprivate func setMinAlphaWelId() {
+        var alphaWelIds = [Int]()
+        for (key, value) in dict {
+            if key.hasPrefix(keyAWel) {
+                alphaWelIds.append(value)
+            }
+        }
+        alphaWelMinEventId = alphaWelIds.min() ?? 0
     }
     
     /**
      Not all events have time data.
      */
     func isValidEventIdForTimeCheck(_ eventId: Int) -> Bool {
-        return (eventId <= AWel(4) || eventId <= AWel(3) || eventId <= AWel(2) || eventId <= AWel(1) || eventId <= AWel || eventId == TOF  || eventId == Gam(1) || eventId == Gam(2) || eventId == Gam || eventId == Neutrons || eventId == AVeto)
+        return eventId <= alphaWelMinEventId || eventId == TOF || isGammaEvent(eventId) || eventId == Neutrons || eventId == AVeto
     }
     
     func keyFor(value: Int) -> String? {
@@ -89,13 +108,6 @@ class DataProtocol {
         return dict[key] ?? -1
     }
     
-    fileprivate var keyAFr: String = "AFr"
-    fileprivate var keyAdFr: String = "AdFr"
-    fileprivate var keyABack: String = "ABack"
-    fileprivate var keyABk: String = "ABk"
-    fileprivate var keyAdBk: String = "AdBk"
-    fileprivate var keyAWel: String = "AWel"
-    
     func isAlphaFronEvent(_ eventId: Int) -> Bool {
         return isEvent(eventId, ofType: keyAFr) || isEvent(eventId, ofType: keyAdFr)
     }
@@ -108,9 +120,8 @@ class DataProtocol {
         return isEvent(eventId, ofType: keyAWel)
     }
     
-    func AFron(_ i: Int) -> Int {
-        let v = value(keyAFr + "on" + String(i))
-        return v != -1 ? v : value(keyAFr + String(i))
+    func isGammaEvent(_ eventId: Int) -> Bool {
+        return isEvent(eventId, ofType: keyGam)
     }
     
     fileprivate func isEvent(_ eventId: Int, ofType type: String) -> Bool {
@@ -128,37 +139,12 @@ class DataProtocol {
         }
     }
     
-    func ABack(_ i: Int) -> Int {
-        let v = value(keyABack + String(i))
-        return v != -1 ? v : value(keyABk + String(i))
-    }
-    
-    func AdFr(_ i: Int) -> Int {
-        return value(keyAdFr + String(i))
-    }
-    
-    func AdBk(_ i: Int) -> Int {
-        return value(keyAdBk + String(i))
-    }
-    
-    var AWel: Int {
+    fileprivate var AWel: Int {
         return value(keyAWel)
     }
     
     var AVeto: Int {
         return value("AVeto")
-    }
-    
-    func AWel(_ i: Int) -> Int {
-        return value(keyAWel + String(i))
-    }
-    
-    var Gam: Int {
-        return value("Gam")
-    }
-    
-    func Gam(_ i: Int) -> Int {
-        return value("Gam\(i)")
     }
     
     var TOF: Int {
