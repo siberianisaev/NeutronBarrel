@@ -856,7 +856,7 @@ class Processor {
         let strip_0_15 = event.param2 >> 12
         let strip_1_N = focalStripConvertToFormat_1_N(strip_0_15, eventId:event.eventId)
         if let n = firstFissionAlphaInfo?[kStrip1_N] {
-            let s = n as! CUnsignedShort
+            let s = CUnsignedShort(n as! Int)
             return abs(Int32(strip_1_N) - Int32(s)) <= Int32(maxDelta)
         }
         return false
@@ -888,7 +888,7 @@ class Processor {
             
             let strip_1_N = focalStripConvertToFormat_1_N(strip_0_15, eventId: event.eventId)
             if let n = firstFissionAlphaInfo?[kStrip1_N] {
-                let s = n as! CUnsignedShort
+                let s = CUnsignedShort(n as! Int)
                 return Int(abs(Int32(strip_1_N) - Int32(s))) <= 1
             }
         }
