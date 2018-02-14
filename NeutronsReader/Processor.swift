@@ -137,6 +137,9 @@ class Processor {
     var startParticleType: SearchType = .fission
     var unitsTOF: TOFUnits = .channels
     var recoilType: SearchType = .recoil
+    fileprivate var heavyType: SearchType {
+        return recoilType == .recoil ? .heavy : .recoil
+    }
     
     weak var delegate: ProcessorDelegate!
     
@@ -607,7 +610,7 @@ class Processor {
                 return false
             }
             
-            let heavy = self.getEnergy(event, type: .heavy)
+            let heavy = self.getEnergy(event, type: heavyType)
             self.storeRecoil(event, energy: energy, heavy: heavy, deltaTime: deltaTime)
             return true
         }
@@ -1042,11 +1045,28 @@ class Processor {
     }
     
     fileprivate var columns = [String]()
-    fileprivate var keyColumnRecoilEvent = "Event(Recoil)"
-    fileprivate var keyColumnRecoilEnergy = "E(RFron)"
-    fileprivate var keyColumnRecoilHeavyEnergy = "E(HRFron)"
-    fileprivate var keyColumnRecoilFrontMarker = "RFronMarker"
-    fileprivate var keyColumnRecoilDeltaTime = "dT(RFron-$Fron)"
+    fileprivate var keyColumnRecoilEvent: String {
+        let name = recoilType == .recoil ? "Recoil" : "Heavy Recoil"
+        return "Event(\(name))"
+    }
+    fileprivate var keyRecoil: String {
+        return  recoilType == .recoil ? "R" : "HR"
+    }
+    fileprivate var keyColumnRecoilEnergy: String {
+        return "E(\(keyRecoil)Fron)"
+    }
+    fileprivate var keyColumnRecoilFrontMarker: String {
+        return "\(keyRecoil)FronMarker"
+    }
+    fileprivate var keyColumnRecoilDeltaTime: String {
+        return "dT(\(keyRecoil)Fron-$Fron)"
+    }
+    fileprivate var keyRecoilHeavy: String {
+        return heavyType == .heavy ? "HR" : "R"
+    }
+    fileprivate var keyColumnRecoilHeavyEnergy: String {
+        return "E(\(keyRecoilHeavy)Fron)"
+    }
     fileprivate var keyColumnTof = "TOF"
     fileprivate var keyColumnTofDeltaTime = "dT(TOF-RFron)"
     fileprivate var keyColumnStartEvent = "Event($)"
