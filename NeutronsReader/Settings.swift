@@ -50,7 +50,8 @@ class Settings {
         MaxAlpha2Time = "MaxAlpha2Time",
         MaxAlpha2FrontDeltaStrips = "MaxAlpha2FrontDeltaStrips",
         SearchSpecialEvents = "SearchSpecialEvents",
-        SpecialEventIds = "SpecialEventIds"
+        SpecialEventIds = "SpecialEventIds",
+        SelectedRecoilType = "SelectedRecoilType"
         
         func key() -> String {
             return "Setting.\(self.rawValue)"
@@ -112,6 +113,8 @@ class Settings {
             return false
         case .SpecialEventIds:
             return nil
+        case .SelectedRecoilType:
+            return SearchType.recoil.rawValue
         }
     }
     

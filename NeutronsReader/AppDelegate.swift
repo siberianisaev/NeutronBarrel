@@ -28,6 +28,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBOutlet weak var vetoView: NSView!
     @IBOutlet weak var fissionAlpha1View: NSView!
     @IBOutlet weak var requiredRecoilButton: NSButton!
+    @IBOutlet weak var recoilTypeButton: NSPopUpButton!
+    @IBOutlet weak var recoilTypeArrayController: NSArrayController!
     
     fileprivate var viewerController: ViewerController?
     fileprivate var totalTime: TimeInterval = 0
@@ -75,7 +77,25 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBInspectable var trackBeamBackground: Bool = Settings.getBoolSetting(.TrackBeamBackground)
     @IBInspectable var trackBeamIntegral: Bool = Settings.getBoolSetting(.TrackBeamIntegral)
     
+    fileprivate let recoilTypes: [SearchType] = [.recoil, .heavy]
+    fileprivate var selectedRecoilType: SearchType {
+        return recoilTypes[recoilTypeArrayController.selectionIndex]
+    }
+    
+    fileprivate func setupRecoilTypes() {
+        let array = recoilTypes.map { (t: SearchType) -> String in
+            return t.name()
+        }
+        var index = 0
+        if let t = SearchType(rawValue: Settings.getIntSetting(.SelectedRecoilType)), let i = recoilTypes.index(of: t) {
+            index = i
+        }
+        recoilTypeArrayController.content = array
+        recoilTypeArrayController.setSelectedObjects([array[index]])
+    }
+    
     func applicationDidFinishLaunching(_ aNotification: Notification) {
+        setupRecoilTypes()
         startParticleControl.selectedSegment = Settings.getIntSetting(.SearchType)
         startParticleChanged(nil)
         setupVETOView()
@@ -176,6 +196,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             processor.trackBeamCurrent = trackBeamCurrent
             processor.trackBeamBackground = trackBeamBackground
             processor.trackBeamIntegral = trackBeamIntegral
+            processor.recoilType = selectedRecoilType
             let ids = specialEventIds.components(separatedBy: ",").map({ (s: String) -> Int in
                 return Int(s) ?? 0
             }).filter({ (i: Int) -> Bool in
@@ -309,6 +330,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         Settings.setObject(Int(sMaxAlpha2FrontDeltaStrips), forSetting: .MaxAlpha2FrontDeltaStrips)
         Settings.setObject(searchSpecialEvents, forSetting: .SearchSpecialEvents)
         Settings.setObject(specialEventIds, forSetting: .SpecialEventIds)
+        Settings.setObject(selectedRecoilType.rawValue, forSetting: .SelectedRecoilType)
     }
     
     // MARK: - App Version

@@ -35,6 +35,21 @@ enum SearchType: Int {
             return "H"
         }
     }
+    
+    func name() -> String {
+        switch self {
+        case .fission:
+            return "Fission"
+        case .alpha:
+            return "Alpha"
+        case .veto:
+            return "Veto"
+        case .recoil:
+            return "Recoil"
+        case .heavy:
+            return "Heavy Recoil"
+        }
+    }
 }
 
 enum TOFUnits {
@@ -121,6 +136,7 @@ class Processor {
     var specialEventIds = [Int]()
     var startParticleType: SearchType = .fission
     var unitsTOF: TOFUnits = .channels
+    var recoilType: SearchType = .recoil
     
     weak var delegate: ProcessorDelegate!
     
@@ -364,7 +380,7 @@ class Processor {
         if isFront(event, type: startParticleType) {
             startEventTime = UInt64(event.param1)
             
-            let isRecoilSearch = startParticleType == .recoil
+            let isRecoilSearch = startParticleType == recoilType
             if isRecoilSearch {
                 if !validateRecoil(event, deltaTime: 0) {
                     return
@@ -558,7 +574,7 @@ class Processor {
         let fissionTime = absTime(CUnsignedShort(startEventTime), cycleEvent:mainCycleTimeEvent)
         let directions: Set<SearchDirection> = [.backward]
         search(directions: directions, startTime: fissionTime, minDeltaTime: recoilMinTime, maxDeltaTime: recoilMaxTime, useCycleTime: true, updateCycleEvent: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
-            let isRecoil = self.isFront(event, type: .recoil)
+            let isRecoil = self.isFront(event, type: self.recoilType)
             if isRecoil {
                 let isNear = self.isEventFrontStripNearToFirstFissionAlphaFront(event, maxDelta: Int(self.recoilFrontMaxDeltaStrips))
                 if isNear {
@@ -569,7 +585,7 @@ class Processor {
     }
     
     @discardableResult fileprivate func validateRecoil(_ event: Event, deltaTime: CLongLong) -> Bool {
-        let energy = self.getEnergy(event, type: .recoil)
+        let energy = self.getEnergy(event, type: recoilType)
         if energy >= self.recoilFrontMinEnergy && energy <= self.recoilFrontMaxEnergy {
             var position = fpos_t()
             fgetpos(self.file, &position)
@@ -578,7 +594,7 @@ class Processor {
             let isRecoilBackFounded = self.findRecoilBack(t)
             fseek(self.file, Int(position), SEEK_SET)
             if isRecoilBackFounded {
-                if self.startParticleType == .recoil {
+                if self.startParticleType == recoilType {
                     self.storeFissionAlphaRecoilBack(event, deltaTime: deltaTime)
                 }
             } else if (self.requiredRecoilBack) {
@@ -618,8 +634,8 @@ class Processor {
         var found: Bool = false
         let directions: Set<SearchDirection> = [.forward]
         search(directions: directions, startTime: timeRecoilFront, minDeltaTime: 0, maxDeltaTime: recoilBackMaxTime, useCycleTime: false, updateCycleEvent: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
-            if self.isBack(event, type: .recoil) {
-                if (self.requiredRecoilBack && self.startParticleType != .recoil) {
+            if self.isBack(event, type: self.recoilType) {
+                if (self.requiredRecoilBack && self.startParticleType != self.recoilType) {
                     found = self.isRecoilBackStripNearToFissionAlphaBack(event)
                 } else {
                     found = true
@@ -937,7 +953,7 @@ class Processor {
     
     func isFront(_ event: Event, type: SearchType) -> Bool {
         let eventId = Int(event.eventId)
-        let searchRecoil = type == .recoil
+        let searchRecoil = type == recoilType
         let currentRecoil = isRecoil(event)
         let sameType = (searchRecoil && currentRecoil) || (!searchRecoil && !currentRecoil)
         return sameType && dataProtocol.isAlphaFronEvent(eventId)
@@ -950,7 +966,7 @@ class Processor {
     
     func isBack(_ event: Event, type: SearchType) -> Bool {
         let eventId = Int(event.eventId)
-        let searchRecoil = type == .recoil
+        let searchRecoil = type == recoilType
         let currentRecoil = isRecoil(event)
         let sameType = (searchRecoil && currentRecoil) || (!searchRecoil && !currentRecoil)
         return sameType && dataProtocol.isAlphaBackEvent(eventId)
@@ -1201,7 +1217,7 @@ class Processor {
                         }
                     }
                 case keyColumnStartFrontSumm:
-                    if row == 0 && startParticleType != .recoil {
+                    if row == 0 && startParticleType != recoilType {
                         if let summ = getSummEnergyFrom(fissionsAlphaFrontPerAct) {
                             field = String(format: "%.7f", summ)
                         }
@@ -1232,28 +1248,28 @@ class Processor {
                         }
                     }
                 case keyColumnStartBackEnergy:
-                    let array = startParticleType == .recoil ? recoilsBackPerAct : fissionsAlphaBackPerAct
+                    let array = startParticleType == recoilType ? recoilsBackPerAct : fissionsAlphaBackPerAct
                     if row < array.count {
                         if let energy = getValueFrom(array: array, row: row, key: kEnergy) {
                             field = String(format: "%.7f", energy as! Double)
                         }
                     }
                 case keyColumnStartBackMarker:
-                    let array = startParticleType == .recoil ? recoilsBackPerAct : fissionsAlphaBackPerAct
+                    let array = startParticleType == recoilType ? recoilsBackPerAct : fissionsAlphaBackPerAct
                     if row < array.count {
                         if let marker = getValueFrom(array: array, row: row, key: kMarker) {
                             field = String(format: "%hu", marker as! CUnsignedShort)
                         }
                     }
                 case keyColumnStartBackDeltaTime:
-                    let array = startParticleType == .recoil ? recoilsBackPerAct : fissionsAlphaBackPerAct
+                    let array = startParticleType == recoilType ? recoilsBackPerAct : fissionsAlphaBackPerAct
                     if row < array.count {
                         if let deltaTime = getValueFrom(array: array, row: row, key: kDeltaTime) {
                             field = String(format: "%lld", deltaTime as! CLongLong)
                         }
                     }
                 case keyColumnStartBackStrip:
-                    let array = startParticleType == .recoil ? recoilsBackPerAct : fissionsAlphaBackPerAct
+                    let array = startParticleType == recoilType ? recoilsBackPerAct : fissionsAlphaBackPerAct
                     if row < array.count {
                         if let info = array[row] as? [String: Any], let strip_0_15 = info[kStrip0_15], let encoder = info[kEncoder] {
                             let strip = stripConvertToFormat_1_N(strip_0_15 as! CUnsignedShort, encoder: encoder as! CUnsignedShort, side: .back)
@@ -1261,7 +1277,7 @@ class Processor {
                         }
                     }
                 case keyColumnStartWelSumm:
-                    if row == 0 && startParticleType != .recoil {
+                    if row == 0 && startParticleType != recoilType {
                         if let summ = getSummEnergyFrom(fissionsAlphaWelPerAct) {
                             field = String(format: "%.7f", summ)
                         }
