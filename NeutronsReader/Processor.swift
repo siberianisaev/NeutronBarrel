@@ -1072,6 +1072,7 @@ class Processor {
     fileprivate var keyColumnTofDeltaTime = "dT(TOF-RFron)"
     fileprivate var keyColumnStartEvent = "Event($)"
     fileprivate var keyColumnStartFrontSumm = "Summ($Fron)"
+    fileprivate var keyColumnStartBackSumm = "Summ($Back)"
     fileprivate var keyColumnStartFrontEnergy = "$Fron"
     fileprivate var keyColumnStartFrontMarker = "$FronMarker"
     fileprivate var keyColumnStartFrontDeltaTime = "dT($FronFirst-Next)"
@@ -1120,6 +1121,7 @@ class Processor {
             keyColumnStartFrontMarker,
             keyColumnStartFrontDeltaTime,
             keyColumnStartFrontStrip,
+            keyColumnStartBackSumm,
             keyColumnStartBackEnergy,
             keyColumnStartBackMarker,
             keyColumnStartBackDeltaTime,
@@ -1266,6 +1268,12 @@ class Processor {
                         if let info = fissionsAlphaFrontPerAct[row] as? [String: Any], let strip_0_15 = info[kStrip0_15], let encoder = info[kEncoder] {
                             let strip = stripConvertToFormat_1_N(strip_0_15 as! CUnsignedShort, encoder: encoder as! CUnsignedShort, side: .front)
                             field = String(format: "%d", strip)
+                        }
+                    }
+                case keyColumnStartBackSumm:
+                    if row == 0 && startParticleType != recoilType {
+                        if let summ = getSummEnergyFrom(fissionsAlphaBackPerAct) {
+                            field = String(format: "%.7f", summ)
                         }
                     }
                 case keyColumnStartBackEnergy:
