@@ -1136,17 +1136,6 @@
                             </binding>
                         </connections>
                     </textField>
-                    <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="0iN-ES-PsF">
-                        <rect key="frame" x="857" y="259" width="164" height="17"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                        <buttonCell key="cell" type="check" title="Gamma required" bezelStyle="regularSquare" imagePosition="left" inset="2" id="qqL-ji-47x">
-                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                            <font key="font" size="15" name="HelveticaNeue-Bold"/>
-                        </buttonCell>
-                        <connections>
-                            <binding destination="Voe-Tx-rLC" name="value" keyPath="self.requiredGamma" id="b7b-Fl-bme"/>
-                        </connections>
-                    </button>
                     <customView hidden="YES" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="3cn-vC-YcO">
                         <rect key="frame" x="266" y="251" width="255" height="227"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
@@ -1581,6 +1570,17 @@
                             <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>
                     </textField>
+                    <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="0iN-ES-PsF">
+                        <rect key="frame" x="857" y="259" width="181" height="18"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="check" title="Gamma required" bezelStyle="regularSquare" imagePosition="left" inset="2" id="qqL-ji-47x">
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                            <font key="font" size="15" name="HelveticaNeue-Bold"/>
+                        </buttonCell>
+                        <connections>
+                            <binding destination="Voe-Tx-rLC" name="value" keyPath="self.requiredGamma" id="b7b-Fl-bme"/>
+                        </connections>
+                    </button>
                 </subviews>
             </view>
             <point key="canvasLocation" x="595" y="459"/>
