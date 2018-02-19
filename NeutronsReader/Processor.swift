@@ -94,7 +94,7 @@ class Processor {
     fileprivate var firstFissionAlphaInfo: [String: Any]?
     fileprivate var stoped = false
     fileprivate var logger: Logger!
-    fileprivate var calibration: Calibration!
+    fileprivate var calibration = Calibration()
     
     var files = [String]()
     var fissionAlphaFrontMinEnergy: Double = 0
@@ -142,7 +142,7 @@ class Processor {
         return recoilType == .recoil ? .heavy : .recoil
     }
     
-    weak var delegate: ProcessorDelegate!
+    weak var delegate: ProcessorDelegate?
     
     class var singleton : Processor {
         struct Static {
@@ -151,15 +151,12 @@ class Processor {
         return Static.sharedInstance
     }
     
-    init() {
-        calibration = Calibration()
-    }
-    
     func stop() {
         stoped = true
     }
     
-    func processDataWithCompletion(_ completion: @escaping (()->())) {
+    func processDataWith(aDelegate: ProcessorDelegate, completion: @escaping (()->())) {
+        delegate = aDelegate
         stoped = false
         
         DispatchQueue.global(qos: .default).async { [weak self] in
@@ -321,7 +318,7 @@ class Processor {
         logResultsHeader()
         
         DispatchQueue.main.async { [weak self] in
-            self?.delegate.incrementProgress(Double.ulpOfOne) // Show progress indicator
+            self?.delegate?.incrementProgress(Double.ulpOfOne) // Show progress indicator
         }
         let progressForOneFile: Double = 100.0 / Double(files.count)
         
@@ -332,7 +329,7 @@ class Processor {
                 let name = path.lastPathComponent
                 currentFileName = name
                 DispatchQueue.main.async { [weak self] in
-                    self?.delegate.startProcessingFile(name)
+                    self?.delegate?.startProcessingFile(name)
                 }
                 
                 if let file = file {
@@ -359,7 +356,7 @@ class Processor {
                 fclose(file)
                 
                 DispatchQueue.main.async { [weak self] in
-                    self?.delegate.incrementProgress(progressForOneFile)
+                    self?.delegate?.incrementProgress(progressForOneFile)
                 }
             }
         }

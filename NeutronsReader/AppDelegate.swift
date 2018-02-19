@@ -205,8 +205,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
                 return i > 0
             })
             processor.specialEventIds = ids
-            processor.delegate = self
-            processor.processDataWithCompletion({ [weak self] in
+            processor.processDataWith(aDelegate: self, completion: { [weak self] in
                 self?.run = false
             })
         }
