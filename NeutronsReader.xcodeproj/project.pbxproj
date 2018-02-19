@@ -16,6 +16,22 @@
 		651307141A4E94C500E33704 /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 651307131A4E94C500E33704 /* Logger.swift */; };
 		656A05DC1EADEDD500677B0F /* DataProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 656A05DB1EADEDD500677B0F /* DataProtocol.swift */; };
 		656A05DE1EAE03BC00677B0F /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 656A05DD1EAE03BC00677B0F /* Extensions.swift */; };
+		65E78363203AD5B200091FA4 /* DataProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 656A05DB1EADEDD500677B0F /* DataProtocol.swift */; };
+		65E78364203AD5B200091FA4 /* StripsConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A8997561FB4F9F800DD9956 /* StripsConfiguration.swift */; };
+		65E78365203AD5B200091FA4 /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 784B0B881ABB13F80041FA66 /* Settings.swift */; };
+		65E78366203AD5B200091FA4 /* Processor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A036F701EB0F5C80092D3C4 /* Processor.swift */; };
+		65E78367203AD5B200091FA4 /* Calibration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 651307111A4E94AB00E33704 /* Calibration.swift */; };
+		65E78368203AD5B200091FA4 /* CSVWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 784150D91AC184C400831384 /* CSVWriter.swift */; };
+		65E78369203AD5B200091FA4 /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 651307131A4E94C500E33704 /* Logger.swift */; };
+		65E7836A203AD5B200091FA4 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 656A05DD1EAE03BC00677B0F /* Extensions.swift */; };
+		65E7836B203AD5B200091FA4 /* ViewerController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6512B0091EDACBB20087131D /* ViewerController.swift */; };
+		65E7836C203AD5B200091FA4 /* FileManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6513070B1A4E911300E33704 /* FileManager.swift */; };
+		65E7836D203AD5B200091FA4 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 780BC3A51A5EF99700EDEECE /* AppDelegate.swift */; };
+		65E7836E203AD5B200091FA4 /* DataLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78FC51301A530D0300FE5737 /* DataLoader.swift */; };
+		65E78370203AD5B200091FA4 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 78B6A547193A3B3900C7E36A /* Cocoa.framework */; };
+		65E78373203AD5B200091FA4 /* ViewerController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 6512B00A1EDACBB20087131D /* ViewerController.xib */; };
+		65E78374203AD5B200091FA4 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 78B6A55C193A3B3900C7E36A /* MainMenu.xib */; };
+		65E78384203ADB4000091FA4 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 78B6A55F193A3B3900C7E36A /* Images.xcassets */; };
 		780BC3A61A5EF99700EDEECE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 780BC3A51A5EF99700EDEECE /* AppDelegate.swift */; };
 		784150DA1AC184C400831384 /* CSVWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 784150D91AC184C400831384 /* CSVWriter.swift */; };
 		784B0B891ABB13F80041FA66 /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 784B0B881ABB13F80041FA66 /* Settings.swift */; };
@@ -38,6 +54,11 @@
 		654FC8041F77091D00E75929 /* NeutronsReader.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = NeutronsReader.entitlements; sourceTree = "<group>"; };
 		656A05DB1EADEDD500677B0F /* DataProtocol.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DataProtocol.swift; sourceTree = "<group>"; };
 		656A05DD1EAE03BC00677B0F /* Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
+		65E78379203AD5B200091FA4 /* NewTimeFormat.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NewTimeFormat.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		65E7837F203AD7F700091FA4 /* EventNewTime.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = EventNewTime.h; sourceTree = "<group>"; };
+		65E78380203AD7F700091FA4 /* Event.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Event.h; sourceTree = "<group>"; };
+		65E78381203AD85E00091FA4 /* NewTimeFormat-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NewTimeFormat-Bridging-Header.h"; sourceTree = "<group>"; };
+		65E78383203ADA3900091FA4 /* NewTimeFormat-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "NewTimeFormat-Info.plist"; sourceTree = "<group>"; };
 		780BC3A51A5EF99700EDEECE /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		784150D91AC184C400831384 /* CSVWriter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CSVWriter.swift; sourceTree = "<group>"; };
 		784B0B881ABB13F80041FA66 /* Settings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
@@ -54,6 +75,14 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		65E7836F203AD5B200091FA4 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				65E78370203AD5B200091FA4 /* Cocoa.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		78B6A541193A3B3900C7E36A /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -88,6 +117,7 @@
 			isa = PBXGroup;
 			children = (
 				78B6A544193A3B3900C7E36A /* NeutronsReader.app */,
+				65E78379203AD5B200091FA4 /* NewTimeFormat.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -127,6 +157,8 @@
 				656A05DD1EAE03BC00677B0F /* Extensions.swift */,
 				5A036F701EB0F5C80092D3C4 /* Processor.swift */,
 				651FDD8F1EC1012F0041CDE8 /* Constants.h */,
+				65E78380203AD7F700091FA4 /* Event.h */,
+				65E7837F203AD7F700091FA4 /* EventNewTime.h */,
 				780BC43E1A604AE000EDEECE /* Resources */,
 				78B6A54E193A3B3900C7E36A /* Supporting Files */,
 			);
@@ -138,8 +170,10 @@
 			children = (
 				654FC8041F77091D00E75929 /* NeutronsReader.entitlements */,
 				78B6A54F193A3B3900C7E36A /* NeutronsReader-Info.plist */,
+				65E78383203ADA3900091FA4 /* NewTimeFormat-Info.plist */,
 				78B6A555193A3B3900C7E36A /* NeutronsReader-Prefix.pch */,
 				6513070D1A4E92CD00E33704 /* NeutronsReader-Bridging-Header.h */,
+				65E78381203AD85E00091FA4 /* NewTimeFormat-Bridging-Header.h */,
 			);
 			name = "Supporting Files";
 			sourceTree = "<group>";
@@ -147,6 +181,24 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		65E78361203AD5B200091FA4 /* NewTimeFormat */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 65E78376203AD5B200091FA4 /* Build configuration list for PBXNativeTarget "NewTimeFormat" */;
+			buildPhases = (
+				65E78362203AD5B200091FA4 /* Sources */,
+				65E7836F203AD5B200091FA4 /* Frameworks */,
+				65E78371203AD5B200091FA4 /* Resources */,
+				65E78375203AD5B200091FA4 /* Git SHA */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = NewTimeFormat;
+			productName = NeutronsReader;
+			productReference = 65E78379203AD5B200091FA4 /* NewTimeFormat.app */;
+			productType = "com.apple.product-type.application";
+		};
 		78B6A543193A3B3900C7E36A /* NeutronsReader */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 78B6A575193A3B3900C7E36A /* Build configuration list for PBXNativeTarget "NeutronsReader" */;
@@ -204,11 +256,22 @@
 			projectRoot = "";
 			targets = (
 				78B6A543193A3B3900C7E36A /* NeutronsReader */,
+				65E78361203AD5B200091FA4 /* NewTimeFormat */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		65E78371203AD5B200091FA4 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				65E78384203ADB4000091FA4 /* Images.xcassets in Resources */,
+				65E78373203AD5B200091FA4 /* ViewerController.xib in Resources */,
+				65E78374203AD5B200091FA4 /* MainMenu.xib in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		78B6A542193A3B3900C7E36A /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -222,6 +285,20 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		65E78375203AD5B200091FA4 /* Git SHA */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Git SHA";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# write git version SHA into Info.plist\ncd \"$PROJECT_DIR\"\n# say hello\n/usr/libexec/PlistBuddy -c \"Set :CFBundleVersionGitSHA $(git rev-parse --short HEAD)\" \"$TARGET_BUILD_DIR/$INFOPLIST_PATH\"\n/usr/libexec/PlistBuddy -c \"Set :CFBundleVersionGitBranch $(git rev-parse --short HEAD --symbolic --abbrev-ref $1)\" \"$TARGET_BUILD_DIR/$INFOPLIST_PATH\"\n";
+		};
 		789E3F801ABC786F0093DBD8 /* Git SHA */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -239,6 +316,25 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		65E78362203AD5B200091FA4 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				65E78363203AD5B200091FA4 /* DataProtocol.swift in Sources */,
+				65E78364203AD5B200091FA4 /* StripsConfiguration.swift in Sources */,
+				65E78365203AD5B200091FA4 /* Settings.swift in Sources */,
+				65E78366203AD5B200091FA4 /* Processor.swift in Sources */,
+				65E78367203AD5B200091FA4 /* Calibration.swift in Sources */,
+				65E78368203AD5B200091FA4 /* CSVWriter.swift in Sources */,
+				65E78369203AD5B200091FA4 /* Logger.swift in Sources */,
+				65E7836A203AD5B200091FA4 /* Extensions.swift in Sources */,
+				65E7836B203AD5B200091FA4 /* ViewerController.swift in Sources */,
+				65E7836C203AD5B200091FA4 /* FileManager.swift in Sources */,
+				65E7836D203AD5B200091FA4 /* AppDelegate.swift in Sources */,
+				65E7836E203AD5B200091FA4 /* DataLoader.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		78B6A540193A3B3900C7E36A /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -272,6 +368,47 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
+		65E78377203AD5B200091FA4 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIconNewTime;
+				CLANG_ENABLE_MODULES = YES;
+				COMBINE_HIDPI_IMAGES = YES;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "NeutronsReader/NeutronsReader-Prefix.pch";
+				INFOPLIST_FILE = "$(SRCROOT)/NeutronsReader/NeutronsReader-Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				OTHER_SWIFT_FLAGS = "-DNEW_TIME_FORMAT";
+				PRODUCT_BUNDLE_IDENTIFIER = "ru.jinr.AndreyIsaev.${PRODUCT_NAME:rfc1034identifier}";
+				PRODUCT_MODULE_NAME = NeutronsReader;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "NeutronsReader/NewTimeFormat-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 4.0;
+				WRAPPER_EXTENSION = app;
+			};
+			name = Debug;
+		};
+		65E78378203AD5B200091FA4 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIconNewTime;
+				CLANG_ENABLE_MODULES = YES;
+				COMBINE_HIDPI_IMAGES = YES;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "NeutronsReader/NeutronsReader-Prefix.pch";
+				INFOPLIST_FILE = "$(SRCROOT)/NeutronsReader/NeutronsReader-Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				OTHER_SWIFT_FLAGS = "-DNEW_TIME_FORMAT";
+				PRODUCT_BUNDLE_IDENTIFIER = "ru.jinr.AndreyIsaev.${PRODUCT_NAME:rfc1034identifier}";
+				PRODUCT_MODULE_NAME = NeutronsReader;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "NeutronsReader/NewTimeFormat-Bridging-Header.h";
+				SWIFT_VERSION = 4.0;
+				WRAPPER_EXTENSION = app;
+			};
+			name = Release;
+		};
 		78B6A573193A3B3900C7E36A /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -402,6 +539,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		65E78376203AD5B200091FA4 /* Build configuration list for PBXNativeTarget "NewTimeFormat" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				65E78377203AD5B200091FA4 /* Debug */,
+				65E78378203AD5B200091FA4 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		78B6A53F193A3B3800C7E36A /* Build configuration list for PBXProject "NeutronsReader" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

@@ -8,13 +8,6 @@
 
 #import <Foundation/Foundation.h>
 
-typedef struct {
-    unsigned short eventId;
-    unsigned short param1;
-    unsigned short param2;
-    unsigned short param3;
-} Event;
-
 typedef NS_ENUM(unsigned short, Mask) {
     MaskHeavyOrFission = 0x0FFF,
     MaskGamma = 0x1FFF,
