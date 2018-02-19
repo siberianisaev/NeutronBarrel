@@ -72,7 +72,7 @@ class Processor {
     
     fileprivate var file: UnsafeMutablePointer<FILE>!
     fileprivate var dataProtocol: DataProtocol!
-    fileprivate var stripsConfiguration: StripsConfiguration!
+    fileprivate var stripsConfiguration = StripsConfiguration()
     fileprivate var mainCycleTimeEvent = Event()
     fileprivate var totalEventNumber: CUnsignedLongLong = 0
     fileprivate var startEventTime: CUnsignedLongLong = 0
