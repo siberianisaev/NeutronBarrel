@@ -51,7 +51,8 @@ class Settings {
         MaxAlpha2FrontDeltaStrips = "MaxAlpha2FrontDeltaStrips",
         SearchSpecialEvents = "SearchSpecialEvents",
         SpecialEventIds = "SpecialEventIds",
-        SelectedRecoilType = "SelectedRecoilType"
+        SelectedRecoilType = "SelectedRecoilType",
+        SearchFissionBackByFact = "SearchFissionBackByFact"
         
         func key() -> String {
             return "Setting.\(self.rawValue)"
@@ -109,7 +110,7 @@ class Settings {
             return 0
         case .RequiredFissionAlphaBack, .RequiredRecoilBack, .SearchNeutrons, .TrackBeamEnergy, .TrackBeamCurrent, .TrackBeamBackground, .TrackBeamIntegral:
             return true
-        case .SummarizeFissionsFront, .RequiredRecoil, .RequiredGamma, .RequiredTOF, .RequiredVETO, .SearchSpecialEvents, .SearchVETO:
+        case .SummarizeFissionsFront, .RequiredRecoil, .RequiredGamma, .RequiredTOF, .RequiredVETO, .SearchSpecialEvents, .SearchVETO, .SearchFissionBackByFact:
             return false
         case .SpecialEventIds:
             return nil

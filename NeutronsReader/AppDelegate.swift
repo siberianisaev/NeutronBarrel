@@ -76,6 +76,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBInspectable var trackBeamCurrent: Bool = Settings.getBoolSetting(.TrackBeamCurrent)
     @IBInspectable var trackBeamBackground: Bool = Settings.getBoolSetting(.TrackBeamBackground)
     @IBInspectable var trackBeamIntegral: Bool = Settings.getBoolSetting(.TrackBeamIntegral)
+    @IBInspectable var searchFissionBackByFact: Bool = Settings.getBoolSetting(.SearchFissionBackByFact)
     
     fileprivate let recoilTypes: [SearchType] = [.recoil, .heavy]
     fileprivate var selectedRecoilType: SearchType {
@@ -161,6 +162,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             processor.startParticleType = startType
             processor.fissionAlphaFrontMinEnergy = Double(sMinFissionEnergy) ?? 0
             processor.fissionAlphaFrontMaxEnergy = Double(sMaxFissionEnergy) ?? 0
+            processor.searchFissionAlphaBackByFact = searchFissionBackByFact
             processor.fissionAlphaMaxTime = UInt64(sMaxFissionTime) ?? 0
             processor.summarizeFissionsAlphaFront = summarizeFissionsFront
             processor.searchAlpha2 = searchAlpha2
@@ -331,6 +333,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         Settings.setObject(searchSpecialEvents, forSetting: .SearchSpecialEvents)
         Settings.setObject(specialEventIds, forSetting: .SpecialEventIds)
         Settings.setObject(selectedRecoilType.rawValue, forSetting: .SelectedRecoilType)
+        Settings.setObject(searchFissionBackByFact, forSetting: .SearchFissionBackByFact)
     }
     
     // MARK: - App Version

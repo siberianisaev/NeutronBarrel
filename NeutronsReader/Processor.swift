@@ -99,6 +99,7 @@ class Processor {
     var files = [String]()
     var fissionAlphaFrontMinEnergy: Double = 0
     var fissionAlphaFrontMaxEnergy: Double = 0
+    var searchFissionAlphaBackByFact: Bool = true
     var recoilFrontMinEnergy: Double = 0
     var recoilFrontMaxEnergy: Double = 0
     var minTOFValue: Double = 0
@@ -539,7 +540,7 @@ class Processor {
             let type = self.startParticleType
             if self.isBack(event, type: type) {
                 let energy = self.getEnergy(event, type: type)
-                if energy >= self.fissionAlphaFrontMinEnergy && energy <= self.fissionAlphaFrontMaxEnergy {
+                if self.searchFissionAlphaBackByFact || (energy >= self.fissionAlphaFrontMinEnergy && energy <= self.fissionAlphaFrontMaxEnergy) {
                     self.storeFissionAlphaRecoilBack(event, deltaTime: deltaTime)
                 }
             }
