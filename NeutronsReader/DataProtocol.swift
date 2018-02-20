@@ -12,7 +12,7 @@ import AppKit
 class DataProtocol {
     
     fileprivate var dict = [String: Int]()
-    fileprivate var alphaWelMinEventId: Int = 0
+    fileprivate var alphaWelMaxEventId: Int = 0
     fileprivate var keyAFr: String = "AFr"
     fileprivate var keyAdFr: String = "AdFr"
     fileprivate var keyABack: String = "ABack"
@@ -69,14 +69,14 @@ class DataProtocol {
                 alphaWelIds.append(value)
             }
         }
-        alphaWelMinEventId = alphaWelIds.min() ?? 0
+        alphaWelMaxEventId = alphaWelIds.max() ?? 0
     }
     
     /**
      Not all events have time data.
      */
     func isValidEventIdForTimeCheck(_ eventId: Int) -> Bool {
-        return eventId <= alphaWelMinEventId || eventId == TOF || isGammaEvent(eventId) || eventId == Neutrons || eventId == AVeto
+        return eventId <= alphaWelMaxEventId || eventId == TOF || isGammaEvent(eventId) || eventId == Neutrons || eventId == AVeto
     }
     
     func keyFor(value: Int) -> String? {
