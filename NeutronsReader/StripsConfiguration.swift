@@ -22,9 +22,10 @@ class StripsConfiguration {
     }
     
     func strip_1_N_For(side: StripsSide, encoder: Int, strip_0_15: CUnsignedShort) -> Int {
-        if let encoders = config[side], encoders.count < encoder {
-            let strips = encoders[encoder]
-            if strips.count < strip_0_15 {
+        let encoderIndex = encoder - 1
+        if let encoders = config[side], encoderIndex < encoders.count {
+            let strips = encoders[encoderIndex]
+            if strip_0_15 < strips.count {
                 return strips[Int(strip_0_15)]
             }
         }
