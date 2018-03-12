@@ -1015,7 +1015,7 @@
                             <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>
                         <connections>
-                            <binding destination="Voe-Tx-rLC" name="value" keyPath="self. sMaxFissionBackTime" id="TF2-hN-LSa">
+                            <binding destination="Voe-Tx-rLC" name="value" keyPath="self.sMaxFissionBackTime" id="a7l-gG-jgZ">
                                 <dictionary key="options">
                                     <bool key="NSContinuouslyUpdatesValue" value="YES"/>
                                 </dictionary>
@@ -1635,7 +1635,7 @@
                             <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>
                         <connections>
-                            <binding destination="Voe-Tx-rLC" name="value" keyPath="self. sMaxFissionWellTime" id="MSf-qY-Wb5">
+                            <binding destination="Voe-Tx-rLC" name="value" keyPath="self.sMaxFissionWellTime" id="SNa-b9-l9F">
                                 <dictionary key="options">
                                     <bool key="NSContinuouslyUpdatesValue" value="YES"/>
                                 </dictionary>
