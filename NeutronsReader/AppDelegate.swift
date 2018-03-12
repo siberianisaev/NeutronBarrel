@@ -26,6 +26,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBOutlet weak var buttonRun: NSButton!
     @IBOutlet weak var alpha2View: NSView!
     @IBOutlet weak var vetoView: NSView!
+    @IBOutlet weak var wellView: NSView!
     @IBOutlet weak var fissionAlpha1View: NSView!
     @IBOutlet weak var requiredRecoilButton: NSButton!
     @IBOutlet weak var recoilTypeButton: NSPopUpButton!
@@ -74,7 +75,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             setupVETOView()
         }
     }
-    @IBInspectable var searchWell: Bool = Settings.getBoolSetting(.SearchWell)
+    @IBInspectable var searchWell: Bool = Settings.getBoolSetting(.SearchWell) {
+        didSet {
+            setupWellView()
+        }
+    }
     @IBInspectable var trackBeamEnergy: Bool = Settings.getBoolSetting(.TrackBeamEnergy)
     @IBInspectable var trackBeamCurrent: Bool = Settings.getBoolSetting(.TrackBeamCurrent)
     @IBInspectable var trackBeamBackground: Bool = Settings.getBoolSetting(.TrackBeamBackground)
@@ -103,6 +108,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         startParticleControl.selectedSegment = Settings.getIntSetting(.SearchType)
         startParticleChanged(nil)
         setupVETOView()
+        setupWellView()
         tofUnitsControl.selectedSegment = Settings.getIntSetting(.TOFUnits)
         for i in [indicatorData, indicatorCalibration, indicatorStripsConfig] {
             setSelected(false, indicator: i)
@@ -123,6 +129,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     
     fileprivate func setupVETOView() {
         vetoView.isHidden = !searchVETO
+    }
+    
+    fileprivate func setupWellView() {
+        wellView.isHidden = !searchWell
     }
     
     @IBAction func viewer(_ sender: Any) {
