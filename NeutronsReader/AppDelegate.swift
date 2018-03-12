@@ -46,8 +46,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBInspectable var sMaxRecoilTime = String(format: "%d", Settings.getIntSetting(.MaxRecoilTime)) // mks
     @IBInspectable var sMaxRecoilBackTime = String(format: "%d", Settings.getIntSetting(.MaxRecoilBackTime)) // mks
     @IBInspectable var sMaxFissionTime = String(format: "%d", Settings.getIntSetting(.MaxFissionTime)) // mks
-    @IBInspectable var sMaxFissionBackTime = String(format: "%d", Settings.getIntSetting(.MaxFissionBackTime)) // mks
-    @IBInspectable var sMaxFissionWellTime = String(format: "%d", Settings.getIntSetting(.MaxFissionWellTime)) // mks
+    @IBInspectable var sMaxFissionBackBackwardTime = String(format: "%d", Settings.getIntSetting(.MaxFissionBackBackwardTime)) // mks
+    @IBInspectable var sMaxFissionWellBackwardTime = String(format: "%d", Settings.getIntSetting(.MaxFissionWellBackwardTime)) // mks
     @IBInspectable var sMaxTOFTime = String(format: "%d", Settings.getIntSetting(.MaxTOFTime)) // mks
     @IBInspectable var sMaxVETOTime = String(format: "%d", Settings.getIntSetting(.MaxVETOTime)) // mks
     @IBInspectable var sMaxGammaTime = String(format: "%d", Settings.getIntSetting(.MaxGammaTime)) // mks
@@ -177,8 +177,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             processor.fissionAlphaFrontMaxEnergy = Double(sMaxFissionEnergy) ?? 0
             processor.searchFissionAlphaBackByFact = searchFissionBackByFact
             processor.fissionAlphaMaxTime = UInt64(sMaxFissionTime) ?? 0
-            processor.fissionAlphaBackMaxTime = UInt64(sMaxFissionBackTime) ?? 0
-            processor.fissionAlphaWellMaxTime = UInt64(sMaxFissionWellTime) ?? 0
+            processor.fissionAlphaBackBackwardMaxTime = UInt64(sMaxFissionBackBackwardTime) ?? 0
+            processor.fissionAlphaWellBackwardMaxTime = UInt64(sMaxFissionWellBackwardTime) ?? 0
             processor.summarizeFissionsAlphaFront = summarizeFissionsFront
             processor.searchAlpha2 = searchAlpha2
             processor.alpha2MinEnergy = Double(sMinAlpha2Energy) ?? 0
@@ -319,8 +319,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         Settings.setObject(Int(sMaxRecoilTime), forSetting: .MaxRecoilTime)
         Settings.setObject(Int(sMaxRecoilBackTime), forSetting: .MaxRecoilBackTime)
         Settings.setObject(Int(sMaxFissionTime), forSetting: .MaxFissionTime)
-        Settings.setObject(Int(sMaxFissionBackTime), forSetting: .MaxFissionBackTime)
-        Settings.setObject(Int(sMaxFissionWellTime), forSetting: .MaxFissionWellTime)
+        Settings.setObject(Int(sMaxFissionBackBackwardTime), forSetting: .MaxFissionBackBackwardTime)
+        Settings.setObject(Int(sMaxFissionWellBackwardTime), forSetting: .MaxFissionWellBackwardTime)
         Settings.setObject(Int(sMaxTOFTime), forSetting: .MaxTOFTime)
         Settings.setObject(Int(sMaxVETOTime), forSetting: .MaxVETOTime)
         Settings.setObject(Int(sMaxGammaTime), forSetting: .MaxGammaTime)

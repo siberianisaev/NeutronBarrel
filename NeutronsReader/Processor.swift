@@ -108,8 +108,8 @@ class Processor {
     var recoilMaxTime: CUnsignedLongLong = 0
     var recoilBackMaxTime: CUnsignedLongLong = 0
     var fissionAlphaMaxTime: CUnsignedLongLong = 0
-    var fissionAlphaBackMaxTime: CUnsignedLongLong = 0
-    var fissionAlphaWellMaxTime: CUnsignedLongLong = 0
+    var fissionAlphaBackBackwardMaxTime: CUnsignedLongLong = 0
+    var fissionAlphaWellBackwardMaxTime: CUnsignedLongLong = 0
     var maxTOFTime: CUnsignedLongLong = 0
     var maxVETOTime: CUnsignedLongLong = 0
     var maxGammaTime: CUnsignedLongLong = 0
@@ -211,8 +211,9 @@ class Processor {
         }
     }
     
-    func search(directions: Set<SearchDirection>, startTime: CUnsignedLongLong, minDeltaTime: CUnsignedLongLong, maxDeltaTime: CUnsignedLongLong, useCycleTime: Bool, updateCycleEvent: Bool, checker: @escaping ((Event, CUnsignedLongLong, CLongLong, UnsafeMutablePointer<Bool>)->())) {
+    func search(directions: Set<SearchDirection>, startTime: CUnsignedLongLong, minDeltaTime: CUnsignedLongLong, maxDeltaTime: CUnsignedLongLong, maxDeltaTimeBackward: CUnsignedLongLong? = nil, useCycleTime: Bool, updateCycleEvent: Bool, checker: @escaping ((Event, CUnsignedLongLong, CLongLong, UnsafeMutablePointer<Bool>)->())) {
         //TODO: search over many files
+        let maxBackward = maxDeltaTimeBackward ?? maxDeltaTime
         if directions.contains(.backward) {
             var initial = fpos_t()
             fgetpos(file, &initial)
@@ -236,7 +237,7 @@ class Processor {
                     let relativeTime = event.param1
                     let time = useCycleTime ? absTime(relativeTime, cycleEvent: cycleEvent) : CUnsignedLongLong(relativeTime)
                     let deltaTime = (time < startTime) ? (startTime - time) : (time - startTime)
-                    if deltaTime <= maxDeltaTime {
+                    if deltaTime <= maxBackward {
                         if deltaTime < minDeltaTime {
                             continue
                         }
@@ -479,7 +480,7 @@ class Processor {
     
     func findFissionsAlphaWell() {
         let directions: Set<SearchDirection> = [.backward, .forward]
-        search(directions: directions, startTime: startEventTime, minDeltaTime: 0, maxDeltaTime: fissionAlphaWellMaxTime, useCycleTime: false, updateCycleEvent: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
+        search(directions: directions, startTime: startEventTime, minDeltaTime: 0, maxDeltaTime: fissionAlphaMaxTime, maxDeltaTimeBackward: fissionAlphaWellBackwardMaxTime, useCycleTime: false, updateCycleEvent: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
             if self.isFissionOrAlphaWell(event) {
                 self.storeFissionAlphaWell(event)
             }
@@ -538,7 +539,7 @@ class Processor {
     
     func findFissionsAlphaBack() {
         let directions: Set<SearchDirection> = [.backward, .forward]
-        search(directions: directions, startTime: startEventTime, minDeltaTime: 0, maxDeltaTime: fissionAlphaBackMaxTime, useCycleTime: false, updateCycleEvent: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
+        search(directions: directions, startTime: startEventTime, minDeltaTime: 0, maxDeltaTime: fissionAlphaMaxTime, maxDeltaTimeBackward: fissionAlphaBackBackwardMaxTime, useCycleTime: false, updateCycleEvent: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
             let type = self.startParticleType
             if self.isBack(event, type: type) {
                 let energy = self.getEnergy(event, type: type)
