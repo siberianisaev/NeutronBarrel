@@ -72,6 +72,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             setupVETOView()
         }
     }
+    @IBInspectable var searchWell: Bool = Settings.getBoolSetting(.SearchWell)
     @IBInspectable var trackBeamEnergy: Bool = Settings.getBoolSetting(.TrackBeamEnergy)
     @IBInspectable var trackBeamCurrent: Bool = Settings.getBoolSetting(.TrackBeamCurrent)
     @IBInspectable var trackBeamBackground: Bool = Settings.getBoolSetting(.TrackBeamBackground)
@@ -199,6 +200,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             processor.trackBeamBackground = trackBeamBackground
             processor.trackBeamIntegral = trackBeamIntegral
             processor.recoilType = selectedRecoilType
+            processor.searchWell = searchWell
             let ids = specialEventIds.components(separatedBy: ",").map({ (s: String) -> Int in
                 return Int(s) ?? 0
             }).filter({ (i: Int) -> Bool in
@@ -333,6 +335,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         Settings.setObject(specialEventIds, forSetting: .SpecialEventIds)
         Settings.setObject(selectedRecoilType.rawValue, forSetting: .SelectedRecoilType)
         Settings.setObject(searchFissionBackByFact, forSetting: .SearchFissionBackByFact)
+        Settings.setObject(searchWell, forSetting: .SearchWell)
     }
     
     // MARK: - App Version

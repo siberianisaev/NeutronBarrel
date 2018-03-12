@@ -12,13 +12,13 @@ import AppKit
 class DataProtocol {
     
     fileprivate var dict = [String: Int]()
-    fileprivate var alphaWelMaxEventId: Int = 0
+    fileprivate var alphaWellMaxEventId: Int = 0
     fileprivate var keyAFr: String = "AFr"
     fileprivate var keyAdFr: String = "AdFr"
     fileprivate var keyABack: String = "ABack"
     fileprivate var keyABk: String = "ABk"
     fileprivate var keyAdBk: String = "AdBk"
-    fileprivate var keyAWel: String = "AWel"
+    fileprivate var keyAWell: String = "AWel"
     fileprivate var keyGam: String = "Gam"
     
     class func load(_ path: String?) -> DataProtocol {
@@ -58,25 +58,25 @@ class DataProtocol {
             alert.runModal()
         }
         
-        p.setMinAlphaWelId()
+        p.setMinAlphaWellId()
         return p
     }
     
-    fileprivate func setMinAlphaWelId() {
-        var alphaWelIds = [Int]()
+    fileprivate func setMinAlphaWellId() {
+        var alphaWellIds = [Int]()
         for (key, value) in dict {
-            if key.hasPrefix(keyAWel) {
-                alphaWelIds.append(value)
+            if key.hasPrefix(keyAWell) {
+                alphaWellIds.append(value)
             }
         }
-        alphaWelMaxEventId = alphaWelIds.max() ?? 0
+        alphaWellMaxEventId = alphaWellIds.max() ?? 0
     }
     
     /**
      Not all events have time data.
      */
     func isValidEventIdForTimeCheck(_ eventId: Int) -> Bool {
-        return eventId <= alphaWelMaxEventId || eventId == TOF || isGammaEvent(eventId) || eventId == Neutrons || eventId == AVeto
+        return eventId <= alphaWellMaxEventId || eventId == TOF || isGammaEvent(eventId) || eventId == Neutrons || eventId == AVeto
     }
     
     func keyFor(value: Int) -> String? {
@@ -116,8 +116,8 @@ class DataProtocol {
         return isEvent(eventId, ofType: keyABack) || isEvent(eventId, ofType: keyABk) || isEvent(eventId, ofType: keyAdBk)
     }
     
-    func isAlphaWelEvent(_ eventId: Int) -> Bool {
-        return isEvent(eventId, ofType: keyAWel)
+    func isAlphaWellEvent(_ eventId: Int) -> Bool {
+        return isEvent(eventId, ofType: keyAWell)
     }
     
     func isGammaEvent(_ eventId: Int) -> Bool {
@@ -129,7 +129,7 @@ class DataProtocol {
     }
     
     func encoderForEventId(_ eventId: Int) -> CUnsignedShort {
-        if AWel == eventId {
+        if AWell == eventId {
             return 1
         }
         if let key = keyFor(value: eventId), let rangeDigits = key.rangeOfCharacter(from: .decimalDigits), let substring = String(key[rangeDigits.lowerBound...]).components(separatedBy: CharacterSet.init(charactersIn: "., ")).first, let encoder = Int(substring) {
@@ -139,8 +139,8 @@ class DataProtocol {
         }
     }
     
-    fileprivate var AWel: Int {
-        return value(keyAWel)
+    fileprivate var AWell: Int {
+        return value(keyAWell)
     }
     
     var AVeto: Int {

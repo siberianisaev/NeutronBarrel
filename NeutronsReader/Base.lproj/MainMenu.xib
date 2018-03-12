@@ -1581,6 +1581,17 @@
                             <binding destination="Voe-Tx-rLC" name="value" keyPath="self.requiredGamma" id="b7b-Fl-bme"/>
                         </connections>
                     </button>
+                    <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="zGZ-OO-9cb">
+                        <rect key="frame" x="1117" y="325" width="149" height="18"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="check" title="Search Well" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="Lph-9A-QwJ">
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                            <font key="font" size="15" name="HelveticaNeue-Bold"/>
+                        </buttonCell>
+                        <connections>
+                            <binding destination="Voe-Tx-rLC" name="value" keyPath="self.searchWell" id="zF7-wx-kaZ"/>
+                        </connections>
+                    </button>
                 </subviews>
             </view>
             <point key="canvasLocation" x="595" y="459"/>

@@ -87,7 +87,7 @@ class Processor {
     fileprivate var vetoPerAct = [Any]()
     fileprivate var fissionsAlphaFrontPerAct = [Any]()
     fileprivate var fissionsAlphaBackPerAct = [Any]()
-    fileprivate var fissionsAlphaWelPerAct = [Any]()
+    fileprivate var fissionsAlphaWellPerAct = [Any]()
     fileprivate var gammaPerAct = [Any]()
     fileprivate var specialPerAct = [Int: CUnsignedShort]()
     fileprivate var beamRelatedValuesPerAct = [Int: Float]()
@@ -134,6 +134,7 @@ class Processor {
     var alpha2MaxTime: CUnsignedLongLong = 0
     var alpha2MaxDeltaStrips: Int = 0
     var searchSpecialEvents = false
+    var searchWell = true
     var specialEventIds = [Int]()
     var startParticleType: SearchType = .fission
     var unitsTOF: TOFUnits = .channels
@@ -438,8 +439,10 @@ class Processor {
                     return
                 }
                 
-                findFissionsAlphaWel()
-                fseek(file, Int(position), SEEK_SET)
+                if searchWell {
+                    findFissionsAlphaWell()
+                    fseek(file, Int(position), SEEK_SET)
+                }
             }
             
             if searchNeutrons {
@@ -472,10 +475,10 @@ class Processor {
         }
     }
     
-    func findFissionsAlphaWel() {
+    func findFissionsAlphaWell() {
         let directions: Set<SearchDirection> = [.backward, .forward]
         search(directions: directions, startTime: startEventTime, minDeltaTime: 0, maxDeltaTime: fissionAlphaMaxTime, useCycleTime: false, updateCycleEvent: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
-            if self.isFissionOrAlphaWel(event) {
+            if self.isFissionOrAlphaWell(event) {
                 self.storeFissionAlphaWell(event)
             }
         }
@@ -809,7 +812,7 @@ class Processor {
                     kStrip0_15: strip_0_15,
                     kEnergy: energy,
                     kMarker: getMarker(event)] as [String : Any]
-        fissionsAlphaWelPerAct.append(info)
+        fissionsAlphaWellPerAct.append(info)
     }
     
     func storeSpecial(_ event: Event, id: Int) {
@@ -830,7 +833,7 @@ class Processor {
         gammaPerAct.removeAll()
         specialPerAct.removeAll()
         beamRelatedValuesPerAct.removeAll()
-        fissionsAlphaWelPerAct.removeAll()
+        fissionsAlphaWellPerAct.removeAll()
         recoilsFrontPerAct.removeAll()
         recoilsBackPerAct.removeAll()
         alpha2FrontPerAct.removeAll()
@@ -960,9 +963,9 @@ class Processor {
         return sameType && dataProtocol.isAlphaFronEvent(eventId)
     }
     
-    func isFissionOrAlphaWel(_ event: Event) -> Bool {
+    func isFissionOrAlphaWell(_ event: Event) -> Bool {
         let eventId = Int(event.eventId)
-        return !isRecoil(event) && dataProtocol.isAlphaWelEvent(eventId)
+        return !isRecoil(event) && dataProtocol.isAlphaWellEvent(eventId)
     }
     
     func isBack(_ event: Event, type: SearchType) -> Bool {
@@ -1078,10 +1081,10 @@ class Processor {
     fileprivate var keyColumnStartBackMarker = "$BackMarker"
     fileprivate var keyColumnStartBackDeltaTime = "dT($Fron-$Back)"
     fileprivate var keyColumnStartBackStrip = "Strip($Back)"
-    fileprivate var keyColumnStartWelSumm = "Summ($Wel)"
-    fileprivate var keyColumnStartWelEnergy = "$Wel"
-    fileprivate var keyColumnStartWelMarker = "$WelMarker"
-    fileprivate var keyColumnStartWelPosition = "$WelPos"
+    fileprivate var keyColumnStartWellSumm = "Summ($Well)"
+    fileprivate var keyColumnStartWellEnergy = "$Well"
+    fileprivate var keyColumnStartWellMarker = "$WellMarker"
+    fileprivate var keyColumnStartWellPosition = "$WellPos"
     fileprivate var keyColumnNeutrons = "Neutrons"
     fileprivate var keyColumnNeutronsBackward = "Neutrons(Backward)"
     fileprivate var keyColumnGammaEnergy = "Gamma"
@@ -1122,12 +1125,16 @@ class Processor {
             keyColumnStartBackEnergy,
             keyColumnStartBackMarker,
             keyColumnStartBackDeltaTime,
-            keyColumnStartBackStrip,
-            keyColumnStartWelSumm,
-            keyColumnStartWelEnergy,
-            keyColumnStartWelMarker,
-            keyColumnStartWelPosition
+            keyColumnStartBackStrip
         ]
+        if searchWell {
+            columns.append(contentsOf: [
+                keyColumnStartWellSumm,
+                keyColumnStartWellEnergy,
+                keyColumnStartWellMarker,
+                keyColumnStartWellPosition
+                ])
+        }
         if searchNeutrons {
             columns.append(contentsOf: [
                 keyColumnNeutrons,
@@ -1182,7 +1189,7 @@ class Processor {
     }
     
     func logActResults() {
-        let rowsMax = max(1, [gammaPerAct, fissionsAlphaWelPerAct, recoilsFrontPerAct, fissionsAlphaBackPerAct, fissionsAlphaFrontPerAct, vetoPerAct, recoilsBackPerAct].max(by: { $0.count < $1.count })!.count)
+        let rowsMax = max(1, [gammaPerAct, fissionsAlphaWellPerAct, recoilsFrontPerAct, fissionsAlphaBackPerAct, fissionsAlphaFrontPerAct, vetoPerAct, recoilsBackPerAct].max(by: { $0.count < $1.count })!.count)
         for row in 0 ..< rowsMax {
             for column in columns {
                 var field = ""
@@ -1302,28 +1309,28 @@ class Processor {
                             field = String(format: "%d", strip)
                         }
                     }
-                case keyColumnStartWelSumm:
+                case keyColumnStartWellSumm:
                     if row == 0 && startParticleType != recoilType {
-                        if let summ = getSummEnergyFrom(fissionsAlphaWelPerAct) {
+                        if let summ = getSummEnergyFrom(fissionsAlphaWellPerAct) {
                             field = String(format: "%.7f", summ)
                         }
                     }
-                case keyColumnStartWelEnergy:
-                    if row < fissionsAlphaWelPerAct.count {
-                        if let energy = getValueFrom(array: fissionsAlphaWelPerAct, row: row, key: kEnergy) {
+                case keyColumnStartWellEnergy:
+                    if row < fissionsAlphaWellPerAct.count {
+                        if let energy = getValueFrom(array: fissionsAlphaWellPerAct, row: row, key: kEnergy) {
                             field = String(format: "%.7f", energy as! Double)
                         }
                     }
-                case keyColumnStartWelMarker:
-                    if row < fissionsAlphaWelPerAct.count {
-                        if let marker = getValueFrom(array: fissionsAlphaWelPerAct, row: row, key: kMarker) {
+                case keyColumnStartWellMarker:
+                    if row < fissionsAlphaWellPerAct.count {
+                        if let marker = getValueFrom(array: fissionsAlphaWellPerAct, row: row, key: kMarker) {
                             field = String(format: "%hu", marker as! CUnsignedShort)
                         }
                     }
-                case keyColumnStartWelPosition:
-                    if row < fissionsAlphaWelPerAct.count {
-                        if let info = fissionsAlphaWelPerAct[row] as? [String: Any], let strip_0_15 = info[kStrip0_15], let encoder = info[kEncoder] {
-                            field = String(format: "FWel%d.%d", encoder as! CUnsignedShort, (strip_0_15  as! CUnsignedShort) + 1)
+                case keyColumnStartWellPosition:
+                    if row < fissionsAlphaWellPerAct.count {
+                        if let info = fissionsAlphaWellPerAct[row] as? [String: Any], let strip_0_15 = info[kStrip0_15], let encoder = info[kEncoder] {
+                            field = String(format: "FWell%d.%d", encoder as! CUnsignedShort, (strip_0_15  as! CUnsignedShort) + 1)
                         }
                     }
                 case keyColumnNeutrons:
