@@ -62,7 +62,7 @@ class Processor {
     fileprivate let kEncoder = "encoder"
     fileprivate let kStrip0_15 = "strip_0_15"
     fileprivate let kStrip1_N = "strip_1_N"
-    fileprivate let kEnergy = "energy"
+    let kEnergy = "energy"
     fileprivate let kValue = "value"
     fileprivate let kDeltaTime = "delta_time"
     fileprivate let kChannel = "channel"
@@ -79,19 +79,18 @@ class Processor {
     fileprivate var neutronsSummPerAct: CUnsignedLongLong = 0
     fileprivate var neutronsBackwardSummPerAct: CUnsignedLongLong = 0
     fileprivate var currentFileName: String?
-    fileprivate var neutronsMultiplicityTotal = [Int : Int]()
-    fileprivate var recoilsFrontPerAct = [Any]()
-    fileprivate var recoilsBackPerAct = [Any]()
-    fileprivate var alpha2FrontPerAct = [Any]()
-    fileprivate var tofRealPerAct = [Any]()
-    fileprivate var vetoPerAct = [Any]()
-    fileprivate var fissionsAlphaFrontPerAct = [Any]()
-    fileprivate var fissionsAlphaBackPerAct = [Any]()
-    fileprivate var fissionsAlphaWellPerAct = [Any]()
-    fileprivate var gammaPerAct = [Any]()
+    fileprivate var neutronsMultiplicityTotal = [Int: Int]()
     fileprivate var specialPerAct = [Int: CUnsignedShort]()
     fileprivate var beamRelatedValuesPerAct = [Int: Float]()
-    fileprivate var firstFissionAlphaInfo: [String: Any]?
+    
+    fileprivate var fissionsAlphaPerAct = DoubleSidedStripDetectorMatch()
+    fileprivate var recoilsPerAct = DoubleSidedStripDetectorMatch()
+    fileprivate var alpha2FrontPerAct = DetectorMatch()
+    fileprivate var fissionsAlphaWellPerAct = DetectorMatch()
+    fileprivate var tofRealPerAct = DetectorMatch()
+    fileprivate var vetoPerAct = DetectorMatch()
+    fileprivate var gammaPerAct = DetectorMatch()
+    
     fileprivate var stoped = false
     fileprivate var logger: Logger!
     fileprivate var calibration = Calibration()
@@ -395,7 +394,7 @@ class Processor {
                 if energy < fissionAlphaFrontMinEnergy || energy > fissionAlphaFrontMaxEnergy {
                     return
                 }
-                storeFissionAlphaFront(event, isFirst: true, deltaTime: 0)
+                storeFissionAlphaFront(event, deltaTime: 0)
             }
             
             var position = fpos_t()
@@ -429,7 +428,7 @@ class Processor {
             if !isRecoilSearch {
                 findFissionsAlphaBack()
                 fseek(file, Int(position), SEEK_SET)
-                if requiredFissionAlphaBack && 0 == fissionsAlphaBackPerAct.count {
+                if requiredFissionAlphaBack && 0 == fissionsAlphaPerAct.matchFor(side: .back).count {
                     clearActInfo()
                     return
                 }
@@ -437,7 +436,7 @@ class Processor {
                 // Search them only after search all FBack/ABack
                 findRecoil()
                 fseek(file, Int(position), SEEK_SET)
-                if requiredRecoil && 0 == recoilsFrontPerAct.count {
+                if requiredRecoil && 0 == recoilsPerAct.matchFor(side: .front).count {
                     clearActInfo()
                     return
                 }
@@ -514,7 +513,7 @@ class Processor {
             // File-position check is used for skip Fission/Alpha First event!
             fgetpos(self.file, &current)
             if current != initial && self.isFront(event, type: self.startParticleType) && self.isFissionStripNearToFirstFissionFront(event) {
-                self.storeFissionAlphaFront(event, isFirst: false, deltaTime: deltaTime)
+                self.storeFissionAlphaFront(event, deltaTime: deltaTime)
             }
         }
     }
@@ -549,31 +548,23 @@ class Processor {
             }
         }
         
-        if fissionsAlphaBackPerAct.count > 1 {
-            let dict = fissionsAlphaBackPerAct.sorted(by: { (obj1: Any, obj2: Any) -> Bool in
-                func energy(_ o: Any) -> Double {
-                    if let e = (o as! [String: Any])[kEnergy] {
-                        return e as! Double
-                    }
-                    return 0
+        // TODO: move filtration logic to DetectorMatch, and remove accessors for 'items'.
+        let side: StripsSide = .back
+        let match = fissionsAlphaPerAct.matchFor(side: side)
+        if let dict = match.itemWithMaxEnergy(), let encoder = dict[kEncoder], let strip0_15 = dict[kStrip0_15] {
+            let strip1_N = stripConvertToFormat_1_N(strip0_15 as! CUnsignedShort, encoder: encoder as! CUnsignedShort, side: side)
+            let array = (match.getItems() as [Any]).filter( { (obj: Any) -> Bool in
+                let item = obj as! [String: Any]
+                if NSDictionary(dictionary: item).isEqual(to: dict) {
+                    return true
                 }
-                return energy(obj1) > energy(obj2)
-            }).first as? [String: Any]
-            if let dict = dict, let encoder = dict[kEncoder], let strip0_15 = dict[kStrip0_15] {
-                let strip1_N = stripConvertToFormat_1_N(strip0_15 as! CUnsignedShort, encoder: encoder as! CUnsignedShort, side: .back)
-                let array = (fissionsAlphaBackPerAct as [Any]).filter( { (obj: Any) -> Bool in
-                    let item = obj as! [String: Any]
-                    if NSDictionary(dictionary: item).isEqual(to: dict) {
-                        return true
-                    }
-                    let e = item[kEncoder] as! CUnsignedShort
-                    let s0_15 = item[kStrip0_15] as! CUnsignedShort
-                    let s1_N = self.stripConvertToFormat_1_N(s0_15, encoder: e, side: .back)
-                    // TODO: new input field for _fissionBackMaxDeltaStrips
-                    return abs(Int32(strip1_N) - Int32(s1_N)) <= Int32(recoilBackMaxDeltaStrips)
-                })
-                fissionsAlphaBackPerAct = array
-            }
+                let e = item[kEncoder] as! CUnsignedShort
+                let s0_15 = item[kStrip0_15] as! CUnsignedShort
+                let s1_N = self.stripConvertToFormat_1_N(s0_15, encoder: e, side: side)
+                // TODO: new input field for _fissionBackMaxDeltaStrips
+                return abs(Int32(strip1_N) - Int32(s1_N)) <= Int32(recoilBackMaxDeltaStrips)
+            })
+            match.setItems(array as! [[String : Any]])
         }
     }
     
@@ -717,19 +708,24 @@ class Processor {
     // MARK: - Storage
     
     func storeFissionAlphaRecoilBack(_ event: Event, deltaTime: CLongLong) {
-        let encoder = dataProtocol.encoderForEventId(Int(event.eventId))
+        let id = event.eventId
+        let encoder = dataProtocol.encoderForEventId(Int(id))
         let strip_0_15 = event.param2 >> 12
         let energy = getEnergy(event, type: startParticleType)
-        let info = [kEncoder: encoder,
+        var info = [kEncoder: encoder,
                     kStrip0_15: strip_0_15,
                     kEnergy: energy,
                     kEventNumber: eventNumber(),
                     kDeltaTime: deltaTime,
                     kMarker: getMarker(event)] as [String : Any]
+        let side: StripsSide = .back
         if isRecoil(event) {
-            recoilsBackPerAct.append(info)
+            recoilsPerAct.append(info, side: side)
         } else {
-            fissionsAlphaBackPerAct.append(info)
+            if fissionsAlphaPerAct.matchFor(side: side).count == 0 {
+                info[kStrip1_N] = focalStripConvertToFormat_1_N(strip_0_15, eventId: id)
+            }
+            fissionsAlphaPerAct.append(info, side: side)
         }
     }
     
@@ -743,26 +739,24 @@ class Processor {
         neutronsMultiplicityTotal[Int(key)] = summ
     }
     
-    func storeFissionAlphaFront(_ event: Event, isFirst: Bool, deltaTime: CLongLong) {
+    func storeFissionAlphaFront(_ event: Event, deltaTime: CLongLong) {
+        let id = event.eventId
         let channel = getChannel(event, type: startParticleType)
-        let encoder = dataProtocol.encoderForEventId(Int(event.eventId))
+        let encoder = dataProtocol.encoderForEventId(Int(id))
         let strip_0_15 = event.param2 >> 12
         let energy = getEnergy(event, type: startParticleType)
-        let info = [kEncoder: encoder,
+        var info = [kEncoder: encoder,
                     kStrip0_15: strip_0_15,
                     kChannel: channel,
                     kEnergy: energy,
                     kEventNumber: eventNumber(),
                     kDeltaTime: deltaTime,
                     kMarker: getMarker(event)] as [String : Any]
-        fissionsAlphaFrontPerAct.append(info)
-        
-        if isFirst {
-            let strip_1_N = focalStripConvertToFormat_1_N(strip_0_15, eventId: event.eventId)
-            var extraInfo = info
-            extraInfo[kStrip1_N] = strip_1_N
-            firstFissionAlphaInfo = extraInfo
+        let side: StripsSide = .front
+        if fissionsAlphaPerAct.matchFor(side: side).count == 0 {
+            info[kStrip1_N] = focalStripConvertToFormat_1_N(strip_0_15, eventId: id)
         }
+        fissionsAlphaPerAct.append(info, side: side)
     }
     
     func storeGamma(_ event: Event, deltaTime: CLongLong) {
@@ -779,7 +773,7 @@ class Processor {
                     kMarker: getMarker(event),
                     kEnergy: energy,
                     kHeavy: heavy] as [String : Any]
-        recoilsFrontPerAct.append(info)
+        recoilsPerAct.append(info, side: .front)
     }
     
     func storeAlpha2(_ event: Event, deltaTime: CLongLong) {
@@ -831,18 +825,15 @@ class Processor {
     func clearActInfo() {
         neutronsSummPerAct = 0
         neutronsBackwardSummPerAct = 0
-        fissionsAlphaFrontPerAct.removeAll()
-        fissionsAlphaBackPerAct.removeAll()
+        fissionsAlphaPerAct.removeAll()
         gammaPerAct.removeAll()
         specialPerAct.removeAll()
         beamRelatedValuesPerAct.removeAll()
         fissionsAlphaWellPerAct.removeAll()
-        recoilsFrontPerAct.removeAll()
-        recoilsBackPerAct.removeAll()
+        recoilsPerAct.removeAll()
         alpha2FrontPerAct.removeAll()
         tofRealPerAct.removeAll()
         vetoPerAct.removeAll()
-        firstFissionAlphaInfo = nil
     }
     
     // MARK: - Helpers
@@ -860,25 +851,10 @@ class Processor {
         return Processor.singleton.eventSize / MemoryLayout<CUnsignedShort>.size
     }
     
-    func fissionAlphaBackWithMaxEnergyInAct() -> [String: Any]? {
-        var fission: [String: Any]?
-        var maxE: Double = 0
-        for info in fissionsAlphaBackPerAct {
-            if let dict = info as? [String: Any], let n = dict[kEnergy] {
-                let e = n as! Double
-                if (maxE < e) {
-                    maxE = e
-                    fission = dict
-                }
-            }
-        }
-        return fission
-    }
-    
     func isEventFrontStripNearToFirstFissionAlphaFront(_ event: Event, maxDelta: Int) -> Bool {
         let strip_0_15 = event.param2 >> 12
         let strip_1_N = focalStripConvertToFormat_1_N(strip_0_15, eventId:event.eventId)
-        if let n = firstFissionAlphaInfo?[kStrip1_N] {
+        if let n = fissionsAlphaPerAct.firstItemsFor(side: .front)?[kStrip1_N] {
             let s = CUnsignedShort(n as! Int)
             return abs(Int32(strip_1_N) - Int32(s)) <= Int32(maxDelta)
         }
@@ -886,7 +862,7 @@ class Processor {
     }
     
     func isRecoilBackStripNearToFissionAlphaBack(_ event: Event) -> Bool {
-        if let fissionBackInfo = fissionAlphaBackWithMaxEnergyInAct() {
+        if let fissionBackInfo = fissionsAlphaPerAct.matchFor(side: .back).itemWithMaxEnergy() {
             let strip_0_15 = event.param2 >> 12
             let strip_1_N = focalStripConvertToFormat_1_N(strip_0_15, eventId:event.eventId)
             let strip_0_15_back_fission = fissionBackInfo[kStrip0_15] as! CUnsignedShort
@@ -903,14 +879,14 @@ class Processor {
      */
     func isFissionStripNearToFirstFissionFront(_ event: Event) -> Bool {
         let strip_0_15 = event.param2 >> 12
-        if let n = firstFissionAlphaInfo?[kStrip0_15] {
+        if let first = fissionsAlphaPerAct.firstItemsFor(side: .front), let n = first[kStrip0_15] {
             let s = n as! CUnsignedShort
             if strip_0_15 == s {
                 return true
             }
             
             let strip_1_N = focalStripConvertToFormat_1_N(strip_0_15, eventId: event.eventId)
-            if let n = firstFissionAlphaInfo?[kStrip1_N] {
+            if let n = first[kStrip1_N] {
                 let s = CUnsignedShort(n as! Int)
                 return Int(abs(Int32(strip_1_N) - Int32(s))) <= 1
             }
@@ -1192,149 +1168,109 @@ class Processor {
     }
     
     func logActResults() {
-        let rowsMax = max(1, [gammaPerAct, fissionsAlphaWellPerAct, recoilsFrontPerAct, fissionsAlphaBackPerAct, fissionsAlphaFrontPerAct, vetoPerAct, recoilsBackPerAct].max(by: { $0.count < $1.count })!.count)
+        let rowsMax = max(max(max(1, [gammaPerAct, vetoPerAct, fissionsAlphaWellPerAct].max(by: { $0.count < $1.count })!.count), fissionsAlphaPerAct.count), recoilsPerAct.count)
         for row in 0 ..< rowsMax {
             for column in columns {
                 var field = ""
                 switch column {
                 case keyColumnRecoilEvent:
-                    if row < recoilsFrontPerAct.count {
-                        if let eventNumberObject = getValueFrom(array: recoilsFrontPerAct, row: row, key: kEventNumber) {
-                            field = currentFileEventNumber(eventNumberObject as! CUnsignedLongLong)
-                        }
+                    if let eventNumberObject = recoilsPerAct.matchFor(side: .front).getValueAt(index: row, key: kEventNumber) {
+                        field = currentFileEventNumber(eventNumberObject as! CUnsignedLongLong)
                     }
                 case keyColumnRecoilEnergy:
-                    if row < recoilsFrontPerAct.count {
-                        if let recoilEnergy = getValueFrom(array: recoilsFrontPerAct, row: row, key: kEnergy) {
-                            field = String(format: "%.7f", recoilEnergy as! Double)
-                        }
+                    if let recoilEnergy = recoilsPerAct.matchFor(side: .front).getValueAt(index: row, key: kEnergy) {
+                        field = String(format: "%.7f", recoilEnergy as! Double)
                     }
                 case keyColumnRecoilHeavyEnergy:
-                    if row < recoilsFrontPerAct.count {
-                        if let recoilHeavy = getValueFrom(array: recoilsFrontPerAct, row: row, key: kHeavy) {
-                            field = String(format: "%.7f", recoilHeavy as! Double)
-                        }
+                    if let recoilHeavy = recoilsPerAct.matchFor(side: .front).getValueAt(index: row, key: kHeavy) {
+                        field = String(format: "%.7f", recoilHeavy as! Double)
                     }
                 case keyColumnRecoilFrontMarker:
-                    if row < recoilsFrontPerAct.count {
-                        if let marker = getValueFrom(array: recoilsFrontPerAct, row: row, key: kMarker) {
-                            field = String(format: "%hu", marker as! CUnsignedShort)
-                        }
+                    if let marker = recoilsPerAct.matchFor(side: .front).getValueAt(index: row, key: kMarker) {
+                        field = String(format: "%hu", marker as! CUnsignedShort)
                     }
                 case keyColumnRecoilDeltaTime:
-                    if row < recoilsFrontPerAct.count {
-                        if let deltaTimeRecoilFission = getValueFrom(array: recoilsFrontPerAct, row: row, key: kDeltaTime) {
-                            field = String(format: "%lld", deltaTimeRecoilFission as! CLongLong)
-                        }
+                    if let deltaTimeRecoilFission = recoilsPerAct.matchFor(side: .front).getValueAt(index: row, key: kDeltaTime) {
+                        field = String(format: "%lld", deltaTimeRecoilFission as! CLongLong)
                     }
                 case keyColumnTof:
-                    if row < tofRealPerAct.count {
-                        if let tof = getValueFrom(array: tofRealPerAct, row: row, key: kValue) {
-                            let format = "%." + (unitsTOF == .channels ? "0" : "7") + "f"
-                            field = String(format: format, tof as! Double)
-                        }
+                    if let tof = tofRealPerAct.getValueAt(index: row, key: kValue) {
+                        let format = "%." + (unitsTOF == .channels ? "0" : "7") + "f"
+                        field = String(format: format, tof as! Double)
                     }
                 case keyColumnTofDeltaTime:
-                    if row < tofRealPerAct.count {
-                        if let deltaTimeTOFRecoil = getValueFrom(array: tofRealPerAct, row: row, key: kDeltaTime) {
-                            field = String(format: "%lld", deltaTimeTOFRecoil as! CLongLong)
-                        }
+                    if let deltaTimeTOFRecoil = tofRealPerAct.getValueAt(index: row, key: kDeltaTime) {
+                        field = String(format: "%lld", deltaTimeTOFRecoil as! CLongLong)
                     }
                 case keyColumnStartEvent:
-                    if row < fissionsAlphaFrontPerAct.count {
-                        if let eventNumber = getValueFrom(array: fissionsAlphaFrontPerAct, row: row, key: kEventNumber) {
-                            field = currentFileEventNumber(eventNumber as! CUnsignedLongLong)
-                        }
+                    if let eventNumber = fissionsAlphaPerAct.matchFor(side: .front).getValueAt(index: row, key: kEventNumber) {
+                        field = currentFileEventNumber(eventNumber as! CUnsignedLongLong)
                     }
                 case keyColumnStartFrontSumm:
-                    if row == 0 && startParticleType != recoilType {
-                        if let summ = getSummEnergyFrom(fissionsAlphaFrontPerAct) {
-                            field = String(format: "%.7f", summ)
-                        }
+                    if row == 0, startParticleType != recoilType, let summ = fissionsAlphaPerAct.matchFor(side: .front).getSummEnergyFrom() {
+                        field = String(format: "%.7f", summ)
                     }
                 case keyColumnStartFrontEnergy:
-                    if row < fissionsAlphaFrontPerAct.count {
-                        if let energy = getValueFrom(array: fissionsAlphaFrontPerAct, row: row, key: kEnergy) {
-                            field = String(format: "%.7f", energy as! Double)
-                        }
+                    if let energy = fissionsAlphaPerAct.matchFor(side: .front).getValueAt(index: row, key: kEnergy) {
+                        field = String(format: "%.7f", energy as! Double)
                     }
                 case keyColumnStartFrontMarker:
-                    if row < fissionsAlphaFrontPerAct.count {
-                        if let marker = getValueFrom(array: fissionsAlphaFrontPerAct, row: row, key: kMarker) {
-                            field = String(format: "%hu", marker as! CUnsignedShort)
-                        }
+                    if let marker = fissionsAlphaPerAct.matchFor(side: .front).getValueAt(index: row, key: kMarker) {
+                        field = String(format: "%hu", marker as! CUnsignedShort)
                     }
                 case keyColumnStartFrontDeltaTime:
-                    if row < fissionsAlphaFrontPerAct.count {
-                        if let deltaTime = getValueFrom(array: fissionsAlphaFrontPerAct, row: row, key: kDeltaTime) {
-                            field = String(format: "%lld", deltaTime as! CLongLong)
-                        }
+                    if let deltaTime = fissionsAlphaPerAct.matchFor(side: .front).getValueAt(index: row, key: kDeltaTime) {
+                        field = String(format: "%lld", deltaTime as! CLongLong)
                     }
                 case keyColumnStartFrontStrip:
-                    if row < fissionsAlphaFrontPerAct.count {
-                        if let info = fissionsAlphaFrontPerAct[row] as? [String: Any], let strip_0_15 = info[kStrip0_15], let encoder = info[kEncoder] {
-                            let strip = stripConvertToFormat_1_N(strip_0_15 as! CUnsignedShort, encoder: encoder as! CUnsignedShort, side: .front)
-                            field = String(format: "%d", strip)
-                        }
+                    if let info = fissionsAlphaPerAct.matchFor(side: .front).itemAt(index: row), let strip_0_15 = info[kStrip0_15], let encoder = info[kEncoder] {
+                        let strip = stripConvertToFormat_1_N(strip_0_15 as! CUnsignedShort, encoder: encoder as! CUnsignedShort, side: .front)
+                        field = String(format: "%d", strip)
                     }
                 case keyColumnStartBackSumm:
-                    if row == 0 && startParticleType != recoilType {
-                        if let summ = getSummEnergyFrom(fissionsAlphaBackPerAct) {
-                            field = String(format: "%.7f", summ)
-                        }
+                    if row == 0, startParticleType != recoilType, let summ = fissionsAlphaPerAct.matchFor(side: .back).getSummEnergyFrom() {
+                        field = String(format: "%.7f", summ)
                     }
                 case keyColumnStartBackEnergy:
-                    let array = startParticleType == recoilType ? recoilsBackPerAct : fissionsAlphaBackPerAct
-                    if row < array.count {
-                        if let energy = getValueFrom(array: array, row: row, key: kEnergy) {
-                            field = String(format: "%.7f", energy as! Double)
-                        }
+                    let side: StripsSide = .back
+                    let match = startParticleType == recoilType ? recoilsPerAct.matchFor(side: side) : fissionsAlphaPerAct.matchFor(side: side)
+                    if let energy = match.getValueAt(index: row, key: kEnergy) {
+                        field = String(format: "%.7f", energy as! Double)
                     }
                 case keyColumnStartBackMarker:
-                    let array = startParticleType == recoilType ? recoilsBackPerAct : fissionsAlphaBackPerAct
-                    if row < array.count {
-                        if let marker = getValueFrom(array: array, row: row, key: kMarker) {
-                            field = String(format: "%hu", marker as! CUnsignedShort)
-                        }
+                    let side: StripsSide = .back
+                    let match = startParticleType == recoilType ? recoilsPerAct.matchFor(side: side) : fissionsAlphaPerAct.matchFor(side: side)
+                    if let marker = match.getValueAt(index: row, key: kMarker) {
+                        field = String(format: "%hu", marker as! CUnsignedShort)
                     }
                 case keyColumnStartBackDeltaTime:
-                    let array = startParticleType == recoilType ? recoilsBackPerAct : fissionsAlphaBackPerAct
-                    if row < array.count {
-                        if let deltaTime = getValueFrom(array: array, row: row, key: kDeltaTime) {
-                            field = String(format: "%lld", deltaTime as! CLongLong)
-                        }
+                    let side: StripsSide = .back
+                    let match = startParticleType == recoilType ? recoilsPerAct.matchFor(side: side) : fissionsAlphaPerAct.matchFor(side: side)
+                    if let deltaTime = match.getValueAt(index: row, key: kDeltaTime) {
+                        field = String(format: "%lld", deltaTime as! CLongLong)
                     }
                 case keyColumnStartBackStrip:
-                    let array = startParticleType == recoilType ? recoilsBackPerAct : fissionsAlphaBackPerAct
-                    if row < array.count {
-                        if let info = array[row] as? [String: Any], let strip_0_15 = info[kStrip0_15], let encoder = info[kEncoder] {
-                            let strip = stripConvertToFormat_1_N(strip_0_15 as! CUnsignedShort, encoder: encoder as! CUnsignedShort, side: .back)
-                            field = String(format: "%d", strip)
-                        }
+                    let side: StripsSide = .back
+                    let match = startParticleType == recoilType ? recoilsPerAct.matchFor(side: side) : fissionsAlphaPerAct.matchFor(side: side)
+                    if let info = match.itemAt(index: row), let strip_0_15 = info[kStrip0_15], let encoder = info[kEncoder] {
+                        let strip = stripConvertToFormat_1_N(strip_0_15 as! CUnsignedShort, encoder: encoder as! CUnsignedShort, side: .back)
+                        field = String(format: "%d", strip)
                     }
                 case keyColumnStartWellSumm:
-                    if row == 0 && startParticleType != recoilType {
-                        if let summ = getSummEnergyFrom(fissionsAlphaWellPerAct) {
-                            field = String(format: "%.7f", summ)
-                        }
+                    if row == 0, startParticleType != recoilType, let summ = fissionsAlphaWellPerAct.getSummEnergyFrom() {
+                        field = String(format: "%.7f", summ)
                     }
                 case keyColumnStartWellEnergy:
-                    if row < fissionsAlphaWellPerAct.count {
-                        if let energy = getValueFrom(array: fissionsAlphaWellPerAct, row: row, key: kEnergy) {
-                            field = String(format: "%.7f", energy as! Double)
-                        }
+                    if let energy = fissionsAlphaWellPerAct.getValueAt(index: row, key: kEnergy) {
+                        field = String(format: "%.7f", energy as! Double)
                     }
                 case keyColumnStartWellMarker:
-                    if row < fissionsAlphaWellPerAct.count {
-                        if let marker = getValueFrom(array: fissionsAlphaWellPerAct, row: row, key: kMarker) {
-                            field = String(format: "%hu", marker as! CUnsignedShort)
-                        }
+                    if let marker = fissionsAlphaWellPerAct.getValueAt(index: row, key: kMarker) {
+                        field = String(format: "%hu", marker as! CUnsignedShort)
                     }
                 case keyColumnStartWellPosition:
-                    if row < fissionsAlphaWellPerAct.count {
-                        if let info = fissionsAlphaWellPerAct[row] as? [String: Any], let strip_0_15 = info[kStrip0_15], let encoder = info[kEncoder] {
-                            field = String(format: "FWell%d.%d", encoder as! CUnsignedShort, (strip_0_15  as! CUnsignedShort) + 1)
-                        }
+                    if let info = fissionsAlphaWellPerAct.itemAt(index: row), let strip_0_15 = info[kStrip0_15], let encoder = info[kEncoder] {
+                        field = String(format: "FWell%d.%d", encoder as! CUnsignedShort, (strip_0_15  as! CUnsignedShort) + 1)
                     }
                 case keyColumnNeutrons:
                     if row == 0 {
@@ -1345,16 +1281,12 @@ class Processor {
                         field = String(format: "%llu", neutronsBackwardSummPerAct)
                     }
                 case keyColumnGammaEnergy:
-                    if row < gammaPerAct.count {
-                        if let energy = getValueFrom(array: gammaPerAct, row: row, key: kEnergy) {
-                            field = String(format: "%.7f", energy as! Double)
-                        }
+                    if let energy = gammaPerAct.getValueAt(index: row, key: kEnergy) {
+                        field = String(format: "%.7f", energy as! Double)
                     }
                 case keyColumnGammaDeltaTime:
-                    if row < gammaPerAct.count {
-                        if let deltaTime = getValueFrom(array: gammaPerAct, row: row, key: kDeltaTime) {
-                            field = String(format: "%lld", deltaTime as! CLongLong)
-                        }
+                    if let deltaTime = gammaPerAct.getValueAt(index: row, key: kDeltaTime) {
+                        field = String(format: "%lld", deltaTime as! CLongLong)
                     }
                 case _ where column.hasPrefix(keyColumnSpecial):
                     if row == 0 {
@@ -1387,34 +1319,26 @@ class Processor {
                         }
                     }
                 case keyColumnVetoEvent:
-                    if row < vetoPerAct.count {
-                        if let eventNumber = getValueFrom(array: vetoPerAct, row: row, key: kEventNumber) {
-                            field = currentFileEventNumber(eventNumber as! CUnsignedLongLong)
-                        }
+                    if let eventNumber = vetoPerAct.getValueAt(index: row, key: kEventNumber) {
+                        field = currentFileEventNumber(eventNumber as! CUnsignedLongLong)
                     }
                 case keyColumnAlpha2Event:
                     field = alpha2EventNumber(row)
                 case keyColumnVetoEnergy:
-                    if row < vetoPerAct.count {
-                        if let energy = getValueFrom(array: vetoPerAct, row: row, key: kEnergy) {
-                            field = String(format: "%.7f", energy as! Double)
-                        }
+                    if let energy = vetoPerAct.getValueAt(index: row, key: kEnergy) {
+                        field = String(format: "%.7f", energy as! Double)
                     }
                 case keyColumnAlpha2Energy:
                     field = alpha2Energy(row)
                 case keyColumnVetoStrip:
-                    if row < vetoPerAct.count {
-                        if let strip_0_15 = getValueFrom(array: vetoPerAct, row: row, key: kStrip0_15) {
-                            field = String(format: "%hu", (strip_0_15 as! CUnsignedShort) + 1)
-                        }
+                    if let strip_0_15 = vetoPerAct.getValueAt(index: row, key: kStrip0_15) {
+                        field = String(format: "%hu", (strip_0_15 as! CUnsignedShort) + 1)
                     }
                 case keyColumnAlpha2Marker:
                     field = alpha2Marker(row)
                 case keyColumnVetoDeltaTime:
-                    if row < vetoPerAct.count {
-                        if let deltaTime = getValueFrom(array: vetoPerAct, row: row, key: kDeltaTime) {
-                            field = String(format: "%lld", deltaTime as! CLongLong)
-                        }
+                    if let deltaTime = vetoPerAct.getValueAt(index: row, key: kDeltaTime) {
+                        field = String(format: "%lld", deltaTime as! CLongLong)
                     }
                 case keyColumnAlpha2DeltaTime:
                     field = alphs2DeltaTime(row)
@@ -1427,56 +1351,30 @@ class Processor {
         }
     }
     
-    fileprivate func getSummEnergyFrom(_ array: [Any]) -> Double? {
-        if array.count == 0 {
-            return nil
-        }
-        
-        var summ: Double = 0
-        for info in array {
-            if let energy = (info as? [String: Any])?[kEnergy] {
-                summ += energy as! Double
-            }
-        }
-        return summ
-    }
-    
-    fileprivate func getValueFrom(array: [Any], row: Int, key: String) -> Any? {
-        return (array[row] as? [String: Any])?[key]
-    }
-    
     fileprivate func alpha2EventNumber(_ row: Int) -> String {
-        if row < alpha2FrontPerAct.count {
-            if let eventNumber = getValueFrom(array: alpha2FrontPerAct, row: row, key: kEventNumber) {
-                return currentFileEventNumber(eventNumber as! CUnsignedLongLong)
-            }
+        if let eventNumber = alpha2FrontPerAct.getValueAt(index: row, key: kEventNumber) {
+            return currentFileEventNumber(eventNumber as! CUnsignedLongLong)
         }
         return ""
     }
     
     fileprivate func alpha2Energy(_ row: Int) -> String {
-        if row < alpha2FrontPerAct.count {
-            if let energy = getValueFrom(array: alpha2FrontPerAct, row: row, key: kEnergy) {
-                return String(format: "%.7f", energy as! Double)
-            }
+        if let energy = alpha2FrontPerAct.getValueAt(index: row, key: kEnergy) {
+            return String(format: "%.7f", energy as! Double)
         }
         return ""
     }
     
     fileprivate func alpha2Marker(_ row: Int) -> String {
-        if row < alpha2FrontPerAct.count {
-            if let marker = getValueFrom(array: alpha2FrontPerAct, row: row, key: kMarker) {
-                return String(format: "%hu", marker as! CUnsignedShort)
-            }
+        if let marker = alpha2FrontPerAct.getValueAt(index: row, key: kMarker) {
+            return String(format: "%hu", marker as! CUnsignedShort)
         }
         return ""
     }
     
     fileprivate func alphs2DeltaTime(_ row: Int) -> String {
-        if row < alpha2FrontPerAct.count {
-            if let deltaTime = getValueFrom(array: alpha2FrontPerAct, row: row, key: kDeltaTime) {
-                return String(format: "%lld", deltaTime as! CLongLong)
-            }
+        if let deltaTime = alpha2FrontPerAct.getValueAt(index: row, key: kDeltaTime) {
+            return String(format: "%lld", deltaTime as! CLongLong)
         }
         return ""
     }
