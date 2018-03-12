@@ -108,6 +108,8 @@ class Processor {
     var recoilMaxTime: CUnsignedLongLong = 0
     var recoilBackMaxTime: CUnsignedLongLong = 0
     var fissionAlphaMaxTime: CUnsignedLongLong = 0
+    var fissionAlphaBackMaxTime: CUnsignedLongLong = 0
+    var fissionAlphaWellMaxTime: CUnsignedLongLong = 0
     var maxTOFTime: CUnsignedLongLong = 0
     var maxVETOTime: CUnsignedLongLong = 0
     var maxGammaTime: CUnsignedLongLong = 0
@@ -477,7 +479,7 @@ class Processor {
     
     func findFissionsAlphaWell() {
         let directions: Set<SearchDirection> = [.backward, .forward]
-        search(directions: directions, startTime: startEventTime, minDeltaTime: 0, maxDeltaTime: fissionAlphaMaxTime, useCycleTime: false, updateCycleEvent: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
+        search(directions: directions, startTime: startEventTime, minDeltaTime: 0, maxDeltaTime: fissionAlphaWellMaxTime, useCycleTime: false, updateCycleEvent: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
             if self.isFissionOrAlphaWell(event) {
                 self.storeFissionAlphaWell(event)
             }
@@ -536,7 +538,7 @@ class Processor {
     
     func findFissionsAlphaBack() {
         let directions: Set<SearchDirection> = [.backward, .forward]
-        search(directions: directions, startTime: startEventTime, minDeltaTime: 0, maxDeltaTime: fissionAlphaMaxTime, useCycleTime: false, updateCycleEvent: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
+        search(directions: directions, startTime: startEventTime, minDeltaTime: 0, maxDeltaTime: fissionAlphaBackMaxTime, useCycleTime: false, updateCycleEvent: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
             let type = self.startParticleType
             if self.isBack(event, type: type) {
                 let energy = self.getEnergy(event, type: type)
