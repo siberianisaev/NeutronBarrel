@@ -473,7 +473,7 @@ class Processor {
     }
     
     func findFissionsAlphaWel() {
-        let directions: Set<SearchDirection> = [.forward]
+        let directions: Set<SearchDirection> = [.backward, .forward]
         search(directions: directions, startTime: startEventTime, minDeltaTime: 0, maxDeltaTime: fissionAlphaMaxTime, useCycleTime: false, updateCycleEvent: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
             if self.isFissionOrAlphaWel(event) {
                 self.storeFissionAlphaWell(event)
@@ -532,7 +532,7 @@ class Processor {
     }
     
     func findFissionsAlphaBack() {
-        let directions: Set<SearchDirection> = [.forward]
+        let directions: Set<SearchDirection> = [.backward, .forward]
         search(directions: directions, startTime: startEventTime, minDeltaTime: 0, maxDeltaTime: fissionAlphaMaxTime, useCycleTime: false, updateCycleEvent: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
             let type = self.startParticleType
             if self.isBack(event, type: type) {
@@ -633,7 +633,7 @@ class Processor {
     
     func findRecoilBack(_ timeRecoilFront: CUnsignedLongLong) -> Bool {
         var found: Bool = false
-        let directions: Set<SearchDirection> = [.forward]
+        let directions: Set<SearchDirection> = [.backward, .forward]
         search(directions: directions, startTime: timeRecoilFront, minDeltaTime: 0, maxDeltaTime: recoilBackMaxTime, useCycleTime: false, updateCycleEvent: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
             if self.isBack(event, type: self.recoilType) {
                 if (self.requiredRecoilBack && self.startParticleType != self.recoilType) {
@@ -697,7 +697,7 @@ class Processor {
     
     func findAlpha2() {
         let alphaTime = absTime(CUnsignedShort(startEventTime), cycleEvent: mainCycleTimeEvent)
-        let directions: Set<SearchDirection> = [.forward]
+        let directions: Set<SearchDirection> = [.backward, .forward]
         search(directions: directions, startTime: alphaTime, minDeltaTime: alpha2MinTime, maxDeltaTime: alpha2MaxTime, useCycleTime: true, updateCycleEvent: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
             if self.isFront(event, type: .alpha) {
                 let energy = self.getEnergy(event, type: .alpha)
