@@ -45,6 +45,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBInspectable var sMinRecoilTime = String(format: "%d", Settings.getIntSetting(.MinRecoilTime)) // mks
     @IBInspectable var sMaxRecoilTime = String(format: "%d", Settings.getIntSetting(.MaxRecoilTime)) // mks
     @IBInspectable var sMaxRecoilBackTime = String(format: "%d", Settings.getIntSetting(.MaxRecoilBackTime)) // mks
+    @IBInspectable var sMaxRecoilBackBackwardTime = String(format: "%d", Settings.getIntSetting(.MaxRecoilBackBackwardTime)) // mks
     @IBInspectable var sMaxFissionTime = String(format: "%d", Settings.getIntSetting(.MaxFissionTime)) // mks
     @IBInspectable var sMaxFissionBackBackwardTime = String(format: "%d", Settings.getIntSetting(.MaxFissionBackBackwardTime)) // mks
     @IBInspectable var sMaxFissionWellBackwardTime = String(format: "%d", Settings.getIntSetting(.MaxFissionWellBackwardTime)) // mks
@@ -196,6 +197,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             processor.recoilMinTime = UInt64(sMinRecoilTime) ?? 0
             processor.recoilMaxTime = UInt64(sMaxRecoilTime) ?? 0
             processor.recoilBackMaxTime = UInt64(sMaxRecoilBackTime) ?? 0
+            processor.recoilBackBackwardMaxTime = UInt64(sMaxRecoilBackBackwardTime) ?? 0
             processor.minTOFValue = Double(sMinTOFValue) ?? 0
             processor.maxTOFValue = Double(sMaxTOFValue) ?? 0
             processor.unitsTOF = tofUnitsControl.selectedSegment == 0 ? .channels : .nanoseconds
@@ -318,6 +320,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         Settings.setObject(Int(sMinRecoilTime), forSetting: .MinRecoilTime)
         Settings.setObject(Int(sMaxRecoilTime), forSetting: .MaxRecoilTime)
         Settings.setObject(Int(sMaxRecoilBackTime), forSetting: .MaxRecoilBackTime)
+        Settings.setObject(Int(sMaxRecoilBackBackwardTime), forSetting: .MaxRecoilBackBackwardTime)
         Settings.setObject(Int(sMaxFissionTime), forSetting: .MaxFissionTime)
         Settings.setObject(Int(sMaxFissionBackBackwardTime), forSetting: .MaxFissionBackBackwardTime)
         Settings.setObject(Int(sMaxFissionWellBackwardTime), forSetting: .MaxFissionWellBackwardTime)

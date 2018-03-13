@@ -107,6 +107,7 @@ class Processor {
     var recoilMaxTime: CUnsignedLongLong = 0
     var recoilBackMaxTime: CUnsignedLongLong = 0
     var fissionAlphaMaxTime: CUnsignedLongLong = 0
+    var recoilBackBackwardMaxTime: CUnsignedLongLong = 0
     var fissionAlphaBackBackwardMaxTime: CUnsignedLongLong = 0
     var fissionAlphaWellBackwardMaxTime: CUnsignedLongLong = 0
     var maxTOFTime: CUnsignedLongLong = 0
@@ -631,7 +632,7 @@ class Processor {
     func findRecoilBack(_ timeRecoilFront: CUnsignedLongLong) -> Bool {
         var found: Bool = false
         let directions: Set<SearchDirection> = [.backward, .forward]
-        search(directions: directions, startTime: timeRecoilFront, minDeltaTime: 0, maxDeltaTime: recoilBackMaxTime, useCycleTime: false, updateCycleEvent: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
+        search(directions: directions, startTime: timeRecoilFront, minDeltaTime: 0, maxDeltaTime: recoilBackMaxTime, maxDeltaTimeBackward: recoilBackBackwardMaxTime, useCycleTime: false, updateCycleEvent: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
             if self.isBack(event, type: self.recoilType) {
                 if (self.requiredRecoilBack && self.startParticleType != self.recoilType) {
                     found = self.isRecoilBackStripNearToFissionAlphaBack(event)
