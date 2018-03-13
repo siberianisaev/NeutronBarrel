@@ -12,11 +12,18 @@ class Logger {
     
     fileprivate var resultsCSVWriter: CSVWriter
     fileprivate var timeStamp: String
+    fileprivate var dateFormatter: DateFormatter?
     
     init() {
         let stamp = String.timeStamp()
         timeStamp = stamp
         resultsCSVWriter = CSVWriter(path: FileManager.resultsFilePath(stamp))
+        let f = DateFormatter()
+        f.calendar = Calendar(identifier: .gregorian)
+        f.locale = Locale(identifier: "en_US_POSIX")
+        f.timeZone = TimeZone(secondsFromGMT: 0)
+        f.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZZZZ"
+        dateFormatter = f
     }
     
     func writeLineOfFields(_ fields: [AnyObject]?) {
@@ -49,15 +56,39 @@ class Logger {
         for key in sortedKeys {
             string += "\(key)\t\(info[key]!)\n"
         }
-        self.logString(string, path: FileManager.multiplicityFilePath(timeStamp))
+        logString(string, path: FileManager.multiplicityFilePath(timeStamp))
     }
 
     func logCalibration(_ string: String) {
-        self.logString(string, path: FileManager.calibrationFilePath(timeStamp))
+        logString(string, path: FileManager.calibrationFilePath(timeStamp))
     }
     
-    func logInput(_ image: NSImage?) {
-        if let path = FileManager.inputFilePath(timeStamp) {
+    func logStatisticsEvent(_ eventDescription: String, date: Date? = nil) {
+        guard let path = FileManager.statisticsFilePath(timeStamp) else {
+            return
+        }
+        var previous: String?
+        if Foundation.FileManager.default.fileExists(atPath: path) {
+            do {
+                previous = try String.init(contentsOfFile: path, encoding: String.Encoding.utf8)
+            } catch {
+                print(error)
+            }
+        }
+        
+        var current = ""
+        if let previous = previous {
+            current += "\(previous)\n"
+        }
+        current += "\(eventDescription)"
+        if let date = date, let sDate = dateFormatter?.string(from: date) {
+            current += "   \(sDate)"
+        }
+        logString(current, path: path)
+    }
+    
+    func logInput(_ image: NSImage?, onEnd: Bool) {
+        if let path = FileManager.inputFilePath(timeStamp, onEnd: onEnd) {
             let url = URL.init(fileURLWithPath: path)
             do {
                 try image?.imagePNGRepresentation()?.write(to: url)

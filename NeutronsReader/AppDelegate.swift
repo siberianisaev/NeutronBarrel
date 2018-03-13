@@ -33,7 +33,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBOutlet weak var recoilTypeArrayController: NSArrayController!
     
     fileprivate var viewerController: ViewerController?
-    fileprivate var totalTime: TimeInterval = 0
+    fileprivate var startDate: Date?
     fileprivate var timer: Timer?
     
     @IBInspectable var sMinFissionEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MinFissionEnergy)) // MeV
@@ -282,7 +282,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     // MARK: - Timer
     
     fileprivate func startTimer() {
-        totalTime = 0
+        startDate = Date()
         timer = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(AppDelegate.incrementTotalTime), userInfo: nil, repeats: true)
         labelTotalTime?.stringValue = ""
         labelTotalTime?.isHidden = false
@@ -290,16 +290,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         labelProcessingFileName?.isHidden = false
     }
     
-    fileprivate func stringTotalTime() -> String {
-        let seconds = Int(totalTime.truncatingRemainder(dividingBy: 60))
-        let minutes = Int((totalTime / 60).truncatingRemainder(dividingBy: 60))
-        let hours = Int(totalTime / 3600)
-        return String(format: "%02d:%02d:%02d", hours, minutes, seconds)
+    func timeTook() -> String {
+        return abs(startDate?.timeIntervalSince(Date()) ?? 0).stringFromSeconds()
     }
     
     @objc func incrementTotalTime() {
-        totalTime += 1
-        labelTotalTime?.stringValue = stringTotalTime()
+        labelTotalTime?.stringValue = timeTook()
     }
     
     fileprivate func stopTimer() {

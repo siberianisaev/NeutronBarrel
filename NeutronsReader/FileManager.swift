@@ -40,8 +40,13 @@ class FileManager {
         return self.desktopFilePathWithName("results_\(timeStamp).csv", timeStamp: timeStamp)
     }
     
-    class func inputFilePath(_ timeStamp: String) -> String? {
-        return self.desktopFilePathWithName("input_\(timeStamp).png", timeStamp: timeStamp)
+    class func statisticsFilePath(_ timeStamp: String) -> String? {
+        return self.desktopFilePathWithName("statistics_\(timeStamp).txt", timeStamp: timeStamp)
+    }
+    
+    class func inputFilePath(_ timeStamp: String, onEnd: Bool) -> String? {
+        let postfix = onEnd ? "end" : "start"
+        return self.desktopFilePathWithName("input_\(timeStamp)_\(postfix).png", timeStamp: timeStamp)
     }
     
     class func multiplicityFilePath(_ timeStamp: String) -> String? {

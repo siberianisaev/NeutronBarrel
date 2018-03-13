@@ -31,6 +31,17 @@ extension NSImage {
     
 }
 
+extension TimeInterval {
+    
+    func stringFromSeconds() -> String {
+        let seconds = Int(self.truncatingRemainder(dividingBy: 60))
+        let minutes = Int((self / 60).truncatingRemainder(dividingBy: 60))
+        let hours = Int(self / 3600)
+        return String(format: "%02d:%02d:%02d", hours, minutes, seconds)
+    }
+    
+}
+
 extension String {
     
     static func timeStamp() -> String {

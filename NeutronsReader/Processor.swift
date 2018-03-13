@@ -317,7 +317,7 @@ class Processor {
         clearActInfo()
         
         logger = Logger()
-        logInput()
+        logInput(onEnd: false)
         logCalibration()
         logResultsHeader()
         
@@ -328,6 +328,7 @@ class Processor {
         
         for fp in files {
             let path = fp as NSString
+            logger.logStatisticsEvent("Start file \(path)", date: Date())
             autoreleasepool {
                 file = fopen(path.utf8String, "rb")
                 let name = path.lastPathComponent
@@ -363,7 +364,12 @@ class Processor {
                     self?.delegate?.incrementProgress(progressForOneFile)
                 }
             }
+            logger.logStatisticsEvent("End file \(path)", date: Date())
         }
+        
+        logInput(onEnd: true)
+        let appDelegate = NSApplication.shared.delegate as! AppDelegate
+        logger.logStatisticsEvent("Done!\nTime took: \(appDelegate.timeTook())")
         
         if searchNeutrons {
             logger.logMultiplicity(neutronsMultiplicityTotal)
@@ -1015,10 +1021,10 @@ class Processor {
     
     // MARK: - Output
     
-    func logInput() {
+    func logInput(onEnd: Bool) {
         let appDelegate = NSApplication.shared.delegate as! AppDelegate
         let image = appDelegate.window.screenshot()
-        logger.logInput(image)
+        logger.logInput(image, onEnd: onEnd)
     }
     
     func logCalibration() {

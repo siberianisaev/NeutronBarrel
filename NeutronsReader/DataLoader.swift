@@ -34,7 +34,7 @@ class DataLoader {
                 let protocolURLString = selected.filter() { $0.hasSuffix(".PRO") }.first
                 let protocolObject = DataProtocol.load(protocolURLString)
                 
-                selected = selected.filter() { false == $0.hasSuffix(".PRO") && false == $0.hasSuffix(".DS_Store") }
+                selected = selected.filter() { false == $0.hasSuffix(".PRO") && false == $0.hasSuffix(".DS_Store") && false == $0.hasSuffix(".CFG") && false == $0.hasSuffix(".clb")}
                 selected = selected.sorted(by: { (s1: String, s2: String) -> Bool in
                     return s1 < s2
                 })
