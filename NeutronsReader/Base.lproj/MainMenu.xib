@@ -1684,9 +1684,9 @@
                         </connections>
                     </textField>
                     <button hidden="YES" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="foC-YW-3m0">
-                        <rect key="frame" x="218" y="211" width="33" height="32"/>
+                        <rect key="frame" x="224" y="218" width="20" height="21"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                        <buttonCell key="cell" type="push" title="x" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="ASo-j6-H7q">
+                        <buttonCell key="cell" type="bevel" bezelStyle="rounded" image="trash" imagePosition="only" alignment="center" imageScaling="proportionallyDown" inset="2" id="ASo-j6-H7q">
                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                             <font key="font" metaFont="system" size="8"/>
                         </buttonCell>
@@ -1695,9 +1695,9 @@
                         </connections>
                     </button>
                     <button hidden="YES" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="rja-9L-ulo">
-                        <rect key="frame" x="218" y="270" width="33" height="32"/>
+                        <rect key="frame" x="224" y="277" width="20" height="21"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                        <buttonCell key="cell" type="push" title="x" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="fw0-nS-Obf">
+                        <buttonCell key="cell" type="bevel" bezelStyle="rounded" image="trash" imagePosition="only" alignment="center" imageScaling="proportionallyDown" inset="2" id="fw0-nS-Obf">
                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                             <font key="font" metaFont="system" size="8"/>
                         </buttonCell>
@@ -1759,4 +1759,7 @@
         <arrayController id="Yhr-KV-7ci"/>
         <userDefaultsController representsSharedInstance="YES" id="aAU-rt-5o7"/>
     </objects>
+    <resources>
+        <image name="trash" width="32" height="32"/>
+    </resources>
 </document>
