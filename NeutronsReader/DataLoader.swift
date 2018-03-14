@@ -33,10 +33,15 @@ class DataLoader {
                 //TODO: show alert for data with many different protocols
                 let protocolURLString = selected.filter() { $0.hasSuffix(".PRO") }.first
                 let protocolObject = DataProtocol.load(protocolURLString)
-                
-                selected = selected.filter() { false == $0.hasSuffix(".PRO") && false == $0.hasSuffix(".DS_Store") && false == $0.hasSuffix(".CFG") && false == $0.hasSuffix(".clb")}
-                selected = selected.sorted(by: { (s1: String, s2: String) -> Bool in
-                    return s1 < s2
+                // Every data file has numeric extension like ".001"
+                let decimalSet = CharacterSet.decimalDigits
+                selected = selected.filter({ (s: String) -> Bool in
+                    if let ext = (s as NSString).components(separatedBy: ".").last {
+                        let set = CharacterSet(charactersIn: ext)
+                        return decimalSet.isSuperset(of: set)
+                    } else {
+                        return false
+                    }
                 })
                 onFinish(selected, protocolObject)
             }
