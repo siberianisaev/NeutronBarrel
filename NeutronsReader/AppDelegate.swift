@@ -25,12 +25,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBOutlet weak var indicatorStripsConfig: NSTextField!
     @IBOutlet weak var buttonRun: NSButton!
     @IBOutlet weak var alpha2View: NSView!
+    @IBOutlet weak var alpha2FormView: NSView!
     @IBOutlet weak var vetoView: NSView!
     @IBOutlet weak var wellView: NSView!
     @IBOutlet weak var fissionAlpha1View: NSView!
     @IBOutlet weak var requiredRecoilButton: NSButton!
     @IBOutlet weak var recoilTypeButton: NSPopUpButton!
     @IBOutlet weak var recoilTypeArrayController: NSArrayController!
+    @IBOutlet weak var fissionAlpha1TextField: NSTextField!
     
     fileprivate var viewerController: ViewerController?
     fileprivate var startDate: Date?
@@ -63,7 +65,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBInspectable var requiredTOF: Bool = Settings.getBoolSetting(.RequiredTOF)
     @IBInspectable var requiredVETO: Bool = Settings.getBoolSetting(.RequiredVETO)
     @IBInspectable var searchNeutrons: Bool = Settings.getBoolSetting(.SearchNeutrons)
-    @IBInspectable var searchAlpha2: Bool = Settings.getBoolSetting(.SearchAlpha2)
+    @IBInspectable var searchAlpha2: Bool = Settings.getBoolSetting(.SearchAlpha2) {
+        didSet {
+            setupAlpha2FormView()
+        }
+    }
     @IBInspectable var sMinAlpha2Energy = String(format: "%.1f", Settings.getDoubleSetting(.MinAlpha2Energy)) // MeV
     @IBInspectable var sMaxAlpha2Energy = String(format: "%.1f", Settings.getDoubleSetting(.MaxAlpha2Energy)) // MeV
     @IBInspectable var sMinAlpha2Time = String(format: "%d", Settings.getIntSetting(.MinAlpha2Time)) // mks
@@ -92,6 +98,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         return recoilTypes[recoilTypeArrayController.selectionIndex]
     }
     
+    fileprivate func setupAlpha2FormView() {
+        alpha2FormView.isHidden = !searchAlpha2
+    }
+    
     fileprivate func setupRecoilTypes() {
         let array = recoilTypes.map { (t: SearchType) -> String in
             return t.name()
@@ -110,6 +120,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         startParticleChanged(nil)
         setupVETOView()
         setupWellView()
+        setupAlpha2FormView()
         tofUnitsControl.selectedSegment = Settings.getIntSetting(.TOFUnits)
         for i in [indicatorData, indicatorCalibration, indicatorStripsConfig] {
             setSelected(false, indicator: i)
@@ -125,6 +136,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             requiredRecoilButton.state = NSControl.StateValue(rawValue: requiredRecoil ? 1 : 0)
             requiredRecoilButton.isEnabled = type != .recoil
             fissionAlpha1View.isHidden = type == .recoil
+            fissionAlpha1TextField.stringValue = (type != .alpha ? "Fission" : "Alpha1") + " Front"
         }
     }
     
