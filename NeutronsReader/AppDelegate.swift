@@ -33,6 +33,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBOutlet weak var recoilTypeButton: NSPopUpButton!
     @IBOutlet weak var recoilTypeArrayController: NSArrayController!
     @IBOutlet weak var fissionAlpha1TextField: NSTextField!
+    @IBOutlet weak var buttonRemoveCalibration: NSButton!
+    @IBOutlet weak var buttonRemoveStripsConfiguration: NSButton!
     
     fileprivate var viewerController: ViewerController?
     fileprivate var startDate: Date?
@@ -127,6 +129,18 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         }
         showAppVersion()
         run = false
+    }
+    
+    @IBAction func removeCalibration(_ sender: Any) {
+        setSelected(false, indicator: indicatorCalibration)
+        Processor.singleton.removeCalibration()
+        buttonRemoveCalibration.isHidden = true
+    }
+    
+    @IBAction func removeStripsConfiguration(_ sender: Any) {
+        setSelected(false, indicator: indicatorStripsConfig)
+        Processor.singleton.removeStripsConfiguration()
+        buttonRemoveStripsConfiguration.isHidden = true
     }
     
     @IBAction func startParticleChanged(_ sender: Any?) {
@@ -270,12 +284,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBAction func selectCalibration(_ sender: AnyObject?) {
         Processor.singleton.selectCalibrationWithCompletion { [weak self] (success: Bool) in
             self?.setSelected(success, indicator: self?.indicatorCalibration)
+            self?.buttonRemoveCalibration?.isHidden = !success
         }
     }
     
     @IBAction func selectStripsConfiguration(_ sender: AnyObject?) {
         Processor.singleton.selectStripsConfigurationWithCompletion { [weak self] (success: Bool) in
             self?.setSelected(success, indicator: self?.indicatorStripsConfig)
+            self?.buttonRemoveStripsConfiguration?.isHidden = !success
         }
     }
     

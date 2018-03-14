@@ -18,6 +18,8 @@
                 <outlet property="activity" destination="efV-t0-MaY" id="ciS-Dq-IAJ"/>
                 <outlet property="alpha2FormView" destination="Qot-rQ-0rl" id="mw0-Zx-2Fm"/>
                 <outlet property="alpha2View" destination="3cn-vC-YcO" id="mEl-rY-4Ei"/>
+                <outlet property="buttonRemoveCalibration" destination="rja-9L-ulo" id="TEl-kG-EKz"/>
+                <outlet property="buttonRemoveStripsConfiguration" destination="foC-YW-3m0" id="Y9M-AJ-qGT"/>
                 <outlet property="buttonRun" destination="qly-NS-Sdp" id="1Eb-jQ-x3Y"/>
                 <outlet property="fissionAlpha1TextField" destination="OKm-oK-v74" id="8uS-bR-q5e"/>
                 <outlet property="fissionAlpha1View" destination="iam-zF-sjL" id="V1p-kZ-Q3r"/>
@@ -1682,6 +1684,28 @@
                             </binding>
                         </connections>
                     </textField>
+                    <button hidden="YES" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="foC-YW-3m0">
+                        <rect key="frame" x="218" y="105" width="33" height="32"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="push" title="x" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="ASo-j6-H7q">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="system" size="8"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="removeStripsConfiguration:" target="Voe-Tx-rLC" id="LeZ-z3-eWc"/>
+                        </connections>
+                    </button>
+                    <button hidden="YES" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="rja-9L-ulo">
+                        <rect key="frame" x="218" y="147" width="33" height="32"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="push" title="x" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="fw0-nS-Obf">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="system" size="8"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="removeCalibration:" target="Voe-Tx-rLC" id="B7v-hL-9Zz"/>
+                        </connections>
+                    </button>
                 </subviews>
             </view>
             <point key="canvasLocation" x="595" y="459"/>

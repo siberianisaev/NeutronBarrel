@@ -185,11 +185,19 @@ class Processor {
         }
     }
     
+    func removeCalibration() {
+        calibration = Calibration()
+    }
+    
     func selectStripsConfigurationWithCompletion(_ completion: @escaping ((Bool)->())) {
         StripsConfiguration.openConfiguration { [weak self] (configuration: StripsConfiguration?) in
             self?.stripsConfiguration = configuration!
             completion(configuration!.loaded)
         }
+    }
+    
+    func removeStripsConfiguration() {
+        stripsConfiguration = StripsConfiguration()
     }
     
     // MARK: - Algorithms
