@@ -38,7 +38,7 @@ class StripsConfiguration {
         return (Int(strip_0_15) * 3) + (encoder - 1) + 1
     }
     
-    class func openConfiguration(_ onFinish: @escaping ((StripsConfiguration?) -> ())) {
+    class func openConfiguration(_ onFinish: @escaping ((StripsConfiguration?, String?) -> ())) {
         let panel = NSOpenPanel()
         panel.canChooseDirectories = false
         panel.canChooseFiles = true
@@ -46,7 +46,8 @@ class StripsConfiguration {
         panel.begin { (result) -> Void in
             if result.rawValue == NSFileHandlingPanelOKButton {
                 let urls = panel.urls.filter() { $0.path.hasSuffix(".CFG") }
-                onFinish(self.load(urls.first?.path))
+                let path = urls.first?.path
+                onFinish(self.load(path), path)
             }
         }
     }

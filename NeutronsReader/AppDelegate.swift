@@ -18,6 +18,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBOutlet weak var labelBranch: NSTextField!
     @IBOutlet weak var labelTotalTime: NSTextField!
     @IBOutlet weak var labelProcessingFileName: NSTextField!
+    @IBOutlet weak var labelFirstDataFileName: NSTextField!
+    @IBOutlet weak var labelCalibrationFileName: NSTextField!
+    @IBOutlet weak var labelStripsConfigurationFileName: NSTextField!
     @IBOutlet weak var startParticleControl: NSSegmentedControl!
     @IBOutlet weak var secondParticleControl: NSSegmentedControl!
     @IBOutlet weak var tofUnitsControl: NSSegmentedControl!
@@ -139,12 +142,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         setSelected(false, indicator: indicatorCalibration)
         Processor.singleton.removeCalibration()
         buttonRemoveCalibration.isHidden = true
+        showFilePath(nil, label: labelCalibrationFileName)
     }
     
     @IBAction func removeStripsConfiguration(_ sender: Any) {
         setSelected(false, indicator: indicatorStripsConfig)
         Processor.singleton.removeStripsConfiguration()
         buttonRemoveStripsConfiguration.isHidden = true
+        showFilePath(nil, label: labelStripsConfigurationFileName)
     }
     
     @IBAction func startParticleChanged(_ sender: Any?) {
@@ -283,24 +288,32 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         }
     }
     
+    fileprivate func showFilePath(_ path: String?, label: NSTextField?) {
+        label?.stringValue = path?.components(separatedBy: "/").last ?? ""
+        label?.isHidden = path == nil
+    }
+    
     @IBAction func selectData(_ sender: AnyObject?) {
         Processor.singleton.selectDataWithCompletion { [weak self] (success: Bool) in
             self?.setSelected(success, indicator: self?.indicatorData)
             self?.viewerController?.loadFile()
+            self?.showFilePath(Processor.singleton.files.first, label: self?.labelFirstDataFileName)
         }
     }
     
     @IBAction func selectCalibration(_ sender: AnyObject?) {
-        Processor.singleton.selectCalibrationWithCompletion { [weak self] (success: Bool) in
+        Processor.singleton.selectCalibrationWithCompletion { [weak self] (success: Bool, filePath: String?) in
             self?.setSelected(success, indicator: self?.indicatorCalibration)
             self?.buttonRemoveCalibration?.isHidden = !success
+            self?.showFilePath(filePath, label: self?.labelCalibrationFileName)
         }
     }
     
     @IBAction func selectStripsConfiguration(_ sender: AnyObject?) {
-        Processor.singleton.selectStripsConfigurationWithCompletion { [weak self] (success: Bool) in
+        Processor.singleton.selectStripsConfigurationWithCompletion { [weak self] (success: Bool, filePath: String?) in
             self?.setSelected(success, indicator: self?.indicatorStripsConfig)
             self?.buttonRemoveStripsConfiguration?.isHidden = !success
+            self?.showFilePath(filePath, label: self?.labelStripsConfigurationFileName)
         }
     }
     

@@ -26,7 +26,7 @@ class Calibration {
     fileprivate var data = [String: [String: Float]]()
     var stringValue: String?
     
-    class func openCalibration(_ onFinish: @escaping ((Calibration?) -> ())) {
+    class func openCalibration(_ onFinish: @escaping ((Calibration?, String?) -> ())) {
         let panel = NSOpenPanel()
         panel.canChooseDirectories = false
         panel.canChooseFiles = true
@@ -34,15 +34,25 @@ class Calibration {
         panel.begin { (result) -> Void in
             if result.rawValue == NSFileHandlingPanelOKButton {
                 let urls = panel.urls.filter() { $0.path.hasSuffix(".clb") }
-                onFinish(self.calibrationWithUrls(urls))
+                onFinish(self.calibrationWithUrls(urls), urls.first?.path)
             }
         }
     }
     
-    fileprivate class func calibrationWithUrls(_ URLs: [Foundation.URL]) -> Calibration {
+    fileprivate class func calibrationWithUrls(_ URLs: [Foundation.URL]) -> Calibration? {
         let calibration = Calibration()
         calibration.load(URLs)
-        return calibration
+        if calibration.data.count > 0 {
+            return calibration
+        } else {
+            let alert = NSAlert()
+            alert.messageText = "Error"
+            alert.informativeText = "Wrong calibration file!"
+            alert.addButton(withTitle: "Got It")
+            alert.alertStyle = .warning
+            alert.runModal()
+            return nil
+        }
     }
     
     fileprivate func load(_ URLs: [Foundation.URL]) {

@@ -179,10 +179,10 @@ class Processor {
         }
     }
     
-    func selectCalibrationWithCompletion(_ completion: @escaping ((Bool)->())) {
-        Calibration.openCalibration { [weak self] (calibration: Calibration?) in
-            self?.calibration = calibration!
-            completion(true)
+    func selectCalibrationWithCompletion(_ completion: @escaping ((Bool, String?)->())) {
+        Calibration.openCalibration { [weak self] (calibration: Calibration?, filePath: String?) in
+            self?.calibration = calibration ?? Calibration()
+            completion(calibration != nil, filePath)
         }
     }
     
@@ -190,10 +190,10 @@ class Processor {
         calibration = Calibration()
     }
     
-    func selectStripsConfigurationWithCompletion(_ completion: @escaping ((Bool)->())) {
-        StripsConfiguration.openConfiguration { [weak self] (configuration: StripsConfiguration?) in
+    func selectStripsConfigurationWithCompletion(_ completion: @escaping ((Bool, String?)->())) {
+        StripsConfiguration.openConfiguration { [weak self] (configuration: StripsConfiguration?, filePath: String?) in
             self?.stripsConfiguration = configuration!
-            completion(configuration!.loaded)
+            completion(configuration!.loaded, filePath)
         }
     }
     
