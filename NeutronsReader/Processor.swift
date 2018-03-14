@@ -17,9 +17,9 @@ protocol ProcessorDelegate: class {
 }
 
 enum SearchType: Int {
-    case fission
-    case alpha
-    case recoil
+    case fission = 0
+    case alpha = 1
+    case recoil = 2
     case heavy
     case veto
     
@@ -85,7 +85,7 @@ class Processor {
     
     fileprivate var fissionsAlphaPerAct = DoubleSidedStripDetectorMatch()
     fileprivate var recoilsPerAct = DoubleSidedStripDetectorMatch()
-    fileprivate var alpha2FrontPerAct = DetectorMatch()
+    fileprivate var fissionsAlpha2FrontPerAct = DetectorMatch()
     fileprivate var fissionsAlphaWellPerAct = DetectorMatch()
     fileprivate var tofRealPerAct = DetectorMatch()
     fileprivate var vetoPerAct = DetectorMatch()
@@ -129,16 +129,17 @@ class Processor {
     var trackBeamBackground = false
     var trackBeamIntegral = false
     var searchNeutrons = false
-    var searchAlpha2 = false
-    var alpha2MinEnergy: Double = 0
-    var alpha2MaxEnergy: Double = 0
-    var alpha2MinTime: CUnsignedLongLong = 0
-    var alpha2MaxTime: CUnsignedLongLong = 0
-    var alpha2MaxDeltaStrips: Int = 0
+    var searchFissionAlpha2 = false
+    var fissionAlpha2MinEnergy: Double = 0
+    var fissionAlpha2MaxEnergy: Double = 0
+    var fissionAlpha2MinTime: CUnsignedLongLong = 0
+    var fissionAlpha2MaxTime: CUnsignedLongLong = 0
+    var fissionAlpha2MaxDeltaStrips: Int = 0
     var searchSpecialEvents = false
     var searchWell = true
     var specialEventIds = [Int]()
     var startParticleType: SearchType = .fission
+    var secondParticleType: SearchType = .fission
     var unitsTOF: TOFUnits = .channels
     var recoilType: SearchType = .recoil
     fileprivate var heavyType: SearchType {
@@ -424,10 +425,10 @@ class Processor {
                 }
             }
             
-            if searchAlpha2 {
-                findAlpha2()
+            if searchFissionAlpha2 {
+                findFissionAlpha2()
                 fseek(file, Int(position), SEEK_SET)
-                if 0 == alpha2FrontPerAct.count {
+                if 0 == fissionsAlpha2FrontPerAct.count {
                     clearActInfo()
                     return
                 }
@@ -707,14 +708,15 @@ class Processor {
         }
     }
     
-    func findAlpha2() {
+    func findFissionAlpha2() {
         let alphaTime = absTime(CUnsignedShort(startEventTime), cycleEvent: mainCycleTimeEvent)
         let directions: Set<SearchDirection> = [.backward, .forward]
-        search(directions: directions, startTime: alphaTime, minDeltaTime: alpha2MinTime, maxDeltaTime: alpha2MaxTime, useCycleTime: true, updateCycleEvent: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
-            if self.isFront(event, type: .alpha) {
-                let energy = self.getEnergy(event, type: .alpha)
-                if energy >= self.alpha2MinEnergy && energy <= self.alpha2MaxEnergy && self.isEventFrontStripNearToFirstFissionAlphaFront(event, maxDelta: Int(self.alpha2MaxDeltaStrips)) {
-                    self.storeAlpha2(event, deltaTime: deltaTime)
+        search(directions: directions, startTime: alphaTime, minDeltaTime: fissionAlpha2MinTime, maxDeltaTime: fissionAlpha2MaxTime, useCycleTime: true, updateCycleEvent: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
+            let type = self.secondParticleType
+            if self.isFront(event, type: type) {
+                let energy = self.getEnergy(event, type: type)
+                if energy >= self.fissionAlpha2MinEnergy && energy <= self.fissionAlpha2MaxEnergy && self.isEventFrontStripNearToFirstFissionAlphaFront(event, maxDelta: Int(self.fissionAlpha2MaxDeltaStrips)) {
+                    self.storeFissionAlpha2(event, deltaTime: deltaTime)
                 }
             }
         }
@@ -791,13 +793,13 @@ class Processor {
         recoilsPerAct.append(info, side: .front)
     }
     
-    func storeAlpha2(_ event: Event, deltaTime: CLongLong) {
-        let energy = getEnergy(event, type: .alpha)
+    func storeFissionAlpha2(_ event: Event, deltaTime: CLongLong) {
+        let energy = getEnergy(event, type: secondParticleType)
         let info = [kEnergy: energy,
                     kDeltaTime: deltaTime,
                     kEventNumber: eventNumber(),
                     kMarker: getMarker(event)] as [String : Any]
-        alpha2FrontPerAct.append(info)
+        fissionsAlpha2FrontPerAct.append(info)
     }
     
     func storeRealTOFValue(_ value: Double, deltaTime: CLongLong) {
@@ -846,7 +848,7 @@ class Processor {
         beamRelatedValuesPerAct.removeAll()
         fissionsAlphaWellPerAct.removeAll()
         recoilsPerAct.removeAll()
-        alpha2FrontPerAct.removeAll()
+        fissionsAlpha2FrontPerAct.removeAll()
         tofRealPerAct.removeAll()
         vetoPerAct.removeAll()
     }
@@ -1095,10 +1097,10 @@ class Processor {
     fileprivate var keyColumnVetoEnergy = "E(VETO)"
     fileprivate var keyColumnVetoStrip = "Strip(VETO)"
     fileprivate var keyColumnVetoDeltaTime = "dT($Fron-VETO)"
-    fileprivate var keyColumnAlpha2Event = "Event(Alpha2)"
-    fileprivate var keyColumnAlpha2Energy = "E(Alpha2)"
-    fileprivate var keyColumnAlpha2Marker = "Alpha2Marker"
-    fileprivate var keyColumnAlpha2DeltaTime = "dT(Alpha1-Alpha2)"
+    fileprivate var keyColumnFissionAlpha2Event = "Event($2)"
+    fileprivate var keyColumnFissionAlpha2Energy = "E($2)"
+    fileprivate var keyColumnFissionAlpha2Marker = "$2Marker"
+    fileprivate var keyColumnFissionAlpha2DeltaTime = "dT($1-$2)"
     
     func logResultsHeader() {
         columns = [
@@ -1165,12 +1167,12 @@ class Processor {
                 keyColumnVetoDeltaTime
                 ])
         }
-        if searchAlpha2 {
+        if searchFissionAlpha2 {
             columns.append(contentsOf: [
-                keyColumnAlpha2Event,
-                keyColumnAlpha2Energy,
-                keyColumnAlpha2Marker,
-                keyColumnAlpha2DeltaTime
+                keyColumnFissionAlpha2Event,
+                keyColumnFissionAlpha2Energy,
+                keyColumnFissionAlpha2Marker,
+                keyColumnFissionAlpha2DeltaTime
                 ])
         }
         
@@ -1337,26 +1339,26 @@ class Processor {
                     if let eventNumber = vetoPerAct.getValueAt(index: row, key: kEventNumber) {
                         field = currentFileEventNumber(eventNumber as! CUnsignedLongLong)
                     }
-                case keyColumnAlpha2Event:
-                    field = alpha2EventNumber(row)
+                case keyColumnFissionAlpha2Event:
+                    field = fissionAlpha2EventNumber(row)
                 case keyColumnVetoEnergy:
                     if let energy = vetoPerAct.getValueAt(index: row, key: kEnergy) {
                         field = String(format: "%.7f", energy as! Double)
                     }
-                case keyColumnAlpha2Energy:
-                    field = alpha2Energy(row)
+                case keyColumnFissionAlpha2Energy:
+                    field = fissionAlpha2Energy(row)
                 case keyColumnVetoStrip:
                     if let strip_0_15 = vetoPerAct.getValueAt(index: row, key: kStrip0_15) {
                         field = String(format: "%hu", (strip_0_15 as! CUnsignedShort) + 1)
                     }
-                case keyColumnAlpha2Marker:
-                    field = alpha2Marker(row)
+                case keyColumnFissionAlpha2Marker:
+                    field = fissionAlpha2Marker(row)
                 case keyColumnVetoDeltaTime:
                     if let deltaTime = vetoPerAct.getValueAt(index: row, key: kDeltaTime) {
                         field = String(format: "%lld", deltaTime as! CLongLong)
                     }
-                case keyColumnAlpha2DeltaTime:
-                    field = alphs2DeltaTime(row)
+                case keyColumnFissionAlpha2DeltaTime:
+                    field = fissionAlphs2DeltaTime(row)
                 default:
                     break
                 }
@@ -1366,29 +1368,29 @@ class Processor {
         }
     }
     
-    fileprivate func alpha2EventNumber(_ row: Int) -> String {
-        if let eventNumber = alpha2FrontPerAct.getValueAt(index: row, key: kEventNumber) {
+    fileprivate func fissionAlpha2EventNumber(_ row: Int) -> String {
+        if let eventNumber = fissionsAlpha2FrontPerAct.getValueAt(index: row, key: kEventNumber) {
             return currentFileEventNumber(eventNumber as! CUnsignedLongLong)
         }
         return ""
     }
     
-    fileprivate func alpha2Energy(_ row: Int) -> String {
-        if let energy = alpha2FrontPerAct.getValueAt(index: row, key: kEnergy) {
+    fileprivate func fissionAlpha2Energy(_ row: Int) -> String {
+        if let energy = fissionsAlpha2FrontPerAct.getValueAt(index: row, key: kEnergy) {
             return String(format: "%.7f", energy as! Double)
         }
         return ""
     }
     
-    fileprivate func alpha2Marker(_ row: Int) -> String {
-        if let marker = alpha2FrontPerAct.getValueAt(index: row, key: kMarker) {
+    fileprivate func fissionAlpha2Marker(_ row: Int) -> String {
+        if let marker = fissionsAlpha2FrontPerAct.getValueAt(index: row, key: kMarker) {
             return String(format: "%hu", marker as! CUnsignedShort)
         }
         return ""
     }
     
-    fileprivate func alphs2DeltaTime(_ row: Int) -> String {
-        if let deltaTime = alpha2FrontPerAct.getValueAt(index: row, key: kDeltaTime) {
+    fileprivate func fissionAlphs2DeltaTime(_ row: Int) -> String {
+        if let deltaTime = fissionsAlpha2FrontPerAct.getValueAt(index: row, key: kDeltaTime) {
             return String(format: "%lld", deltaTime as! CLongLong)
         }
         return ""

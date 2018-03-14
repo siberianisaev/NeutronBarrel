@@ -19,13 +19,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBOutlet weak var labelTotalTime: NSTextField!
     @IBOutlet weak var labelProcessingFileName: NSTextField!
     @IBOutlet weak var startParticleControl: NSSegmentedControl!
+    @IBOutlet weak var secondParticleControl: NSSegmentedControl!
     @IBOutlet weak var tofUnitsControl: NSSegmentedControl!
     @IBOutlet weak var indicatorData: NSTextField!
     @IBOutlet weak var indicatorCalibration: NSTextField!
     @IBOutlet weak var indicatorStripsConfig: NSTextField!
     @IBOutlet weak var buttonRun: NSButton!
-    @IBOutlet weak var alpha2View: NSView!
-    @IBOutlet weak var alpha2FormView: NSView!
+    @IBOutlet weak var fissionAlpha2View: NSView!
+    @IBOutlet weak var fissionAlpha2FormView: NSView!
     @IBOutlet weak var vetoView: NSView!
     @IBOutlet weak var wellView: NSView!
     @IBOutlet weak var fissionAlpha1View: NSView!
@@ -33,6 +34,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBOutlet weak var recoilTypeButton: NSPopUpButton!
     @IBOutlet weak var recoilTypeArrayController: NSArrayController!
     @IBOutlet weak var fissionAlpha1TextField: NSTextField!
+    @IBOutlet weak var fissionAlpha2Button: NSButton!
     @IBOutlet weak var buttonRemoveCalibration: NSButton!
     @IBOutlet weak var buttonRemoveStripsConfiguration: NSButton!
     
@@ -67,16 +69,17 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBInspectable var requiredTOF: Bool = Settings.getBoolSetting(.RequiredTOF)
     @IBInspectable var requiredVETO: Bool = Settings.getBoolSetting(.RequiredVETO)
     @IBInspectable var searchNeutrons: Bool = Settings.getBoolSetting(.SearchNeutrons)
-    @IBInspectable var searchAlpha2: Bool = Settings.getBoolSetting(.SearchAlpha2) {
+    @IBInspectable var searchFissionAlpha2: Bool = Settings.getBoolSetting(.SearchFissionAlpha2) {
         didSet {
+            secondParticleChanged(nil)
             setupAlpha2FormView()
         }
     }
-    @IBInspectable var sMinAlpha2Energy = String(format: "%.1f", Settings.getDoubleSetting(.MinAlpha2Energy)) // MeV
-    @IBInspectable var sMaxAlpha2Energy = String(format: "%.1f", Settings.getDoubleSetting(.MaxAlpha2Energy)) // MeV
-    @IBInspectable var sMinAlpha2Time = String(format: "%d", Settings.getIntSetting(.MinAlpha2Time)) // mks
-    @IBInspectable var sMaxAlpha2Time = String(format: "%d", Settings.getIntSetting(.MaxAlpha2Time)) // mks
-    @IBInspectable var sMaxAlpha2FrontDeltaStrips = String(format: "%d", Settings.getIntSetting(.MaxAlpha2FrontDeltaStrips))
+    @IBInspectable var sMinFissionAlpha2Energy = String(format: "%.1f", Settings.getDoubleSetting(.MinFissionAlpha2Energy)) // MeV
+    @IBInspectable var sMaxFissionAlpha2Energy = String(format: "%.1f", Settings.getDoubleSetting(.MaxFissionAlpha2Energy)) // MeV
+    @IBInspectable var sMinFissionAlpha2Time = String(format: "%d", Settings.getIntSetting(.MinFissionAlpha2Time)) // mks
+    @IBInspectable var sMaxFissionAlpha2Time = String(format: "%d", Settings.getIntSetting(.MaxFissionAlpha2Time)) // mks
+    @IBInspectable var sMaxFissionAlpha2FrontDeltaStrips = String(format: "%d", Settings.getIntSetting(.MaxFissionAlpha2FrontDeltaStrips))
     @IBInspectable var searchSpecialEvents: Bool = Settings.getBoolSetting(.SearchSpecialEvents)
     @IBInspectable var specialEventIds = Settings.getStringSetting(.SpecialEventIds) ?? ""
     @IBInspectable var searchVETO: Bool = Settings.getBoolSetting(.SearchVETO) {
@@ -101,7 +104,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     }
     
     fileprivate func setupAlpha2FormView() {
-        alpha2FormView.isHidden = !searchAlpha2
+        fissionAlpha2FormView.isHidden = !searchFissionAlpha2
     }
     
     fileprivate func setupRecoilTypes() {
@@ -118,7 +121,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         setupRecoilTypes()
-        startParticleControl.selectedSegment = Settings.getIntSetting(.SearchType)
+        startParticleControl.selectedSegment = Settings.getIntSetting(.StartSearchType)
+        secondParticleControl.selectedSegment = Settings.getIntSetting(.SecondSearchType)
         startParticleChanged(nil)
         setupVETOView()
         setupWellView()
@@ -145,12 +149,25 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     
     @IBAction func startParticleChanged(_ sender: Any?) {
         if let type = SearchType(rawValue: startParticleControl.selectedSegment) {
-            alpha2View.isHidden = type != .alpha
+            fissionAlpha2View.isHidden = type == .recoil
             requiredRecoil = requiredRecoil || type == .recoil
             requiredRecoilButton.state = NSControl.StateValue(rawValue: requiredRecoil ? 1 : 0)
             requiredRecoilButton.isEnabled = type != .recoil
             fissionAlpha1View.isHidden = type == .recoil
             fissionAlpha1TextField.stringValue = (type != .alpha ? "Fission" : "Alpha1") + " Front"
+            secondParticleChanged(nil)
+        }
+    }
+    
+    @IBAction func secondParticleChanged(_ sender: Any?) {
+        if let type = SearchType(rawValue: secondParticleControl.selectedSegment) {
+            var title = "Search "
+            if searchFissionAlpha2 {
+                title += (type != .alpha ? "Fission" : "Alpha") + " 2 Front"
+            } else {
+                title += "2nd Particle"
+            }
+            fissionAlpha2Button.title = title
         }
     }
     
@@ -190,16 +207,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         } else {
             run = true
             
-            var startType: SearchType
-            switch startParticleControl.selectedSegment {
-            case 0:
-                startType = .fission
-            case 1:
-                startType = .alpha
-            default:
-                startType = .recoil
-            }
-            processor.startParticleType = startType
+            processor.startParticleType = SearchType(rawValue: startParticleControl.selectedSegment) ?? .recoil
+            processor.secondParticleType = SearchType(rawValue: secondParticleControl.selectedSegment) ?? .recoil
             processor.fissionAlphaFrontMinEnergy = Double(sMinFissionEnergy) ?? 0
             processor.fissionAlphaFrontMaxEnergy = Double(sMaxFissionEnergy) ?? 0
             processor.searchFissionAlphaBackByFact = searchFissionBackByFact
@@ -207,12 +216,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             processor.fissionAlphaBackBackwardMaxTime = UInt64(sMaxFissionBackBackwardTime) ?? 0
             processor.fissionAlphaWellBackwardMaxTime = UInt64(sMaxFissionWellBackwardTime) ?? 0
             processor.summarizeFissionsAlphaFront = summarizeFissionsFront
-            processor.searchAlpha2 = searchAlpha2
-            processor.alpha2MinEnergy = Double(sMinAlpha2Energy) ?? 0
-            processor.alpha2MaxEnergy = Double(sMaxAlpha2Energy) ?? 0
-            processor.alpha2MinTime = UInt64(sMinAlpha2Time) ?? 0
-            processor.alpha2MaxTime = UInt64(sMaxAlpha2Time) ?? 0
-            processor.alpha2MaxDeltaStrips = Int(sMaxAlpha2FrontDeltaStrips) ?? 0
+            processor.searchFissionAlpha2 = searchFissionAlpha2
+            processor.fissionAlpha2MinEnergy = Double(sMinFissionAlpha2Energy) ?? 0
+            processor.fissionAlpha2MaxEnergy = Double(sMaxFissionAlpha2Energy) ?? 0
+            processor.fissionAlpha2MinTime = UInt64(sMinFissionAlpha2Time) ?? 0
+            processor.fissionAlpha2MaxTime = UInt64(sMaxFissionAlpha2Time) ?? 0
+            processor.fissionAlpha2MaxDeltaStrips = Int(sMaxFissionAlpha2FrontDeltaStrips) ?? 0
             processor.recoilFrontMaxDeltaStrips = Int(sMaxRecoilFrontDeltaStrips) ?? 0
             processor.recoilBackMaxDeltaStrips = Int(sMaxRecoilBackDeltaStrips) ?? 0
             processor.requiredFissionAlphaBack = requiredFissionAlphaBack
@@ -367,13 +376,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         Settings.setObject(trackBeamCurrent, forSetting: .TrackBeamCurrent)
         Settings.setObject(trackBeamBackground, forSetting: .TrackBeamBackground)
         Settings.setObject(trackBeamIntegral, forSetting: .TrackBeamIntegral)
-        Settings.setObject(startParticleControl.selectedSegment, forSetting: .SearchType)
-        Settings.setObject(searchAlpha2, forSetting: .SearchAlpha2)
-        Settings.setObject(Double(sMinAlpha2Energy), forSetting: .MinAlpha2Energy)
-        Settings.setObject(Double(sMaxAlpha2Energy), forSetting: .MaxAlpha2Energy)
-        Settings.setObject(Int(sMinAlpha2Time), forSetting: .MinAlpha2Time)
-        Settings.setObject(Int(sMaxAlpha2Time), forSetting: .MaxAlpha2Time)
-        Settings.setObject(Int(sMaxAlpha2FrontDeltaStrips), forSetting: .MaxAlpha2FrontDeltaStrips)
+        Settings.setObject(startParticleControl.selectedSegment, forSetting: .StartSearchType)
+        Settings.setObject(secondParticleControl.selectedSegment, forSetting: .SecondSearchType)
+        Settings.setObject(searchFissionAlpha2, forSetting: .SearchFissionAlpha2)
+        Settings.setObject(Double(sMinFissionAlpha2Energy), forSetting: .MinFissionAlpha2Energy)
+        Settings.setObject(Double(sMaxFissionAlpha2Energy), forSetting: .MaxFissionAlpha2Energy)
+        Settings.setObject(Int(sMinFissionAlpha2Time), forSetting: .MinFissionAlpha2Time)
+        Settings.setObject(Int(sMaxFissionAlpha2Time), forSetting: .MaxFissionAlpha2Time)
+        Settings.setObject(Int(sMaxFissionAlpha2FrontDeltaStrips), forSetting: .MaxFissionAlpha2FrontDeltaStrips)
         Settings.setObject(searchSpecialEvents, forSetting: .SearchSpecialEvents)
         Settings.setObject(specialEventIds, forSetting: .SpecialEventIds)
         Settings.setObject(selectedRecoilType.rawValue, forSetting: .SelectedRecoilType)
