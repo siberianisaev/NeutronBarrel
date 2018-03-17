@@ -45,6 +45,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     fileprivate var startDate: Date?
     fileprivate var timer: Timer?
     
+    @IBInspectable var sResultsFolderName = ""
     @IBInspectable var sMinFissionEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MinFissionEnergy)) // MeV
     @IBInspectable var sMaxFissionEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MaxFissionEnergy)) // MeV
     @IBInspectable var sMinRecoilEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MinRecoilEnergy)) // MeV
@@ -159,7 +160,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             requiredRecoilButton.state = NSControl.StateValue(rawValue: requiredRecoil ? 1 : 0)
             requiredRecoilButton.isEnabled = type != .recoil
             fissionAlpha1View.isHidden = type == .recoil
-            fissionAlpha1TextField.stringValue = (type != .alpha ? "Fission" : "Alpha1") + " Front"
+            fissionAlpha1TextField.stringValue = (type != .alpha ? "F" : "A") + "Front 1st"
             secondParticleChanged(nil)
         }
     }
@@ -168,7 +169,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         if let type = SearchType(rawValue: secondParticleControl.selectedSegment) {
             var title = "Search "
             if searchFissionAlpha2 {
-                title += (type != .alpha ? "Fission" : "Alpha") + " 2 Front"
+                title += (type != .alpha ? "F" : "A") + "Front 2nd"
             } else {
                 title += "2nd Particle"
             }
@@ -212,6 +213,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         } else {
             run = true
             
+            processor.resultsFolderName = sResultsFolderName
             processor.startParticleType = SearchType(rawValue: startParticleControl.selectedSegment) ?? .recoil
             processor.secondParticleType = SearchType(rawValue: secondParticleControl.selectedSegment) ?? .recoil
             processor.fissionAlphaFrontMinEnergy = Double(sMinFissionEnergy) ?? 0

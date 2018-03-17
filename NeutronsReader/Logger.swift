@@ -11,13 +11,16 @@ import Cocoa
 class Logger {
     
     fileprivate var resultsCSVWriter: CSVWriter
+    fileprivate var folderName: String
     fileprivate var timeStamp: String
     fileprivate var dateFormatter: DateFormatter?
     
-    init() {
+    init(folder: String) {
         let stamp = String.timeStamp()
+        let name = folder.count > 0 ? folder : stamp
+        folderName = name
         timeStamp = stamp
-        resultsCSVWriter = CSVWriter(path: FileManager.resultsFilePath(stamp))
+        resultsCSVWriter = CSVWriter(path: FileManager.resultsFilePath(stamp, folderName: name))
         let f = DateFormatter()
         f.calendar = Calendar(identifier: .gregorian)
         f.locale = Locale(identifier: "en_US_POSIX")
@@ -56,15 +59,15 @@ class Logger {
         for key in sortedKeys {
             string += "\(key)\t\(info[key]!)\n"
         }
-        logString(string, path: FileManager.multiplicityFilePath(timeStamp))
+        logString(string, path: FileManager.multiplicityFilePath(timeStamp, folderName: folderName))
     }
 
     func logCalibration(_ string: String) {
-        logString(string, path: FileManager.calibrationFilePath(timeStamp))
+        logString(string, path: FileManager.calibrationFilePath(timeStamp, folderName: folderName))
     }
     
     func logStatisticsEvent(_ eventDescription: String, date: Date? = nil) {
-        guard let path = FileManager.statisticsFilePath(timeStamp) else {
+        guard let path = FileManager.statisticsFilePath(timeStamp, folderName: folderName) else {
             return
         }
         var previous: String?
@@ -88,7 +91,7 @@ class Logger {
     }
     
     func logInput(_ image: NSImage?, onEnd: Bool) {
-        if let path = FileManager.inputFilePath(timeStamp, onEnd: onEnd) {
+        if let path = FileManager.inputFilePath(timeStamp, folderName: folderName, onEnd: onEnd) {
             let url = URL.init(fileURLWithPath: path)
             do {
                 try image?.imagePNGRepresentation()?.write(to: url)

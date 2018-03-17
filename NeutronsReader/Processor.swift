@@ -95,6 +95,7 @@ class Processor {
     fileprivate var logger: Logger!
     fileprivate var calibration = Calibration()
     
+    var resultsFolderName: String = ""
     var files = [String]()
     var fissionAlphaFrontMinEnergy: Double = 0
     var fissionAlphaFrontMaxEnergy: Double = 0
@@ -325,7 +326,7 @@ class Processor {
         totalEventNumber = 0
         clearActInfo()
         
-        logger = Logger()
+        logger = Logger(folder: resultsFolderName)
         logInput(onEnd: false)
         logCalibration()
         logResultsHeader()

@@ -27,34 +27,34 @@ class FileManager {
         }
     }
     
-    fileprivate class func desktopFilePathWithName(_ fileName: String, timeStamp: String?) -> String? {
+    fileprivate class func desktopFilePathWithName(_ fileName: String, folderName: String?) -> String? {
         var path = self.desktopFolder()
-        if let timeStamp = timeStamp {
-            path = path?.appendingPathComponent(timeStamp) as NSString?
+        if let folderName = folderName {
+            path = path?.appendingPathComponent(folderName) as NSString?
             createIfNeedsDirectoryAtPath(path as String?)
         }
         return path?.appendingPathComponent(fileName)
     }
     
-    class func resultsFilePath(_ timeStamp: String) -> String? {
-        return self.desktopFilePathWithName("results_\(timeStamp).csv", timeStamp: timeStamp)
+    class func resultsFilePath(_ timeStamp: String, folderName: String) -> String? {
+        return self.desktopFilePathWithName("results_\(timeStamp).csv", folderName: folderName)
     }
     
-    class func statisticsFilePath(_ timeStamp: String) -> String? {
-        return self.desktopFilePathWithName("statistics_\(timeStamp).txt", timeStamp: timeStamp)
+    class func statisticsFilePath(_ timeStamp: String, folderName: String) -> String? {
+        return self.desktopFilePathWithName("statistics_\(timeStamp).txt", folderName: folderName)
     }
     
-    class func inputFilePath(_ timeStamp: String, onEnd: Bool) -> String? {
+    class func inputFilePath(_ timeStamp: String, folderName: String, onEnd: Bool) -> String? {
         let postfix = onEnd ? "end" : "start"
-        return self.desktopFilePathWithName("input_\(timeStamp)_\(postfix).png", timeStamp: timeStamp)
+        return self.desktopFilePathWithName("input_\(timeStamp)_\(postfix).png", folderName: folderName)
     }
     
-    class func multiplicityFilePath(_ timeStamp: String) -> String? {
-        return self.desktopFilePathWithName("multiplicity_\(timeStamp).txt", timeStamp: timeStamp)
+    class func multiplicityFilePath(_ timeStamp: String, folderName: String) -> String? {
+        return self.desktopFilePathWithName("multiplicity_\(timeStamp).txt", folderName: folderName)
     }
     
-    class func calibrationFilePath(_ timeStamp: String) -> String? {
-        return self.desktopFilePathWithName("calibration_\(timeStamp).txt", timeStamp: timeStamp)
+    class func calibrationFilePath(_ timeStamp: String, folderName: String) -> String? {
+        return self.desktopFilePathWithName("calibration_\(timeStamp).txt", folderName: folderName)
     }
     
 }
