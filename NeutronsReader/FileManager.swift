@@ -36,25 +36,41 @@ class FileManager {
         return path?.appendingPathComponent(fileName)
     }
     
+    fileprivate class func fileName(prefix: String, folderName: String, timeStamp: String, postfix: String? = nil, fileExtension: String) -> String {
+        var components = [prefix, folderName]
+        if folderName != timeStamp {
+            components.append(timeStamp)
+        }
+        if let postfix = postfix {
+            components.append(postfix)
+        }
+        return components.joined(separator: "_") + "." + fileExtension
+    }
+    
     class func resultsFilePath(_ timeStamp: String, folderName: String) -> String? {
-        return self.desktopFilePathWithName("results_\(timeStamp).csv", folderName: folderName)
+        let name = fileName(prefix: "results", folderName: folderName, timeStamp: timeStamp, fileExtension: "csv")
+        return self.desktopFilePathWithName(name, folderName: folderName)
     }
     
     class func statisticsFilePath(_ timeStamp: String, folderName: String) -> String? {
-        return self.desktopFilePathWithName("statistics_\(timeStamp).txt", folderName: folderName)
+        let name = fileName(prefix: "statistics", folderName: folderName, timeStamp: timeStamp, fileExtension: "txt")
+        return self.desktopFilePathWithName(name, folderName: folderName)
     }
     
     class func inputFilePath(_ timeStamp: String, folderName: String, onEnd: Bool) -> String? {
         let postfix = onEnd ? "end" : "start"
-        return self.desktopFilePathWithName("input_\(timeStamp)_\(postfix).png", folderName: folderName)
+        let name = fileName(prefix: "input", folderName: folderName, timeStamp: timeStamp, postfix: postfix, fileExtension: "png")
+        return self.desktopFilePathWithName(name, folderName: folderName)
     }
     
     class func multiplicityFilePath(_ timeStamp: String, folderName: String) -> String? {
-        return self.desktopFilePathWithName("multiplicity_\(timeStamp).txt", folderName: folderName)
+        let name = fileName(prefix: "multiplicity", folderName: folderName, timeStamp: timeStamp, fileExtension: "txt")
+        return self.desktopFilePathWithName(name, folderName: folderName)
     }
     
     class func calibrationFilePath(_ timeStamp: String, folderName: String) -> String? {
-        return self.desktopFilePathWithName("calibration_\(timeStamp).txt", folderName: folderName)
+        let name = fileName(prefix: "calibration", folderName: folderName, timeStamp: timeStamp, fileExtension: "txt")
+        return self.desktopFilePathWithName(name, folderName: folderName)
     }
     
 }
