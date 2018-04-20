@@ -917,7 +917,7 @@ class Processor {
      We use special event 'dataProtocol.CycleTime' to calculate time from file start.
      */
     func absTime(_ relativeTime: CUnsignedShort, cycleEvent: Event) -> CUnsignedLongLong {
-        return (CUnsignedLongLong(cycleEvent.param3) << 16) + CUnsignedLongLong(cycleEvent.param1) + CUnsignedLongLong(relativeTime)
+        return (CUnsignedLongLong(cycleEvent.param3) << 16) + CUnsignedLongLong(relativeTime)
     }
     
     func focalStripConvertToFormat_1_N(_ strip_0_15: CUnsignedShort, eventId: CUnsignedShort) -> Int {
@@ -1102,6 +1102,7 @@ class Processor {
     fileprivate var keyColumnFissionAlpha2Energy = "E($2)"
     fileprivate var keyColumnFissionAlpha2Marker = "$2Marker"
     fileprivate var keyColumnFissionAlpha2DeltaTime = "dT($1-$2)"
+    fileprivate let keyColumnCurrentCycleEventTLo = "Cycle TLo"
     
     func logResultsHeader() {
         columns = [
@@ -1176,6 +1177,7 @@ class Processor {
                 keyColumnFissionAlpha2DeltaTime
                 ])
         }
+        columns.append(keyColumnCurrentCycleEventTLo)
         
         let symbol = startParticleType.symbol()
         let headers = columns.map { (s: String) -> String in
@@ -1360,6 +1362,8 @@ class Processor {
                     }
                 case keyColumnFissionAlpha2DeltaTime:
                     field = fissionAlphs2DeltaTime(row)
+                case keyColumnCurrentCycleEventTLo:
+                    field = String(mainCycleTimeEvent.param1)
                 default:
                     break
                 }
