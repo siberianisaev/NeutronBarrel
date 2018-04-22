@@ -73,7 +73,7 @@ class Processor {
     fileprivate var file: UnsafeMutablePointer<FILE>!
     fileprivate var dataProtocol: DataProtocol!
     fileprivate var stripsConfiguration = StripsConfiguration()
-    fileprivate var mainCycleTimeEvent = Event()
+    fileprivate var currentCycle: CUnsignedLongLong = 0
     fileprivate var totalEventNumber: CUnsignedLongLong = 0
     fileprivate var startEventTime: CUnsignedLongLong = 0
     fileprivate var neutronsSummPerAct: CUnsignedLongLong = 0
@@ -221,14 +221,14 @@ class Processor {
         }
     }
     
-    func search(directions: Set<SearchDirection>, startTime: CUnsignedLongLong, minDeltaTime: CUnsignedLongLong, maxDeltaTime: CUnsignedLongLong, maxDeltaTimeBackward: CUnsignedLongLong? = nil, useCycleTime: Bool, updateCycleEvent: Bool, checker: @escaping ((Event, CUnsignedLongLong, CLongLong, UnsafeMutablePointer<Bool>)->())) {
+    func search(directions: Set<SearchDirection>, startTime: CUnsignedLongLong, minDeltaTime: CUnsignedLongLong, maxDeltaTime: CUnsignedLongLong, maxDeltaTimeBackward: CUnsignedLongLong? = nil, useCycleTime: Bool, updateCycle: Bool, checker: @escaping ((Event, CUnsignedLongLong, CLongLong, UnsafeMutablePointer<Bool>)->())) {
         //TODO: search over many files
         let maxBackward = maxDeltaTimeBackward ?? maxDeltaTime
         if directions.contains(.backward) {
             var initial = fpos_t()
             fgetpos(file, &initial)
             
-            var cycleEvent = mainCycleTimeEvent
+            var cycle = currentCycle
             var current = Int(initial)
             while current > -1 {
                 current -= eventSize
@@ -239,13 +239,17 @@ class Processor {
                 
                 let id = Int(event.eventId)
                 if id == dataProtocol.CycleTime {
-                    cycleEvent = event
+                    if cycle > 0 {
+                        cycle -= 1
+                    } else {
+                        print("Backward search time broken!")
+                    }
                     continue
                 }
                 
                 if dataProtocol.isValidEventIdForTimeCheck(id) {
                     let relativeTime = event.param1
-                    let time = useCycleTime ? absTime(relativeTime, cycleEvent: cycleEvent) : CUnsignedLongLong(relativeTime)
+                    let time = useCycleTime ? absTime(relativeTime, cycle: cycle) : CUnsignedLongLong(relativeTime)
                     let deltaTime = (time < startTime) ? (startTime - time) : (time - startTime)
                     if deltaTime <= maxBackward {
                         if deltaTime < minDeltaTime {
@@ -267,23 +271,23 @@ class Processor {
         }
         
         if directions.contains(.forward) {
-            var cycleEvent = mainCycleTimeEvent
+            var cycle = currentCycle
             while feof(file) != 1 {
                 var event = Event()
                 fread(&event, eventSize, 1, file)
                 
                 let id = Int(event.eventId)
                 if id == dataProtocol.CycleTime {
-                    if updateCycleEvent {
-                        mainCycleTimeEvent = event
+                    if updateCycle {
+                        currentCycle += 1
                     }
-                    cycleEvent = event
+                    cycle += 1
                     continue
                 }
                 
                 if dataProtocol.isValidEventIdForTimeCheck(id) {
                     let relativeTime = event.param1
-                    let time = useCycleTime ? absTime(relativeTime, cycleEvent: cycleEvent) : CUnsignedLongLong(relativeTime)
+                    let time = useCycleTime ? absTime(relativeTime, cycle: cycle) : CUnsignedLongLong(relativeTime)
                     let deltaTime = (time < startTime) ? (startTime - time) : (time - startTime)
                     if deltaTime <= maxDeltaTime {
                         if deltaTime < minDeltaTime {
@@ -395,10 +399,8 @@ class Processor {
     
     func mainCycleEventCheck(_ event: Event) {
         if Int(event.eventId) == dataProtocol.CycleTime {
-            mainCycleTimeEvent = event
-        }
-        
-        if isFront(event, type: startParticleType) {
+            currentCycle += 1
+        } else if isFront(event, type: startParticleType) {
             startEventTime = UInt64(event.param1)
             
             let isRecoilSearch = startParticleType == recoilType
@@ -496,7 +498,7 @@ class Processor {
     
     func findFissionsAlphaWell() {
         let directions: Set<SearchDirection> = [.backward, .forward]
-        search(directions: directions, startTime: startEventTime, minDeltaTime: 0, maxDeltaTime: fissionAlphaMaxTime, maxDeltaTimeBackward: fissionAlphaWellBackwardMaxTime, useCycleTime: false, updateCycleEvent: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
+        search(directions: directions, startTime: startEventTime, minDeltaTime: 0, maxDeltaTime: fissionAlphaMaxTime, maxDeltaTimeBackward: fissionAlphaWellBackwardMaxTime, useCycleTime: false, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
             if self.isFissionOrAlphaWell(event) {
                 self.storeFissionAlphaWell(event)
             }
@@ -505,7 +507,7 @@ class Processor {
     
     func findNeutrons() {
         let directions: Set<SearchDirection> = [.forward]
-        search(directions: directions, startTime: startEventTime, minDeltaTime: 0, maxDeltaTime: maxNeutronTime, useCycleTime: false, updateCycleEvent: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
+        search(directions: directions, startTime: startEventTime, minDeltaTime: 0, maxDeltaTime: maxNeutronTime, useCycleTime: false, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
             if self.dataProtocol.Neutrons == Int(event.eventId) {
                 self.neutronsSummPerAct += 1
             }
@@ -514,7 +516,7 @@ class Processor {
     
     func findNeutronsBack() {
         let directions: Set<SearchDirection> = [.backward]
-        search(directions: directions, startTime: startEventTime, minDeltaTime: 0, maxDeltaTime: 10, useCycleTime: false, updateCycleEvent: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
+        search(directions: directions, startTime: startEventTime, minDeltaTime: 0, maxDeltaTime: 10, useCycleTime: false, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
             if self.dataProtocol.Neutrons == Int(event.eventId) {
                 self.neutronsBackwardSummPerAct += 1
             }
@@ -526,7 +528,7 @@ class Processor {
         fgetpos(file, &initial)
         var current = initial
         let directions: Set<SearchDirection> = [.forward, .backward]
-        search(directions: directions, startTime: startEventTime, minDeltaTime: 0, maxDeltaTime: fissionAlphaMaxTime, useCycleTime: false, updateCycleEvent: true) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
+        search(directions: directions, startTime: startEventTime, minDeltaTime: 0, maxDeltaTime: fissionAlphaMaxTime, useCycleTime: false, updateCycle: true) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
             // File-position check is used for skip Fission/Alpha First event!
             fgetpos(self.file, &current)
             if current != initial && self.isFront(event, type: self.startParticleType) && self.isFissionStripNearToFirstFissionFront(event) {
@@ -537,7 +539,7 @@ class Processor {
     
     func findVETO() {
         let directions: Set<SearchDirection> = [.forward, .backward]
-        search(directions: directions, startTime: startEventTime, minDeltaTime: 0, maxDeltaTime: maxVETOTime, useCycleTime: false, updateCycleEvent: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
+        search(directions: directions, startTime: startEventTime, minDeltaTime: 0, maxDeltaTime: maxVETOTime, useCycleTime: false, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
             if self.isVETOEvent(event) {
                 self.storeVETO(event, deltaTime: deltaTime)
             }
@@ -546,7 +548,7 @@ class Processor {
     
     func findGamma() {
         let directions: Set<SearchDirection> = [.forward, .backward]
-        search(directions: directions, startTime: startEventTime, minDeltaTime: 0, maxDeltaTime: maxGammaTime, useCycleTime: false, updateCycleEvent: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
+        search(directions: directions, startTime: startEventTime, minDeltaTime: 0, maxDeltaTime: maxGammaTime, useCycleTime: false, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
             if self.isGammaEvent(event) {
                 self.storeGamma(event, deltaTime: deltaTime)
             }
@@ -555,7 +557,7 @@ class Processor {
     
     func findFissionsAlphaBack() {
         let directions: Set<SearchDirection> = [.backward, .forward]
-        search(directions: directions, startTime: startEventTime, minDeltaTime: 0, maxDeltaTime: fissionAlphaMaxTime, maxDeltaTimeBackward: fissionAlphaBackBackwardMaxTime, useCycleTime: false, updateCycleEvent: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
+        search(directions: directions, startTime: startEventTime, minDeltaTime: 0, maxDeltaTime: fissionAlphaMaxTime, maxDeltaTimeBackward: fissionAlphaBackBackwardMaxTime, useCycleTime: false, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
             let type = self.startParticleType
             if self.isBack(event, type: type) {
                 let energy = self.getEnergy(event, type: type)
@@ -586,9 +588,9 @@ class Processor {
     }
     
     func findRecoil() {
-        let fissionTime = absTime(CUnsignedShort(startEventTime), cycleEvent:mainCycleTimeEvent)
+        let fissionTime = absTime(CUnsignedShort(startEventTime), cycle: currentCycle)
         let directions: Set<SearchDirection> = [.backward]
-        search(directions: directions, startTime: fissionTime, minDeltaTime: recoilMinTime, maxDeltaTime: recoilMaxTime, useCycleTime: true, updateCycleEvent: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
+        search(directions: directions, startTime: fissionTime, minDeltaTime: recoilMinTime, maxDeltaTime: recoilMaxTime, useCycleTime: true, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
             let isRecoil = self.isFront(event, type: self.recoilType)
             if isRecoil {
                 let isNear = self.isEventFrontStripNearToFirstFissionAlphaFront(event, maxDelta: Int(self.recoilFrontMaxDeltaStrips))
@@ -632,7 +634,7 @@ class Processor {
     func findTOFForRecoil(_ eventRecoil: Event, timeRecoil: CUnsignedLongLong) -> Bool {
         var found: Bool = false
         let directions: Set<SearchDirection> = [.forward, .backward]
-        search(directions: directions, startTime: timeRecoil, minDeltaTime: 0, maxDeltaTime: maxTOFTime, useCycleTime: false, updateCycleEvent: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
+        search(directions: directions, startTime: timeRecoil, minDeltaTime: 0, maxDeltaTime: maxTOFTime, useCycleTime: false, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
             if self.dataProtocol.TOF == Int(event.eventId) {
                 let value = self.valueTOF(event, eventRecoil: eventRecoil)
                 if value >= self.minTOFValue && value <= self.maxTOFValue {
@@ -648,7 +650,7 @@ class Processor {
     func findRecoilBack(_ timeRecoilFront: CUnsignedLongLong) -> Bool {
         var found: Bool = false
         let directions: Set<SearchDirection> = [.backward, .forward]
-        search(directions: directions, startTime: timeRecoilFront, minDeltaTime: 0, maxDeltaTime: recoilBackMaxTime, maxDeltaTimeBackward: recoilBackBackwardMaxTime, useCycleTime: false, updateCycleEvent: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
+        search(directions: directions, startTime: timeRecoilFront, minDeltaTime: 0, maxDeltaTime: recoilBackMaxTime, maxDeltaTimeBackward: recoilBackBackwardMaxTime, useCycleTime: false, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
             if self.isBack(event, type: self.recoilType) {
                 if (self.requiredRecoilBack && self.startParticleType != self.recoilType) {
                     found = self.isRecoilBackStripNearToFissionAlphaBack(event)
@@ -710,9 +712,9 @@ class Processor {
     }
     
     func findFissionAlpha2() {
-        let alphaTime = absTime(CUnsignedShort(startEventTime), cycleEvent: mainCycleTimeEvent)
+        let alphaTime = absTime(CUnsignedShort(startEventTime), cycle: currentCycle)
         let directions: Set<SearchDirection> = [.backward, .forward]
-        search(directions: directions, startTime: alphaTime, minDeltaTime: fissionAlpha2MinTime, maxDeltaTime: fissionAlpha2MaxTime, useCycleTime: true, updateCycleEvent: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
+        search(directions: directions, startTime: alphaTime, minDeltaTime: fissionAlpha2MinTime, maxDeltaTime: fissionAlpha2MaxTime, useCycleTime: true, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
             let type = self.secondParticleType
             if self.isFront(event, type: type) {
                 let energy = self.getEnergy(event, type: type)
@@ -916,8 +918,8 @@ class Processor {
      Time stored in events are relative time (timer from 0x0000 to xFFFF mks resettable on overflow).
      We use special event 'dataProtocol.CycleTime' to calculate time from file start.
      */
-    func absTime(_ relativeTime: CUnsignedShort, cycleEvent: Event) -> CUnsignedLongLong {
-        return (CUnsignedLongLong(cycleEvent.param3) << 16) + CUnsignedLongLong(relativeTime)
+    func absTime(_ relativeTime: CUnsignedShort, cycle: CUnsignedLongLong) -> CUnsignedLongLong {
+        return (cycle << 16) + CUnsignedLongLong(relativeTime)
     }
     
     func focalStripConvertToFormat_1_N(_ strip_0_15: CUnsignedShort, eventId: CUnsignedShort) -> Int {
@@ -1102,7 +1104,6 @@ class Processor {
     fileprivate var keyColumnFissionAlpha2Energy = "E($2)"
     fileprivate var keyColumnFissionAlpha2Marker = "$2Marker"
     fileprivate var keyColumnFissionAlpha2DeltaTime = "dT($1-$2)"
-    fileprivate let keyColumnCurrentCycleEventTLo = "Cycle TLo"
     
     func logResultsHeader() {
         columns = [
@@ -1177,7 +1178,6 @@ class Processor {
                 keyColumnFissionAlpha2DeltaTime
                 ])
         }
-        columns.append(keyColumnCurrentCycleEventTLo)
         
         let symbol = startParticleType.symbol()
         let headers = columns.map { (s: String) -> String in
@@ -1362,8 +1362,6 @@ class Processor {
                     }
                 case keyColumnFissionAlpha2DeltaTime:
                     field = fissionAlphs2DeltaTime(row)
-                case keyColumnCurrentCycleEventTLo:
-                    field = String(mainCycleTimeEvent.param1)
                 default:
                     break
                 }
