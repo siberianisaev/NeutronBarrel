@@ -79,6 +79,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             setupAlpha2FormView()
         }
     }
+    @IBInspectable var sBeamEnergyMin = String(format: "%.1f", Settings.getDoubleSetting(.BeamEnergyMin)) // MeV
+    @IBInspectable var sBeamEnergyMax = String(format: "%.1f", Settings.getDoubleSetting(.BeamEnergyMax)) // MeV
     @IBInspectable var sMinFissionAlpha2Energy = String(format: "%.1f", Settings.getDoubleSetting(.MinFissionAlpha2Energy)) // MeV
     @IBInspectable var sMaxFissionAlpha2Energy = String(format: "%.1f", Settings.getDoubleSetting(.MaxFissionAlpha2Energy)) // MeV
     @IBInspectable var sMinFissionAlpha2Time = String(format: "%d", Settings.getIntSetting(.MinFissionAlpha2Time)) // mks
@@ -259,6 +261,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             processor.trackBeamIntegral = trackBeamIntegral
             processor.recoilType = selectedRecoilType
             processor.searchWell = searchWell
+            processor.beamEnergyMin = Float(sBeamEnergyMin) ?? 0
+            processor.beamEnergyMax = Float(sBeamEnergyMax) ?? 0
             let ids = specialEventIds.components(separatedBy: ",").map({ (s: String) -> Int in
                 return Int(s) ?? 0
             }).filter({ (i: Int) -> Bool in
@@ -362,6 +366,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         Settings.setObject(Double(sMaxFissionEnergy), forSetting: .MaxFissionEnergy)
         Settings.setObject(Double(sMinRecoilEnergy), forSetting: .MinRecoilEnergy)
         Settings.setObject(Double(sMaxRecoilEnergy), forSetting: .MaxRecoilEnergy)
+        Settings.setObject(Float(sBeamEnergyMin), forSetting: .BeamEnergyMin)
+        Settings.setObject(Float(sBeamEnergyMax), forSetting: .BeamEnergyMax)
         Settings.setObject(Int(sMinTOFValue), forSetting: .MinTOFValue)
         Settings.setObject(Int(sMaxTOFValue), forSetting: .MaxTOFValue)
         Settings.setObject(tofUnitsControl.selectedSegment, forSetting: .TOFUnits)

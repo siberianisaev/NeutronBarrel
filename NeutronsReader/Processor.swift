@@ -104,6 +104,8 @@ class Processor {
     var recoilFrontMaxEnergy: Double = 0
     var minTOFValue: Double = 0
     var maxTOFValue: Double = 0
+    var beamEnergyMin: Float = 0
+    var beamEnergyMax: Float = 0
     var recoilMinTime: CUnsignedLongLong = 0
     var recoilMaxTime: CUnsignedLongLong = 0
     var recoilBackMaxTime: CUnsignedLongLong = 0
@@ -511,7 +513,9 @@ class Processor {
         switch Int(event.eventId) {
         case dataProtocol.BeamEnergy:
             let e = getFloatValueFrom(event: event)
-            folder.handleEnergy(e)
+            if e >= beamEnergyMin && e <= beamEnergyMax {
+                folder.handleEnergy(e)
+            }
         case dataProtocol.BeamIntegral:
             folder.handleIntergal(event)
         default:

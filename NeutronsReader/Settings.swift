@@ -57,7 +57,9 @@ class Settings {
         SpecialEventIds = "SpecialEventIds",
         SelectedRecoilType = "SelectedRecoilType",
         SearchFissionBackByFact = "SearchFissionBackByFact",
-        SearchWell = "SearchWell"
+        SearchWell = "SearchWell",
+        BeamEnergyMin = "BeamEnergyMin",
+        BeamEnergyMax = "BeamEnergyMax"
         
         func key() -> String {
             return "Setting.\(self.rawValue)"
@@ -97,6 +99,10 @@ class Settings {
         }
         
         switch setting {
+        case .BeamEnergyMin:
+            return 200
+        case .BeamEnergyMax:
+            return 300
         case .MinFissionEnergy, .MaxFissionAlpha2Energy, .MaxRecoilEnergy:
             return 20
         case .MaxFissionAlpha2Time, .MaxFissionEnergy, .MaxRecoilTime:
