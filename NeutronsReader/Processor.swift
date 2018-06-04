@@ -388,7 +388,6 @@ class Processor {
                     self?.delegate?.incrementProgress(progressForOneFile)
                 }
             }
-            
         }
         
         logInput(onEnd: true)
@@ -397,7 +396,7 @@ class Processor {
             logger.logMultiplicity(neutronsMultiplicityTotal)
         }
         
-        print("\n\nDone!\nTime took: \((NSApplication.shared.delegate as! AppDelegate).timeTook())")
+        print("\nDone!\nTime took: \((NSApplication.shared.delegate as! AppDelegate).timeTook())")
     }
     
     func calculateTotalEventNumberForFile(_ file: UnsafeMutablePointer<FILE>!) -> CUnsignedLongLong {

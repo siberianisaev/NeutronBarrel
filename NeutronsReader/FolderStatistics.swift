@@ -16,15 +16,14 @@ class FolderStatistics {
     var end: Date?
     
     var meanEnergy: Float {
-        let count = energy.count
-        if count == 0 {
+        if energyCount == 0 {
             return 0
         } else {
-            let total = energy.reduce(0, +)
-            return Float(Double(total)/Double(count))
+            return Float(energySumm/Double(energyCount))
         }
     }
-    fileprivate var energy = [Float]() // TODO: could be large, need optimisation
+    fileprivate var energySumm: Double = 0
+    fileprivate var energyCount: CUnsignedLong = 0
     
     var integral: Float {
         if let e = integralEvent {
@@ -51,7 +50,8 @@ class FolderStatistics {
     }
     
     func handleEnergy(_ value: Float) {
-        energy.append(value)
+        energySumm += Double(value)
+        energyCount += 1
     }
     
     func handleIntergal(_ event: Event) {
