@@ -53,7 +53,7 @@ class FileManager {
     }
     
     class func statisticsFilePath(_ timeStamp: String, folderName: String) -> String? {
-        let name = fileName(prefix: "statistics", folderName: folderName, timeStamp: timeStamp, fileExtension: "txt")
+        let name = fileName(prefix: "statistics", folderName: folderName, timeStamp: timeStamp, fileExtension: "csv")
         return self.desktopFilePathWithName(name, folderName: folderName)
     }
     

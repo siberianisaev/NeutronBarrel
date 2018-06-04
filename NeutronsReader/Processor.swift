@@ -340,9 +340,18 @@ class Processor {
         }
         let progressForOneFile: Double = 100.0 / Double(files.count)
         
+        var folders = [String: FolderStatistics]()
+        
         for fp in files {
             let path = fp as NSString
-            logger.logStatisticsEvent("Start file \(path)", date: Date())
+            let folderName = FolderStatistics.folderNameFromPath(fp) ?? ""
+            var folder = folders[folderName]
+            if nil == folder {
+                folder = FolderStatistics(folderName: folderName)
+                folders[folderName] = folder
+            }
+            folder!.startFile(fp)
+            
             autoreleasepool {
                 file = fopen(path.utf8String, "rb")
                 let name = path.lastPathComponent
@@ -364,7 +373,7 @@ class Processor {
                                     stop.initialize(to: true)
                                 }
                             }
-                            self?.mainCycleEventCheck(event)
+                            self?.mainCycleEventCheck(event, folder: folder!)
                         }
                     })
                 } else {
@@ -373,21 +382,22 @@ class Processor {
                 
                 totalEventNumber += calculateTotalEventNumberForFile(file)
                 fclose(file)
+                folder!.endFile(fp)
                 
                 DispatchQueue.main.async { [weak self] in
                     self?.delegate?.incrementProgress(progressForOneFile)
                 }
             }
-            logger.logStatisticsEvent("End file \(path)", date: Date())
+            
         }
         
         logInput(onEnd: true)
-        let appDelegate = NSApplication.shared.delegate as! AppDelegate
-        logger.logStatisticsEvent("Done!\nTime took: \(appDelegate.timeTook())")
-        
+        logger.logStatistics(folders)
         if searchNeutrons {
             logger.logMultiplicity(neutronsMultiplicityTotal)
         }
+        
+        print("\n\nDone!\nTime took: \((NSApplication.shared.delegate as! AppDelegate).timeTook())")
     }
     
     func calculateTotalEventNumberForFile(_ file: UnsafeMutablePointer<FILE>!) -> CUnsignedLongLong {
@@ -397,7 +407,7 @@ class Processor {
         return CUnsignedLongLong(lastNumber)/CUnsignedLongLong(eventSize)
     }
     
-    func mainCycleEventCheck(_ event: Event) {
+    func mainCycleEventCheck(_ event: Event, folder: FolderStatistics) {
         if Int(event.eventId) == dataProtocol.CycleTime {
             currentCycle += 1
         } else if isFront(event, type: startParticleType) {
@@ -484,7 +494,7 @@ class Processor {
             // Important: this search must be last because we don't do file repositioning here
             // Summ(FFron or AFron)
             if !isRecoilSearch && summarizeFissionsAlphaFront {
-                findNextFissionsAlphaFront()
+                findNextFissionsAlphaFront(folder)
             }
             
             if searchNeutrons {
@@ -493,6 +503,20 @@ class Processor {
             
             logActResults()
             clearActInfo()
+        } else {
+            updateFolderStatistics(event, folder: folder)
+        }
+    }
+    
+    fileprivate func updateFolderStatistics(_ event: Event, folder: FolderStatistics) {
+        switch Int(event.eventId) {
+        case dataProtocol.BeamEnergy:
+            let e = getFloatValueFrom(event: event)
+            folder.handleEnergy(e)
+        case dataProtocol.BeamIntegral:
+            folder.handleIntergal(event)
+        default:
+            break
         }
     }
     
@@ -523,7 +547,7 @@ class Processor {
         }
     }
     
-    func findNextFissionsAlphaFront() {
+    func findNextFissionsAlphaFront(_ folder: FolderStatistics) {
         var initial = fpos_t()
         fgetpos(file, &initial)
         var current = initial
@@ -533,6 +557,8 @@ class Processor {
             fgetpos(self.file, &current)
             if current != initial && self.isFront(event, type: self.startParticleType) && self.isFissionStripNearToFirstFissionFront(event) {
                 self.storeFissionAlphaFront(event, deltaTime: deltaTime)
+            } else {
+                self.updateFolderStatistics(event, folder: folder)
             }
         }
     }
@@ -858,7 +884,7 @@ class Processor {
     
     // MARK: - Helpers
     
-    fileprivate func getFloatValueFrom(event: Event) -> Float {
+    func getFloatValueFrom(event: Event) -> Float {
         let hi = event.param3
         let lo = event.param2
         let word = (UInt32(hi) << 16) + UInt32(lo)
@@ -1183,8 +1209,8 @@ class Processor {
         let headers = columns.map { (s: String) -> String in
             return s.replacingOccurrences(of: "$", with: symbol)
             } as [AnyObject]
-        logger.writeLineOfFields(headers)
-        logger.finishLine() // +1 line padding
+        logger.writeResultsLineOfFields(headers)
+        logger.finishResultsLine() // +1 line padding
     }
     
     func logActResults() {
@@ -1365,9 +1391,9 @@ class Processor {
                 default:
                     break
                 }
-                logger.writeField(field as AnyObject)
+                logger.writeResultsField(field as AnyObject)
             }
-            logger.finishLine()
+            logger.finishResultsLine()
         }
     }
     
@@ -1400,3 +1426,4 @@ class Processor {
     }
     
 }
+

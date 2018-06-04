@@ -11,6 +11,7 @@ import Cocoa
 class Logger {
     
     fileprivate var resultsCSVWriter: CSVWriter
+    fileprivate var statisticsCSVWriter: CSVWriter
     fileprivate var folderName: String
     fileprivate var timeStamp: String
     fileprivate var dateFormatter: DateFormatter?
@@ -21,6 +22,7 @@ class Logger {
         folderName = name
         timeStamp = stamp
         resultsCSVWriter = CSVWriter(path: FileManager.resultsFilePath(stamp, folderName: name))
+        statisticsCSVWriter = CSVWriter(path: FileManager.statisticsFilePath(stamp, folderName: name))
         let f = DateFormatter()
         f.calendar = Calendar(identifier: .gregorian)
         f.locale = Locale(identifier: "en_US_POSIX")
@@ -29,15 +31,15 @@ class Logger {
         dateFormatter = f
     }
     
-    func writeLineOfFields(_ fields: [AnyObject]?) {
+    func writeResultsLineOfFields(_ fields: [AnyObject]?) {
         resultsCSVWriter.writeLineOfFields(fields)
     }
     
-    func writeField(_ field: AnyObject?) {
+    func writeResultsField(_ field: AnyObject?) {
         resultsCSVWriter.writeField(field)
     }
     
-    func finishLine() {
+    func finishResultsLine() {
         resultsCSVWriter.finishLine()
     }
     
@@ -66,28 +68,29 @@ class Logger {
         logString(string, path: FileManager.calibrationFilePath(timeStamp, folderName: folderName))
     }
     
-    func logStatisticsEvent(_ eventDescription: String, date: Date? = nil) {
-        guard let path = FileManager.statisticsFilePath(timeStamp, folderName: folderName) else {
-            return
-        }
-        var previous: String?
-        if Foundation.FileManager.default.fileExists(atPath: path) {
-            do {
-                previous = try String.init(contentsOfFile: path, encoding: String.Encoding.utf8)
-            } catch {
-                print(error)
-            }
-        }
+    func logStatistics(_ folders: [String: FolderStatistics]) {
+        let headers = ["Folder", "Start Time", "End Time", "Start File", "End File", "Mean Energy", "Integral"]
+        statisticsCSVWriter.writeLineOfFields(headers as [AnyObject])
+        statisticsCSVWriter.finishLine()
         
-        var current = ""
-        if let previous = previous {
-            current += "\(previous)\n"
+        let statistics = Array(folders.values).sorted { (fs1: FolderStatistics, fs2: FolderStatistics) -> Bool in
+            return (fs1.name ?? "") < (fs2.name ?? "")
         }
-        current += "\(eventDescription)"
-        if let date = date, let sDate = dateFormatter?.string(from: date) {
-            current += "   \(sDate)"
+        func stringFrom(_ date: Date?) -> String {
+            return dateFormatter?.string(from: date ?? Date()) ?? ""
         }
-        logString(current, path: path)
+        for folder in statistics {
+            let name = folder.name ?? ""
+            let start = stringFrom(folder.start)
+            let end = stringFrom(folder.end)
+            let startFile = folder.files.first ?? ""
+            let endFile = folder.files.last ?? ""
+            let energy = String(folder.meanEnergy)
+            let integral = String(folder.integral)
+            let values = [name, start, end, startFile, endFile, energy, integral] as [AnyObject]
+            statisticsCSVWriter.writeLineOfFields(values)
+        }
+        statisticsCSVWriter.finishLine()
     }
     
     func logInput(_ image: NSImage?, onEnd: Bool) {
