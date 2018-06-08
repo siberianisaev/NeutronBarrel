@@ -355,12 +355,17 @@ class Processor {
             folder!.startFile(fp)
             
             autoreleasepool {
-                file = fopen(path.utf8String, "rb")
+                let pathUtf8 = path.utf8String
+                file = fopen(pathUtf8, "rb")
                 let name = path.lastPathComponent
                 currentFileName = name
                 DispatchQueue.main.async { [weak self] in
                     self?.delegate?.startProcessingFile(name)
                 }
+                
+                var fileStat = stat()
+                stat(pathUtf8, &fileStat)
+                // print("File statistics: \(fileStat)")
                 
                 if let file = file {
                     setvbuf(file, nil, _IONBF, 0) // disable buffering
