@@ -384,7 +384,7 @@ class Processor {
                 
                 totalEventNumber += calculateTotalEventNumberForFile(file)
                 fclose(file)
-                folder!.endFile(fp)
+                folder!.endFile(fp, secondsFromFirstFileStart: TimeInterval(absTime(0, cycle: currentCycle)) * 1e-6)
                 
                 DispatchQueue.main.async { [weak self] in
                     self?.delegate?.incrementProgress(progressForOneFile)

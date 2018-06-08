@@ -16,6 +16,7 @@ class FolderStatistics {
     var lastFileCreatedOn: Date?
     var calculationsStart: Date?
     var calculationsEnd: Date?
+    var secondsFromStart: TimeInterval = 0
     
     var meanEnergy: Float {
         if energyCount == 0 {
@@ -55,9 +56,10 @@ class FolderStatistics {
         }
     }
     
-    func endFile(_ path: String) {
+    func endFile(_ path: String, secondsFromFirstFileStart: TimeInterval) {
         calculationsEnd = Date()
         lastFileCreatedOn = creationDate(for: path)
+        secondsFromStart = secondsFromFirstFileStart
     }
     
     func handleEnergy(_ value: Float) {
