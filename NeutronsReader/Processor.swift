@@ -355,17 +355,12 @@ class Processor {
             folder!.startFile(fp)
             
             autoreleasepool {
-                let pathUtf8 = path.utf8String
-                file = fopen(pathUtf8, "rb")
+                file = fopen(path.utf8String, "rb")
                 let name = path.lastPathComponent
                 currentFileName = name
                 DispatchQueue.main.async { [weak self] in
                     self?.delegate?.startProcessingFile(name)
                 }
-                
-                var fileStat = stat()
-                stat(pathUtf8, &fileStat)
-                // print("File statistics: \(fileStat)")
                 
                 if let file = file {
                     setvbuf(file, nil, _IONBF, 0) // disable buffering
@@ -403,7 +398,7 @@ class Processor {
             logger.logMultiplicity(neutronsMultiplicityTotal)
         }
         
-        print("\nDone!\nTime took: \((NSApplication.shared.delegate as! AppDelegate).timeTook())")
+        print("\nDone!\nTotal time took: \((NSApplication.shared.delegate as! AppDelegate).timeTook())")
     }
     
     func calculateTotalEventNumberForFile(_ file: UnsafeMutablePointer<FILE>!) -> CUnsignedLongLong {

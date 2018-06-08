@@ -42,6 +42,14 @@ extension TimeInterval {
     
 }
 
+extension timespec {
+    
+    func toTimeInterval() -> TimeInterval {
+        return TimeInterval(tv_sec) + TimeInterval(tv_nsec) * 1e-9
+    }
+    
+}
+
 extension String {
     
     static func timeStamp() -> String {

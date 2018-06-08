@@ -12,8 +12,10 @@ class FolderStatistics {
     
     var name: String?
     
-    var start: Date?
-    var end: Date?
+    var firstFileCreatedOn: Date?
+    var lastFileCreatedOn: Date?
+    var calculationsStart: Date?
+    var calculationsEnd: Date?
     
     var meanEnergy: Float {
         if energyCount == 0 {
@@ -36,17 +38,26 @@ class FolderStatistics {
     
     var files = [String]()
     
+    fileprivate func creationDate(for file: String) -> Date {
+        var fileStat = stat()
+        stat((file as NSString).utf8String, &fileStat)
+//        print("File statistics: \(fileStat)")
+        return Date(timeIntervalSince1970: fileStat.st_birthtimespec.toTimeInterval())
+    }
+    
     func startFile(_ path: String) {
         if let name = path.components(separatedBy: "/").last {
             files.append(name)
             if files.count == 1 {
-                start = Date()
+                calculationsStart = Date()
+                firstFileCreatedOn = creationDate(for: path)
             }
         }
     }
     
     func endFile(_ path: String) {
-        end = Date()
+        calculationsEnd = Date()
+        lastFileCreatedOn = creationDate(for: path)
     }
     
     func handleEnergy(_ value: Float) {
