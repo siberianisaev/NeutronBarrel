@@ -16,6 +16,7 @@
         <customObject id="Voe-Tx-rLC" customClass="AppDelegate" customModule="NeutronsReader" customModuleProvider="target">
             <connections>
                 <outlet property="activity" destination="efV-t0-MaY" id="ciS-Dq-IAJ"/>
+                <outlet property="buttonCancel" destination="V2o-l5-6Zu" id="MSh-Oc-jmm"/>
                 <outlet property="buttonRemoveCalibration" destination="rja-9L-ulo" id="TEl-kG-EKz"/>
                 <outlet property="buttonRemoveStripsConfiguration" destination="foC-YW-3m0" id="Y9M-AJ-qGT"/>
                 <outlet property="buttonRun" destination="qly-NS-Sdp" id="1Eb-jQ-x3Y"/>
@@ -32,6 +33,7 @@
                 <outlet property="labelFirstDataFileName" destination="J6K-fY-yds" id="rBP-e7-aMJ"/>
                 <outlet property="labelProcessingFileName" destination="om2-lB-Td7" id="9Qy-lb-5Yx"/>
                 <outlet property="labelStripsConfigurationFileName" destination="w7E-g3-GjX" id="YeS-RA-o96"/>
+                <outlet property="labelTask" destination="6KL-ec-xMC" id="JoK-ln-CWA"/>
                 <outlet property="labelTotalTime" destination="2Ow-sS-sNC" id="iCu-v0-Oyd"/>
                 <outlet property="labelVersion" destination="Jp9-e5-rtp" id="VMy-Bb-Lfg"/>
                 <outlet property="progressIndicator" destination="jRb-3t-cUo" id="TTa-Pk-rm0"/>
@@ -1509,7 +1511,7 @@
                     <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="qly-NS-Sdp">
                         <rect key="frame" x="20" y="122" width="200" height="40"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                        <buttonCell key="cell" type="bevel" title="Start" bezelStyle="regularSquare" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="PA6-u2-fjf">
+                        <buttonCell key="cell" type="bevel" title="Run" bezelStyle="regularSquare" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="PA6-u2-fjf">
                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                             <font key="font" size="15" name="HelveticaNeue"/>
                         </buttonCell>
@@ -1551,6 +1553,15 @@
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="file name" placeholderString="file name" id="pGS-b6-EQJ">
                             <font key="font" metaFont="system"/>
                             <color key="textColor" white="0.33333333333333331" alpha="1" colorSpace="calibratedWhite"/>
+                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                    </textField>
+                    <textField hidden="YES" horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="6KL-ec-xMC">
+                        <rect key="frame" x="20" y="73" width="200" height="19"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="center" title="Task" placeholderString="Task" id="VyL-FH-l4Y">
+                            <font key="font" metaFont="systemBold"/>
+                            <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
                             <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>
                     </textField>
@@ -1827,6 +1838,17 @@
                             </binding>
                         </connections>
                     </textField>
+                    <button hidden="YES" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="V2o-l5-6Zu">
+                        <rect key="frame" x="226" y="131" width="20" height="21"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="bevel" bezelStyle="rounded" image="trash" imagePosition="only" alignment="center" imageScaling="proportionallyDown" inset="2" id="ik4-59-df5">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="system" size="8"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="cancel:" target="Voe-Tx-rLC" id="3Db-qr-leN"/>
+                        </connections>
+                    </button>
                 </subviews>
             </view>
             <point key="canvasLocation" x="595" y="547"/>

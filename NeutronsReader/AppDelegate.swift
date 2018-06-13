@@ -21,6 +21,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBOutlet weak var labelFirstDataFileName: NSTextField!
     @IBOutlet weak var labelCalibrationFileName: NSTextField!
     @IBOutlet weak var labelStripsConfigurationFileName: NSTextField!
+    @IBOutlet weak var labelTask: NSTextField!
     @IBOutlet weak var startParticleControl: NSSegmentedControl!
     @IBOutlet weak var secondParticleControl: NSSegmentedControl!
     @IBOutlet weak var tofUnitsControl: NSSegmentedControl!
@@ -40,6 +41,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBOutlet weak var fissionAlpha2Button: NSButton!
     @IBOutlet weak var buttonRemoveCalibration: NSButton!
     @IBOutlet weak var buttonRemoveStripsConfiguration: NSButton!
+    @IBOutlet weak var buttonCancel: NSButton!
     
     fileprivate var viewerController: ViewerController?
     fileprivate var startDate: Date?
@@ -138,7 +140,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             setSelected(false, indicator: i)
         }
         showAppVersion()
-        run = false
+        updateRunState()
     }
     
     @IBAction func removeCalibration(_ sender: Any) {
@@ -207,90 +209,127 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         indicator?.stringValue = selected ? "✓" : "×"
     }
     
-    @IBAction func start(_ sender: AnyObject?) {
-        let processor = Processor.singleton
-        if run {
-            processor.stop()
-            run = false
-        } else {
-            run = true
-            
-            processor.resultsFolderName = sResultsFolderName
-            processor.startParticleType = SearchType(rawValue: startParticleControl.selectedSegment) ?? .recoil
-            processor.secondParticleType = SearchType(rawValue: secondParticleControl.selectedSegment) ?? .recoil
-            processor.fissionAlphaFrontMinEnergy = Double(sMinFissionEnergy) ?? 0
-            processor.fissionAlphaFrontMaxEnergy = Double(sMaxFissionEnergy) ?? 0
-            processor.searchFissionAlphaBackByFact = searchFissionBackByFact
-            processor.fissionAlphaMaxTime = UInt64(sMaxFissionTime) ?? 0
-            processor.fissionAlphaBackBackwardMaxTime = UInt64(sMaxFissionBackBackwardTime) ?? 0
-            processor.fissionAlphaWellBackwardMaxTime = UInt64(sMaxFissionWellBackwardTime) ?? 0
-            processor.summarizeFissionsAlphaFront = summarizeFissionsFront
-            processor.searchFissionAlpha2 = searchFissionAlpha2
-            processor.fissionAlpha2MinEnergy = Double(sMinFissionAlpha2Energy) ?? 0
-            processor.fissionAlpha2MaxEnergy = Double(sMaxFissionAlpha2Energy) ?? 0
-            processor.fissionAlpha2MinTime = UInt64(sMinFissionAlpha2Time) ?? 0
-            processor.fissionAlpha2MaxTime = UInt64(sMaxFissionAlpha2Time) ?? 0
-            processor.fissionAlpha2MaxDeltaStrips = Int(sMaxFissionAlpha2FrontDeltaStrips) ?? 0
-            processor.recoilFrontMaxDeltaStrips = Int(sMaxRecoilFrontDeltaStrips) ?? 0
-            processor.recoilBackMaxDeltaStrips = Int(sMaxRecoilBackDeltaStrips) ?? 0
-            processor.requiredFissionAlphaBack = requiredFissionAlphaBack
-            processor.requiredRecoilBack = requiredRecoilBack
-            processor.requiredRecoil = requiredRecoil
-            processor.recoilFrontMinEnergy = Double(sMinRecoilEnergy) ?? 0
-            processor.recoilFrontMaxEnergy = Double(sMaxRecoilEnergy) ?? 0
-            processor.recoilMinTime = UInt64(sMinRecoilTime) ?? 0
-            processor.recoilMaxTime = UInt64(sMaxRecoilTime) ?? 0
-            processor.recoilBackMaxTime = UInt64(sMaxRecoilBackTime) ?? 0
-            processor.recoilBackBackwardMaxTime = UInt64(sMaxRecoilBackBackwardTime) ?? 0
-            processor.minTOFValue = Double(sMinTOFValue) ?? 0
-            processor.maxTOFValue = Double(sMaxTOFValue) ?? 0
-            processor.unitsTOF = tofUnitsControl.selectedSegment == 0 ? .channels : .nanoseconds
-            processor.maxTOFTime = UInt64(sMaxTOFTime) ?? 0
-            processor.requiredTOF = requiredTOF
-            processor.maxVETOTime = UInt64(sMaxVETOTime) ?? 0
-            processor.requiredVETO = requiredVETO
-            processor.maxGammaTime = UInt64(sMaxGammaTime) ?? 0
-            processor.requiredGamma = requiredGamma
-            processor.searchNeutrons = searchNeutrons
-            processor.maxNeutronTime = UInt64(sMaxNeutronTime) ?? 0
-            processor.searchSpecialEvents = searchSpecialEvents
-            processor.searchVETO = searchVETO
-            processor.trackBeamEnergy = trackBeamEnergy
-            processor.trackBeamCurrent = trackBeamCurrent
-            processor.trackBeamBackground = trackBeamBackground
-            processor.trackBeamIntegral = trackBeamIntegral
-            processor.recoilType = selectedRecoilType
-            processor.searchWell = searchWell
-            processor.beamEnergyMin = Float(sBeamEnergyMin) ?? 0
-            processor.beamEnergyMax = Float(sBeamEnergyMax) ?? 0
-            let ids = specialEventIds.components(separatedBy: ",").map({ (s: String) -> Int in
-                return Int(s) ?? 0
-            }).filter({ (i: Int) -> Bool in
-                return i > 0
-            })
-            processor.specialEventIds = ids
-            processor.processDataWith(aDelegate: self, completion: { [weak self] in
-                self?.run = false
-            })
-        }
+    @IBAction func cancel(_ sender: Any) {
+        operationQueue.cancelAllOperations()
+        Processor.singleton.stop()
+        operationIds.removeAll()
+        updateRunState()
     }
     
-    fileprivate var run: Bool = false {
-        didSet {
-            buttonRun.title = run ? "Stop" : "Start"
-            if run {
-                activity?.startAnimation(self)
-                startTimer()
-                progressIndicator?.startAnimation(self)
-                saveSettings()
+    @IBAction func start(_ sender: AnyObject?) {
+        let sc = SearchCriteria()
+        sc.resultsFolderName = sResultsFolderName
+        sc.startParticleType = SearchType(rawValue: startParticleControl.selectedSegment) ?? .recoil
+        sc.secondParticleType = SearchType(rawValue: secondParticleControl.selectedSegment) ?? .recoil
+        sc.fissionAlphaFrontMinEnergy = Double(sMinFissionEnergy) ?? 0
+        sc.fissionAlphaFrontMaxEnergy = Double(sMaxFissionEnergy) ?? 0
+        sc.searchFissionAlphaBackByFact = searchFissionBackByFact
+        sc.fissionAlphaMaxTime = UInt64(sMaxFissionTime) ?? 0
+        sc.fissionAlphaBackBackwardMaxTime = UInt64(sMaxFissionBackBackwardTime) ?? 0
+        sc.fissionAlphaWellBackwardMaxTime = UInt64(sMaxFissionWellBackwardTime) ?? 0
+        sc.summarizeFissionsAlphaFront = summarizeFissionsFront
+        sc.searchFissionAlpha2 = searchFissionAlpha2
+        sc.fissionAlpha2MinEnergy = Double(sMinFissionAlpha2Energy) ?? 0
+        sc.fissionAlpha2MaxEnergy = Double(sMaxFissionAlpha2Energy) ?? 0
+        sc.fissionAlpha2MinTime = UInt64(sMinFissionAlpha2Time) ?? 0
+        sc.fissionAlpha2MaxTime = UInt64(sMaxFissionAlpha2Time) ?? 0
+        sc.fissionAlpha2MaxDeltaStrips = Int(sMaxFissionAlpha2FrontDeltaStrips) ?? 0
+        sc.recoilFrontMaxDeltaStrips = Int(sMaxRecoilFrontDeltaStrips) ?? 0
+        sc.recoilBackMaxDeltaStrips = Int(sMaxRecoilBackDeltaStrips) ?? 0
+        sc.requiredFissionAlphaBack = requiredFissionAlphaBack
+        sc.requiredRecoilBack = requiredRecoilBack
+        sc.requiredRecoil = requiredRecoil
+        sc.recoilFrontMinEnergy = Double(sMinRecoilEnergy) ?? 0
+        sc.recoilFrontMaxEnergy = Double(sMaxRecoilEnergy) ?? 0
+        sc.recoilMinTime = UInt64(sMinRecoilTime) ?? 0
+        sc.recoilMaxTime = UInt64(sMaxRecoilTime) ?? 0
+        sc.recoilBackMaxTime = UInt64(sMaxRecoilBackTime) ?? 0
+        sc.recoilBackBackwardMaxTime = UInt64(sMaxRecoilBackBackwardTime) ?? 0
+        sc.minTOFValue = Double(sMinTOFValue) ?? 0
+        sc.maxTOFValue = Double(sMaxTOFValue) ?? 0
+        sc.unitsTOF = tofUnitsControl.selectedSegment == 0 ? .channels : .nanoseconds
+        sc.maxTOFTime = UInt64(sMaxTOFTime) ?? 0
+        sc.requiredTOF = requiredTOF
+        sc.maxVETOTime = UInt64(sMaxVETOTime) ?? 0
+        sc.requiredVETO = requiredVETO
+        sc.maxGammaTime = UInt64(sMaxGammaTime) ?? 0
+        sc.requiredGamma = requiredGamma
+        sc.searchNeutrons = searchNeutrons
+        sc.maxNeutronTime = UInt64(sMaxNeutronTime) ?? 0
+        sc.searchSpecialEvents = searchSpecialEvents
+        sc.searchVETO = searchVETO
+        sc.trackBeamEnergy = trackBeamEnergy
+        sc.trackBeamCurrent = trackBeamCurrent
+        sc.trackBeamBackground = trackBeamBackground
+        sc.trackBeamIntegral = trackBeamIntegral
+        sc.recoilType = selectedRecoilType
+        sc.searchWell = searchWell
+        sc.beamEnergyMin = Float(sBeamEnergyMin) ?? 0
+        sc.beamEnergyMax = Float(sBeamEnergyMax) ?? 0
+        let ids = specialEventIds.components(separatedBy: ",").map({ (s: String) -> Int in
+            return Int(s) ?? 0
+        }).filter({ (i: Int) -> Bool in
+            return i > 0
+        })
+        sc.specialEventIds = ids
+        
+        let id = UUID().uuidString
+        operationIds.insert(id)
+        updateRunState()
+        
+        let operation = BlockOperation()
+        operation.queuePriority = .high
+        operation.name = id
+        weak var weakOperation = operation
+        operation.addExecutionBlock({
+            if weakOperation?.isCancelled == false {
+                let processor = Processor.singleton
+                processor.criteria = sc
+                processor.processDataWith(aDelegate: self, completion: { [weak self] in
+                    self?.operationIds.remove(id)
+                    self?.updateRunState()
+                })
             } else {
-                activity?.stopAnimation(self)
-                stopTimer()
-                progressIndicator.stopAnimation(self)
-                progressIndicator?.doubleValue = 0.0
+                DispatchQueue.main.async(execute: { [weak self] in
+                    self?.operationIds.remove(id)
+                    self?.updateRunState()
+                })
             }
-            startParticleControl?.isEnabled = !run
-            tofUnitsControl?.isEnabled = !run
+        })
+        operationQueue.addOperation(operation)
+    }
+    
+    fileprivate var operationIds = Set<String>()
+    
+    fileprivate var _operationQueue: OperationQueue?
+    fileprivate var operationQueue: OperationQueue {
+        if let oq = self._operationQueue {
+            return oq
+        }
+        let op = OperationQueue()
+        op.maxConcurrentOperationCount = 1
+        op.name = "Processing queue"
+        self._operationQueue = op
+        return op
+    }
+    
+    fileprivate func updateRunState() {
+        let count = operationIds.count
+        let run = count > 0
+        buttonCancel.isHidden = !run
+        labelTask.isHidden = !run
+        let s = count == 1 ? "" : "s"
+        labelTask.stringValue = "\(count) task\(s) processing"
+        progressIndicator?.doubleValue = 0.0
+        if run {
+            activity?.startAnimation(self)
+            startTimer()
+            progressIndicator?.startAnimation(self)
+            saveSettings()
+        } else {
+            activity?.stopAnimation(self)
+            stopTimer()
+            progressIndicator.stopAnimation(self)
         }
     }
     
@@ -339,6 +378,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     
     fileprivate func startTimer() {
         startDate = Date()
+        timer?.invalidate()
         timer = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(AppDelegate.incrementTotalTime), userInfo: nil, repeats: true)
         labelTotalTime?.stringValue = ""
         labelTotalTime?.isHidden = false

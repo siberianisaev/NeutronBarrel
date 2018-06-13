@@ -95,60 +95,8 @@ class Processor {
     fileprivate var logger: Logger!
     fileprivate var calibration = Calibration()
     
-    var resultsFolderName: String = ""
     var files = [String]()
-    var fissionAlphaFrontMinEnergy: Double = 0
-    var fissionAlphaFrontMaxEnergy: Double = 0
-    var searchFissionAlphaBackByFact: Bool = true
-    var recoilFrontMinEnergy: Double = 0
-    var recoilFrontMaxEnergy: Double = 0
-    var minTOFValue: Double = 0
-    var maxTOFValue: Double = 0
-    var beamEnergyMin: Float = 0
-    var beamEnergyMax: Float = 0
-    var recoilMinTime: CUnsignedLongLong = 0
-    var recoilMaxTime: CUnsignedLongLong = 0
-    var recoilBackMaxTime: CUnsignedLongLong = 0
-    var fissionAlphaMaxTime: CUnsignedLongLong = 0
-    var recoilBackBackwardMaxTime: CUnsignedLongLong = 0
-    var fissionAlphaBackBackwardMaxTime: CUnsignedLongLong = 0
-    var fissionAlphaWellBackwardMaxTime: CUnsignedLongLong = 0
-    var maxTOFTime: CUnsignedLongLong = 0
-    var maxVETOTime: CUnsignedLongLong = 0
-    var maxGammaTime: CUnsignedLongLong = 0
-    var maxNeutronTime: CUnsignedLongLong = 0
-    var recoilFrontMaxDeltaStrips: Int = 0
-    var recoilBackMaxDeltaStrips: Int = 0
-    var summarizeFissionsAlphaFront = false
-    var requiredFissionAlphaBack = false
-    var requiredRecoilBack = false
-    var requiredRecoil = false
-    var requiredGamma = false
-    var requiredTOF = false
-    var requiredVETO = false
-    var searchVETO = false
-    var trackBeamEnergy = false
-    var trackBeamCurrent = false
-    var trackBeamBackground = false
-    var trackBeamIntegral = false
-    var searchNeutrons = false
-    var searchFissionAlpha2 = false
-    var fissionAlpha2MinEnergy: Double = 0
-    var fissionAlpha2MaxEnergy: Double = 0
-    var fissionAlpha2MinTime: CUnsignedLongLong = 0
-    var fissionAlpha2MaxTime: CUnsignedLongLong = 0
-    var fissionAlpha2MaxDeltaStrips: Int = 0
-    var searchSpecialEvents = false
-    var searchWell = true
-    var specialEventIds = [Int]()
-    var startParticleType: SearchType = .fission
-    var secondParticleType: SearchType = .fission
-    var unitsTOF: TOFUnits = .channels
-    var recoilType: SearchType = .recoil
-    fileprivate var heavyType: SearchType {
-        return recoilType == .recoil ? .heavy : .recoil
-    }
-    
+    var criteria = SearchCriteria()
     weak var delegate: ProcessorDelegate?
     
     class var singleton : Processor {
@@ -165,12 +113,9 @@ class Processor {
     func processDataWith(aDelegate: ProcessorDelegate, completion: @escaping (()->())) {
         delegate = aDelegate
         stoped = false
-        
-        DispatchQueue.global(qos: .default).async { [weak self] in
-            self?.processData()
-            DispatchQueue.main.async {
-                completion()
-            }
+        processData()
+        DispatchQueue.main.async {
+            completion()
         }
     }
     
@@ -332,7 +277,7 @@ class Processor {
         totalEventNumber = 0
         clearActInfo()
         
-        logger = Logger(folder: resultsFolderName)
+        logger = Logger(folder: criteria.resultsFolderName)
         logInput(onEnd: false)
         logCalibration()
         logResultsHeader()
@@ -394,7 +339,7 @@ class Processor {
         
         logInput(onEnd: true)
         logger.logStatistics(folders)
-        if searchNeutrons {
+        if criteria.searchNeutrons {
             logger.logMultiplicity(neutronsMultiplicityTotal)
         }
         
@@ -411,17 +356,17 @@ class Processor {
     func mainCycleEventCheck(_ event: Event, folder: FolderStatistics) {
         if Int(event.eventId) == dataProtocol.CycleTime {
             currentCycle += 1
-        } else if isFront(event, type: startParticleType) {
+        } else if isFront(event, type: criteria.startParticleType) {
             startEventTime = UInt64(event.param1)
             
-            let isRecoilSearch = startParticleType == recoilType
+            let isRecoilSearch = criteria.startParticleType == criteria.recoilType
             if isRecoilSearch {
                 if !validateRecoil(event, deltaTime: 0) {
                     return
                 }
             } else { // FFron or AFron
-                let energy = getEnergy(event, type: startParticleType)
-                if energy < fissionAlphaFrontMinEnergy || energy > fissionAlphaFrontMaxEnergy {
+                let energy = getEnergy(event, type: criteria.startParticleType)
+                if energy < criteria.fissionAlphaFrontMinEnergy || energy > criteria.fissionAlphaFrontMaxEnergy {
                     return
                 }
                 storeFissionAlphaFront(event, deltaTime: 0)
@@ -430,16 +375,16 @@ class Processor {
             var position = fpos_t()
             fgetpos(file, &position)
             
-            if searchVETO {
+            if criteria.searchVETO {
                 findVETO()
                 fseek(file, Int(position), SEEK_SET)
-                if requiredVETO && 0 == vetoPerAct.count {
+                if criteria.requiredVETO && 0 == vetoPerAct.count {
                     clearActInfo()
                     return
                 }
             }
             
-            if searchFissionAlpha2 {
+            if criteria.searchFissionAlpha2 {
                 findFissionAlpha2()
                 fseek(file, Int(position), SEEK_SET)
                 if 0 == fissionsAlpha2FrontPerAct.count {
@@ -450,7 +395,7 @@ class Processor {
             
             findGamma()
             fseek(file, Int(position), SEEK_SET)
-            if requiredGamma && 0 == gammaPerAct.count {
+            if criteria.requiredGamma && 0 == gammaPerAct.count {
                 clearActInfo()
                 return
             }
@@ -458,7 +403,7 @@ class Processor {
             if !isRecoilSearch {
                 findFissionsAlphaBack()
                 fseek(file, Int(position), SEEK_SET)
-                if requiredFissionAlphaBack && 0 == fissionsAlphaPerAct.matchFor(side: .back).count {
+                if criteria.requiredFissionAlphaBack && 0 == fissionsAlphaPerAct.matchFor(side: .back).count {
                     clearActInfo()
                     return
                 }
@@ -466,25 +411,25 @@ class Processor {
                 // Search them only after search all FBack/ABack
                 findRecoil()
                 fseek(file, Int(position), SEEK_SET)
-                if requiredRecoil && 0 == recoilsPerAct.matchFor(side: .front).count {
+                if criteria.requiredRecoil && 0 == recoilsPerAct.matchFor(side: .front).count {
                     clearActInfo()
                     return
                 }
                 
-                if searchWell {
+                if criteria.searchWell {
                     findFissionsAlphaWell()
                     fseek(file, Int(position), SEEK_SET)
                 }
             }
             
-            if searchNeutrons {
+            if criteria.searchNeutrons {
                 findNeutrons()
                 fseek(file, Int(position), SEEK_SET)
                 findNeutronsBack()
                 fseek(file, Int(position), SEEK_SET)
             }
             
-            if searchSpecialEvents {
+            if criteria.searchSpecialEvents {
                 findSpecialEvents()
                 fseek(file, Int(position), SEEK_SET)
             }
@@ -494,11 +439,11 @@ class Processor {
             
             // Important: this search must be last because we don't do file repositioning here
             // Summ(FFron or AFron)
-            if !isRecoilSearch && summarizeFissionsAlphaFront {
+            if !isRecoilSearch && criteria.summarizeFissionsAlphaFront {
                 findNextFissionsAlphaFront(folder)
             }
             
-            if searchNeutrons {
+            if criteria.searchNeutrons {
                 updateNeutronsMultiplicity()
             }
             
@@ -513,7 +458,7 @@ class Processor {
         switch Int(event.eventId) {
         case dataProtocol.BeamEnergy:
             let e = getFloatValueFrom(event: event)
-            if e >= beamEnergyMin && e <= beamEnergyMax {
+            if e >= criteria.beamEnergyMin && e <= criteria.beamEnergyMax {
                 folder.handleEnergy(e)
             }
         case dataProtocol.BeamIntegral:
@@ -525,7 +470,7 @@ class Processor {
     
     func findFissionsAlphaWell() {
         let directions: Set<SearchDirection> = [.backward, .forward]
-        search(directions: directions, startTime: startEventTime, minDeltaTime: 0, maxDeltaTime: fissionAlphaMaxTime, maxDeltaTimeBackward: fissionAlphaWellBackwardMaxTime, useCycleTime: false, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
+        search(directions: directions, startTime: startEventTime, minDeltaTime: 0, maxDeltaTime: criteria.fissionAlphaMaxTime, maxDeltaTimeBackward: criteria.fissionAlphaWellBackwardMaxTime, useCycleTime: false, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
             if self.isFissionOrAlphaWell(event) {
                 self.storeFissionAlphaWell(event)
             }
@@ -534,7 +479,7 @@ class Processor {
     
     func findNeutrons() {
         let directions: Set<SearchDirection> = [.forward]
-        search(directions: directions, startTime: startEventTime, minDeltaTime: 0, maxDeltaTime: maxNeutronTime, useCycleTime: false, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
+        search(directions: directions, startTime: startEventTime, minDeltaTime: 0, maxDeltaTime: criteria.maxNeutronTime, useCycleTime: false, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
             if self.dataProtocol.Neutrons == Int(event.eventId) {
                 self.neutronsSummPerAct += 1
             }
@@ -555,10 +500,10 @@ class Processor {
         fgetpos(file, &initial)
         var current = initial
         let directions: Set<SearchDirection> = [.forward, .backward]
-        search(directions: directions, startTime: startEventTime, minDeltaTime: 0, maxDeltaTime: fissionAlphaMaxTime, useCycleTime: false, updateCycle: true) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
+        search(directions: directions, startTime: startEventTime, minDeltaTime: 0, maxDeltaTime: criteria.fissionAlphaMaxTime, useCycleTime: false, updateCycle: true) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
             // File-position check is used for skip Fission/Alpha First event!
             fgetpos(self.file, &current)
-            if current != initial && self.isFront(event, type: self.startParticleType) && self.isFissionStripNearToFirstFissionFront(event) {
+            if current != initial && self.isFront(event, type: self.criteria.startParticleType) && self.isFissionStripNearToFirstFissionFront(event) {
                 self.storeFissionAlphaFront(event, deltaTime: deltaTime)
             } else {
                 self.updateFolderStatistics(event, folder: folder)
@@ -568,7 +513,7 @@ class Processor {
     
     func findVETO() {
         let directions: Set<SearchDirection> = [.forward, .backward]
-        search(directions: directions, startTime: startEventTime, minDeltaTime: 0, maxDeltaTime: maxVETOTime, useCycleTime: false, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
+        search(directions: directions, startTime: startEventTime, minDeltaTime: 0, maxDeltaTime: criteria.maxVETOTime, useCycleTime: false, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
             if self.isVETOEvent(event) {
                 self.storeVETO(event, deltaTime: deltaTime)
             }
@@ -577,7 +522,7 @@ class Processor {
     
     func findGamma() {
         let directions: Set<SearchDirection> = [.forward, .backward]
-        search(directions: directions, startTime: startEventTime, minDeltaTime: 0, maxDeltaTime: maxGammaTime, useCycleTime: false, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
+        search(directions: directions, startTime: startEventTime, minDeltaTime: 0, maxDeltaTime: criteria.maxGammaTime, useCycleTime: false, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
             if self.isGammaEvent(event) {
                 self.storeGamma(event, deltaTime: deltaTime)
             }
@@ -586,11 +531,11 @@ class Processor {
     
     func findFissionsAlphaBack() {
         let directions: Set<SearchDirection> = [.backward, .forward]
-        search(directions: directions, startTime: startEventTime, minDeltaTime: 0, maxDeltaTime: fissionAlphaMaxTime, maxDeltaTimeBackward: fissionAlphaBackBackwardMaxTime, useCycleTime: false, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
-            let type = self.startParticleType
+        search(directions: directions, startTime: startEventTime, minDeltaTime: 0, maxDeltaTime: criteria.fissionAlphaMaxTime, maxDeltaTimeBackward: criteria.fissionAlphaBackBackwardMaxTime, useCycleTime: false, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
+            let type = self.criteria.startParticleType
             if self.isBack(event, type: type) {
                 let energy = self.getEnergy(event, type: type)
-                if self.searchFissionAlphaBackByFact || (energy >= self.fissionAlphaFrontMinEnergy && energy <= self.fissionAlphaFrontMaxEnergy) {
+                if self.criteria.searchFissionAlphaBackByFact || (energy >= self.criteria.fissionAlphaFrontMinEnergy && energy <= self.criteria.fissionAlphaFrontMaxEnergy) {
                     self.storeFissionAlphaRecoilBack(event, deltaTime: deltaTime)
                 }
             }
@@ -610,7 +555,7 @@ class Processor {
                 let s0_15 = item[kStrip0_15] as! CUnsignedShort
                 let s1_N = self.stripConvertToFormat_1_N(s0_15, encoder: e, side: side)
                 // TODO: new input field for _fissionBackMaxDeltaStrips
-                return abs(Int32(strip1_N) - Int32(s1_N)) <= Int32(recoilBackMaxDeltaStrips)
+                return abs(Int32(strip1_N) - Int32(s1_N)) <= Int32(criteria.recoilBackMaxDeltaStrips)
             })
             match.setItems(array as! [[String : Any]])
         }
@@ -619,10 +564,10 @@ class Processor {
     func findRecoil() {
         let fissionTime = absTime(CUnsignedShort(startEventTime), cycle: currentCycle)
         let directions: Set<SearchDirection> = [.backward]
-        search(directions: directions, startTime: fissionTime, minDeltaTime: recoilMinTime, maxDeltaTime: recoilMaxTime, useCycleTime: true, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
-            let isRecoil = self.isFront(event, type: self.recoilType)
+        search(directions: directions, startTime: fissionTime, minDeltaTime: criteria.recoilMinTime, maxDeltaTime: criteria.recoilMaxTime, useCycleTime: true, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
+            let isRecoil = self.isFront(event, type: self.criteria.recoilType)
             if isRecoil {
-                let isNear = self.isEventFrontStripNearToFirstFissionAlphaFront(event, maxDelta: Int(self.recoilFrontMaxDeltaStrips))
+                let isNear = self.isEventFrontStripNearToFirstFissionAlphaFront(event, maxDelta: Int(self.criteria.recoilFrontMaxDeltaStrips))
                 if isNear {
                     self.validateRecoil(event, deltaTime: deltaTime)
                 }
@@ -631,8 +576,8 @@ class Processor {
     }
     
     @discardableResult fileprivate func validateRecoil(_ event: Event, deltaTime: CLongLong) -> Bool {
-        let energy = self.getEnergy(event, type: recoilType)
-        if energy >= self.recoilFrontMinEnergy && energy <= self.recoilFrontMaxEnergy {
+        let energy = self.getEnergy(event, type: criteria.recoilType)
+        if energy >= criteria.recoilFrontMinEnergy && energy <= criteria.recoilFrontMaxEnergy {
             var position = fpos_t()
             fgetpos(self.file, &position)
             let t = CUnsignedLongLong(event.param1)
@@ -640,20 +585,20 @@ class Processor {
             let isRecoilBackFounded = self.findRecoilBack(t)
             fseek(self.file, Int(position), SEEK_SET)
             if isRecoilBackFounded {
-                if self.startParticleType == recoilType {
+                if criteria.startParticleType == criteria.recoilType {
                     self.storeFissionAlphaRecoilBack(event, deltaTime: deltaTime)
                 }
-            } else if (self.requiredRecoilBack) {
+            } else if (criteria.requiredRecoilBack) {
                 return false
             }
             
             let isTOFFounded = self.findTOFForRecoil(event, timeRecoil: t)
             fseek(self.file, Int(position), SEEK_SET)
-            if (self.requiredTOF && !isTOFFounded) {
+            if (criteria.requiredTOF && !isTOFFounded) {
                 return false
             }
             
-            let heavy = self.getEnergy(event, type: heavyType)
+            let heavy = self.getEnergy(event, type: criteria.heavyType)
             self.storeRecoil(event, energy: energy, heavy: heavy, deltaTime: deltaTime)
             return true
         }
@@ -663,10 +608,10 @@ class Processor {
     func findTOFForRecoil(_ eventRecoil: Event, timeRecoil: CUnsignedLongLong) -> Bool {
         var found: Bool = false
         let directions: Set<SearchDirection> = [.forward, .backward]
-        search(directions: directions, startTime: timeRecoil, minDeltaTime: 0, maxDeltaTime: maxTOFTime, useCycleTime: false, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
+        search(directions: directions, startTime: timeRecoil, minDeltaTime: 0, maxDeltaTime: criteria.maxTOFTime, useCycleTime: false, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
             if self.dataProtocol.TOF == Int(event.eventId) {
                 let value = self.valueTOF(event, eventRecoil: eventRecoil)
-                if value >= self.minTOFValue && value <= self.maxTOFValue {
+                if value >= self.criteria.minTOFValue && value <= self.criteria.maxTOFValue {
                     self.storeRealTOFValue(value, deltaTime: deltaTime)
                     found = true
                     stop.initialize(to: true)
@@ -679,9 +624,9 @@ class Processor {
     func findRecoilBack(_ timeRecoilFront: CUnsignedLongLong) -> Bool {
         var found: Bool = false
         let directions: Set<SearchDirection> = [.backward, .forward]
-        search(directions: directions, startTime: timeRecoilFront, minDeltaTime: 0, maxDeltaTime: recoilBackMaxTime, maxDeltaTimeBackward: recoilBackBackwardMaxTime, useCycleTime: false, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
-            if self.isBack(event, type: self.recoilType) {
-                if (self.requiredRecoilBack && self.startParticleType != self.recoilType) {
+        search(directions: directions, startTime: timeRecoilFront, minDeltaTime: 0, maxDeltaTime: criteria.recoilBackMaxTime, maxDeltaTimeBackward: criteria.recoilBackBackwardMaxTime, useCycleTime: false, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
+            if self.isBack(event, type: self.criteria.recoilType) {
+                if (self.criteria.requiredRecoilBack && self.criteria.startParticleType != self.criteria.recoilType) {
                     found = self.isRecoilBackStripNearToFissionAlphaBack(event)
                 } else {
                     found = true
@@ -693,7 +638,7 @@ class Processor {
     }
     
     func findSpecialEvents() {
-        var setIds = Set<Int>(specialEventIds)
+        var setIds = Set<Int>(criteria.specialEventIds)
         if setIds.count == 0 {
             return
         }
@@ -712,16 +657,16 @@ class Processor {
     
     func findBeamEvents() {
         var setIds = Set<Int>()
-        if trackBeamEnergy {
+        if criteria.trackBeamEnergy {
             setIds.insert(dataProtocol.BeamEnergy)
         }
-        if trackBeamCurrent {
+        if criteria.trackBeamCurrent {
             setIds.insert(dataProtocol.BeamCurrent)
         }
-        if trackBeamBackground {
+        if criteria.trackBeamBackground {
             setIds.insert(dataProtocol.BeamBackground)
         }
-        if trackBeamIntegral {
+        if criteria.trackBeamIntegral {
             setIds.insert(dataProtocol.BeamIntegral)
         }
         if setIds.count == 0 {
@@ -743,11 +688,11 @@ class Processor {
     func findFissionAlpha2() {
         let alphaTime = absTime(CUnsignedShort(startEventTime), cycle: currentCycle)
         let directions: Set<SearchDirection> = [.backward, .forward]
-        search(directions: directions, startTime: alphaTime, minDeltaTime: fissionAlpha2MinTime, maxDeltaTime: fissionAlpha2MaxTime, useCycleTime: true, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
-            let type = self.secondParticleType
+        search(directions: directions, startTime: alphaTime, minDeltaTime: criteria.fissionAlpha2MinTime, maxDeltaTime: criteria.fissionAlpha2MaxTime, useCycleTime: true, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
+            let type = self.criteria.secondParticleType
             if self.isFront(event, type: type) {
                 let energy = self.getEnergy(event, type: type)
-                if energy >= self.fissionAlpha2MinEnergy && energy <= self.fissionAlpha2MaxEnergy && self.isEventFrontStripNearToFirstFissionAlphaFront(event, maxDelta: Int(self.fissionAlpha2MaxDeltaStrips)) {
+                if energy >= self.criteria.fissionAlpha2MinEnergy && energy <= self.criteria.fissionAlpha2MaxEnergy && self.isEventFrontStripNearToFirstFissionAlphaFront(event, maxDelta: Int(self.criteria.fissionAlpha2MaxDeltaStrips)) {
                     self.storeFissionAlpha2(event, deltaTime: deltaTime)
                 }
             }
@@ -760,7 +705,7 @@ class Processor {
         let id = event.eventId
         let encoder = dataProtocol.encoderForEventId(Int(id))
         let strip_0_15 = event.param2 >> 12
-        let energy = getEnergy(event, type: startParticleType)
+        let energy = getEnergy(event, type: criteria.startParticleType)
         var info = [kEncoder: encoder,
                     kStrip0_15: strip_0_15,
                     kEnergy: energy,
@@ -790,10 +735,10 @@ class Processor {
     
     func storeFissionAlphaFront(_ event: Event, deltaTime: CLongLong) {
         let id = event.eventId
-        let channel = getChannel(event, type: startParticleType)
+        let channel = getChannel(event, type: criteria.startParticleType)
         let encoder = dataProtocol.encoderForEventId(Int(id))
         let strip_0_15 = event.param2 >> 12
-        let energy = getEnergy(event, type: startParticleType)
+        let energy = getEnergy(event, type: criteria.startParticleType)
         var info = [kEncoder: encoder,
                     kStrip0_15: strip_0_15,
                     kChannel: channel,
@@ -826,7 +771,7 @@ class Processor {
     }
     
     func storeFissionAlpha2(_ event: Event, deltaTime: CLongLong) {
-        let energy = getEnergy(event, type: secondParticleType)
+        let energy = getEnergy(event, type: criteria.secondParticleType)
         let info = [kEnergy: energy,
                     kDeltaTime: deltaTime,
                     kEventNumber: eventNumber(),
@@ -851,7 +796,7 @@ class Processor {
     }
     
     func storeFissionAlphaWell(_ event: Event) {
-        let energy = getEnergy(event, type: startParticleType)
+        let energy = getEnergy(event, type: criteria.startParticleType)
         let encoder = dataProtocol.encoderForEventId(Int(event.eventId))
         let strip_0_15 = event.param2 >> 12
         let info = [kEncoder: encoder,
@@ -917,7 +862,7 @@ class Processor {
             let strip_0_15_back_fission = fissionBackInfo[kStrip0_15] as! CUnsignedShort
             let encoder_back_fission = fissionBackInfo[kEncoder] as! CUnsignedShort
             let strip_1_N_back_fission = stripConvertToFormat_1_N(strip_0_15_back_fission, encoder: encoder_back_fission, side: .back)
-            return abs(Int32(strip_1_N) - Int32(strip_1_N_back_fission)) <= Int32(recoilBackMaxDeltaStrips)
+            return abs(Int32(strip_1_N) - Int32(strip_1_N_back_fission)) <= Int32(criteria.recoilBackMaxDeltaStrips)
         } else {
             return false
         }
@@ -985,7 +930,7 @@ class Processor {
     
     func isFront(_ event: Event, type: SearchType) -> Bool {
         let eventId = Int(event.eventId)
-        let searchRecoil = type == recoilType
+        let searchRecoil = type == criteria.recoilType
         let currentRecoil = isRecoil(event)
         let sameType = (searchRecoil && currentRecoil) || (!searchRecoil && !currentRecoil)
         return sameType && dataProtocol.isAlphaFronEvent(eventId)
@@ -998,7 +943,7 @@ class Processor {
     
     func isBack(_ event: Event, type: SearchType) -> Bool {
         let eventId = Int(event.eventId)
-        let searchRecoil = type == recoilType
+        let searchRecoil = type == criteria.recoilType
         let currentRecoil = isRecoil(event)
         let sameType = (searchRecoil && currentRecoil) || (!searchRecoil && !currentRecoil)
         return sameType && dataProtocol.isAlphaBackEvent(eventId)
@@ -1054,7 +999,7 @@ class Processor {
     
     func valueTOF(_ eventTOF: Event, eventRecoil: Event) -> Double {
         let channel = channelForTOF(eventTOF)
-        if unitsTOF == .channels {
+        if criteria.unitsTOF == .channels {
             return Double(channel)
         } else {
             return nanosecondsForTOFChannel(channel, eventRecoil: eventRecoil)
@@ -1075,11 +1020,11 @@ class Processor {
     
     fileprivate var columns = [String]()
     fileprivate var keyColumnRecoilEvent: String {
-        let name = recoilType == .recoil ? "Recoil" : "Heavy Recoil"
+        let name = criteria.recoilType == .recoil ? "Recoil" : "Heavy Recoil"
         return "Event(\(name))"
     }
     fileprivate var keyRecoil: String {
-        return  recoilType == .recoil ? "R" : "HR"
+        return  criteria.recoilType == .recoil ? "R" : "HR"
     }
     fileprivate var keyColumnRecoilEnergy: String {
         return "E(\(keyRecoil)Fron)"
@@ -1091,7 +1036,7 @@ class Processor {
         return "dT(\(keyRecoil)Fron-$Fron)"
     }
     fileprivate var keyRecoilHeavy: String {
-        return heavyType == .heavy ? "HR" : "R"
+        return criteria.heavyType == .heavy ? "HR" : "R"
     }
     fileprivate var keyColumnRecoilHeavyEnergy: String {
         return "E(\(keyRecoilHeavy)Fron)"
@@ -1155,7 +1100,7 @@ class Processor {
             keyColumnStartBackDeltaTime,
             keyColumnStartBackStrip
         ]
-        if searchWell {
+        if criteria.searchWell {
             columns.append(contentsOf: [
                 keyColumnStartWellSumm,
                 keyColumnStartWellEnergy,
@@ -1163,7 +1108,7 @@ class Processor {
                 keyColumnStartWellPosition
                 ])
         }
-        if searchNeutrons {
+        if criteria.searchNeutrons {
             columns.append(contentsOf: [
                 keyColumnNeutrons,
                 keyColumnNeutronsBackward
@@ -1173,25 +1118,25 @@ class Processor {
             keyColumnGammaEnergy,
             keyColumnGammaDeltaTime
             ])
-        if searchSpecialEvents {
-            let values = specialEventIds.map({ (i: Int) -> String in
+        if criteria.searchSpecialEvents {
+            let values = criteria.specialEventIds.map({ (i: Int) -> String in
                 return keyColumnSpecialFor(eventId: i)
             })
             columns.append(contentsOf: values)
         }
-        if trackBeamEnergy {
+        if criteria.trackBeamEnergy {
             columns.append(keyColumnBeamEnergy)
         }
-        if trackBeamCurrent {
+        if criteria.trackBeamCurrent {
             columns.append(keyColumnBeamCurrent)
         }
-        if trackBeamBackground {
+        if criteria.trackBeamBackground {
             columns.append(keyColumnBeamBackground)
         }
-        if trackBeamIntegral {
+        if criteria.trackBeamIntegral {
             columns.append(keyColumnBeamIntegral)
         }
-        if searchVETO {
+        if criteria.searchVETO {
             columns.append(contentsOf: [
                 keyColumnVetoEvent,
                 keyColumnVetoEnergy,
@@ -1199,7 +1144,7 @@ class Processor {
                 keyColumnVetoDeltaTime
                 ])
         }
-        if searchFissionAlpha2 {
+        if criteria.searchFissionAlpha2 {
             columns.append(contentsOf: [
                 keyColumnFissionAlpha2Event,
                 keyColumnFissionAlpha2Energy,
@@ -1208,7 +1153,7 @@ class Processor {
                 ])
         }
         
-        let symbol = startParticleType.symbol()
+        let symbol = criteria.startParticleType.symbol()
         let headers = columns.map { (s: String) -> String in
             return s.replacingOccurrences(of: "$", with: symbol)
             } as [AnyObject]
@@ -1244,7 +1189,7 @@ class Processor {
                     }
                 case keyColumnTof:
                     if let tof = tofRealPerAct.getValueAt(index: row, key: kValue) {
-                        let format = "%." + (unitsTOF == .channels ? "0" : "7") + "f"
+                        let format = "%." + (criteria.unitsTOF == .channels ? "0" : "7") + "f"
                         field = String(format: format, tof as! Double)
                     }
                 case keyColumnTofDeltaTime:
@@ -1256,7 +1201,7 @@ class Processor {
                         field = currentFileEventNumber(eventNumber as! CUnsignedLongLong)
                     }
                 case keyColumnStartFrontSumm:
-                    if row == 0, startParticleType != recoilType, let summ = fissionsAlphaPerAct.matchFor(side: .front).getSummEnergyFrom() {
+                    if row == 0, criteria.startParticleType != criteria.recoilType, let summ = fissionsAlphaPerAct.matchFor(side: .front).getSummEnergyFrom() {
                         field = String(format: "%.7f", summ)
                     }
                 case keyColumnStartFrontEnergy:
@@ -1277,36 +1222,36 @@ class Processor {
                         field = String(format: "%d", strip)
                     }
                 case keyColumnStartBackSumm:
-                    if row == 0, startParticleType != recoilType, let summ = fissionsAlphaPerAct.matchFor(side: .back).getSummEnergyFrom() {
+                    if row == 0, criteria.startParticleType != criteria.recoilType, let summ = fissionsAlphaPerAct.matchFor(side: .back).getSummEnergyFrom() {
                         field = String(format: "%.7f", summ)
                     }
                 case keyColumnStartBackEnergy:
                     let side: StripsSide = .back
-                    let match = startParticleType == recoilType ? recoilsPerAct.matchFor(side: side) : fissionsAlphaPerAct.matchFor(side: side)
+                    let match = criteria.startParticleType == criteria.recoilType ? recoilsPerAct.matchFor(side: side) : fissionsAlphaPerAct.matchFor(side: side)
                     if let energy = match.getValueAt(index: row, key: kEnergy) {
                         field = String(format: "%.7f", energy as! Double)
                     }
                 case keyColumnStartBackMarker:
                     let side: StripsSide = .back
-                    let match = startParticleType == recoilType ? recoilsPerAct.matchFor(side: side) : fissionsAlphaPerAct.matchFor(side: side)
+                    let match = criteria.startParticleType == criteria.recoilType ? recoilsPerAct.matchFor(side: side) : fissionsAlphaPerAct.matchFor(side: side)
                     if let marker = match.getValueAt(index: row, key: kMarker) {
                         field = String(format: "%hu", marker as! CUnsignedShort)
                     }
                 case keyColumnStartBackDeltaTime:
                     let side: StripsSide = .back
-                    let match = startParticleType == recoilType ? recoilsPerAct.matchFor(side: side) : fissionsAlphaPerAct.matchFor(side: side)
+                    let match = criteria.startParticleType == criteria.recoilType ? recoilsPerAct.matchFor(side: side) : fissionsAlphaPerAct.matchFor(side: side)
                     if let deltaTime = match.getValueAt(index: row, key: kDeltaTime) {
                         field = String(format: "%lld", deltaTime as! CLongLong)
                     }
                 case keyColumnStartBackStrip:
                     let side: StripsSide = .back
-                    let match = startParticleType == recoilType ? recoilsPerAct.matchFor(side: side) : fissionsAlphaPerAct.matchFor(side: side)
+                    let match = criteria.startParticleType == criteria.recoilType ? recoilsPerAct.matchFor(side: side) : fissionsAlphaPerAct.matchFor(side: side)
                     if let info = match.itemAt(index: row), let strip_0_15 = info[kStrip0_15], let encoder = info[kEncoder] {
                         let strip = stripConvertToFormat_1_N(strip_0_15 as! CUnsignedShort, encoder: encoder as! CUnsignedShort, side: .back)
                         field = String(format: "%d", strip)
                     }
                 case keyColumnStartWellSumm:
-                    if row == 0, startParticleType != recoilType, let summ = fissionsAlphaWellPerAct.getSummEnergyFrom() {
+                    if row == 0, criteria.startParticleType != criteria.recoilType, let summ = fissionsAlphaWellPerAct.getSummEnergyFrom() {
                         field = String(format: "%.7f", summ)
                     }
                 case keyColumnStartWellEnergy:
