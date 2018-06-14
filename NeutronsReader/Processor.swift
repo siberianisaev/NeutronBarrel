@@ -455,16 +455,14 @@ class Processor {
     }
     
     fileprivate func updateFolderStatistics(_ event: Event, folder: FolderStatistics) {
-        switch Int(event.eventId) {
-        case dataProtocol.BeamEnergy:
+        let id = Int(event.eventId)
+        if id == dataProtocol.BeamEnergy {
             let e = getFloatValueFrom(event: event)
             if e >= criteria.beamEnergyMin && e <= criteria.beamEnergyMax {
                 folder.handleEnergy(e)
             }
-        case dataProtocol.BeamIntegral:
+        } else if id == dataProtocol.BeamIntegral {
             folder.handleIntergal(event)
-        default:
-            break
         }
     }
     
