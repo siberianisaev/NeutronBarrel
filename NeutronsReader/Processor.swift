@@ -185,7 +185,7 @@ class Processor {
                 fread(&event, eventSize, 1, file)
                 
                 let id = Int(event.eventId)
-                if id == dataProtocol.CycleTime {
+                if dataProtocol.isCycleTimeEvent(id) {
                     if cycle > 0 {
                         cycle -= 1
                     } else {
@@ -224,7 +224,7 @@ class Processor {
                 fread(&event, eventSize, 1, file)
                 
                 let id = Int(event.eventId)
-                if id == dataProtocol.CycleTime {
+                if dataProtocol.isCycleTimeEvent(id) {
                     if updateCycle {
                         currentCycle += 1
                     }
@@ -354,7 +354,7 @@ class Processor {
     }
     
     func mainCycleEventCheck(_ event: Event, folder: FolderStatistics) {
-        if Int(event.eventId) == dataProtocol.CycleTime {
+        if dataProtocol.isCycleTimeEvent(Int(event.eventId)) {
             currentCycle += 1
         } else if isFront(event, type: criteria.startParticleType) {
             startEventTime = UInt64(event.param1)
@@ -478,7 +478,7 @@ class Processor {
     func findNeutrons() {
         let directions: Set<SearchDirection> = [.forward]
         search(directions: directions, startTime: startEventTime, minDeltaTime: 0, maxDeltaTime: criteria.maxNeutronTime, useCycleTime: false, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
-            if self.dataProtocol.Neutrons == Int(event.eventId) {
+            if self.dataProtocol.isNeutronsEvent(Int(event.eventId)) {
                 self.neutronsSummPerAct += 1
             }
         }
@@ -487,7 +487,7 @@ class Processor {
     func findNeutronsBack() {
         let directions: Set<SearchDirection> = [.backward]
         search(directions: directions, startTime: startEventTime, minDeltaTime: 0, maxDeltaTime: 10, useCycleTime: false, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
-            if self.dataProtocol.Neutrons == Int(event.eventId) {
+            if self.dataProtocol.isNeutronsEvent(Int(event.eventId)) {
                 self.neutronsBackwardSummPerAct += 1
             }
         }
@@ -512,7 +512,7 @@ class Processor {
     func findVETO() {
         let directions: Set<SearchDirection> = [.forward, .backward]
         search(directions: directions, startTime: startEventTime, minDeltaTime: 0, maxDeltaTime: criteria.maxVETOTime, useCycleTime: false, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
-            if self.isVETOEvent(event) {
+            if self.dataProtocol.isVETOEvent(Int(event.eventId)) {
                 self.storeVETO(event, deltaTime: deltaTime)
             }
         }
@@ -607,7 +607,7 @@ class Processor {
         var found: Bool = false
         let directions: Set<SearchDirection> = [.forward, .backward]
         search(directions: directions, startTime: timeRecoil, minDeltaTime: 0, maxDeltaTime: criteria.maxTOFTime, useCycleTime: false, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
-            if self.dataProtocol.TOF == Int(event.eventId) {
+            if self.dataProtocol.isTOFEvent(Int(event.eventId)) {
                 let value = self.valueTOF(event, eventRecoil: eventRecoil)
                 if value >= self.criteria.minTOFValue && value <= self.criteria.maxTOFValue {
                     self.storeRealTOFValue(value, deltaTime: deltaTime)
@@ -919,11 +919,6 @@ class Processor {
     func isGammaEvent(_ event: Event) -> Bool {
         let eventId = Int(event.eventId)
         return dataProtocol.isGammaEvent(eventId)
-    }
-    
-    func isVETOEvent(_ event: Event) -> Bool {
-        let eventId = Int(event.eventId)
-        return dataProtocol.AVeto == eventId
     }
     
     func isFront(_ event: Event, type: SearchType) -> Bool {

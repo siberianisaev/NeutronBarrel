@@ -13,7 +13,6 @@ class DataProtocol {
     
     fileprivate var dict = [String: Int]() {
         didSet {
-            AWell = dict[keyAWell]
             AVeto = dict["AVeto"]
             TOF = dict["TOF"]
             Neutrons = dict["Neutrons"]
@@ -22,27 +21,47 @@ class DataProtocol {
             BeamCurrent = dict["BeamTokHi"]
             BeamBackground = dict["BeamFonHi"]
             BeamIntegral = dict["IntegralHi"]
+            AlphaWell = getValues(ofTypes: ["AWel"])
+            alphaWellMaxEventId = AlphaWell.max() ?? 0
+            AlphaMotherFront = getValues(ofTypes: ["AFr"])
+            AlphaDaughterFront = getValues(ofTypes: ["AdFr"])
+            AlphaFront = AlphaMotherFront.union(AlphaDaughterFront)
+            AlphaMotherBack = getValues(ofTypes: ["ABack", "ABk"])
+            AlphaDaughterBack = getValues(ofTypes: ["AdBk"])
+            AlphaBack = AlphaMotherBack.union(AlphaDaughterBack)
+            Gamma = getValues(ofTypes: ["Gam"])
         }
     }
     
-    fileprivate var AWell: Int?
-    var AVeto: Int?
-    var TOF: Int?
-    var Neutrons: Int?
-    var CycleTime: Int?
+    fileprivate func getValues(ofTypes types: [String]) -> Set<Int> {
+        var result = [Int]()
+        for type in types {
+            let values = dict.filter({ (key: String, value: Int) -> Bool in
+                return self.keyFor(value: value)?.hasPrefix(type) == true
+            }).values
+            result.append(contentsOf: values)
+        }
+        return Set(result)
+    }
+    
     var BeamEnergy: Int?
     var BeamCurrent: Int?
     var BeamBackground: Int?
     var BeamIntegral: Int?
     
+    fileprivate var AVeto: Int?
+    fileprivate var TOF: Int?
+    fileprivate var Neutrons: Int?
+    fileprivate var CycleTime: Int?
+    fileprivate var AlphaWell = Set<Int>()
     fileprivate var alphaWellMaxEventId: Int = 0
-    fileprivate var keyAFr: String = "AFr"
-    fileprivate var keyAdFr: String = "AdFr"
-    fileprivate var keyABack: String = "ABack"
-    fileprivate var keyABk: String = "ABk"
-    fileprivate var keyAdBk: String = "AdBk"
-    fileprivate var keyAWell: String = "AWel"
-    fileprivate var keyGam: String = "Gam"
+    fileprivate var AlphaMotherFront = Set<Int>()
+    fileprivate var AlphaDaughterFront = Set<Int>()
+    fileprivate var AlphaFront = Set<Int>()
+    fileprivate var AlphaMotherBack = Set<Int>()
+    fileprivate var AlphaDaughterBack = Set<Int>()
+    fileprivate var AlphaBack = Set<Int>()
+    fileprivate var Gamma = Set<Int>()
     
     class func load(_ path: String?) -> DataProtocol {
         let p = DataProtocol()
@@ -81,30 +100,18 @@ class DataProtocol {
             alert.runModal()
         }
         
-        p.setMaxAlphaWellId()
-        p.isEventOfTypeCache.removeAll()
         p.encoderForEventIdCache.removeAll()
         return p
-    }
-    
-    fileprivate func setMaxAlphaWellId() {
-        var alphaWellIds = [Int]()
-        for (key, value) in dict {
-            if key.hasPrefix(keyAWell) {
-                alphaWellIds.append(value)
-            }
-        }
-        alphaWellMaxEventId = alphaWellIds.max() ?? 0
     }
     
     /**
      Not all events have time data.
      */
     func isValidEventIdForTimeCheck(_ eventId: Int) -> Bool {
-        return eventId <= alphaWellMaxEventId || eventId == TOF || isGammaEvent(eventId) || eventId == Neutrons || eventId == AVeto
+        return eventId <= alphaWellMaxEventId || isTOFEvent(eventId) || isGammaEvent(eventId) || isNeutronsEvent(eventId) || isVETOEvent(eventId)
     }
     
-    func keyFor(value: Int) -> String? {
+    fileprivate func keyFor(value: Int) -> String? {
         for (k, v) in dict {
             if v == value {
                 return k
@@ -114,15 +121,15 @@ class DataProtocol {
     }
     
     func position(_ eventId: Int) -> String {
-        if isEvent(eventId, ofType: keyAFr) {
+        if AlphaMotherFront.contains(eventId) {
             return "Fron"
-        } else if isEvent(eventId, ofType: keyABack) || isEvent(eventId, ofType: keyABk) {
+        } else if AlphaMotherBack.contains(eventId) {
             return "Back"
-        } else if isEvent(eventId, ofType: keyAdFr) {
+        } else if AlphaDaughterFront.contains(eventId) {
             return "dFr"
-        } else if isEvent(eventId, ofType: keyAdBk) {
+        } else if AlphaDaughterBack.contains(eventId) {
             return "dBk"
-        } else if AVeto == eventId {
+        } else if isVETOEvent(eventId) {
             return "Veto"
         } else {
             return "Wel"
@@ -130,37 +137,35 @@ class DataProtocol {
     }
     
     func isAlphaFronEvent(_ eventId: Int) -> Bool {
-        return isEvent(eventId, ofType: keyAFr) || isEvent(eventId, ofType: keyAdFr)
+        return AlphaFront.contains(eventId)
     }
     
     func isAlphaBackEvent(_ eventId: Int) -> Bool {
-        return isEvent(eventId, ofType: keyABack) || isEvent(eventId, ofType: keyABk) || isEvent(eventId, ofType: keyAdBk)
+        return AlphaBack.contains(eventId)
     }
     
     func isAlphaWellEvent(_ eventId: Int) -> Bool {
-        return isEvent(eventId, ofType: keyAWell)
+        return AlphaWell.contains(eventId)
     }
     
     func isGammaEvent(_ eventId: Int) -> Bool {
-        return isEvent(eventId, ofType: keyGam)
+        return Gamma.contains(eventId)
     }
     
-    fileprivate var isEventOfTypeCache = [Int: [String: Bool]]()
-    
-    fileprivate func cacheIsEventOfType(value: Bool, eventId: Int, type: String) {
-        var dict = isEventOfTypeCache[eventId] ?? [:]
-        dict[type] = value
-        isEventOfTypeCache[eventId] = dict
+    func isVETOEvent(_ eventId: Int) -> Bool {
+        return AVeto == eventId
     }
     
-    fileprivate func isEvent(_ eventId: Int, ofType type: String) -> Bool {
-        if let cached = isEventOfTypeCache[eventId]?[type] {
-            return cached
-        }
-        
-        let b = keyFor(value: eventId)?.hasPrefix(type) == true
-        cacheIsEventOfType(value: b, eventId: eventId, type: type)
-        return b
+    func isTOFEvent(_ eventId: Int) -> Bool {
+        return TOF == eventId
+    }
+    
+    func isNeutronsEvent(_ eventId: Int) -> Bool {
+        return Neutrons == eventId
+    }
+    
+    func isCycleTimeEvent(_ eventId: Int) -> Bool {
+        return CycleTime == eventId
     }
     
     fileprivate var encoderForEventIdCache = [Int: CUnsignedShort]()
@@ -171,10 +176,10 @@ class DataProtocol {
         }
         
         var value: CUnsignedShort
-        if AWell == eventId {
-            value = 1
-        } else if let key = keyFor(value: eventId), let rangeDigits = key.rangeOfCharacter(from: .decimalDigits), let substring = String(key[rangeDigits.lowerBound...]).components(separatedBy: CharacterSet.init(charactersIn: "., ")).first, let encoder = Int(substring) {
+        if let key = keyFor(value: eventId), let rangeDigits = key.rangeOfCharacter(from: .decimalDigits), let substring = String(key[rangeDigits.lowerBound...]).components(separatedBy: CharacterSet.init(charactersIn: "., ")).first, let encoder = Int(substring) {
             value = CUnsignedShort(encoder)
+        } else if AlphaWell.contains(eventId) && AlphaWell.count == 1 {
+            value = 1
         } else {
             value = 0
         }
