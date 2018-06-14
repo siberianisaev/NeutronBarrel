@@ -21,11 +21,18 @@ class StripsConfiguration {
         return config.count > 0
     }
     
-    fileprivate var stripsCache = [String: Int]()
+    fileprivate var stripsCache = [StripsSide: [Int: [CUnsignedShort: Int]]]()
     
+    fileprivate func cacheStrip(strip: Int, side: StripsSide, encoder: Int, strip_0_15: CUnsignedShort) {
+        var sideDict = stripsCache[side] ?? [:]
+        var encoderDict = sideDict[encoder] ?? [:]
+        encoderDict[strip_0_15] = strip
+        sideDict[encoder] = encoderDict
+        stripsCache[side] = sideDict
+    }
+
     func strip_1_N_For(side: StripsSide, encoder: Int, strip_0_15: CUnsignedShort) -> Int {
-        let key = "\(side.rawValue):\(encoder):\(strip_0_15)"
-        if let cached = stripsCache[key] {
+        if let cached = stripsCache[side]?[encoder]?[strip_0_15] {
             return cached
         }
         
@@ -34,7 +41,7 @@ class StripsConfiguration {
             let strips = encoders[encoderIndex]
             if strip_0_15 < strips.count {
                 let value = strips[Int(strip_0_15)]
-                stripsCache[key] = value
+                cacheStrip(strip: value, side: side, encoder: encoder, strip_0_15: strip_0_15)
                 return value
             }
         }
@@ -46,7 +53,7 @@ class StripsConfiguration {
          This method used for convert strip from format "encoder + strip 0-15" to format "strip 1-48".
          */
         let value = (Int(strip_0_15) * 3) + (encoder - 1) + 1
-        stripsCache[key] = value
+        cacheStrip(strip: value, side: side, encoder: encoder, strip_0_15: strip_0_15)
         return value
     }
     

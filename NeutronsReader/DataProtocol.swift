@@ -126,16 +126,21 @@ class DataProtocol {
         return isEvent(eventId, ofType: keyGam)
     }
     
-    fileprivate var isEventOfTypeCache = [String: Bool]()
+    fileprivate var isEventOfTypeCache = [Int: [String: Bool]]()
+    
+    fileprivate func cacheIsEventOfType(value: Bool, eventId: Int, type: String) {
+        var dict = isEventOfTypeCache[eventId] ?? [:]
+        dict[type] = value
+        isEventOfTypeCache[eventId] = dict
+    }
     
     fileprivate func isEvent(_ eventId: Int, ofType type: String) -> Bool {
-        let key = "\(eventId):\(type)"
-        if let cached = isEventOfTypeCache[key] {
+        if let cached = isEventOfTypeCache[eventId]?[type] {
             return cached
         }
         
         let b = keyFor(value: eventId)?.hasPrefix(type) == true
-        isEventOfTypeCache[key] = b
+        cacheIsEventOfType(value: b, eventId: eventId, type: type)
         return b
     }
     
