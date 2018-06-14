@@ -58,11 +58,13 @@ class DataProtocol {
             alert.runModal()
         }
         
-        p.setMinAlphaWellId()
+        p.setMaxAlphaWellId()
+        p.isEventOfTypeCache.removeAll()
+        p.encoderForEventIdCache.removeAll()
         return p
     }
     
-    fileprivate func setMinAlphaWellId() {
+    fileprivate func setMaxAlphaWellId() {
         var alphaWellIds = [Int]()
         for (key, value) in dict {
             if key.hasPrefix(keyAWell) {
@@ -124,19 +126,36 @@ class DataProtocol {
         return isEvent(eventId, ofType: keyGam)
     }
     
+    fileprivate var isEventOfTypeCache = [String: Bool]()
+    
     fileprivate func isEvent(_ eventId: Int, ofType type: String) -> Bool {
-        return keyFor(value: eventId)?.hasPrefix(type) == true
+        let key = "\(eventId):\(type)"
+        if let cached = isEventOfTypeCache[key] {
+            return cached
+        }
+        
+        let b = keyFor(value: eventId)?.hasPrefix(type) == true
+        isEventOfTypeCache[key] = b
+        return b
     }
     
+    fileprivate var encoderForEventIdCache = [Int: CUnsignedShort]()
+    
     func encoderForEventId(_ eventId: Int) -> CUnsignedShort {
+        if let cached = encoderForEventIdCache[eventId] {
+            return cached
+        }
+        
+        var value: CUnsignedShort
         if AWell == eventId {
-            return 1
-        }
-        if let key = keyFor(value: eventId), let rangeDigits = key.rangeOfCharacter(from: .decimalDigits), let substring = String(key[rangeDigits.lowerBound...]).components(separatedBy: CharacterSet.init(charactersIn: "., ")).first, let encoder = Int(substring) {
-            return CUnsignedShort(encoder)
+            value = 1
+        } else if let key = keyFor(value: eventId), let rangeDigits = key.rangeOfCharacter(from: .decimalDigits), let substring = String(key[rangeDigits.lowerBound...]).components(separatedBy: CharacterSet.init(charactersIn: "., ")).first, let encoder = Int(substring) {
+            value = CUnsignedShort(encoder)
         } else {
-            return 0
+            value = 0
         }
+        encoderForEventIdCache[eventId] = value
+        return value
     }
     
     fileprivate var AWell: Int {

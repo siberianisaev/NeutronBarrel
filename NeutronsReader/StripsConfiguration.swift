@@ -21,21 +21,33 @@ class StripsConfiguration {
         return config.count > 0
     }
     
+    fileprivate var stripsCache = [String: Int]()
+    
     func strip_1_N_For(side: StripsSide, encoder: Int, strip_0_15: CUnsignedShort) -> Int {
+        let key = "\(side.rawValue):\(encoder):\(strip_0_15)"
+        if let cached = stripsCache[key] {
+            return cached
+        }
+        
         let encoderIndex = encoder - 1
         if let encoders = config[side], encoderIndex < encoders.count {
             let strips = encoders[encoderIndex]
             if strip_0_15 < strips.count {
-                return strips[Int(strip_0_15)]
+                let value = strips[Int(strip_0_15)]
+                stripsCache[key] = value
+                return value
             }
         }
+        
         // By defaults used 48x48 config
         /**
          Strips in focal plane detector are connected alternately to 3 16-channel encoders:
          | 1.0 | 2.0 | 3.0 | 1.1 | 2.1 | 3.1 | ... | encoder.strip_0_15 |
          This method used for convert strip from format "encoder + strip 0-15" to format "strip 1-48".
          */
-        return (Int(strip_0_15) * 3) + (encoder - 1) + 1
+        let value = (Int(strip_0_15) * 3) + (encoder - 1) + 1
+        stripsCache[key] = value
+        return value
     }
     
     class func openConfiguration(_ onFinish: @escaping ((StripsConfiguration?, String?) -> ())) {
@@ -55,6 +67,7 @@ class StripsConfiguration {
     fileprivate class func load(_ path: String?) -> StripsConfiguration {
         let c = StripsConfiguration()
         c.config.removeAll()
+        c.stripsCache.removeAll()
         
         if let path = path {
             do {
