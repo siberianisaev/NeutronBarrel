@@ -753,7 +753,11 @@ class Processor {
     
     func storeGamma(_ event: Event, deltaTime: CLongLong) {
         let channel = event.param3 & Mask.gamma.rawValue
-        let energy = calibration.calibratedValueForAmplitude(Double(channel), eventName: "Gam1") // TODO: Gam2, Gam
+        let eventId = Int(event.eventId)
+        let encoder = dataProtocol.encoderForEventId(eventId)
+        let position = dataProtocol.position(eventId)
+        let name = "\(position)\(encoder)"
+        let energy = calibration.calibratedValueForAmplitude(Double(channel), eventName: name)
         let info = [kEnergy: energy,
                     kDeltaTime: deltaTime] as [String : Any]
         gammaPerAct.append(info)
@@ -968,7 +972,6 @@ class Processor {
             name += "\(encoder)."
         }
         name += String(strip_0_15+1)
-        
         return calibration.calibratedValueForAmplitude(Double(channel), eventName: name)
     }
     

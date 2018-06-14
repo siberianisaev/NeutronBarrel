@@ -131,6 +131,8 @@ class DataProtocol {
             return "dBk"
         } else if isVETOEvent(eventId) {
             return "Veto"
+        } else if isGammaEvent(eventId) {
+            return "Gam"
         } else {
             return "Wel"
         }
@@ -178,7 +180,7 @@ class DataProtocol {
         var value: CUnsignedShort
         if let key = keyFor(value: eventId), let rangeDigits = key.rangeOfCharacter(from: .decimalDigits), let substring = String(key[rangeDigits.lowerBound...]).components(separatedBy: CharacterSet.init(charactersIn: "., ")).first, let encoder = Int(substring) {
             value = CUnsignedShort(encoder)
-        } else if AlphaWell.contains(eventId) && AlphaWell.count == 1 {
+        } else if (AlphaWell.contains(eventId) && AlphaWell.count == 1) || (Gamma.contains(eventId) && Gamma.count == 1) {
             value = 1
         } else {
             value = 0
