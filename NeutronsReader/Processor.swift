@@ -657,17 +657,17 @@ class Processor {
     
     func findBeamEvents() {
         var setIds = Set<Int>()
-        if criteria.trackBeamEnergy {
-            setIds.insert(dataProtocol.BeamEnergy)
+        if criteria.trackBeamEnergy, let id = dataProtocol.BeamEnergy {
+            setIds.insert(id)
         }
-        if criteria.trackBeamCurrent {
-            setIds.insert(dataProtocol.BeamCurrent)
+        if criteria.trackBeamCurrent, let id = dataProtocol.BeamCurrent {
+            setIds.insert(id)
         }
-        if criteria.trackBeamBackground {
-            setIds.insert(dataProtocol.BeamBackground)
+        if criteria.trackBeamBackground, let id = dataProtocol.BeamBackground {
+            setIds.insert(id)
         }
-        if criteria.trackBeamIntegral {
-            setIds.insert(dataProtocol.BeamIntegral)
+        if criteria.trackBeamIntegral, let id = dataProtocol.BeamIntegral {
+            setIds.insert(id)
         }
         if setIds.count == 0 {
             return
@@ -1290,25 +1290,25 @@ class Processor {
                     }
                 case keyColumnBeamEnergy:
                     if row == 0 {
-                        if let f = beamRelatedValuesPerAct[dataProtocol.BeamEnergy] {
+                        if let id = dataProtocol.BeamEnergy, let f = beamRelatedValuesPerAct[id] {
                             field = String(format: "%.1f", f)
                         }
                     }
                 case keyColumnBeamCurrent:
                     if row == 0 {
-                        if let f = beamRelatedValuesPerAct[dataProtocol.BeamCurrent] {
+                        if let id = dataProtocol.BeamCurrent, let f = beamRelatedValuesPerAct[id] {
                             field = String(format: "%.2f", f)
                         }
                     }
                 case keyColumnBeamBackground:
                     if row == 0 {
-                        if let f = beamRelatedValuesPerAct[dataProtocol.BeamBackground] {
+                        if let id = dataProtocol.BeamBackground, let f = beamRelatedValuesPerAct[id] {
                             field = String(format: "%.1f", f)
                         }
                     }
                 case keyColumnBeamIntegral:
                     if row == 0 {
-                        if let f = beamRelatedValuesPerAct[dataProtocol.BeamIntegral] {
+                        if let id = dataProtocol.BeamIntegral, let f = beamRelatedValuesPerAct[id] {
                             field = String(format: "%.1f", f)
                         }
                     }

@@ -11,7 +11,30 @@ import AppKit
 
 class DataProtocol {
     
-    fileprivate var dict = [String: Int]()
+    fileprivate var dict = [String: Int]() {
+        didSet {
+            AWell = dict[keyAWell]
+            AVeto = dict["AVeto"]
+            TOF = dict["TOF"]
+            Neutrons = dict["Neutrons"]
+            CycleTime = dict["THi"]
+            BeamEnergy = dict["EnergyHi"]
+            BeamCurrent = dict["BeamTokHi"]
+            BeamBackground = dict["BeamFonHi"]
+            BeamIntegral = dict["IntegralHi"]
+        }
+    }
+    
+    fileprivate var AWell: Int?
+    var AVeto: Int?
+    var TOF: Int?
+    var Neutrons: Int?
+    var CycleTime: Int?
+    var BeamEnergy: Int?
+    var BeamCurrent: Int?
+    var BeamBackground: Int?
+    var BeamIntegral: Int?
+    
     fileprivate var alphaWellMaxEventId: Int = 0
     fileprivate var keyAFr: String = "AFr"
     fileprivate var keyAdFr: String = "AdFr"
@@ -106,10 +129,6 @@ class DataProtocol {
         }
     }
     
-    func value(_ key: String) -> Int {
-        return dict[key] ?? -1
-    }
-    
     func isAlphaFronEvent(_ eventId: Int) -> Bool {
         return isEvent(eventId, ofType: keyAFr) || isEvent(eventId, ofType: keyAdFr)
     }
@@ -161,42 +180,6 @@ class DataProtocol {
         }
         encoderForEventIdCache[eventId] = value
         return value
-    }
-    
-    fileprivate var AWell: Int {
-        return value(keyAWell)
-    }
-    
-    var AVeto: Int {
-        return value("AVeto")
-    }
-    
-    var TOF: Int {
-        return value("TOF")
-    }
-    
-    var Neutrons: Int {
-        return value("Neutrons")
-    }
-    
-    var CycleTime: Int {
-        return value("THi")
-    }
-    
-    var BeamEnergy: Int {
-        return value("EnergyHi")
-    }
-    
-    var BeamCurrent: Int {
-        return value("BeamTokHi")
-    }
-    
-    var BeamBackground: Int {
-        return value("BeamFonHi")
-    }
-    
-    var BeamIntegral: Int {
-        return value("IntegralHi")
     }
     
 }
