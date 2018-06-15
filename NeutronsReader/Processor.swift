@@ -759,6 +759,7 @@ class Processor {
         let name = "\(position)\(encoder)"
         let energy = calibration.calibratedValueForAmplitude(Double(channel), eventName: name)
         let info = [kEnergy: energy,
+                    kEncoder: encoder,
                     kDeltaTime: deltaTime] as [String : Any]
         gammaPerAct.append(info)
     }
@@ -1057,6 +1058,7 @@ class Processor {
     fileprivate var keyColumnNeutrons = "Neutrons"
     fileprivate var keyColumnNeutronsBackward = "Neutrons(Backward)"
     fileprivate var keyColumnGammaEnergy = "Gamma"
+    fileprivate var keyColumnGammaEncoder = "GammaEncoder"
     fileprivate var keyColumnGammaDeltaTime = "dT($Fron-Gamma)"
     fileprivate var keyColumnSpecial = "Special"
     fileprivate func keyColumnSpecialFor(eventId: Int) -> String {
@@ -1112,6 +1114,7 @@ class Processor {
         }
         columns.append(contentsOf: [
             keyColumnGammaEnergy,
+            keyColumnGammaEncoder,
             keyColumnGammaDeltaTime
             ])
         if criteria.searchSpecialEvents {
@@ -1273,6 +1276,10 @@ class Processor {
                 case keyColumnGammaEnergy:
                     if let energy = gammaPerAct.getValueAt(index: row, key: kEnergy) {
                         field = String(format: "%.7f", energy as! Double)
+                    }
+                case keyColumnGammaEncoder:
+                    if let encoder = gammaPerAct.getValueAt(index: row, key: kEncoder) {
+                        field = String(format: "%hu", encoder as! CUnsignedShort)
                     }
                 case keyColumnGammaDeltaTime:
                     if let deltaTime = gammaPerAct.getValueAt(index: row, key: kDeltaTime) {
