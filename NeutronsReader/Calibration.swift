@@ -11,15 +11,11 @@ import AppKit
 
 class Calibration {
     
-    enum CalibrationCoefficient: Int {
-        case A, B
-    }
-    
     func hasData() -> Bool {
         return data.count > 0
     }
     
-    fileprivate var data = [String: [CalibrationCoefficient: Float]]()
+    fileprivate var data = [String: CalibrationEquation]()
     var stringValue: String?
     
     class func openCalibration(_ onFinish: @escaping ((Calibration?, String?) -> ())) {
@@ -64,11 +60,11 @@ class Calibration {
                 for line in content.components(separatedBy: setLines) {
                     let components = line.components(separatedBy: setSpaces).filter() { $0 != "" }
                     if 3 == components.count {
-                        let b = Float(components[0]) ?? 0
-                        let a = Float(components[1]) ?? 0
+                        let b = Double(components[0]) ?? 0
+                        let a = Double(components[1]) ?? 0
                         let name = components[2] as String
                         string += String(format: "%.6f\t%.6f\t%@\n", b, a, name)
-                        data[name] = [.B: b, .A: a];
+                        data[name] = CalibrationEquation(a: a, b: b)
                     }
                 }
                 stringValue = string
@@ -79,8 +75,8 @@ class Calibration {
     }
     
     func calibratedValueForAmplitude(_ channel: Double, eventName: String) -> Double {
-        if let value = data[eventName], let b = value[.B], let a = value[.A] {
-            return Double(b) + Double(a) * channel
+        if let equation = data[eventName] {
+            return equation.applyOn(channel)
         }
         if hasData() {
             print("No calibration for name \(eventName)")
