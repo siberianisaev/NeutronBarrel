@@ -17,11 +17,12 @@ class DoubleSidedStripDetectorMatch {
         return side == .front ? front : back
     }
     
-    func firstItemsFor(side: StripsSide) -> [String: Any]? {
+    func firstItemsFor(side: StripsSide) -> DetectorMatchItem? {
         return matchFor(side: side).itemAt(index: 0)
     }
     
-    func append(_ item: [String: Any], side: StripsSide) {
+    func append(_ item: DetectorMatchItem, side: StripsSide) {
+        item.side = side
         matchFor(side: side).append(item)
     }
     
