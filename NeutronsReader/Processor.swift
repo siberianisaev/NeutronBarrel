@@ -16,42 +16,6 @@ protocol ProcessorDelegate: class {
     
 }
 
-enum SearchType: Int {
-    case fission = 0
-    case alpha = 1
-    case recoil = 2
-    case heavy
-    case veto
-    
-    func symbol() -> String {
-        switch self {
-        case .fission:
-            return "F"
-        case .alpha, .veto:
-            return "A"
-        case .recoil:
-            return "R"
-        case .heavy:
-            return "H"
-        }
-    }
-    
-    func name() -> String {
-        switch self {
-        case .fission:
-            return "Fission"
-        case .alpha:
-            return "Alpha"
-        case .veto:
-            return "Veto"
-        case .recoil:
-            return "Recoil"
-        case .heavy:
-            return "Heavy Recoil"
-        }
-    }
-}
-
 enum TOFUnits {
     case channels
     case nanoseconds
@@ -155,7 +119,7 @@ class Processor {
         case forward, backward
     }
     
-    @objc func forwardSearch(checker: @escaping ((Event, UnsafeMutablePointer<Bool>)->())) {
+    fileprivate func forwardSearch(checker: @escaping ((Event, UnsafeMutablePointer<Bool>)->())) {
         while feof(file) != 1 {
             var event = Event()
             fread(&event, eventSize, 1, file)
@@ -168,7 +132,7 @@ class Processor {
         }
     }
     
-    func search(directions: Set<SearchDirection>, startTime: CUnsignedLongLong, minDeltaTime: CUnsignedLongLong, maxDeltaTime: CUnsignedLongLong, maxDeltaTimeBackward: CUnsignedLongLong? = nil, useCycleTime: Bool, updateCycle: Bool, checker: @escaping ((Event, CUnsignedLongLong, CLongLong, UnsafeMutablePointer<Bool>)->())) {
+    fileprivate func search(directions: Set<SearchDirection>, startTime: CUnsignedLongLong, minDeltaTime: CUnsignedLongLong, maxDeltaTime: CUnsignedLongLong, maxDeltaTimeBackward: CUnsignedLongLong? = nil, useCycleTime: Bool, updateCycle: Bool, checker: @escaping ((Event, CUnsignedLongLong, CLongLong, UnsafeMutablePointer<Bool>)->())) {
         //TODO: search over many files
         let maxBackward = maxDeltaTimeBackward ?? maxDeltaTime
         if directions.contains(.backward) {
@@ -256,7 +220,7 @@ class Processor {
     
     // MARK: - Search
     
-    func showNoDataAlert() {
+    fileprivate func showNoDataAlert() {
         DispatchQueue.main.async {
             let alert = NSAlert()
             alert.messageText = "Error"
@@ -267,7 +231,7 @@ class Processor {
         }
     }
     
-    func processData() {
+    fileprivate func processData() {
         if 0 == files.count {
             showNoDataAlert()
             return
@@ -353,7 +317,7 @@ class Processor {
         return CUnsignedLongLong(lastNumber)/CUnsignedLongLong(eventSize)
     }
     
-    func mainCycleEventCheck(_ event: Event, folder: FolderStatistics) {
+    fileprivate func mainCycleEventCheck(_ event: Event, folder: FolderStatistics) {
         if dataProtocol.isCycleTimeEvent(Int(event.eventId)) {
             currentCycle += 1
         } else if isFront(event, type: criteria.startParticleType) {
@@ -466,7 +430,7 @@ class Processor {
         }
     }
     
-    func findFissionsAlphaWell() {
+    fileprivate func findFissionsAlphaWell() {
         let directions: Set<SearchDirection> = [.backward, .forward]
         search(directions: directions, startTime: startEventTime, minDeltaTime: 0, maxDeltaTime: criteria.fissionAlphaMaxTime, maxDeltaTimeBackward: criteria.fissionAlphaWellBackwardMaxTime, useCycleTime: false, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
             if self.isFissionOrAlphaWell(event) {
@@ -475,7 +439,7 @@ class Processor {
         }
     }
     
-    func findNeutrons() {
+    fileprivate func findNeutrons() {
         let directions: Set<SearchDirection> = [.forward]
         search(directions: directions, startTime: startEventTime, minDeltaTime: 0, maxDeltaTime: criteria.maxNeutronTime, useCycleTime: false, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
             if self.dataProtocol.isNeutronsEvent(Int(event.eventId)) {
@@ -484,7 +448,7 @@ class Processor {
         }
     }
     
-    func findNeutronsBack() {
+    fileprivate func findNeutronsBack() {
         let directions: Set<SearchDirection> = [.backward]
         search(directions: directions, startTime: startEventTime, minDeltaTime: 0, maxDeltaTime: 10, useCycleTime: false, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
             if self.dataProtocol.isNeutronsEvent(Int(event.eventId)) {
@@ -493,7 +457,7 @@ class Processor {
         }
     }
     
-    func findNextFissionsAlphaFront(_ folder: FolderStatistics) {
+    fileprivate func findNextFissionsAlphaFront(_ folder: FolderStatistics) {
         var initial = fpos_t()
         fgetpos(file, &initial)
         var current = initial
@@ -509,7 +473,7 @@ class Processor {
         }
     }
     
-    func findVETO() {
+    fileprivate func findVETO() {
         let directions: Set<SearchDirection> = [.forward, .backward]
         search(directions: directions, startTime: startEventTime, minDeltaTime: 0, maxDeltaTime: criteria.maxVETOTime, useCycleTime: false, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
             if self.dataProtocol.isVETOEvent(Int(event.eventId)) {
@@ -518,7 +482,7 @@ class Processor {
         }
     }
     
-    func findGamma() {
+    fileprivate func findGamma() {
         let directions: Set<SearchDirection> = [.forward, .backward]
         search(directions: directions, startTime: startEventTime, minDeltaTime: 0, maxDeltaTime: criteria.maxGammaTime, useCycleTime: false, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
             if self.isGammaEvent(event) {
@@ -527,7 +491,7 @@ class Processor {
         }
     }
     
-    func findFissionsAlphaBack() {
+    fileprivate func findFissionsAlphaBack() {
         let directions: Set<SearchDirection> = [.backward, .forward]
         search(directions: directions, startTime: startEventTime, minDeltaTime: 0, maxDeltaTime: criteria.fissionAlphaMaxTime, maxDeltaTimeBackward: criteria.fissionAlphaBackBackwardMaxTime, useCycleTime: false, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
             let type = self.criteria.startParticleType
@@ -559,7 +523,7 @@ class Processor {
         }
     }
     
-    func findRecoil() {
+    fileprivate func findRecoil() {
         let fissionTime = absTime(CUnsignedShort(startEventTime), cycle: currentCycle)
         let directions: Set<SearchDirection> = [.backward]
         search(directions: directions, startTime: fissionTime, minDeltaTime: criteria.recoilMinTime, maxDeltaTime: criteria.recoilMaxTime, useCycleTime: true, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
@@ -603,7 +567,7 @@ class Processor {
         return false
     }
     
-    func findTOFForRecoil(_ eventRecoil: Event, timeRecoil: CUnsignedLongLong) -> Bool {
+    fileprivate func findTOFForRecoil(_ eventRecoil: Event, timeRecoil: CUnsignedLongLong) -> Bool {
         var found: Bool = false
         let directions: Set<SearchDirection> = [.forward, .backward]
         search(directions: directions, startTime: timeRecoil, minDeltaTime: 0, maxDeltaTime: criteria.maxTOFTime, useCycleTime: false, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
@@ -619,7 +583,7 @@ class Processor {
         return found
     }
     
-    func findRecoilBack(_ timeRecoilFront: CUnsignedLongLong) -> Bool {
+    fileprivate func findRecoilBack(_ timeRecoilFront: CUnsignedLongLong) -> Bool {
         var found: Bool = false
         let directions: Set<SearchDirection> = [.backward, .forward]
         search(directions: directions, startTime: timeRecoilFront, minDeltaTime: 0, maxDeltaTime: criteria.recoilBackMaxTime, maxDeltaTimeBackward: criteria.recoilBackBackwardMaxTime, useCycleTime: false, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
@@ -635,7 +599,7 @@ class Processor {
         return found
     }
     
-    func findSpecialEvents() {
+    fileprivate func findSpecialEvents() {
         var setIds = Set<Int>(criteria.specialEventIds)
         if setIds.count == 0 {
             return
@@ -653,7 +617,7 @@ class Processor {
         }
     }
     
-    func findBeamEvents() {
+    fileprivate func findBeamEvents() {
         var setIds = Set<Int>()
         if criteria.trackBeamEnergy, let id = dataProtocol.BeamEnergy {
             setIds.insert(id)
@@ -683,7 +647,7 @@ class Processor {
         }
     }
     
-    func findFissionAlpha2() {
+    fileprivate func findFissionAlpha2() {
         let alphaTime = absTime(CUnsignedShort(startEventTime), cycle: currentCycle)
         let directions: Set<SearchDirection> = [.backward, .forward]
         search(directions: directions, startTime: alphaTime, minDeltaTime: criteria.fissionAlpha2MinTime, maxDeltaTime: criteria.fissionAlpha2MaxTime, useCycleTime: true, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
@@ -699,7 +663,7 @@ class Processor {
     
     // MARK: - Storage
     
-    func storeFissionAlphaRecoilBack(_ event: Event, deltaTime: CLongLong) {
+    fileprivate func storeFissionAlphaRecoilBack(_ event: Event, deltaTime: CLongLong) {
         let id = event.eventId
         let encoder = dataProtocol.encoderForEventId(Int(id))
         let strip_0_15 = event.param2 >> 12
@@ -724,14 +688,14 @@ class Processor {
     /**
      Summar multiplicity of neutrons calculation over all files
      */
-    func updateNeutronsMultiplicity() {
+    fileprivate func updateNeutronsMultiplicity() {
         let key = neutronsSummPerAct
         var summ = neutronsMultiplicityTotal[Int(key)] ?? 0
         summ += 1 // One event for all neutrons in one act of fission
         neutronsMultiplicityTotal[Int(key)] = summ
     }
     
-    func storeFissionAlphaFront(_ event: Event, deltaTime: CLongLong) {
+    fileprivate func storeFissionAlphaFront(_ event: Event, deltaTime: CLongLong) {
         let id = event.eventId
         let channel = getChannel(event, type: criteria.startParticleType)
         let encoder = dataProtocol.encoderForEventId(Int(id))
@@ -751,20 +715,25 @@ class Processor {
         fissionsAlphaPerAct.append(info, side: side)
     }
     
-    func storeGamma(_ event: Event, deltaTime: CLongLong) {
-        let channel = event.param3 & Mask.gamma.rawValue
+    fileprivate func storeGamma(_ event: Event, deltaTime: CLongLong) {
+        let channel = Double(event.param3 & Mask.gamma.rawValue)
         let eventId = Int(event.eventId)
         let encoder = dataProtocol.encoderForEventId(eventId)
-        let position = dataProtocol.position(eventId)
-        let name = "\(position)\(encoder)"
-        let energy = calibration.calibratedValueForAmplitude(Double(channel), eventName: name)
+        let energy: Double
+        if calibration.hasData() {
+            let position = dataProtocol.position(eventId)
+            let name = "\(position)\(encoder)"
+            energy = calibration.calibratedValueForAmplitude(channel, eventName: name)
+        } else {
+            energy = channel
+        }
         let info = [kEnergy: energy,
                     kEncoder: encoder,
                     kDeltaTime: deltaTime] as [String : Any]
         gammaPerAct.append(info)
     }
     
-    func storeRecoil(_ event: Event, energy: Double, heavy: Double, deltaTime: CLongLong) {
+    fileprivate func storeRecoil(_ event: Event, energy: Double, heavy: Double, deltaTime: CLongLong) {
         let info = [kDeltaTime: deltaTime,
                     kEventNumber: eventNumber(),
                     kMarker: getMarker(event),
@@ -773,7 +742,7 @@ class Processor {
         recoilsPerAct.append(info, side: .front)
     }
     
-    func storeFissionAlpha2(_ event: Event, deltaTime: CLongLong) {
+    fileprivate func storeFissionAlpha2(_ event: Event, deltaTime: CLongLong) {
         let energy = getEnergy(event, type: criteria.secondParticleType)
         let info = [kEnergy: energy,
                     kDeltaTime: deltaTime,
@@ -782,13 +751,13 @@ class Processor {
         fissionsAlpha2FrontPerAct.append(info)
     }
     
-    func storeRealTOFValue(_ value: Double, deltaTime: CLongLong) {
+    fileprivate func storeRealTOFValue(_ value: Double, deltaTime: CLongLong) {
         let info = [kValue: value,
                     kDeltaTime: deltaTime] as [String : Any]
         tofRealPerAct.append(info)
     }
     
-    func storeVETO(_ event: Event, deltaTime: CLongLong) {
+    fileprivate func storeVETO(_ event: Event, deltaTime: CLongLong) {
         let strip_0_15 = event.param2 >> 12
         let energy = getEnergy(event, type: .veto)
         let info = [kStrip0_15: strip_0_15,
@@ -798,7 +767,7 @@ class Processor {
         vetoPerAct.append(info)
     }
     
-    func storeFissionAlphaWell(_ event: Event) {
+    fileprivate func storeFissionAlphaWell(_ event: Event) {
         let energy = getEnergy(event, type: criteria.startParticleType)
         let encoder = dataProtocol.encoderForEventId(Int(event.eventId))
         let strip_0_15 = event.param2 >> 12
@@ -809,17 +778,17 @@ class Processor {
         fissionsAlphaWellPerAct.append(info)
     }
     
-    func storeSpecial(_ event: Event, id: Int) {
+    fileprivate func storeSpecial(_ event: Event, id: Int) {
         let channel = event.param3 & Mask.special.rawValue
         specialPerAct[id] = channel
     }
     
-    func storeBeamRelated(_ event: Event) {
+    fileprivate func storeBeamRelated(_ event: Event) {
         let value = getFloatValueFrom(event: event)
         beamRelatedValuesPerAct[Int(event.eventId)] = value
     }
     
-    func clearActInfo() {
+    fileprivate func clearActInfo() {
         neutronsSummPerAct = 0
         neutronsBackwardSummPerAct = 0
         fissionsAlphaPerAct.removeAll()
@@ -848,7 +817,7 @@ class Processor {
         return Processor.singleton.eventSize / MemoryLayout<CUnsignedShort>.size
     }
     
-    func isEventFrontStripNearToFirstFissionAlphaFront(_ event: Event, maxDelta: Int) -> Bool {
+    fileprivate func isEventFrontStripNearToFirstFissionAlphaFront(_ event: Event, maxDelta: Int) -> Bool {
         let strip_0_15 = event.param2 >> 12
         let strip_1_N = focalStripConvertToFormat_1_N(strip_0_15, eventId:event.eventId)
         if let n = fissionsAlphaPerAct.firstItemsFor(side: .front)?[kStrip1_N] {
@@ -858,7 +827,7 @@ class Processor {
         return false
     }
     
-    func isRecoilBackStripNearToFissionAlphaBack(_ event: Event) -> Bool {
+    fileprivate func isRecoilBackStripNearToFissionAlphaBack(_ event: Event) -> Bool {
         if let fissionBackInfo = fissionsAlphaPerAct.matchFor(side: .back).itemWithMaxEnergy() {
             let strip_0_15 = event.param2 >> 12
             let strip_1_N = focalStripConvertToFormat_1_N(strip_0_15, eventId:event.eventId)
@@ -874,7 +843,7 @@ class Processor {
     /**
      +/-1 strips check at this moment.
      */
-    func isFissionStripNearToFirstFissionFront(_ event: Event) -> Bool {
+    fileprivate func isFissionStripNearToFirstFissionFront(_ event: Event) -> Bool {
         let strip_0_15 = event.param2 >> 12
         if let first = fissionsAlphaPerAct.firstItemsFor(side: .front), let n = first[kStrip0_15] {
             let s = n as! CUnsignedShort
@@ -895,20 +864,20 @@ class Processor {
      Time stored in events are relative time (timer from 0x0000 to xFFFF mks resettable on overflow).
      We use special event 'dataProtocol.CycleTime' to calculate time from file start.
      */
-    func absTime(_ relativeTime: CUnsignedShort, cycle: CUnsignedLongLong) -> CUnsignedLongLong {
+    fileprivate func absTime(_ relativeTime: CUnsignedShort, cycle: CUnsignedLongLong) -> CUnsignedLongLong {
         return (cycle << 16) + CUnsignedLongLong(relativeTime)
     }
     
-    func focalStripConvertToFormat_1_N(_ strip_0_15: CUnsignedShort, eventId: CUnsignedShort) -> Int {
+    fileprivate func focalStripConvertToFormat_1_N(_ strip_0_15: CUnsignedShort, eventId: CUnsignedShort) -> Int {
         let encoder = dataProtocol.encoderForEventId(Int(eventId))
         return stripConvertToFormat_1_N(strip_0_15, encoder: encoder, side: .front)
     }
     
-    func stripConvertToFormat_1_N(_ strip_0_15: CUnsignedShort, encoder: CUnsignedShort, side: StripsSide) -> Int {
+    fileprivate func stripConvertToFormat_1_N(_ strip_0_15: CUnsignedShort, encoder: CUnsignedShort, side: StripsSide) -> Int {
         return stripsConfiguration.strip_1_N_For(side: side, encoder: Int(encoder), strip_0_15: strip_0_15)
     }
     
-    func getMarker(_ event: Event) -> CUnsignedShort {
+    fileprivate func getMarker(_ event: Event) -> CUnsignedShort {
         return event.param3 >> 13
     }
     
@@ -917,16 +886,16 @@ class Processor {
      0 - fission fragment,
      1 - recoil
      */
-    func isRecoil(_ event: Event) -> Bool {
+    fileprivate func isRecoil(_ event: Event) -> Bool {
         return (event.param3 >> 15) == 1
     }
     
-    func isGammaEvent(_ event: Event) -> Bool {
+    fileprivate func isGammaEvent(_ event: Event) -> Bool {
         let eventId = Int(event.eventId)
         return dataProtocol.isGammaEvent(eventId)
     }
     
-    func isFront(_ event: Event, type: SearchType) -> Bool {
+    fileprivate func isFront(_ event: Event, type: SearchType) -> Bool {
         let eventId = Int(event.eventId)
         let searchRecoil = type == criteria.recoilType
         let currentRecoil = isRecoil(event)
@@ -934,12 +903,12 @@ class Processor {
         return sameType && dataProtocol.isAlphaFronEvent(eventId)
     }
     
-    func isFissionOrAlphaWell(_ event: Event) -> Bool {
+    fileprivate func isFissionOrAlphaWell(_ event: Event) -> Bool {
         let eventId = Int(event.eventId)
         return !isRecoil(event) && dataProtocol.isAlphaWellEvent(eventId)
     }
     
-    func isBack(_ event: Event, type: SearchType) -> Bool {
+    fileprivate func isBack(_ event: Event, type: SearchType) -> Bool {
         let eventId = Int(event.eventId)
         let searchRecoil = type == criteria.recoilType
         let currentRecoil = isRecoil(event)
@@ -947,14 +916,14 @@ class Processor {
         return sameType && dataProtocol.isAlphaBackEvent(eventId)
     }
     
-    func eventNumber() -> CUnsignedLongLong {
+    fileprivate func eventNumber() -> CUnsignedLongLong {
         var position = fpos_t()
         fgetpos(file, &position)
         let value = CUnsignedLongLong(position/Int64(eventSize)) + totalEventNumber + 1
         return value
     }
     
-    func channelForTOF(_ event :Event) -> CUnsignedShort {
+    fileprivate func channelForTOF(_ event :Event) -> CUnsignedShort {
         return event.param3 & Mask.TOF.rawValue
     }
     
@@ -963,55 +932,55 @@ class Processor {
     }
     
     fileprivate func getEnergy(_ event: Event, type: SearchType) -> Double {
-        let channel = getChannel(event, type: type)
-        let eventId = Int(event.eventId)
-        let strip_0_15 = event.param2 >> 12
-        let encoder = dataProtocol.encoderForEventId(eventId)
-        let position = dataProtocol.position(eventId)
-        var name = type.symbol() + position
-        if encoder != 0 {
-            name += "\(encoder)."
+        let channel = Double(getChannel(event, type: type))
+        if calibration.hasData() {
+            let eventId = Int(event.eventId)
+            let strip_0_15 = event.param2 >> 12
+            let encoder = dataProtocol.encoderForEventId(eventId)
+            let position = dataProtocol.position(eventId)
+            var name = type.symbol() + position
+            if encoder != 0 {
+                name += "\(encoder)."
+            }
+            name += String(strip_0_15+1)
+            return calibration.calibratedValueForAmplitude(Double(channel), eventName: name)
+        } else {
+            return channel
         }
-        name += String(strip_0_15+1)
-        return calibration.calibratedValueForAmplitude(Double(channel), eventName: name)
     }
     
-    func currentFileEventNumber(_ number: CUnsignedLongLong) -> String {
+    fileprivate func currentFileEventNumber(_ number: CUnsignedLongLong) -> String {
         return String(format: "%@_%llu", currentFileName ?? "", number)
     }
     
-    func nanosecondsForTOFChannel(_ channelTOF: CUnsignedShort, eventRecoil: Event) -> Double {
-        let eventId = Int(eventRecoil.eventId)
-        let strip_0_15 = eventRecoil.param2 >> 12
-        let encoder = dataProtocol.encoderForEventId(eventId)
-        var position: String
-        if dataProtocol.isAlphaFronEvent(eventId) {
-            position = "Fron"
+    fileprivate func valueTOF(_ eventTOF: Event, eventRecoil: Event) -> Double {
+        let channel = Double(channelForTOF(eventTOF))
+        if criteria.unitsTOF == .channels || !calibration.hasData() {
+            return channel
         } else {
-            position = "Back"
-        }
-        let name = String(format: "T%@%d.%d", position, encoder, strip_0_15+1)
-        return calibration.calibratedValueForAmplitude(Double(channelTOF), eventName: name)
-    }
-    
-    func valueTOF(_ eventTOF: Event, eventRecoil: Event) -> Double {
-        let channel = channelForTOF(eventTOF)
-        if criteria.unitsTOF == .channels {
-            return Double(channel)
-        } else {
-            return nanosecondsForTOFChannel(channel, eventRecoil: eventRecoil)
+            let eventId = Int(eventRecoil.eventId)
+            let strip_0_15 = eventRecoil.param2 >> 12
+            let encoder = dataProtocol.encoderForEventId(eventId)
+            var position: String
+            if dataProtocol.isAlphaFronEvent(eventId) {
+                position = "Fron"
+            } else {
+                position = "Back"
+            }
+            let name = String(format: "T%@%d.%d", position, encoder, strip_0_15+1)
+            return calibration.calibratedValueForAmplitude(channel, eventName: name)
         }
     }
     
     // MARK: - Output
     
-    func logInput(onEnd: Bool) {
+    fileprivate func logInput(onEnd: Bool) {
         let appDelegate = NSApplication.shared.delegate as! AppDelegate
         let image = appDelegate.window.screenshot()
         logger.logInput(image, onEnd: onEnd)
     }
     
-    func logCalibration() {
+    fileprivate func logCalibration() {
         logger.logCalibration(calibration.stringValue ?? "")
     }
     
@@ -1077,7 +1046,7 @@ class Processor {
     fileprivate var keyColumnFissionAlpha2Marker = "$2Marker"
     fileprivate var keyColumnFissionAlpha2DeltaTime = "dT($1-$2)"
     
-    func logResultsHeader() {
+    fileprivate func logResultsHeader() {
         columns = [
             keyColumnRecoilEvent,
             keyColumnRecoilEnergy,
@@ -1160,7 +1129,7 @@ class Processor {
         logger.finishResultsLine() // +1 line padding
     }
     
-    func logActResults() {
+    fileprivate func logActResults() {
         let rowsMax = max(max(max(1, [gammaPerAct, vetoPerAct, fissionsAlphaWellPerAct].max(by: { $0.count < $1.count })!.count), fissionsAlphaPerAct.count), recoilsPerAct.count)
         for row in 0 ..< rowsMax {
             for column in columns {

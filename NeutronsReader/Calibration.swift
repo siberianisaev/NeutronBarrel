@@ -11,19 +11,15 @@ import AppKit
 
 class Calibration {
     
-    fileprivate var kName: String {
-        return "kName"
+    enum CalibrationCoefficient: Int {
+        case A, B
     }
     
-    fileprivate var kCoefficientA: String {
-        return "kCoefficientA"
+    func hasData() -> Bool {
+        return data.count > 0
     }
     
-    fileprivate var kCoefficientB: String {
-        return "kCoefficientB"
-    }
-    
-    fileprivate var data = [String: [String: Float]]()
+    fileprivate var data = [String: [CalibrationCoefficient: Float]]()
     var stringValue: String?
     
     class func openCalibration(_ onFinish: @escaping ((Calibration?, String?) -> ())) {
@@ -56,7 +52,7 @@ class Calibration {
     }
     
     fileprivate func load(_ URLs: [Foundation.URL]) {
-        self.data.removeAll(keepingCapacity: true)
+        data.removeAll(keepingCapacity: true)
         for URL in URLs {
             let path = URL.path
             do {
@@ -72,7 +68,7 @@ class Calibration {
                         let a = Float(components[1]) ?? 0
                         let name = components[2] as String
                         string += String(format: "%.6f\t%.6f\t%@\n", b, a, name)
-                        self.data[name] = [kCoefficientB: b, kCoefficientA: a];
+                        data[name] = [.B: b, .A: a];
                     }
                 }
                 stringValue = string
@@ -83,15 +79,10 @@ class Calibration {
     }
     
     func calibratedValueForAmplitude(_ channel: Double, eventName: String) -> Double {
-        if let value = self.data[eventName] {
-            let nB = value[self.kCoefficientB]
-            let nA = value[self.kCoefficientA]
-            if nil != nB && nil != nA {
-                return Double(nB!) + Double(nA!) * channel
-            }
+        if let value = data[eventName], let b = value[.B], let a = value[.A] {
+            return Double(b) + Double(a) * channel
         }
-        
-        if self.data.count > 0 {
+        if hasData() {
             print("No calibration for name \(eventName)")
         }
         return channel
