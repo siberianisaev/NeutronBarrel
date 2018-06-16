@@ -100,14 +100,23 @@ class DataProtocol {
         }
         
         p.encoderForEventIdCache.removeAll()
+        p.isValidEventIdForTimeCheckCache.removeAll()
         return p
     }
+    
+    fileprivate var isValidEventIdForTimeCheckCache = [Int: Bool]()
     
     /**
      Not all events have time data.
      */
     func isValidEventIdForTimeCheck(_ eventId: Int) -> Bool {
-        return eventId <= alphaWellMaxEventId || isTOFEvent(eventId) || isGammaEvent(eventId) || isNeutronsEvent(eventId) || isVETOEvent(eventId)
+        if let cached = isValidEventIdForTimeCheckCache[eventId] {
+            return cached
+        }
+        
+        let value = eventId <= alphaWellMaxEventId || isTOFEvent(eventId) || isGammaEvent(eventId) || isNeutronsEvent(eventId) || isVETOEvent(eventId)
+        isValidEventIdForTimeCheckCache[eventId] = value
+        return value
     }
     
     fileprivate func keyFor(value: Int) -> String? {
