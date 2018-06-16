@@ -25,7 +25,7 @@ class Processor {
     
     fileprivate let kEncoder = "encoder"
     fileprivate let kStrip0_15 = "strip_0_15"
-    fileprivate let kStrip1_N = "strip_1_N"
+    let kStrip1_N = "strip_1_N"
     let kEnergy = "energy"
     fileprivate let kValue = "value"
     fileprivate let kDeltaTime = "delta_time"
@@ -508,21 +508,8 @@ class Processor {
         // TODO: move filtration logic to DetectorMatch, and remove accessors for 'items'.
         let side: StripsSide = .back
         let match = fissionsAlphaPerAct.matchFor(side: side)
-        if let dict = match.itemWithMaxEnergy(), let encoder = dict[kEncoder], let strip0_15 = dict[kStrip0_15] {
-            let strip1_N = stripConvertToFormat_1_N(strip0_15 as! CUnsignedShort, encoder: encoder as! CUnsignedShort, side: side)
-            let array = (match.getItems() as [Any]).filter( { (obj: Any) -> Bool in
-                let item = obj as! [String: Any]
-                if NSDictionary(dictionary: item).isEqual(to: dict) {
-                    return true
-                }
-                let e = item[kEncoder] as! CUnsignedShort
-                let s0_15 = item[kStrip0_15] as! CUnsignedShort
-                let s1_N = self.stripConvertToFormat_1_N(s0_15, encoder: e, side: side)
-                // TODO: new input field for _fissionBackMaxDeltaStrips
-                return abs(Int32(strip1_N) - Int32(s1_N)) <= Int32(criteria.recoilBackMaxDeltaStrips)
-            })
-            match.setItems(array as! [[String : Any]])
-        }
+        // TODO: new input field for _fissionBackMaxDeltaStrips
+        match.filterItemsByMaxEnergy(maxStripsDelta: criteria.recoilBackMaxDeltaStrips)
     }
     
     fileprivate func findRecoil() {
@@ -648,19 +635,17 @@ class Processor {
         let encoder = dataProtocol.encoderForEventId(Int(id))
         let strip_0_15 = event.param2 >> 12
         let energy = getEnergy(event, type: criteria.startParticleType)
-        var info = [kEncoder: encoder,
+        let side: StripsSide = .back
+        let info = [kEncoder: encoder,
                     kStrip0_15: strip_0_15,
                     kEnergy: energy,
                     kEventNumber: eventNumber(),
                     kDeltaTime: deltaTime,
-                    kMarker: getMarker(event)] as [String : Any]
-        let side: StripsSide = .back
+                    kMarker: getMarker(event),
+                    kStrip1_N: stripConvertToFormat_1_N(strip_0_15, encoder: encoder, side: side)] as [String : Any]
         if isRecoil(event) {
             recoilsPerAct.append(info, side: side)
         } else {
-            if fissionsAlphaPerAct.matchFor(side: side).count == 0 {
-                info[kStrip1_N] = focalStripConvertToFormat_1_N(strip_0_15, eventId: id)
-            }
             fissionsAlphaPerAct.append(info, side: side)
         }
     }
@@ -681,17 +666,15 @@ class Processor {
         let encoder = dataProtocol.encoderForEventId(Int(id))
         let strip_0_15 = event.param2 >> 12
         let energy = getEnergy(event, type: criteria.startParticleType)
-        var info = [kEncoder: encoder,
+        let side: StripsSide = .front
+        let info = [kEncoder: encoder,
                     kStrip0_15: strip_0_15,
                     kChannel: channel,
                     kEnergy: energy,
                     kEventNumber: eventNumber(),
                     kDeltaTime: deltaTime,
-                    kMarker: getMarker(event)] as [String : Any]
-        let side: StripsSide = .front
-        if fissionsAlphaPerAct.matchFor(side: side).count == 0 {
-            info[kStrip1_N] = focalStripConvertToFormat_1_N(strip_0_15, eventId: id)
-        }
+                    kMarker: getMarker(event),
+                    kStrip1_N: stripConvertToFormat_1_N(strip_0_15, encoder: encoder, side: side)] as [String : Any]
         fissionsAlphaPerAct.append(info, side: side)
     }
     
@@ -793,22 +776,23 @@ class Processor {
     }
     
     fileprivate func isEventFrontStripNearToFirstFissionAlphaFront(_ event: Event, maxDelta: Int) -> Bool {
+        let side: StripsSide = .front
         let strip_0_15 = event.param2 >> 12
-        let strip_1_N = focalStripConvertToFormat_1_N(strip_0_15, eventId:event.eventId)
-        if let n = fissionsAlphaPerAct.firstItemsFor(side: .front)?[kStrip1_N] {
-            let s = CUnsignedShort(n as! Int)
-            return abs(Int32(strip_1_N) - Int32(s)) <= Int32(maxDelta)
+        let encoder = dataProtocol.encoderForEventId(Int(event.eventId))
+        let strip_1_N = stripConvertToFormat_1_N(strip_0_15, encoder: encoder, side: side)
+        if let s = fissionsAlphaPerAct.firstItemsFor(side: side)?[kStrip1_N] {
+            return abs(Int32(strip_1_N) - Int32(s as! Int)) <= Int32(maxDelta)
         }
         return false
     }
     
     fileprivate func isRecoilBackStripNearToFissionAlphaBack(_ event: Event) -> Bool {
-        if let fissionBackInfo = fissionsAlphaPerAct.matchFor(side: .back).itemWithMaxEnergy() {
+        let side: StripsSide = .back
+        if let fissionBackInfo = fissionsAlphaPerAct.matchFor(side: side).itemWithMaxEnergy() {
             let strip_0_15 = event.param2 >> 12
-            let strip_1_N = focalStripConvertToFormat_1_N(strip_0_15, eventId:event.eventId)
-            let strip_0_15_back_fission = fissionBackInfo[kStrip0_15] as! CUnsignedShort
-            let encoder_back_fission = fissionBackInfo[kEncoder] as! CUnsignedShort
-            let strip_1_N_back_fission = stripConvertToFormat_1_N(strip_0_15_back_fission, encoder: encoder_back_fission, side: .back)
+            let encoder = dataProtocol.encoderForEventId(Int(event.eventId))
+            let strip_1_N = stripConvertToFormat_1_N(strip_0_15, encoder: encoder, side: side)
+            let strip_1_N_back_fission = fissionBackInfo[kStrip1_N] as! Int
             return abs(Int32(strip_1_N) - Int32(strip_1_N_back_fission)) <= Int32(criteria.recoilBackMaxDeltaStrips)
         } else {
             return false
@@ -819,18 +803,12 @@ class Processor {
      +/-1 strips check at this moment.
      */
     fileprivate func isFissionStripNearToFirstFissionFront(_ event: Event) -> Bool {
-        let strip_0_15 = event.param2 >> 12
-        if let first = fissionsAlphaPerAct.firstItemsFor(side: .front), let n = first[kStrip0_15] {
-            let s = n as! CUnsignedShort
-            if strip_0_15 == s {
-                return true
-            }
-            
-            let strip_1_N = focalStripConvertToFormat_1_N(strip_0_15, eventId: event.eventId)
-            if let n = first[kStrip1_N] {
-                let s = CUnsignedShort(n as! Int)
-                return Int(abs(Int32(strip_1_N) - Int32(s))) <= 1
-            }
+        let side: StripsSide = .front
+        if let first = fissionsAlphaPerAct.firstItemsFor(side: side), let s = first[kStrip1_N] {
+            let strip_0_15 = event.param2 >> 12
+            let encoder = dataProtocol.encoderForEventId(Int(event.eventId))
+            let strip_1_N = stripConvertToFormat_1_N(strip_0_15, encoder: encoder, side: side)
+            return Int(abs(Int32(strip_1_N) - Int32(s as! Int))) <= 1
         }
         return false
     }
@@ -841,11 +819,6 @@ class Processor {
      */
     fileprivate func absTime(_ relativeTime: CUnsignedShort, cycle: CUnsignedLongLong) -> CUnsignedLongLong {
         return (cycle << 16) + CUnsignedLongLong(relativeTime)
-    }
-    
-    fileprivate func focalStripConvertToFormat_1_N(_ strip_0_15: CUnsignedShort, eventId: CUnsignedShort) -> Int {
-        let encoder = dataProtocol.encoderForEventId(Int(eventId))
-        return stripConvertToFormat_1_N(strip_0_15, encoder: encoder, side: .front)
     }
     
     fileprivate func stripConvertToFormat_1_N(_ strip_0_15: CUnsignedShort, encoder: CUnsignedShort, side: StripsSide) -> Int {
@@ -1160,9 +1133,8 @@ class Processor {
                         field = String(format: "%lld", deltaTime as! CLongLong)
                     }
                 case keyColumnStartFrontStrip:
-                    if let info = fissionsAlphaPerAct.matchFor(side: .front).itemAt(index: row), let strip_0_15 = info[kStrip0_15], let encoder = info[kEncoder] {
-                        let strip = stripConvertToFormat_1_N(strip_0_15 as! CUnsignedShort, encoder: encoder as! CUnsignedShort, side: .front)
-                        field = String(format: "%d", strip)
+                    if let strip = fissionsAlphaPerAct.matchFor(side: .front).getValueAt(index: row, key: kStrip1_N) {
+                        field = String(format: "%d", strip as! Int)
                     }
                 case keyColumnStartBackSumm:
                     if row == 0, criteria.startParticleType != criteria.recoilType, let summ = fissionsAlphaPerAct.matchFor(side: .back).getSummEnergyFrom() {
@@ -1189,9 +1161,8 @@ class Processor {
                 case keyColumnStartBackStrip:
                     let side: StripsSide = .back
                     let match = criteria.startParticleType == criteria.recoilType ? recoilsPerAct.matchFor(side: side) : fissionsAlphaPerAct.matchFor(side: side)
-                    if let info = match.itemAt(index: row), let strip_0_15 = info[kStrip0_15], let encoder = info[kEncoder] {
-                        let strip = stripConvertToFormat_1_N(strip_0_15 as! CUnsignedShort, encoder: encoder as! CUnsignedShort, side: .back)
-                        field = String(format: "%d", strip)
+                    if let strip = match.getValueAt(index: row, key: kStrip1_N) {
+                        field = String(format: "%d", strip as! Int)
                     }
                 case keyColumnStartWellSumm:
                     if row == 0, criteria.startParticleType != criteria.recoilType, let summ = fissionsAlphaWellPerAct.getSummEnergyFrom() {

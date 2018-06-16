@@ -12,14 +12,6 @@ class DetectorMatch {
     
     fileprivate var items = [[String: Any]]()
     
-    func getItems() -> [[String: Any]] {
-        return items
-    }
-    
-    func setItems(_ array: [[String: Any]]) {
-        items = array
-    }
-    
     func itemAt(index: Int) -> [String: Any]? {
         if index < items.count {
             return items[index]
@@ -56,6 +48,18 @@ class DetectorMatch {
             return energy(obj1) > energy(obj2)
         }).first as? [String: Any]
         return dict
+    }
+    
+    func filterItemsByMaxEnergy(maxStripsDelta: Int) {
+        if count > 1, let dict = itemWithMaxEnergy() {
+            let strip1_N = dict[Processor.singleton.kStrip1_N] as! Int
+            let array = (items as [Any]).filter( { (obj: Any) -> Bool in
+                let item = obj as! [String: Any]
+                let s1_N = item[Processor.singleton.kStrip1_N] as! Int
+                return abs(Int32(strip1_N) - Int32(s1_N)) <= Int32(maxStripsDelta)
+            })
+            items = array as! [[String : Any]]
+        }
     }
     
     func getSummEnergyFrom() -> Double? {
