@@ -47,6 +47,9 @@ class SearchCriteria {
     var trackBeamCurrent = false
     var trackBeamBackground = false
     var trackBeamIntegral = false
+    var trackBeamState: Bool {
+        return trackBeamEnergy || trackBeamCurrent || trackBeamBackground || trackBeamIntegral
+    }
     var searchNeutrons = false
     var searchFissionAlpha2 = false
     var fissionAlpha2MinEnergy: Double = 0

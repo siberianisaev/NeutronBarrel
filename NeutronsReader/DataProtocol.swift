@@ -44,11 +44,10 @@ class DataProtocol {
         return Set(result)
     }
     
-    var BeamEnergy: Int?
-    var BeamCurrent: Int?
-    var BeamBackground: Int?
-    var BeamIntegral: Int?
-    
+    fileprivate var BeamEnergy: Int?
+    fileprivate var BeamCurrent: Int?
+    fileprivate var BeamBackground: Int?
+    fileprivate var BeamIntegral: Int?
     fileprivate var AVeto: Int?
     fileprivate var TOF: Int?
     fileprivate var Neutrons: Int?
@@ -168,6 +167,22 @@ class DataProtocol {
     
     func isCycleTimeEvent(_ eventId: Int) -> Bool {
         return CycleTime == eventId
+    }
+    
+    func isBeamEnergy(_ eventId: Int) -> Bool {
+        return BeamEnergy == eventId
+    }
+    
+    func isBeamCurrent(_ eventId: Int) -> Bool {
+        return BeamCurrent == eventId
+    }
+    
+    func isBeamBackground(_ eventId: Int) -> Bool {
+        return BeamBackground == eventId
+    }
+    
+    func isBeamIntegral(_ eventId: Int) -> Bool {
+        return BeamIntegral == eventId
     }
     
     fileprivate var encoderForEventIdCache = [Int: CUnsignedShort]()

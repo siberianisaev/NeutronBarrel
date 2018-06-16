@@ -45,7 +45,7 @@ class Processor {
     fileprivate var currentFileName: String?
     fileprivate var neutronsMultiplicityTotal = [Int: Int]()
     fileprivate var specialPerAct = [Int: CUnsignedShort]()
-    fileprivate var beamRelatedValuesPerAct = [Int: Float]()
+    fileprivate var beamStatePerAct = BeamState()
     
     fileprivate var fissionsAlphaPerAct = DoubleSidedStripDetectorMatch()
     fileprivate var recoilsPerAct = DoubleSidedStripDetectorMatch()
@@ -398,7 +398,9 @@ class Processor {
                 fseek(file, Int(position), SEEK_SET)
             }
             
-            findBeamEvents()
+            if criteria.trackBeamState {
+                findBeamEvents()
+            }
             fseek(file, Int(position), SEEK_SET)
             
             // Important: this search must be last because we don't do file repositioning here
@@ -420,12 +422,12 @@ class Processor {
     
     fileprivate func updateFolderStatistics(_ event: Event, folder: FolderStatistics) {
         let id = Int(event.eventId)
-        if id == dataProtocol.BeamEnergy {
+        if dataProtocol.isBeamEnergy(id) {
             let e = getFloatValueFrom(event: event)
             if e >= criteria.beamEnergyMin && e <= criteria.beamEnergyMax {
                 folder.handleEnergy(e)
             }
-        } else if id == dataProtocol.BeamIntegral {
+        } else if dataProtocol.isBeamIntegral(id) {
             folder.handleIntergal(event)
         }
     }
@@ -618,30 +620,8 @@ class Processor {
     }
     
     fileprivate func findBeamEvents() {
-        var setIds = Set<Int>()
-        if criteria.trackBeamEnergy, let id = dataProtocol.BeamEnergy {
-            setIds.insert(id)
-        }
-        if criteria.trackBeamCurrent, let id = dataProtocol.BeamCurrent {
-            setIds.insert(id)
-        }
-        if criteria.trackBeamBackground, let id = dataProtocol.BeamBackground {
-            setIds.insert(id)
-        }
-        if criteria.trackBeamIntegral, let id = dataProtocol.BeamIntegral {
-            setIds.insert(id)
-        }
-        if setIds.count == 0 {
-            return
-        }
-        
         forwardSearch { (event: Event, stop: UnsafeMutablePointer<Bool>) in
-            let id = Int(event.eventId)
-            if setIds.contains(id) {
-                self.storeBeamRelated(event)
-                setIds.remove(id)
-            }
-            if setIds.count == 0 {
+            if self.beamStatePerAct.handleEvent(event, criteria: self.criteria, dataProtocol: self.dataProtocol!) {
                 stop.initialize(to: true)
             }
         }
@@ -783,18 +763,13 @@ class Processor {
         specialPerAct[id] = channel
     }
     
-    fileprivate func storeBeamRelated(_ event: Event) {
-        let value = getFloatValueFrom(event: event)
-        beamRelatedValuesPerAct[Int(event.eventId)] = value
-    }
-    
     fileprivate func clearActInfo() {
         neutronsSummPerAct = 0
         neutronsBackwardSummPerAct = 0
         fissionsAlphaPerAct.removeAll()
         gammaPerAct.removeAll()
         specialPerAct.removeAll()
-        beamRelatedValuesPerAct.removeAll()
+        beamStatePerAct.clean()
         fissionsAlphaWellPerAct.removeAll()
         recoilsPerAct.removeAll()
         fissionsAlpha2FrontPerAct.removeAll()
@@ -1262,26 +1237,26 @@ class Processor {
                     }
                 case keyColumnBeamEnergy:
                     if row == 0 {
-                        if let id = dataProtocol.BeamEnergy, let f = beamRelatedValuesPerAct[id] {
-                            field = String(format: "%.1f", f)
+                        if let e = beamStatePerAct.energy {
+                            field = String(format: "%.1f", getFloatValueFrom(event: e))
                         }
                     }
                 case keyColumnBeamCurrent:
                     if row == 0 {
-                        if let id = dataProtocol.BeamCurrent, let f = beamRelatedValuesPerAct[id] {
-                            field = String(format: "%.2f", f)
+                        if let e = beamStatePerAct.current {
+                            field = String(format: "%.2f", getFloatValueFrom(event: e))
                         }
                     }
                 case keyColumnBeamBackground:
                     if row == 0 {
-                        if let id = dataProtocol.BeamBackground, let f = beamRelatedValuesPerAct[id] {
-                            field = String(format: "%.1f", f)
+                        if let e = beamStatePerAct.background {
+                            field = String(format: "%.1f", getFloatValueFrom(event: e))
                         }
                     }
                 case keyColumnBeamIntegral:
                     if row == 0 {
-                        if let id = dataProtocol.BeamIntegral, let f = beamRelatedValuesPerAct[id] {
-                            field = String(format: "%.1f", f)
+                        if let e = beamStatePerAct.integral {
+                            field = String(format: "%.1f", getFloatValueFrom(event: e))
                         }
                     }
                 case keyColumnVetoEvent:
