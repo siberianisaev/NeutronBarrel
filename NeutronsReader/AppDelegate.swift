@@ -379,7 +379,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         }
         let ready = items.reduce(0, +)
         let total = DataLoader.singleton.files.count * items.count
-        let progress = Double(ready)/Double(total)
+        let progress = 100 * Double(ready)/Double(total)
         progressIndicator?.doubleValue = progress
     }
     
