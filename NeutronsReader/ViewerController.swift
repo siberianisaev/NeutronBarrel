@@ -16,7 +16,6 @@ class ViewerController: NSWindowController {
     fileprivate var index: Int = 0
     fileprivate var file: UnsafeMutablePointer<FILE>?
     fileprivate var eventCount: Int = 0
-    fileprivate var eventSize = Processor.singleton.eventSize
     
     @IBOutlet weak var buttonPrevious: NSButton!
     @IBOutlet weak var labelFile: NSTextField!
@@ -72,10 +71,10 @@ class ViewerController: NSWindowController {
     
     fileprivate func getEventForRow(_ row: Int) -> Event? {
         if let file = file {
-            fseek(file, row * eventSize, SEEK_SET)
-            
+            let size = Event.size
+            fseek(file, row * size, SEEK_SET)
             var event = Event()
-            fread(&event, eventSize, 1, file)
+            fread(&event, size, 1, file)
             return event
         } else {
             return nil

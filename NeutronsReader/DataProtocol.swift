@@ -70,7 +70,7 @@ class DataProtocol {
                 var content = try String(contentsOfFile: path, encoding: String.Encoding.utf8)
                 content = content.replacingOccurrences(of: " ", with: "")
                 
-                let words = Processor.singleton.eventWords
+                let words = Event.words
                 for line in content.components(separatedBy: CharacterSet.newlines) {
                     if false == line.contains(":") {
                         continue

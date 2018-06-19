@@ -109,7 +109,7 @@ class Processor {
     fileprivate func forwardSearch(checker: @escaping ((Event, UnsafeMutablePointer<Bool>)->())) {
         while feof(file) != 1 {
             var event = Event()
-            fread(&event, eventSize, 1, file)
+            fread(&event, Event.size, 1, file)
             
             var stop: Bool = false
             checker(event, &stop)
@@ -129,11 +129,12 @@ class Processor {
             var cycle = currentCycle
             var current = Int(initial)
             while current > -1 {
-                current -= eventSize
+                let size = Event.size
+                current -= size
                 fseek(file, current, SEEK_SET)
                 
                 var event = Event()
-                fread(&event, eventSize, 1, file)
+                fread(&event, size, 1, file)
                 
                 let id = Int(event.eventId)
                 if dataProtocol.isCycleTimeEvent(id) {
@@ -172,7 +173,7 @@ class Processor {
             var cycle = currentCycle
             while feof(file) != 1 {
                 var event = Event()
-                fread(&event, eventSize, 1, file)
+                fread(&event, Event.size, 1, file)
                 
                 let id = Int(event.eventId)
                 if dataProtocol.isCycleTimeEvent(id) {
@@ -301,7 +302,7 @@ class Processor {
         fseek(file, 0, SEEK_END)
         var lastNumber = fpos_t()
         fgetpos(file, &lastNumber)
-        return CUnsignedLongLong(lastNumber)/CUnsignedLongLong(eventSize)
+        return CUnsignedLongLong(lastNumber)/CUnsignedLongLong(Event.size)
     }
     
     fileprivate func mainCycleEventCheck(_ event: Event, folder: FolderStatistics) {
@@ -410,7 +411,7 @@ class Processor {
     fileprivate func updateFolderStatistics(_ event: Event, folder: FolderStatistics) {
         let id = Int(event.eventId)
         if dataProtocol.isBeamEnergy(id) {
-            let e = getFloatValueFrom(event: event)
+            let e = event.getFloatValue()
             if e >= criteria.beamEnergyMin && e <= criteria.beamEnergyMax {
                 folder.handleEnergy(e)
             }
@@ -747,19 +748,6 @@ class Processor {
     
     // MARK: - Helpers
     
-    func getFloatValueFrom(event: Event) -> Float {
-        let hi = event.param3
-        let lo = event.param2
-        let word = (UInt32(hi) << 16) + UInt32(lo)
-        let value = Float(bitPattern: word)
-        return value
-    }
-    
-    let eventSize: Int = MemoryLayout<Event>.size
-    var eventWords: Int {
-        return Processor.singleton.eventSize / MemoryLayout<CUnsignedShort>.size
-    }
-    
     fileprivate func isEventFrontStripNearToFirstFissionAlphaFront(_ event: Event, maxDelta: Int) -> Bool {
         let side: StripsSide = .front
         let strip0_15 = event.param2 >> 12
@@ -851,7 +839,7 @@ class Processor {
     fileprivate func eventNumber() -> CUnsignedLongLong {
         var position = fpos_t()
         fgetpos(file, &position)
-        let value = CUnsignedLongLong(position/Int64(eventSize)) + totalEventNumber + 1
+        let value = CUnsignedLongLong(position/Int64(Event.size)) + totalEventNumber + 1
         return value
     }
     
@@ -1193,25 +1181,25 @@ class Processor {
                 case keyColumnBeamEnergy:
                     if row == 0 {
                         if let e = beamStatePerAct.energy {
-                            field = String(format: "%.1f", getFloatValueFrom(event: e))
+                            field = String(format: "%.1f", e.getFloatValue())
                         }
                     }
                 case keyColumnBeamCurrent:
                     if row == 0 {
                         if let e = beamStatePerAct.current {
-                            field = String(format: "%.2f", getFloatValueFrom(event: e))
+                            field = String(format: "%.2f", e.getFloatValue())
                         }
                     }
                 case keyColumnBeamBackground:
                     if row == 0 {
                         if let e = beamStatePerAct.background {
-                            field = String(format: "%.1f", getFloatValueFrom(event: e))
+                            field = String(format: "%.1f", e.getFloatValue())
                         }
                     }
                 case keyColumnBeamIntegral:
                     if row == 0 {
                         if let e = beamStatePerAct.integral {
-                            field = String(format: "%.1f", getFloatValueFrom(event: e))
+                            field = String(format: "%.1f", e.getFloatValue())
                         }
                     }
                 case keyColumnVetoEvent:
