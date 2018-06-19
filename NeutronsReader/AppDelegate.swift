@@ -365,14 +365,22 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     
     // MARK: - ProcessorDelegate
     
-    func incrementProgress(_ delta: Double) {
-        DispatchQueue.main.async { [weak self] in
-            self?.progressIndicator?.increment(by: delta)
+    func startProcessingFile(_ name: String?) {
+        labelProcessingFileName?.stringValue = name ?? ""
+        let progress = progressIndicator.doubleValue
+        if progress <= 0 {
+            progressIndicator.doubleValue = Double.ulpOfOne // show indicator
         }
     }
     
-    func startProcessingFile(_ fileName: String) {
-        labelProcessingFileName?.stringValue = fileName
+    func endProcessingFile(_ name: String?) {
+        let items = operations.values.map { (p: Processor) -> Int in
+            return p.filesFinishedCount
+        }
+        let ready = items.reduce(0, +)
+        let total = DataLoader.singleton.files.count * items.count
+        let progress = Double(ready)/Double(total)
+        progressIndicator?.doubleValue = progress
     }
     
     // MARK: - Timer

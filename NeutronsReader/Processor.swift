@@ -11,8 +11,8 @@ import Cocoa
 
 protocol ProcessorDelegate: class {
     
-    func incrementProgress(_ delta: Double)
-    func startProcessingFile(_ fileName: String)
+    func startProcessingFile(_ name: String?)
+    func endProcessingFile(_ name: String?)
     
 }
 
@@ -61,6 +61,8 @@ class Processor {
     
     fileprivate var criteria = SearchCriteria()
     fileprivate weak var delegate: ProcessorDelegate?
+    
+    var filesFinishedCount: Int = 0
     
     init(criteria: SearchCriteria, delegate: ProcessorDelegate) {
         self.criteria = criteria
@@ -213,11 +215,6 @@ class Processor {
         logCalibration()
         logResultsHeader()
         
-        DispatchQueue.main.async { [weak self] in
-            self?.delegate?.incrementProgress(Double.ulpOfOne) // Show progress indicator
-        }
-        let progressForOneFile: Double = 100.0 / Double(files.count)
-        
         var folders = [String: FolderStatistics]()
         
         for fp in files {
@@ -232,10 +229,9 @@ class Processor {
             
             autoreleasepool {
                 file = fopen(path.utf8String, "rb")
-                let name = path.lastPathComponent
-                currentFileName = name
+                currentFileName = path.lastPathComponent
                 DispatchQueue.main.async { [weak self] in
-                    self?.delegate?.startProcessingFile(name)
+                    self?.delegate?.startProcessingFile(self?.currentFileName)
                 }
                 
                 if let file = file {
@@ -262,8 +258,9 @@ class Processor {
                 fclose(file)
                 folder!.endFile(fp, secondsFromFirstFileStart: TimeInterval(absTime(0, cycle: currentCycle)) * 1e-6)
                 
+                filesFinishedCount += 1
                 DispatchQueue.main.async { [weak self] in
-                    self?.delegate?.incrementProgress(progressForOneFile)
+                    self?.delegate?.endProcessingFile(self?.currentFileName)
                 }
             }
         }
