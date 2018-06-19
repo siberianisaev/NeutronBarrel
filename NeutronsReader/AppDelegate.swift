@@ -211,8 +211,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     
     @IBAction func cancel(_ sender: Any) {
         operationQueue.cancelAllOperations()
-        Processor.singleton.stop()
-        operationIds.removeAll()
+        for (_, value) in operations {
+            value.stop()
+        }
+        operations.removeAll()
         updateRunState()
     }
     
@@ -274,7 +276,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         sc.specialEventIds = ids
         
         let id = UUID().uuidString
-        operationIds.insert(id)
+        let processor = Processor(criteria: sc, delegate: self)
+        operations[id] = processor
         updateRunState()
         
         let operation = BlockOperation()
@@ -283,15 +286,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         weak var weakOperation = operation
         operation.addExecutionBlock({
             if weakOperation?.isCancelled == false {
-                let processor = Processor.singleton
-                processor.criteria = sc
-                processor.processDataWith(aDelegate: self, completion: { [weak self] in
-                    self?.operationIds.remove(id)
+                processor.processDataWith(completion: { [weak self] in
+                    self?.operations[id] = nil
                     self?.updateRunState()
                 })
             } else {
                 DispatchQueue.main.async(execute: { [weak self] in
-                    self?.operationIds.remove(id)
+                    self?.operations[id] = nil
                     self?.updateRunState()
                 })
             }
@@ -299,7 +300,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         operationQueue.addOperation(operation)
     }
     
-    fileprivate var operationIds = Set<String>()
+    fileprivate var operations = [String: Processor]()
     
     fileprivate var _operationQueue: OperationQueue?
     fileprivate var operationQueue: OperationQueue {
@@ -307,14 +308,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             return oq
         }
         let op = OperationQueue()
-        op.maxConcurrentOperationCount = 1
+        op.maxConcurrentOperationCount = 8
         op.name = "Processing queue"
         self._operationQueue = op
         return op
     }
     
     fileprivate func updateRunState() {
-        let count = operationIds.count
+        let count = operations.count
         let run = count > 0
         buttonCancel.isHidden = !run
         labelTask.isHidden = !run

@@ -59,22 +59,19 @@ class Processor {
         return DataLoader.singleton.files
     }
     
-    var criteria = SearchCriteria()
-    weak var delegate: ProcessorDelegate?
+    fileprivate var criteria = SearchCriteria()
+    fileprivate weak var delegate: ProcessorDelegate?
     
-    class var singleton : Processor {
-        struct Static {
-            static let sharedInstance : Processor = Processor()
-        }
-        return Static.sharedInstance
+    init(criteria: SearchCriteria, delegate: ProcessorDelegate) {
+        self.criteria = criteria
+        self.delegate = delegate
     }
     
     func stop() {
         stoped = true
     }
     
-    func processDataWith(aDelegate: ProcessorDelegate, completion: @escaping (()->())) {
-        delegate = aDelegate
+    func processDataWith(completion: @escaping (()->())) {
         stoped = false
         processData()
         DispatchQueue.main.async {
