@@ -145,14 +145,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     
     @IBAction func removeCalibration(_ sender: Any) {
         setSelected(false, indicator: indicatorCalibration)
-        Processor.singleton.removeCalibration()
+        Calibration.clean()
         buttonRemoveCalibration.isHidden = true
         showFilePath(nil, label: labelCalibrationFileName)
     }
     
     @IBAction func removeStripsConfiguration(_ sender: Any) {
         setSelected(false, indicator: indicatorStripsConfig)
-        Processor.singleton.removeStripsConfiguration()
+        StripsConfiguration.clean()
         buttonRemoveStripsConfiguration.isHidden = true
         showFilePath(nil, label: labelStripsConfigurationFileName)
     }
@@ -339,15 +339,15 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     }
     
     @IBAction func selectData(_ sender: AnyObject?) {
-        Processor.singleton.selectDataWithCompletion { [weak self] (success: Bool) in
+        DataLoader.load { [weak self] (success: Bool) in
             self?.setSelected(success, indicator: self?.indicatorData)
             self?.viewerController?.loadFile()
-            self?.showFilePath(Processor.singleton.files.first, label: self?.labelFirstDataFileName)
+            self?.showFilePath(DataLoader.singleton.files.first, label: self?.labelFirstDataFileName)
         }
     }
     
     @IBAction func selectCalibration(_ sender: AnyObject?) {
-        Processor.singleton.selectCalibrationWithCompletion { [weak self] (success: Bool, filePath: String?) in
+        Calibration.load { [weak self] (success: Bool, filePath: String?) in
             self?.setSelected(success, indicator: self?.indicatorCalibration)
             self?.buttonRemoveCalibration?.isHidden = !success
             self?.showFilePath(filePath, label: self?.labelCalibrationFileName)
@@ -355,7 +355,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     }
     
     @IBAction func selectStripsConfiguration(_ sender: AnyObject?) {
-        Processor.singleton.selectStripsConfigurationWithCompletion { [weak self] (success: Bool, filePath: String?) in
+        StripsConfiguration.load { [weak self] (success: Bool, filePath: String?) in
             self?.setSelected(success, indicator: self?.indicatorStripsConfig)
             self?.buttonRemoveStripsConfiguration?.isHidden = !success
             self?.showFilePath(filePath, label: self?.labelStripsConfigurationFileName)

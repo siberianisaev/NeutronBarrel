@@ -19,7 +19,7 @@ class DetectorMatchItem {
     var strip1_N: Int? {
         if nil == _strip1_N, let strip0_15 = strip0_15, let encoder = encoder {
             if let side = side {
-                _strip1_N = Processor.singleton.stripConvertToFormat_1_N(strip0_15, encoder: encoder, side: side)
+                _strip1_N = StripsConfiguration.singleton.strip1_N_For(side: side, encoder: Int(encoder), strip0_15: strip0_15)
             } else {
                 print("Unable to calculate 'strip1_N': detector side was not determined!")
             }

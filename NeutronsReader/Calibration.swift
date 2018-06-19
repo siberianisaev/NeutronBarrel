@@ -15,10 +15,22 @@ class Calibration {
         return data.count > 0
     }
     
+    class var singleton : Calibration {
+        struct Static {
+            static let sharedInstance : Calibration = Calibration()
+        }
+        return Static.sharedInstance
+    }
+    
     fileprivate var data = [String: CalibrationEquation]()
     var stringValue: String?
     
-    class func openCalibration(_ onFinish: @escaping ((Calibration?, String?) -> ())) {
+    class func clean() {
+        Calibration.singleton.data.removeAll()
+    }
+    
+    class func load(_ completion: @escaping ((Bool, String?) -> ())) {
+        let calibration = Calibration()
         let panel = NSOpenPanel()
         panel.canChooseDirectories = false
         panel.canChooseFiles = true
@@ -26,29 +38,13 @@ class Calibration {
         panel.begin { (result) -> Void in
             if result.rawValue == NSFileHandlingPanelOKButton {
                 let urls = panel.urls.filter() { $0.path.hasSuffix(".clb") }
-                onFinish(self.calibrationWithUrls(urls), urls.first?.path)
+                clean()
+                completion(calibration.open(urls), urls.first?.path)
             }
         }
     }
     
-    fileprivate class func calibrationWithUrls(_ URLs: [Foundation.URL]) -> Calibration? {
-        let calibration = Calibration()
-        calibration.load(URLs)
-        if calibration.data.count > 0 {
-            return calibration
-        } else {
-            let alert = NSAlert()
-            alert.messageText = "Error"
-            alert.informativeText = "Wrong calibration file!"
-            alert.addButton(withTitle: "Got It")
-            alert.alertStyle = .warning
-            alert.runModal()
-            return nil
-        }
-    }
-    
-    fileprivate func load(_ URLs: [Foundation.URL]) {
-        data.removeAll(keepingCapacity: true)
+    fileprivate func open(_ URLs: [Foundation.URL]) -> Bool {
         for URL in URLs {
             let path = URL.path
             do {
@@ -71,6 +67,17 @@ class Calibration {
             } catch {
                 print("Error load calibration from file at path \(path): \(error)")
             }
+        }
+        if data.count == 0 {
+            let alert = NSAlert()
+            alert.messageText = "Error"
+            alert.informativeText = "Wrong calibration file!"
+            alert.addButton(withTitle: "Got It")
+            alert.alertStyle = .warning
+            alert.runModal()
+            return false
+        } else {
+            return true
         }
     }
     

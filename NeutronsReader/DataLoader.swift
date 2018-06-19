@@ -11,7 +11,18 @@ import AppKit
 
 class DataLoader {
     
-    class func load(_ onFinish: @escaping (([String], DataProtocol) -> ())) {
+    var files = [String]()
+    var dataProtocol: DataProtocol!
+    
+    class var singleton : DataLoader {
+        struct Static {
+            static let sharedInstance : DataLoader = DataLoader()
+        }
+        return Static.sharedInstance
+    }
+    
+    class func load(_ completion: @escaping ((Bool) -> ())) {
+        let dl = DataLoader.singleton
         let panel = NSOpenPanel()
         panel.canChooseDirectories = true
         panel.canChooseFiles = true
@@ -43,7 +54,9 @@ class DataLoader {
                         return false
                     }
                 })
-                onFinish(selected, protocolObject)
+                dl.files = selected
+                dl.dataProtocol = protocolObject
+                completion(selected.count > 0)
             }
         }
     }
@@ -51,7 +64,7 @@ class DataLoader {
     /**
      Recursive bypasses folders in 'directoryPath' and then return all files in these folders.
     */
-    class func recursiveGetFilesFromDirectory(_ directoryPath: String) -> [String] {
+    fileprivate class func recursiveGetFilesFromDirectory(_ directoryPath: String) -> [String] {
         var results = [String]()
         
         let fm = Foundation.FileManager.default

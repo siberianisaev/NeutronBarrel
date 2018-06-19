@@ -24,8 +24,6 @@ enum TOFUnits {
 class Processor {
     
     fileprivate var file: UnsafeMutablePointer<FILE>!
-    fileprivate var dataProtocol: DataProtocol!
-    fileprivate var stripsConfiguration = StripsConfiguration()
     fileprivate var currentCycle: CUnsignedLongLong = 0
     fileprivate var totalEventNumber: CUnsignedLongLong = 0
     fileprivate var startEventTime: CUnsignedLongLong = 0
@@ -44,9 +42,23 @@ class Processor {
     fileprivate var gammaPerAct = DetectorMatch()
     fileprivate var stoped = false
     fileprivate var logger: Logger!
-    fileprivate var calibration = Calibration()
     
-    var files = [String]()
+    fileprivate var calibration: Calibration {
+        return Calibration.singleton
+    }
+    
+    fileprivate var stripsConfiguration: StripsConfiguration {
+        return StripsConfiguration.singleton
+    }
+    
+    fileprivate var dataProtocol: DataProtocol! {
+        return DataLoader.singleton.dataProtocol
+    }
+    
+    fileprivate var files: [String] {
+        return DataLoader.singleton.files
+    }
+    
     var criteria = SearchCriteria()
     weak var delegate: ProcessorDelegate?
     
@@ -68,36 +80,6 @@ class Processor {
         DispatchQueue.main.async {
             completion()
         }
-    }
-    
-    func selectDataWithCompletion(_ completion: @escaping ((Bool)->())) {
-        DataLoader.load { [weak self] (files: [String], dataProtocol: DataProtocol) in
-            self?.files = files
-            self?.dataProtocol = dataProtocol
-            completion(files.count > 0)
-        }
-    }
-    
-    func selectCalibrationWithCompletion(_ completion: @escaping ((Bool, String?)->())) {
-        Calibration.openCalibration { [weak self] (calibration: Calibration?, filePath: String?) in
-            self?.calibration = calibration ?? Calibration()
-            completion(calibration != nil, filePath)
-        }
-    }
-    
-    func removeCalibration() {
-        calibration = Calibration()
-    }
-    
-    func selectStripsConfigurationWithCompletion(_ completion: @escaping ((Bool, String?)->())) {
-        StripsConfiguration.openConfiguration { [weak self] (configuration: StripsConfiguration?, filePath: String?) in
-            self?.stripsConfiguration = configuration!
-            completion(configuration!.loaded, filePath)
-        }
-    }
-    
-    func removeStripsConfiguration() {
-        stripsConfiguration = StripsConfiguration()
     }
     
     // MARK: - Algorithms
@@ -279,7 +261,7 @@ class Processor {
                     exit(-1)
                 }
                 
-                totalEventNumber += calculateTotalEventNumberForFile(file)
+                totalEventNumber += Processor.calculateTotalEventNumberForFile(file)
                 fclose(file)
                 folder!.endFile(fp, secondsFromFirstFileStart: TimeInterval(absTime(0, cycle: currentCycle)) * 1e-6)
                 
@@ -298,7 +280,7 @@ class Processor {
         print("\nDone!\nTotal time took: \((NSApplication.shared.delegate as! AppDelegate).timeTook())")
     }
     
-    func calculateTotalEventNumberForFile(_ file: UnsafeMutablePointer<FILE>!) -> CUnsignedLongLong {
+    class func calculateTotalEventNumberForFile(_ file: UnsafeMutablePointer<FILE>!) -> CUnsignedLongLong {
         fseek(file, 0, SEEK_END)
         var lastNumber = fpos_t()
         fgetpos(file, &lastNumber)
@@ -752,7 +734,7 @@ class Processor {
         let side: StripsSide = .front
         let strip0_15 = event.param2 >> 12
         let encoder = dataProtocol.encoderForEventId(Int(event.eventId))
-        let strip1_N = stripConvertToFormat_1_N(strip0_15, encoder: encoder, side: side)
+        let strip1_N = stripsConfiguration.strip1_N_For(side: side, encoder: Int(encoder), strip0_15: strip0_15)
         if let s = fissionsAlphaPerAct.firstItemsFor(side: side)?.strip1_N {
             return abs(Int32(strip1_N) - Int32(s)) <= Int32(maxDelta)
         }
@@ -764,7 +746,7 @@ class Processor {
         if let s = fissionsAlphaPerAct.matchFor(side: side).itemWithMaxEnergy()?.strip1_N {
             let strip0_15 = event.param2 >> 12
             let encoder = dataProtocol.encoderForEventId(Int(event.eventId))
-            let strip1_N = stripConvertToFormat_1_N(strip0_15, encoder: encoder, side: side)
+            let strip1_N = stripsConfiguration.strip1_N_For(side: side, encoder: Int(encoder), strip0_15: strip0_15)
             return abs(Int32(strip1_N) - Int32(s)) <= Int32(criteria.recoilBackMaxDeltaStrips)
         } else {
             return false
@@ -779,7 +761,7 @@ class Processor {
         if let s = fissionsAlphaPerAct.firstItemsFor(side: side)?.strip1_N {
             let strip0_15 = event.param2 >> 12
             let encoder = dataProtocol.encoderForEventId(Int(event.eventId))
-            let strip1_N = stripConvertToFormat_1_N(strip0_15, encoder: encoder, side: side)
+            let strip1_N = stripsConfiguration.strip1_N_For(side: side, encoder: Int(encoder), strip0_15: strip0_15)
             return Int(abs(Int32(strip1_N) - Int32(s))) <= 1
         }
         return false
@@ -791,10 +773,6 @@ class Processor {
      */
     fileprivate func absTime(_ relativeTime: CUnsignedShort, cycle: CUnsignedLongLong) -> CUnsignedLongLong {
         return (cycle << 16) + CUnsignedLongLong(relativeTime)
-    }
-    
-    func stripConvertToFormat_1_N(_ strip_0_15: CUnsignedShort, encoder: CUnsignedShort, side: StripsSide) -> Int {
-        return stripsConfiguration.strip_1_N_For(side: side, encoder: Int(encoder), strip_0_15: strip_0_15)
     }
     
     fileprivate func getMarker(_ event: Event) -> CUnsignedShort {

@@ -11,6 +11,7 @@ import Cocoa
 class ViewerController: NSWindowController {
 
     @IBOutlet weak var tableView: NSTableView!
+    
     fileprivate var rowIdentifiers = ["ViewerNumberCell", "ViewerEventIDCell", "ViewerParam1Cell", "ViewerParam2Cell", "ViewerParam3Cell"]
     fileprivate var totalEventNumber: CUnsignedLongLong = 0
     fileprivate var index: Int = 0
@@ -29,8 +30,7 @@ class ViewerController: NSWindowController {
     
     func loadFile(_ index: Int = 0) {
         var name: String = ""
-        let processor = Processor.singleton
-        let files = processor.files
+        let files = DataLoader.singleton.files
         
         closeFile()
         
@@ -39,7 +39,7 @@ class ViewerController: NSWindowController {
             let path = files[index] as NSString
             file = fopen(path.utf8String, "rb")
             if let f = file {
-                eventCount = Int(processor.calculateTotalEventNumberForFile(f))
+                eventCount = Int(Processor.calculateTotalEventNumberForFile(f))
                 name = path.lastPathComponent
             }
         } else {
