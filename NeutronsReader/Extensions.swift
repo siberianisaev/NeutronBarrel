@@ -70,9 +70,9 @@ extension timespec {
 extension String {
     
     static func timeStamp() -> String {
-        let components = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute, .second], from: Date())
+        let components = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute, .second, .nanosecond], from: Date())
         let sMonth = DateFormatter().monthSymbols[components.month! - 1]
-        return String(format: "%d_%@_%d_%02d-%02d-%02d", components.year!, sMonth, components.day!, components.hour!, components.minute!, components.second!)
+        return String(format: "%d_%@_%dd_%02dh_%02dm_%02ds_%dns", components.year!, sMonth, components.day!, components.hour!, components.minute!, components.second!, components.nanosecond!)
     }
     
 }

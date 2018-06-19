@@ -386,6 +386,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     // MARK: - Timer
     
     fileprivate func startTimer() {
+        if timer?.isValid == true {
+            return
+        }
         startDate = Date()
         timer?.invalidate()
         timer = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(AppDelegate.incrementTotalTime), userInfo: nil, repeats: true)
