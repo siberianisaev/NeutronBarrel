@@ -3,7 +3,7 @@
 //  NeutronsReader
 //
 //  Created by Andrey Isaev on 26/04/2017.
-//  Copyright © 2017 Andrey Isaev. All rights reserved.
+//  Copyright © 2018 Flerov Laboratory. All rights reserved.
 //
 
 import Foundation
@@ -235,7 +235,7 @@ class Processor {
                 }
                 
                 if let file = file {
-                    setvbuf(file, nil, _IONBF, 0) // disable buffering
+                    setvbuf(file, nil, _IONBF, 0)
                     forwardSearch(checker: { [weak self] (event: Event, stop: UnsafeMutablePointer<Bool>) in
                         autoreleasepool {
                             if let file = self?.file, let currentFileName = self?.currentFileName, let stoped = self?.stoped {
