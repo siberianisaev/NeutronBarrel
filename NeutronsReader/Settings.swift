@@ -53,6 +53,7 @@ class Settings {
         MinFissionAlpha2Time = "MinFissionAlpha2Time",
         MaxFissionAlpha2Time = "MaxFissionAlpha2Time",
         MaxFissionAlpha2FrontDeltaStrips = "MaxFissionAlpha2FrontDeltaStrips",
+        MaxConcurrentOperations = "MaxConcurrentOperations",
         SearchSpecialEvents = "SearchSpecialEvents",
         SpecialEventIds = "SpecialEventIds",
         SelectedRecoilType = "SelectedRecoilType",
@@ -99,6 +100,8 @@ class Settings {
         }
         
         switch setting {
+        case .MaxConcurrentOperations:
+            return 8
         case .BeamEnergyMin:
             return 200
         case .BeamEnergyMax:

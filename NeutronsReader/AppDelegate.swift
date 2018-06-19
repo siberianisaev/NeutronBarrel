@@ -88,6 +88,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBInspectable var sMinFissionAlpha2Time = String(format: "%d", Settings.getIntSetting(.MinFissionAlpha2Time)) // mks
     @IBInspectable var sMaxFissionAlpha2Time = String(format: "%d", Settings.getIntSetting(.MaxFissionAlpha2Time)) // mks
     @IBInspectable var sMaxFissionAlpha2FrontDeltaStrips = String(format: "%d", Settings.getIntSetting(.MaxFissionAlpha2FrontDeltaStrips))
+    @IBInspectable var sMaxConcurrentOperations = String(format: "%d", Settings.getIntSetting(.MaxConcurrentOperations)) {
+        didSet {
+            operationQueue.maxConcurrentOperationCount = maxConcurrentOperationCount
+        }
+    }
     @IBInspectable var searchSpecialEvents: Bool = Settings.getBoolSetting(.SearchSpecialEvents)
     @IBInspectable var specialEventIds = Settings.getStringSetting(.SpecialEventIds) ?? ""
     @IBInspectable var searchVETO: Bool = Settings.getBoolSetting(.SearchVETO) {
@@ -308,10 +313,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             return oq
         }
         let op = OperationQueue()
-        op.maxConcurrentOperationCount = 8
+        op.maxConcurrentOperationCount = maxConcurrentOperationCount
         op.name = "Processing queue"
         self._operationQueue = op
         return op
+    }
+    
+    fileprivate var maxConcurrentOperationCount: Int {
+        return max(Int(sMaxConcurrentOperations) ?? 1, 1)
     }
     
     fileprivate func updateRunState() {
@@ -457,6 +466,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         Settings.setObject(Int(sMinFissionAlpha2Time), forSetting: .MinFissionAlpha2Time)
         Settings.setObject(Int(sMaxFissionAlpha2Time), forSetting: .MaxFissionAlpha2Time)
         Settings.setObject(Int(sMaxFissionAlpha2FrontDeltaStrips), forSetting: .MaxFissionAlpha2FrontDeltaStrips)
+        Settings.setObject(maxConcurrentOperationCount, forSetting: .MaxConcurrentOperations)
         Settings.setObject(searchSpecialEvents, forSetting: .SearchSpecialEvents)
         Settings.setObject(specialEventIds, forSetting: .SpecialEventIds)
         Settings.setObject(selectedRecoilType.rawValue, forSetting: .SelectedRecoilType)
