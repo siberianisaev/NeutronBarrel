@@ -30,7 +30,7 @@ class Calibration {
     }
     
     class func load(_ completion: @escaping ((Bool, String?) -> ())) {
-        let calibration = Calibration()
+        let calibration = Calibration.singleton
         let panel = NSOpenPanel()
         panel.canChooseDirectories = false
         panel.canChooseFiles = true
@@ -39,7 +39,8 @@ class Calibration {
             if result.rawValue == NSFileHandlingPanelOKButton {
                 let urls = panel.urls.filter() { $0.path.hasSuffix(".clb") }
                 clean()
-                completion(calibration.open(urls), urls.first?.path)
+                let success = calibration.open(urls)
+                completion(success, urls.first?.path)
             }
         }
     }
@@ -68,7 +69,7 @@ class Calibration {
                 print("Error load calibration from file at path \(path): \(error)")
             }
         }
-        if data.count == 0 {
+        if !hasData() {
             let alert = NSAlert()
             alert.messageText = "Error"
             alert.informativeText = "Wrong calibration file!"
