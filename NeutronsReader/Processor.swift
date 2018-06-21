@@ -290,11 +290,13 @@ class Processor {
             let isRecoilSearch = criteria.startParticleType == criteria.recoilType
             if isRecoilSearch {
                 if !validateRecoil(event, deltaTime: 0) {
+                    clearActInfo()
                     return
                 }
             } else { // FFron or AFron
                 let energy = getEnergy(event, type: criteria.startParticleType)
                 if energy < criteria.fissionAlphaFrontMinEnergy || energy > criteria.fissionAlphaFrontMaxEnergy {
+                    clearActInfo()
                     return
                 }
                 storeFissionAlphaFront(event, deltaTime: 0)
