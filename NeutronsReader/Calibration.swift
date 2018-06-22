@@ -26,7 +26,9 @@ class Calibration {
     var stringValue: String?
     
     class func clean() {
-        Calibration.singleton.data.removeAll()
+        let c = Calibration.singleton
+        c.data.removeAll()
+        c.calibrationKeysCache.removeAll()
     }
     
     class func load(_ completion: @escaping ((Bool, String?) -> ())) {
@@ -82,12 +84,51 @@ class Calibration {
         }
     }
     
-    func calibratedValueForAmplitude(_ channel: Double, eventName: String) -> Double {
-        if let equation = data[eventName] {
+    fileprivate var calibrationKeysCache = [SearchType: [Int: [CUnsignedShort: [CUnsignedShort: String]]]]()
+    
+    fileprivate func cacheCalibrationKey(_ key: String, type: SearchType, eventId: Int, encoder: CUnsignedShort, strip: CUnsignedShort) {
+        var typeDict = calibrationKeysCache[type] ?? [:]
+        var eventIdDict = typeDict[eventId] ?? [:]
+        var encoderDict = eventIdDict[encoder] ?? [:]
+        encoderDict[strip] = key
+        eventIdDict[encoder] = encoderDict
+        typeDict[eventId] = eventIdDict
+        calibrationKeysCache[type] = typeDict
+    }
+    
+    fileprivate func calibrationKeyFor(type: SearchType, eventId: Int, encoder: CUnsignedShort, strip0_15: CUnsignedShort?, dataProtocol: DataProtocol) -> String {
+        let strip = (strip0_15 ?? 0) + 1
+        if let cached = calibrationKeysCache[type]?[eventId]?[encoder]?[strip] {
+            return cached
+        }
+        
+        var key: String
+        if type == .gamma {
+            let position = dataProtocol.position(eventId)
+            key = "\(position)\(encoder)"
+        } else if type == .tof {
+            let position = dataProtocol.isAlphaFronEvent(eventId) ? "Fron" : "Back"
+            key = String(format: "%@%@%d.%d", type.symbol(), position, encoder, strip)
+        } else {
+            let position = dataProtocol.position(eventId)
+            var name = type.symbol() + position
+            if encoder != 0 {
+                name += "\(encoder)."
+            }
+            name += String(strip)
+            key = name
+        }
+        cacheCalibrationKey(key, type: type, eventId: eventId, encoder: encoder, strip: strip)
+        return key
+    }
+    
+    func calibratedValueForAmplitude(_ channel: Double, type: SearchType, eventId: Int, encoder: CUnsignedShort, strip0_15: CUnsignedShort?, dataProtocol: DataProtocol) -> Double {
+        let key = calibrationKeyFor(type: type, eventId: eventId, encoder: encoder, strip0_15: strip0_15, dataProtocol: dataProtocol)
+        if let equation = data[key] {
             return equation.applyOn(channel)
         }
         if hasData() {
-            print("No calibration for name \(eventName)")
+            print("No calibration for name \(key)")
         }
         return channel
     }

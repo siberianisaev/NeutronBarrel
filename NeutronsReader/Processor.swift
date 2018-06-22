@@ -648,9 +648,7 @@ class Processor {
         let encoder = dataProtocol.encoderForEventId(eventId)
         let energy: Double
         if calibration.hasData() {
-            let position = dataProtocol.position(eventId)
-            let name = "\(position)\(encoder)"
-            energy = calibration.calibratedValueForAmplitude(channel, eventName: name)
+            energy = calibration.calibratedValueForAmplitude(channel, type: .gamma, eventId: eventId, encoder: encoder, strip0_15: nil, dataProtocol: dataProtocol)
         } else {
             energy = channel
         }
@@ -829,15 +827,9 @@ class Processor {
         let channel = Double(getChannel(event, type: type))
         if calibration.hasData() {
             let eventId = Int(event.eventId)
-            let strip0_15 = event.param2 >> 12
             let encoder = dataProtocol.encoderForEventId(eventId)
-            let position = dataProtocol.position(eventId)
-            var name = type.symbol() + position
-            if encoder != 0 {
-                name += "\(encoder)."
-            }
-            name += String(strip0_15 + 1)
-            return calibration.calibratedValueForAmplitude(Double(channel), eventName: name)
+            let strip0_15 = event.param2 >> 12
+            return calibration.calibratedValueForAmplitude(channel, type: type, eventId: eventId, encoder: encoder, strip0_15: strip0_15, dataProtocol: dataProtocol)
         } else {
             return channel
         }
@@ -853,16 +845,9 @@ class Processor {
             return channel
         } else {
             let eventId = Int(eventRecoil.eventId)
-            let strip0_15 = eventRecoil.param2 >> 12
             let encoder = dataProtocol.encoderForEventId(eventId)
-            var position: String
-            if dataProtocol.isAlphaFronEvent(eventId) {
-                position = "Fron"
-            } else {
-                position = "Back"
-            }
-            let name = String(format: "T%@%d.%d", position, encoder, strip0_15 + 1)
-            return calibration.calibratedValueForAmplitude(channel, eventName: name)
+            let strip0_15 = eventRecoil.param2 >> 12
+            return calibration.calibratedValueForAmplitude(channel, type: SearchType.tof, eventId: eventId, encoder: encoder, strip0_15: strip0_15, dataProtocol: dataProtocol)
         }
     }
     
