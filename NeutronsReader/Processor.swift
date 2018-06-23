@@ -821,18 +821,11 @@ class Processor {
      +/-1 strips check at this moment.
      */
     fileprivate func isFissionStripNearToFirstFissionFront(_ event: Event) -> Bool {
-        let strip_0_15 = event.param2 >> 12
-        if let first = fissionsAlphaPerAct.firstItemsFor(side: .front), let n = first[kStrip0_15] {
-            let s = n as! CUnsignedShort
-            if strip_0_15 == s {
-                return true
-            }
-            
+        if let first = fissionsAlphaPerAct.firstItemsFor(side: .front), let n = first[kStrip1_N] {
+            let strip_0_15 = event.param2 >> 12
             let strip_1_N = focalStripConvertToFormat_1_N(strip_0_15, eventId: event.eventId)
-            if let n = first[kStrip1_N] {
-                let s = CUnsignedShort(n as! Int)
-                return Int(abs(Int32(strip_1_N) - Int32(s))) <= 1
-            }
+            let s = CUnsignedShort(n as! Int)
+            return Int(abs(Int32(strip_1_N) - Int32(s))) <= 1
         }
         return false
     }
