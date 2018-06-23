@@ -42,7 +42,7 @@ class DetectorMatch {
     func filterItemsByMaxEnergy(maxStripsDelta: Int) {
         if count > 1, let item = itemWithMaxEnergy(), let strip1_N = item.strip1_N {
             let array = items.filter( { (i: DetectorMatchItem) -> Bool in
-                if let s1_N = item.strip1_N {
+                if let s1_N = i.strip1_N {
                     return abs(Int32(strip1_N) - Int32(s1_N)) <= Int32(maxStripsDelta)
                 } else {
                     return false

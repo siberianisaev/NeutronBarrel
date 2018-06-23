@@ -471,7 +471,6 @@ class Processor {
             }
         }
         
-        // TODO: move filtration logic to DetectorMatch, and remove accessors for 'items'.
         let side: StripsSide = .back
         let match = fissionsAlphaPerAct.matchFor(side: side)
         // TODO: new input field for _fissionBackMaxDeltaStrips
