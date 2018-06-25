@@ -29,11 +29,7 @@ class FolderStatistics {
     fileprivate var energyCount: CUnsignedLong = 0
     
     var integral: Float {
-        if let e = integralEvent {
-            return Processor.singleton.getFloatValueFrom(event: e)
-        } else {
-            return 0
-        }
+        return integralEvent?.getFloatValue() ?? 0
     }
     fileprivate var integralEvent: Event?
     

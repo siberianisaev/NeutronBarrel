@@ -88,6 +88,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBInspectable var sMinFissionAlpha2Time = String(format: "%d", Settings.getIntSetting(.MinFissionAlpha2Time)) // mks
     @IBInspectable var sMaxFissionAlpha2Time = String(format: "%d", Settings.getIntSetting(.MaxFissionAlpha2Time)) // mks
     @IBInspectable var sMaxFissionAlpha2FrontDeltaStrips = String(format: "%d", Settings.getIntSetting(.MaxFissionAlpha2FrontDeltaStrips))
+    @IBInspectable var sMaxConcurrentOperations = String(format: "%d", Settings.getIntSetting(.MaxConcurrentOperations)) {
+        didSet {
+            operationQueue.maxConcurrentOperationCount = maxConcurrentOperationCount
+        }
+    }
     @IBInspectable var searchSpecialEvents: Bool = Settings.getBoolSetting(.SearchSpecialEvents)
     @IBInspectable var specialEventIds = Settings.getStringSetting(.SpecialEventIds) ?? ""
     @IBInspectable var searchVETO: Bool = Settings.getBoolSetting(.SearchVETO) {
@@ -145,14 +150,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     
     @IBAction func removeCalibration(_ sender: Any) {
         setSelected(false, indicator: indicatorCalibration)
-        Processor.singleton.removeCalibration()
+        Calibration.clean()
         buttonRemoveCalibration.isHidden = true
         showFilePath(nil, label: labelCalibrationFileName)
     }
     
     @IBAction func removeStripsConfiguration(_ sender: Any) {
         setSelected(false, indicator: indicatorStripsConfig)
-        Processor.singleton.removeStripsConfiguration()
+        StripsConfiguration.clean()
         buttonRemoveStripsConfiguration.isHidden = true
         showFilePath(nil, label: labelStripsConfigurationFileName)
     }
@@ -211,8 +216,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     
     @IBAction func cancel(_ sender: Any) {
         operationQueue.cancelAllOperations()
-        Processor.singleton.stop()
-        operationIds.removeAll()
+        for (_, value) in operations {
+            value.stop()
+        }
+        operations.removeAll()
         updateRunState()
     }
     
@@ -274,7 +281,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         sc.specialEventIds = ids
         
         let id = UUID().uuidString
-        operationIds.insert(id)
+        let processor = Processor(criteria: sc, delegate: self)
+        operations[id] = processor
         updateRunState()
         
         let operation = BlockOperation()
@@ -283,15 +291,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         weak var weakOperation = operation
         operation.addExecutionBlock({
             if weakOperation?.isCancelled == false {
-                let processor = Processor.singleton
-                processor.criteria = sc
-                processor.processDataWith(aDelegate: self, completion: { [weak self] in
-                    self?.operationIds.remove(id)
+                processor.processDataWith(completion: { [weak self] in
+                    self?.operations[id] = nil
                     self?.updateRunState()
                 })
             } else {
                 DispatchQueue.main.async(execute: { [weak self] in
-                    self?.operationIds.remove(id)
+                    self?.operations[id] = nil
                     self?.updateRunState()
                 })
             }
@@ -299,7 +305,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         operationQueue.addOperation(operation)
     }
     
-    fileprivate var operationIds = Set<String>()
+    fileprivate var operations = [String: Processor]()
     
     fileprivate var _operationQueue: OperationQueue?
     fileprivate var operationQueue: OperationQueue {
@@ -307,14 +313,18 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             return oq
         }
         let op = OperationQueue()
-        op.maxConcurrentOperationCount = 1
+        op.maxConcurrentOperationCount = maxConcurrentOperationCount
         op.name = "Processing queue"
         self._operationQueue = op
         return op
     }
     
+    fileprivate var maxConcurrentOperationCount: Int {
+        return max(Int(sMaxConcurrentOperations) ?? 1, 1)
+    }
+    
     fileprivate func updateRunState() {
-        let count = operationIds.count
+        let count = operations.count
         let run = count > 0
         buttonCancel.isHidden = !run
         labelTask.isHidden = !run
@@ -339,15 +349,15 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     }
     
     @IBAction func selectData(_ sender: AnyObject?) {
-        Processor.singleton.selectDataWithCompletion { [weak self] (success: Bool) in
+        DataLoader.load { [weak self] (success: Bool) in
             self?.setSelected(success, indicator: self?.indicatorData)
             self?.viewerController?.loadFile()
-            self?.showFilePath(Processor.singleton.files.first, label: self?.labelFirstDataFileName)
+            self?.showFilePath(DataLoader.singleton.files.first, label: self?.labelFirstDataFileName)
         }
     }
     
     @IBAction func selectCalibration(_ sender: AnyObject?) {
-        Processor.singleton.selectCalibrationWithCompletion { [weak self] (success: Bool, filePath: String?) in
+        Calibration.load { [weak self] (success: Bool, filePath: String?) in
             self?.setSelected(success, indicator: self?.indicatorCalibration)
             self?.buttonRemoveCalibration?.isHidden = !success
             self?.showFilePath(filePath, label: self?.labelCalibrationFileName)
@@ -355,7 +365,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     }
     
     @IBAction func selectStripsConfiguration(_ sender: AnyObject?) {
-        Processor.singleton.selectStripsConfigurationWithCompletion { [weak self] (success: Bool, filePath: String?) in
+        StripsConfiguration.load { [weak self] (success: Bool, filePath: String?) in
             self?.setSelected(success, indicator: self?.indicatorStripsConfig)
             self?.buttonRemoveStripsConfiguration?.isHidden = !success
             self?.showFilePath(filePath, label: self?.labelStripsConfigurationFileName)
@@ -364,19 +374,30 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     
     // MARK: - ProcessorDelegate
     
-    func incrementProgress(_ delta: Double) {
-        DispatchQueue.main.async { [weak self] in
-            self?.progressIndicator?.increment(by: delta)
+    func startProcessingFile(_ name: String?) {
+        labelProcessingFileName?.stringValue = name ?? ""
+        let progress = progressIndicator.doubleValue
+        if progress <= 0 {
+            progressIndicator.doubleValue = Double.ulpOfOne // show indicator
         }
     }
     
-    func startProcessingFile(_ fileName: String) {
-        labelProcessingFileName?.stringValue = fileName
+    func endProcessingFile(_ name: String?) {
+        let items = operations.values.map { (p: Processor) -> Int in
+            return p.filesFinishedCount
+        }
+        let ready = items.reduce(0, +)
+        let total = DataLoader.singleton.files.count * items.count
+        let progress = 100 * Double(ready)/Double(total)
+        progressIndicator?.doubleValue = progress
     }
     
     // MARK: - Timer
     
     fileprivate func startTimer() {
+        if timer?.isValid == true {
+            return
+        }
         startDate = Date()
         timer?.invalidate()
         timer = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(AppDelegate.incrementTotalTime), userInfo: nil, repeats: true)
@@ -445,6 +466,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         Settings.setObject(Int(sMinFissionAlpha2Time), forSetting: .MinFissionAlpha2Time)
         Settings.setObject(Int(sMaxFissionAlpha2Time), forSetting: .MaxFissionAlpha2Time)
         Settings.setObject(Int(sMaxFissionAlpha2FrontDeltaStrips), forSetting: .MaxFissionAlpha2FrontDeltaStrips)
+        Settings.setObject(maxConcurrentOperationCount, forSetting: .MaxConcurrentOperations)
         Settings.setObject(searchSpecialEvents, forSetting: .SearchSpecialEvents)
         Settings.setObject(specialEventIds, forSetting: .SpecialEventIds)
         Settings.setObject(selectedRecoilType.rawValue, forSetting: .SelectedRecoilType)

@@ -3,10 +3,27 @@
 //  NeutronsReader
 //
 //  Created by Andrey Isaev on 24/04/2017.
-//  Copyright © 2017 Andrey Isaev. All rights reserved.
+//  Copyright © 2018 Flerov Laboratory. All rights reserved.
 //
 
 import Cocoa
+
+extension Event {
+    
+    func getFloatValue() -> Float {
+        let hi = param3
+        let lo = param2
+        let word = (UInt32(hi) << 16) + UInt32(lo)
+        let value = Float(bitPattern: word)
+        return value
+    }
+    
+    static let size: Int = MemoryLayout<Event>.size
+    static var words: Int {
+        return size / MemoryLayout<CUnsignedShort>.size
+    }
+    
+}
 
 extension NSWindow {
     
@@ -53,9 +70,9 @@ extension timespec {
 extension String {
     
     static func timeStamp() -> String {
-        let components = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute, .second], from: Date())
+        let components = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute, .second, .nanosecond], from: Date())
         let sMonth = DateFormatter().monthSymbols[components.month! - 1]
-        return String(format: "%d_%@_%d_%02d-%02d-%02d", components.year!, sMonth, components.day!, components.hour!, components.minute!, components.second!)
+        return String(format: "%d_%@_%dd_%02dh_%02dm_%02ds_%dns", components.year!, sMonth, components.day!, components.hour!, components.minute!, components.second!, components.nanosecond!)
     }
     
 }

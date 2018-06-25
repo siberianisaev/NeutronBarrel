@@ -11,18 +11,28 @@ import AppKit
 
 class Calibration {
     
-    enum CalibrationCoefficient: Int {
-        case A, B
-    }
-    
     func hasData() -> Bool {
         return data.count > 0
     }
     
-    fileprivate var data = [String: [CalibrationCoefficient: Float]]()
+    class var singleton : Calibration {
+        struct Static {
+            static let sharedInstance : Calibration = Calibration()
+        }
+        return Static.sharedInstance
+    }
+    
+    fileprivate var data = [String: CalibrationEquation]()
     var stringValue: String?
     
-    class func openCalibration(_ onFinish: @escaping ((Calibration?, String?) -> ())) {
+    class func clean() {
+        let c = Calibration.singleton
+        c.data.removeAll()
+        c.calibrationKeysCache.removeAll()
+    }
+    
+    class func load(_ completion: @escaping ((Bool, String?) -> ())) {
+        let calibration = Calibration.singleton
         let panel = NSOpenPanel()
         panel.canChooseDirectories = false
         panel.canChooseFiles = true
@@ -30,29 +40,14 @@ class Calibration {
         panel.begin { (result) -> Void in
             if result.rawValue == NSFileHandlingPanelOKButton {
                 let urls = panel.urls.filter() { $0.path.hasSuffix(".clb") }
-                onFinish(self.calibrationWithUrls(urls), urls.first?.path)
+                clean()
+                let success = calibration.open(urls)
+                completion(success, urls.first?.path)
             }
         }
     }
     
-    fileprivate class func calibrationWithUrls(_ URLs: [Foundation.URL]) -> Calibration? {
-        let calibration = Calibration()
-        calibration.load(URLs)
-        if calibration.data.count > 0 {
-            return calibration
-        } else {
-            let alert = NSAlert()
-            alert.messageText = "Error"
-            alert.informativeText = "Wrong calibration file!"
-            alert.addButton(withTitle: "Got It")
-            alert.alertStyle = .warning
-            alert.runModal()
-            return nil
-        }
-    }
-    
-    fileprivate func load(_ URLs: [Foundation.URL]) {
-        data.removeAll(keepingCapacity: true)
+    fileprivate func open(_ URLs: [Foundation.URL]) -> Bool {
         for URL in URLs {
             let path = URL.path
             do {
@@ -64,11 +59,11 @@ class Calibration {
                 for line in content.components(separatedBy: setLines) {
                     let components = line.components(separatedBy: setSpaces).filter() { $0 != "" }
                     if 3 == components.count {
-                        let b = Float(components[0]) ?? 0
-                        let a = Float(components[1]) ?? 0
+                        let b = Double(components[0]) ?? 0
+                        let a = Double(components[1]) ?? 0
                         let name = components[2] as String
                         string += String(format: "%.6f\t%.6f\t%@\n", b, a, name)
-                        data[name] = [.B: b, .A: a];
+                        data[name] = CalibrationEquation(a: a, b: b)
                     }
                 }
                 stringValue = string
@@ -76,14 +71,64 @@ class Calibration {
                 print("Error load calibration from file at path \(path): \(error)")
             }
         }
+        if !hasData() {
+            let alert = NSAlert()
+            alert.messageText = "Error"
+            alert.informativeText = "Wrong calibration file!"
+            alert.addButton(withTitle: "Got It")
+            alert.alertStyle = .warning
+            alert.runModal()
+            return false
+        } else {
+            return true
+        }
     }
     
-    func calibratedValueForAmplitude(_ channel: Double, eventName: String) -> Double {
-        if let value = data[eventName], let b = value[.B], let a = value[.A] {
-            return Double(b) + Double(a) * channel
+    fileprivate var calibrationKeysCache = [SearchType: [Int: [CUnsignedShort: [CUnsignedShort: String]]]]()
+    
+    fileprivate func cacheCalibrationKey(_ key: String, type: SearchType, eventId: Int, encoder: CUnsignedShort, strip: CUnsignedShort) {
+        var typeDict = calibrationKeysCache[type] ?? [:]
+        var eventIdDict = typeDict[eventId] ?? [:]
+        var encoderDict = eventIdDict[encoder] ?? [:]
+        encoderDict[strip] = key
+        eventIdDict[encoder] = encoderDict
+        typeDict[eventId] = eventIdDict
+        calibrationKeysCache[type] = typeDict
+    }
+    
+    fileprivate func calibrationKeyFor(type: SearchType, eventId: Int, encoder: CUnsignedShort, strip0_15: CUnsignedShort?, dataProtocol: DataProtocol) -> String {
+        let strip = (strip0_15 ?? 0) + 1
+        if let cached = calibrationKeysCache[type]?[eventId]?[encoder]?[strip] {
+            return cached
+        }
+        
+        var key: String
+        if type == .gamma {
+            let position = dataProtocol.position(eventId)
+            key = "\(position)\(encoder)"
+        } else if type == .tof {
+            let position = dataProtocol.isAlphaFronEvent(eventId) ? "Fron" : "Back"
+            key = String(format: "%@%@%d.%d", type.symbol(), position, encoder, strip)
+        } else {
+            let position = dataProtocol.position(eventId)
+            var name = type.symbol() + position
+            if encoder != 0 {
+                name += "\(encoder)."
+            }
+            name += String(strip)
+            key = name
+        }
+        cacheCalibrationKey(key, type: type, eventId: eventId, encoder: encoder, strip: strip)
+        return key
+    }
+    
+    func calibratedValueForAmplitude(_ channel: Double, type: SearchType, eventId: Int, encoder: CUnsignedShort, strip0_15: CUnsignedShort?, dataProtocol: DataProtocol) -> Double {
+        let key = calibrationKeyFor(type: type, eventId: eventId, encoder: encoder, strip0_15: strip0_15, dataProtocol: dataProtocol)
+        if let equation = data[key] {
+            return equation.applyOn(channel)
         }
         if hasData() {
-            print("No calibration for name \(eventName)")
+            print("No calibration for name \(key)")
         }
         return channel
     }

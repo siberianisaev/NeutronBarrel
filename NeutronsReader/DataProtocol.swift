@@ -3,7 +3,7 @@
 //  NeutronsReader
 //
 //  Created by Andrey Isaev on 24/04/2017.
-//  Copyright © 2017 Andrey Isaev. All rights reserved.
+//  Copyright © 2018 Flerov Laboratory. All rights reserved.
 //
 
 import Foundation
@@ -70,7 +70,7 @@ class DataProtocol {
                 var content = try String(contentsOfFile: path, encoding: String.Encoding.utf8)
                 content = content.replacingOccurrences(of: " ", with: "")
                 
-                let words = Processor.singleton.eventWords
+                let words = Event.words
                 for line in content.components(separatedBy: CharacterSet.newlines) {
                     if false == line.contains(":") {
                         continue
@@ -100,14 +100,23 @@ class DataProtocol {
         }
         
         p.encoderForEventIdCache.removeAll()
+        p.isValidEventIdForTimeCheckCache.removeAll()
         return p
     }
+    
+    fileprivate var isValidEventIdForTimeCheckCache = [Int: Bool]()
     
     /**
      Not all events have time data.
      */
     func isValidEventIdForTimeCheck(_ eventId: Int) -> Bool {
-        return eventId <= alphaWellMaxEventId || isTOFEvent(eventId) || isGammaEvent(eventId) || isNeutronsEvent(eventId) || isVETOEvent(eventId)
+        if let cached = isValidEventIdForTimeCheckCache[eventId] {
+            return cached
+        }
+        
+        let value = eventId <= alphaWellMaxEventId || isTOFEvent(eventId) || isGammaEvent(eventId) || isNeutronsEvent(eventId) || isVETOEvent(eventId)
+        isValidEventIdForTimeCheckCache[eventId] = value
+        return value
     }
     
     fileprivate func keyFor(value: Int) -> String? {

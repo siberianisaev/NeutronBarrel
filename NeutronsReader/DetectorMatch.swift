@@ -10,26 +10,14 @@ import Foundation
 
 class DetectorMatch {
     
-    fileprivate var items = [[String: Any]]()
+    fileprivate var items = [DetectorMatchItem]()
     
-    func getItems() -> [[String: Any]] {
-        return items
-    }
-    
-    func setItems(_ array: [[String: Any]]) {
-        items = array
-    }
-    
-    func itemAt(index: Int) -> [String: Any]? {
+    func itemAt(index: Int) -> DetectorMatchItem? {
         if index < items.count {
             return items[index]
         } else {
             return nil
         }
-    }
-    
-    func getValueAt(index: Int, key: String) -> Any? {
-        return itemAt(index: index)?[key]
     }
     
     func removeAll() {
@@ -40,22 +28,28 @@ class DetectorMatch {
         return items.count
     }
     
-    func append(_ item: [String: Any]) {
+    func append(_ item: DetectorMatchItem) {
         items.append(item)
     }
     
-    func itemWithMaxEnergy() -> [String: Any]? {
-        let array: [Any] = items
-        let dict = array.sorted(by: { (obj1: Any, obj2: Any) -> Bool in
-            func energy(_ o: Any) -> Double {
-                if let e = (o as! [String: Any])[Processor.singleton.kEnergy] {
-                    return e as! Double
+    func itemWithMaxEnergy() -> DetectorMatchItem? {
+        let item = items.sorted(by: { (i1: DetectorMatchItem, i2: DetectorMatchItem) -> Bool in
+            return (i1.energy ?? 0) > (i2.energy ?? 0)
+        }).first
+        return item
+    }
+    
+    func filterItemsByMaxEnergy(maxStripsDelta: Int) {
+        if count > 1, let item = itemWithMaxEnergy(), let strip1_N = item.strip1_N {
+            let array = items.filter( { (i: DetectorMatchItem) -> Bool in
+                if let s1_N = i.strip1_N {
+                    return abs(Int32(strip1_N) - Int32(s1_N)) <= Int32(maxStripsDelta)
+                } else {
+                    return false
                 }
-                return 0
-            }
-            return energy(obj1) > energy(obj2)
-        }).first as? [String: Any]
-        return dict
+            })
+            items = array
+        }
     }
     
     func getSummEnergyFrom() -> Double? {
@@ -64,9 +58,9 @@ class DetectorMatch {
         }
         
         var summ: Double = 0
-        for info in items {
-            if let energy = info[Processor.singleton.kEnergy] {
-                summ += energy as! Double
+        for item in items {
+            if let energy = item.energy {
+                summ += energy
             }
         }
         return summ

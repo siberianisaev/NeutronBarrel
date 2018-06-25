@@ -3,7 +3,7 @@
 //  NeutronsReader
 //
 //  Created by Andrey Isaev on 10/11/2017.
-//  Copyright © 2017 Andrey Isaev. All rights reserved.
+//  Copyright © 2018 Flerov Laboratory. All rights reserved.
 //
 
 import Foundation
@@ -21,27 +21,34 @@ class StripsConfiguration {
         return config.count > 0
     }
     
+    class var singleton : StripsConfiguration {
+        struct Static {
+            static let sharedInstance : StripsConfiguration = StripsConfiguration()
+        }
+        return Static.sharedInstance
+    }
+    
     fileprivate var stripsCache = [StripsSide: [Int: [CUnsignedShort: Int]]]()
     
-    fileprivate func cacheStrip(strip: Int, side: StripsSide, encoder: Int, strip_0_15: CUnsignedShort) {
+    fileprivate func cacheStrip(strip: Int, side: StripsSide, encoder: Int, strip0_15: CUnsignedShort) {
         var sideDict = stripsCache[side] ?? [:]
         var encoderDict = sideDict[encoder] ?? [:]
-        encoderDict[strip_0_15] = strip
+        encoderDict[strip0_15] = strip
         sideDict[encoder] = encoderDict
         stripsCache[side] = sideDict
     }
 
-    func strip_1_N_For(side: StripsSide, encoder: Int, strip_0_15: CUnsignedShort) -> Int {
-        if let cached = stripsCache[side]?[encoder]?[strip_0_15] {
+    func strip1_N_For(side: StripsSide, encoder: Int, strip0_15: CUnsignedShort) -> Int {
+        if let cached = stripsCache[side]?[encoder]?[strip0_15] {
             return cached
         }
         
         let encoderIndex = encoder - 1
         if let encoders = config[side], encoderIndex < encoders.count {
             let strips = encoders[encoderIndex]
-            if strip_0_15 < strips.count {
-                let value = strips[Int(strip_0_15)]
-                cacheStrip(strip: value, side: side, encoder: encoder, strip_0_15: strip_0_15)
+            if strip0_15 < strips.count {
+                let value = strips[Int(strip0_15)]
+                cacheStrip(strip: value, side: side, encoder: encoder, strip0_15: strip0_15)
                 return value
             }
         }
@@ -52,12 +59,13 @@ class StripsConfiguration {
          | 1.0 | 2.0 | 3.0 | 1.1 | 2.1 | 3.1 | ... | encoder.strip_0_15 |
          This method used for convert strip from format "encoder + strip 0-15" to format "strip 1-48".
          */
-        let value = (Int(strip_0_15) * 3) + (encoder - 1) + 1
-        cacheStrip(strip: value, side: side, encoder: encoder, strip_0_15: strip_0_15)
+        let value = (Int(strip0_15) * 3) + (encoder - 1) + 1
+        cacheStrip(strip: value, side: side, encoder: encoder, strip0_15: strip0_15)
         return value
     }
     
-    class func openConfiguration(_ onFinish: @escaping ((StripsConfiguration?, String?) -> ())) {
+    class func load(_ completion: @escaping ((Bool, String?) -> ())) {
+        let sc = StripsConfiguration.singleton
         let panel = NSOpenPanel()
         panel.canChooseDirectories = false
         panel.canChooseFiles = true
@@ -66,16 +74,20 @@ class StripsConfiguration {
             if result.rawValue == NSFileHandlingPanelOKButton {
                 let urls = panel.urls.filter() { $0.path.hasSuffix(".CFG") }
                 let path = urls.first?.path
-                onFinish(self.load(path), path)
+                clean()
+                sc.open(path)
+                completion(sc.loaded, path)
             }
         }
     }
     
-    fileprivate class func load(_ path: String?) -> StripsConfiguration {
-        let c = StripsConfiguration()
-        c.config.removeAll()
-        c.stripsCache.removeAll()
-        
+    class func clean() {
+        let sc = StripsConfiguration.singleton
+        sc.config.removeAll()
+        sc.stripsCache.removeAll()
+    }
+    
+    fileprivate func open(_ path: String?) {
         if let path = path {
             do {
                 let content = try String(contentsOfFile: path, encoding: String.Encoding.utf8)
@@ -105,14 +117,13 @@ class StripsConfiguration {
                     }
                 }
                 
-                c.config[.front] = frontData
-                c.config[.back] = backData
-                print("Loaded strips configuration: \(c.config)")
+                config[.front] = frontData
+                config[.back] = backData
+                print("Loaded strips configuration: \(config)")
             } catch {
                 print("Error load strips configuration from file at path \(path): \(error)")
             }
         }
-        return c
     }
     
 }

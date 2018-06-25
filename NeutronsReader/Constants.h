@@ -3,7 +3,7 @@
 //  NeutronsReader
 //
 //  Created by Andrey Isaev on 08/05/2017.
-//  Copyright © 2017 Andrey Isaev. All rights reserved.
+//  Copyright © 2018 Flerov Laboratory. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>

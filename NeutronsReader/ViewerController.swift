@@ -3,7 +3,7 @@
 //  NeutronsReader
 //
 //  Created by Andrey Isaev on 28/05/2017.
-//  Copyright © 2017 Andrey Isaev. All rights reserved.
+//  Copyright © 2018 Flerov Laboratory. All rights reserved.
 //
 
 import Cocoa
@@ -11,12 +11,12 @@ import Cocoa
 class ViewerController: NSWindowController {
 
     @IBOutlet weak var tableView: NSTableView!
+    
     fileprivate var rowIdentifiers = ["ViewerNumberCell", "ViewerEventIDCell", "ViewerParam1Cell", "ViewerParam2Cell", "ViewerParam3Cell"]
     fileprivate var totalEventNumber: CUnsignedLongLong = 0
     fileprivate var index: Int = 0
     fileprivate var file: UnsafeMutablePointer<FILE>?
     fileprivate var eventCount: Int = 0
-    fileprivate var eventSize = Processor.singleton.eventSize
     
     @IBOutlet weak var buttonPrevious: NSButton!
     @IBOutlet weak var labelFile: NSTextField!
@@ -30,8 +30,7 @@ class ViewerController: NSWindowController {
     
     func loadFile(_ index: Int = 0) {
         var name: String = ""
-        let processor = Processor.singleton
-        let files = processor.files
+        let files = DataLoader.singleton.files
         
         closeFile()
         
@@ -40,7 +39,7 @@ class ViewerController: NSWindowController {
             let path = files[index] as NSString
             file = fopen(path.utf8String, "rb")
             if let f = file {
-                eventCount = Int(processor.calculateTotalEventNumberForFile(f))
+                eventCount = Int(Processor.calculateTotalEventNumberForFile(f))
                 name = path.lastPathComponent
             }
         } else {
@@ -72,10 +71,10 @@ class ViewerController: NSWindowController {
     
     fileprivate func getEventForRow(_ row: Int) -> Event? {
         if let file = file {
-            fseek(file, row * eventSize, SEEK_SET)
-            
+            let size = Event.size
+            fseek(file, row * size, SEEK_SET)
             var event = Event()
-            fread(&event, eventSize, 1, file)
+            fread(&event, size, 1, file)
             return event
         } else {
             return nil
