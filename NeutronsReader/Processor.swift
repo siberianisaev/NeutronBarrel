@@ -581,7 +581,7 @@ class Processor {
     
     fileprivate func findFissionAlpha2() {
         let alphaTime = absTime(CUnsignedShort(startEventTime), cycle: currentCycle)
-        let directions: Set<SearchDirection> = [.backward, .forward]
+        let directions: Set<SearchDirection> = [.forward]
         search(directions: directions, startTime: alphaTime, minDeltaTime: criteria.fissionAlpha2MinTime, maxDeltaTime: criteria.fissionAlpha2MaxTime, useCycleTime: true, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
             let type = self.criteria.secondParticleType
             if self.isFront(event, type: type) {
