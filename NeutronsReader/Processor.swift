@@ -587,7 +587,7 @@ class Processor {
             if isFront || self.isBack(event, type: type) {
                 let side: StripsSide = isFront ? .front : .back
                 let energy = self.getEnergy(event, type: type)
-                if (!isFront && self.criteria.searchFissionAlphaBackByFact) || (energy >= self.criteria.fissionAlpha2MinEnergy && energy <= self.criteria.fissionAlpha2MaxEnergy && self.isEventStripNearToFirstFissionAlpha(event, maxDelta: Int(self.criteria.fissionAlpha2MaxDeltaStrips), side: side)) {
+                if (!isFront && self.criteria.searchFissionAlphaBack2ByFact) || (energy >= self.criteria.fissionAlpha2MinEnergy && energy <= self.criteria.fissionAlpha2MaxEnergy && self.isEventStripNearToFirstFissionAlpha(event, maxDelta: Int(self.criteria.fissionAlpha2MaxDeltaStrips), side: side)) {
                     if isFront {
                         self.storeFissionAlpha2(event, deltaTime: deltaTime)
                     } else {
@@ -1005,9 +1005,11 @@ class Processor {
                 ])
         }
         if criteria.searchFissionAlpha2 {
+            columns.append(keyColumnFissionAlphaFront2Event)
+            if criteria.summarizeFissionsAlphaFront2 {
+                columns.append(keyColumnFissionAlphaFront2Summ)
+            }
             columns.append(contentsOf: [
-                keyColumnFissionAlphaFront2Event,
-                keyColumnFissionAlphaFront2Summ,
                 keyColumnFissionAlphaFront2Energy,
                 keyColumnFissionAlphaFront2Marker,
                 keyColumnFissionAlphaFront2DeltaTime,

@@ -68,6 +68,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBInspectable var sMaxRecoilFrontDeltaStrips = String(format: "%d", Settings.getIntSetting(.MaxRecoilFrontDeltaStrips))
     @IBInspectable var sMaxRecoilBackDeltaStrips = String(format: "%d", Settings.getIntSetting(.MaxRecoilBackDeltaStrips))
     @IBInspectable var summarizeFissionsFront: Bool = Settings.getBoolSetting(.SummarizeFissionsFront)
+    @IBInspectable var summarizeFissionsFront2: Bool = Settings.getBoolSetting(.SummarizeFissionsFront2)
     @IBInspectable var requiredFissionAlphaBack: Bool = Settings.getBoolSetting(.RequiredFissionAlphaBack)
     @IBInspectable var requiredRecoilBack: Bool = Settings.getBoolSetting(.RequiredRecoilBack)
     @IBInspectable var requiredRecoil: Bool = Settings.getBoolSetting(.RequiredRecoil)
@@ -110,6 +111,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBInspectable var trackBeamBackground: Bool = Settings.getBoolSetting(.TrackBeamBackground)
     @IBInspectable var trackBeamIntegral: Bool = Settings.getBoolSetting(.TrackBeamIntegral)
     @IBInspectable var searchFissionBackByFact: Bool = Settings.getBoolSetting(.SearchFissionBackByFact)
+    @IBInspectable var searchFissionBack2ByFact: Bool = Settings.getBoolSetting(.SearchFissionBack2ByFact)
     
     fileprivate let recoilTypes: [SearchType] = [.recoil, .heavy]
     fileprivate var selectedRecoilType: SearchType {
@@ -118,6 +120,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     
     fileprivate func setupAlpha2FormView() {
         fissionAlpha2FormView.isHidden = !searchFissionAlpha2
+        fissionAlpha2FormView.wantsLayer = true
+        fissionAlpha2FormView.layer?.backgroundColor = NSColor.lightGray.withAlphaComponent(0.2).cgColor
     }
     
     fileprivate func setupRecoilTypes() {
@@ -231,10 +235,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         sc.fissionAlphaFrontMinEnergy = Double(sMinFissionEnergy) ?? 0
         sc.fissionAlphaFrontMaxEnergy = Double(sMaxFissionEnergy) ?? 0
         sc.searchFissionAlphaBackByFact = searchFissionBackByFact
+        sc.searchFissionAlphaBack2ByFact = searchFissionBack2ByFact
         sc.fissionAlphaMaxTime = UInt64(sMaxFissionTime) ?? 0
         sc.fissionAlphaBackBackwardMaxTime = UInt64(sMaxFissionBackBackwardTime) ?? 0
         sc.fissionAlphaWellBackwardMaxTime = UInt64(sMaxFissionWellBackwardTime) ?? 0
         sc.summarizeFissionsAlphaFront = summarizeFissionsFront
+        sc.summarizeFissionsAlphaFront2 = summarizeFissionsFront2
         sc.searchFissionAlpha2 = searchFissionAlpha2
         sc.fissionAlpha2MinEnergy = Double(sMinFissionAlpha2Energy) ?? 0
         sc.fissionAlpha2MaxEnergy = Double(sMaxFissionAlpha2Energy) ?? 0
@@ -446,6 +452,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         Settings.setObject(Int(sMaxRecoilFrontDeltaStrips), forSetting: .MaxRecoilFrontDeltaStrips)
         Settings.setObject(Int(sMaxRecoilBackDeltaStrips), forSetting: .MaxRecoilBackDeltaStrips)
         Settings.setObject(summarizeFissionsFront, forSetting: .SummarizeFissionsFront)
+        Settings.setObject(summarizeFissionsFront2, forSetting: .SummarizeFissionsFront2)
         Settings.setObject(requiredFissionAlphaBack, forSetting: .RequiredFissionAlphaBack)
         Settings.setObject(requiredRecoilBack, forSetting: .RequiredRecoilBack)
         Settings.setObject(requiredRecoil, forSetting: .RequiredRecoil)
@@ -471,6 +478,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         Settings.setObject(specialEventIds, forSetting: .SpecialEventIds)
         Settings.setObject(selectedRecoilType.rawValue, forSetting: .SelectedRecoilType)
         Settings.setObject(searchFissionBackByFact, forSetting: .SearchFissionBackByFact)
+        Settings.setObject(searchFissionBack2ByFact, forSetting: .SearchFissionBack2ByFact)
         Settings.setObject(searchWell, forSetting: .SearchWell)
     }
     

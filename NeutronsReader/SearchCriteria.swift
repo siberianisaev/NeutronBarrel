@@ -16,6 +16,7 @@ class SearchCriteria {
     var fissionAlphaFrontMinEnergy: Double = 0
     var fissionAlphaFrontMaxEnergy: Double = 0
     var searchFissionAlphaBackByFact: Bool = true
+    var searchFissionAlphaBack2ByFact: Bool = true
     var recoilFrontMinEnergy: Double = 0
     var recoilFrontMaxEnergy: Double = 0
     var minTOFValue: Double = 0
@@ -36,6 +37,7 @@ class SearchCriteria {
     var recoilFrontMaxDeltaStrips: Int = 0
     var recoilBackMaxDeltaStrips: Int = 0
     var summarizeFissionsAlphaFront = false
+    var summarizeFissionsAlphaFront2 = false
     var requiredFissionAlphaBack = false
     var requiredRecoilBack = false
     var requiredRecoil = false

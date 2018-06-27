@@ -33,6 +33,7 @@ class Settings {
         MaxRecoilFrontDeltaStrips = "MaxRecoilFrontDeltaStrips",
         MaxRecoilBackDeltaStrips = "MaxRecoilBackDeltaStrips",
         SummarizeFissionsFront = "SummarizeFissionsFront",
+        SummarizeFissionsFront2 = "SummarizeFissionsFront2",
         RequiredFissionAlphaBack = "RequiredFissionAlphaBack",
         RequiredRecoilBack = "RequiredRecoilBack",
         RequiredRecoil = "RequiredRecoil",
@@ -58,6 +59,7 @@ class Settings {
         SpecialEventIds = "SpecialEventIds",
         SelectedRecoilType = "SelectedRecoilType",
         SearchFissionBackByFact = "SearchFissionBackByFact",
+        SearchFissionBack2ByFact = "SearchFissionBack2ByFact",
         SearchWell = "SearchWell",
         BeamEnergyMin = "BeamEnergyMin",
         BeamEnergyMax = "BeamEnergyMax"
@@ -124,7 +126,7 @@ class Settings {
             return 0
         case .RequiredFissionAlphaBack, .RequiredRecoilBack, .SearchNeutrons, .TrackBeamEnergy, .TrackBeamCurrent, .TrackBeamBackground, .TrackBeamIntegral, .SearchWell:
             return true
-        case .SummarizeFissionsFront, .RequiredRecoil, .RequiredGamma, .RequiredTOF, .RequiredVETO, .SearchSpecialEvents, .SearchVETO, .SearchFissionBackByFact:
+        case .SummarizeFissionsFront, .SummarizeFissionsFront2, .RequiredRecoil, .RequiredGamma, .RequiredTOF, .RequiredVETO, .SearchSpecialEvents, .SearchVETO, .SearchFissionBackByFact, .SearchFissionBack2ByFact:
             return false
         case .SpecialEventIds:
             return nil
