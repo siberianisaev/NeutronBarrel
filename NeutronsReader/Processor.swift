@@ -322,7 +322,7 @@ class Processor {
             }
             
             if !isRecoilSearch {
-                findFissionAlphaBack1()
+                findFissionAlphaBack()
                 fseek(file, Int(position), SEEK_SET)
                 if criteria.requiredFissionAlphaBack && 0 == fissionsAlphaPerAct.matchFor(side: .back).count {
                     clearActInfo()
@@ -344,16 +344,10 @@ class Processor {
             }
             
             if criteria.searchFissionAlpha2 {
-                findFissionAlphaFront2()
-                fseek(file, Int(position), SEEK_SET)
-                if 0 == fissionsAlpha2PerAct.matchFor(side: .front).count {
-                    clearActInfo()
-                    return
-                }
-                
                 findFissionAlphaBack2()
                 fseek(file, Int(position), SEEK_SET)
-                if criteria.requiredFissionAlphaBack && 0 == fissionsAlpha2PerAct.matchFor(side: .back).count {
+                let match = fissionsAlpha2PerAct
+                if 0 == match.matchFor(side: .front).count || (criteria.requiredFissionAlphaBack && 0 == match.matchFor(side: .back).count) {
                     clearActInfo()
                     return
                 }
@@ -391,27 +385,6 @@ class Processor {
         } else {
             updateFolderStatistics(event, folder: folder)
         }
-    }
-    
-    fileprivate func findFissionAlphaBack1() {
-        let match = fissionsAlphaPerAct
-        let type = criteria.startParticleType
-        findFissionsAlphaBack(match: match.matchFor(side: .back), type: type, checker: { (energy: Double, deltaTime: CLongLong, event: Event) in
-            if self.criteria.searchFissionAlphaBackByFact || (energy >= self.criteria.fissionAlphaFrontMinEnergy && energy <= self.criteria.fissionAlphaFrontMaxEnergy) {
-                self.storeFissionAlphaRecoilBack(event, match: match, type: type, deltaTime: deltaTime)
-            }
-        })
-    }
-    
-    fileprivate func findFissionAlphaBack2() {
-        // TODO: byFact2 and summ2
-        let match = fissionsAlpha2PerAct
-        let type = criteria.secondParticleType
-        findFissionsAlphaBack(match: match.matchFor(side: .back), type: type, checker: { (energy: Double, deltaTime: CLongLong, event: Event) in
-            if (self.criteria.searchFissionAlphaBackByFact || (energy >= self.criteria.fissionAlpha2MinEnergy && energy <= self.criteria.fissionAlpha2MaxEnergy)) && self.isEventStripNearToFirstFissionAlpha(event, maxDelta: Int(self.criteria.fissionAlpha2MaxDeltaStrips), side: .back) {
-                self.storeFissionAlphaRecoilBack(event, match: match, type: type, deltaTime: deltaTime)
-            }
-        })
     }
     
     fileprivate func updateFolderStatistics(_ event: Event, folder: FolderStatistics) {
@@ -487,15 +460,19 @@ class Processor {
         }
     }
     
-    fileprivate func findFissionsAlphaBack(match: DetectorMatch, type: SearchType, checker: @escaping ((Double, CLongLong, Event)->())) {
+    fileprivate func findFissionAlphaBack() {
+        let match = fissionsAlphaPerAct
+        let type = criteria.startParticleType
         let directions: Set<SearchDirection> = [.backward, .forward]
         search(directions: directions, startTime: startEventTime, minDeltaTime: 0, maxDeltaTime: criteria.fissionAlphaMaxTime, maxDeltaTimeBackward: criteria.fissionAlphaBackBackwardMaxTime, useCycleTime: false, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
             if self.isBack(event, type: type) {
                 let energy = self.getEnergy(event, type: type)
-                checker(energy, deltaTime, event)
+                if self.criteria.searchFissionAlphaBackByFact || (energy >= self.criteria.fissionAlphaFrontMinEnergy && energy <= self.criteria.fissionAlphaFrontMaxEnergy) {
+                    self.storeFissionAlphaRecoilBack(event, match: match, type: type, deltaTime: deltaTime)
+                }
             }
         }
-        match.filterItemsByMaxEnergy(maxStripsDelta: criteria.recoilBackMaxDeltaStrips)
+        match.matchFor(side: .back).filterItemsByMaxEnergy(maxStripsDelta: criteria.recoilBackMaxDeltaStrips)
     }
     
     fileprivate func findRecoil() {
@@ -601,18 +578,25 @@ class Processor {
         }
     }
     
-    fileprivate func findFissionAlphaFront2() {
+    fileprivate func findFissionAlphaBack2() {
         let alphaTime = absTime(CUnsignedShort(startEventTime), cycle: currentCycle)
         let directions: Set<SearchDirection> = [.forward]
+        let type = criteria.secondParticleType
         search(directions: directions, startTime: alphaTime, minDeltaTime: criteria.fissionAlpha2MinTime, maxDeltaTime: criteria.fissionAlpha2MaxTime, useCycleTime: true, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
-            let type = self.criteria.secondParticleType
-            if self.isFront(event, type: type) {
+            let isFront = self.isFront(event, type: type)
+            if isFront || self.isBack(event, type: type) {
+                let side: StripsSide = isFront ? .front : .back
                 let energy = self.getEnergy(event, type: type)
-                if energy >= self.criteria.fissionAlpha2MinEnergy && energy <= self.criteria.fissionAlpha2MaxEnergy && self.isEventStripNearToFirstFissionAlpha(event, maxDelta: Int(self.criteria.fissionAlpha2MaxDeltaStrips), side: .front) {
-                    self.storeFissionAlpha2(event, deltaTime: deltaTime)
+                if (!isFront && self.criteria.searchFissionAlphaBackByFact) || (energy >= self.criteria.fissionAlpha2MinEnergy && energy <= self.criteria.fissionAlpha2MaxEnergy && self.isEventStripNearToFirstFissionAlpha(event, maxDelta: Int(self.criteria.fissionAlpha2MaxDeltaStrips), side: side)) {
+                    if isFront {
+                        self.storeFissionAlpha2(event, deltaTime: deltaTime)
+                    } else {
+                        self.storeFissionAlphaRecoilBack(event, match: self.fissionsAlpha2PerAct, type: type, deltaTime: deltaTime)
+                    }
                 }
             }
         }
+        fissionsAlpha2PerAct.matchFor(side: .back).filterItemsByMaxEnergy(maxStripsDelta: criteria.recoilBackMaxDeltaStrips)
     }
     
     // MARK: - Storage
