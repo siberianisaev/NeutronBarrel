@@ -850,10 +850,14 @@ class Processor {
         if criteria.unitsTOF == .channels || !calibration.hasData() {
             return channel
         } else {
-            let eventId = Int(eventRecoil.eventId)
-            let encoder = dataProtocol.encoderForEventId(eventId)
-            let strip0_15 = eventRecoil.param2 >> 12
-            return calibration.calibratedValueForAmplitude(channel, type: SearchType.tof, eventId: eventId, encoder: encoder, strip0_15: strip0_15, dataProtocol: dataProtocol)
+            if let value = calibration.calibratedTOFValueForAmplitude(channel) {
+                return value
+            } else {
+                let eventId = Int(eventRecoil.eventId)
+                let encoder = dataProtocol.encoderForEventId(eventId)
+                let strip0_15 = eventRecoil.param2 >> 12
+                return calibration.calibratedValueForAmplitude(channel, type: SearchType.tof, eventId: eventId, encoder: encoder, strip0_15: strip0_15, dataProtocol: dataProtocol)
+            }
         }
     }
     

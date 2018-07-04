@@ -133,4 +133,11 @@ class Calibration {
         return channel
     }
     
+    /**
+     New TOF format.
+     */
+    func calibratedTOFValueForAmplitude(_ channel: Double) -> Double? {
+        return data["TOF"]?.applyOn(channel)
+    }
+    
 }
