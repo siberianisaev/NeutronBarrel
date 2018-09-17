@@ -73,4 +73,8 @@ class SearchCriteria {
         return _heavyType
     }
     
+    func startFromRecoil() -> Bool {
+        return startParticleType == .recoil || startParticleType == .heavy
+    }
+    
 }

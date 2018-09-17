@@ -29,6 +29,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBOutlet weak var indicatorCalibration: NSTextField!
     @IBOutlet weak var indicatorStripsConfig: NSTextField!
     @IBOutlet weak var buttonRun: NSButton!
+    @IBOutlet weak var recoilFrontView: NSView!
     @IBOutlet weak var fissionAlpha2View: NSView!
     @IBOutlet weak var fissionAlpha2FormView: NSView!
     @IBOutlet weak var vetoView: NSView!
@@ -168,11 +169,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     
     @IBAction func startParticleChanged(_ sender: Any?) {
         if let type = SearchType(rawValue: startParticleControl.selectedSegment) {
-            fissionAlpha2View.isHidden = type == .recoil
-            requiredRecoil = requiredRecoil || type == .recoil
+            let isRecoil = type == .recoil
+            fissionAlpha2View.isHidden = isRecoil
+            requiredRecoil = requiredRecoil || isRecoil
+            recoilFrontView.isHidden = isRecoil
             requiredRecoilButton.state = NSControl.StateValue(rawValue: requiredRecoil ? 1 : 0)
-            requiredRecoilButton.isEnabled = type != .recoil
-            fissionAlpha1View.isHidden = type == .recoil
+            requiredRecoilButton.isEnabled = !isRecoil
+            fissionAlpha1View.isHidden = isRecoil
             fissionAlpha1TextField.stringValue = (type != .alpha ? "F" : "A") + "Front 1st"
             secondParticleChanged(nil)
         }

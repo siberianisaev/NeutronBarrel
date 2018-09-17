@@ -287,7 +287,7 @@ class Processor {
         } else if isFront(event, type: criteria.startParticleType) {
             startEventTime = UInt64(event.param1)
             
-            let isRecoilSearch = criteria.startParticleType == criteria.recoilType
+            let isRecoilSearch = criteria.startFromRecoil()
             if isRecoilSearch {
                 if !validateRecoil(event, deltaTime: 0) {
                     clearActInfo()
@@ -499,9 +499,8 @@ class Processor {
             let isRecoilBackFounded = self.findRecoilBack(t)
             fseek(self.file, Int(position), SEEK_SET)
             if isRecoilBackFounded {
-                let type = criteria.startParticleType
-                if type == criteria.recoilType {
-                    storeFissionAlphaRecoilBack(event, match: recoilsPerAct, type: type, deltaTime: deltaTime)
+                if criteria.startFromRecoil() {
+                    storeFissionAlphaRecoilBack(event, match: recoilsPerAct, type: criteria.startParticleType, deltaTime: deltaTime)
                 }
             } else if (criteria.requiredRecoilBack) {
                 return false
@@ -541,7 +540,7 @@ class Processor {
         let directions: Set<SearchDirection> = [.backward, .forward]
         search(directions: directions, startTime: timeRecoilFront, minDeltaTime: 0, maxDeltaTime: criteria.recoilBackMaxTime, maxDeltaTimeBackward: criteria.recoilBackBackwardMaxTime, useCycleTime: false, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
             if self.isBack(event, type: self.criteria.recoilType) {
-                if (self.criteria.requiredRecoilBack && self.criteria.startParticleType != self.criteria.recoilType) {
+                if (self.criteria.requiredRecoilBack && !self.criteria.startFromRecoil()) {
                     found = self.isRecoilBackStripNearToFissionAlphaBack(event)
                 } else {
                     found = true
@@ -1075,7 +1074,7 @@ class Processor {
                         field = currentFileEventNumber(eventNumber)
                     }
                 case keyColumnStartFrontSumm:
-                    if row == 0, criteria.startParticleType != criteria.recoilType, let summ = fissionsAlphaPerAct.matchFor(side: .front).getSummEnergyFrom() {
+                    if row == 0, !criteria.startFromRecoil(), let summ = fissionsAlphaPerAct.matchFor(side: .front).getSummEnergyFrom() {
                         field = String(format: "%.7f", summ)
                     }
                 case keyColumnStartFrontEnergy:
@@ -1095,35 +1094,35 @@ class Processor {
                         field = String(format: "%d", strip)
                     }
                 case keyColumnStartBackSumm:
-                    if row == 0, criteria.startParticleType != criteria.recoilType, let summ = fissionsAlphaPerAct.matchFor(side: .back).getSummEnergyFrom() {
+                    if row == 0, !criteria.startFromRecoil(), let summ = fissionsAlphaPerAct.matchFor(side: .back).getSummEnergyFrom() {
                         field = String(format: "%.7f", summ)
                     }
                 case keyColumnStartBackEnergy:
                     let side: StripsSide = .back
-                    let match = criteria.startParticleType == criteria.recoilType ? recoilsPerAct.matchFor(side: side) : fissionsAlphaPerAct.matchFor(side: side)
+                    let match = criteria.startFromRecoil() ? recoilsPerAct.matchFor(side: side) : fissionsAlphaPerAct.matchFor(side: side)
                     if let energy = match.itemAt(index: row)?.energy {
                         field = String(format: "%.7f", energy)
                     }
                 case keyColumnStartBackMarker:
                     let side: StripsSide = .back
-                    let match = criteria.startParticleType == criteria.recoilType ? recoilsPerAct.matchFor(side: side) : fissionsAlphaPerAct.matchFor(side: side)
+                    let match = criteria.startFromRecoil() ? recoilsPerAct.matchFor(side: side) : fissionsAlphaPerAct.matchFor(side: side)
                     if let marker = match.itemAt(index: row)?.marker {
                         field = String(format: "%hu", marker)
                     }
                 case keyColumnStartBackDeltaTime:
                     let side: StripsSide = .back
-                    let match = criteria.startParticleType == criteria.recoilType ? recoilsPerAct.matchFor(side: side) : fissionsAlphaPerAct.matchFor(side: side)
+                    let match = criteria.startFromRecoil() ? recoilsPerAct.matchFor(side: side) : fissionsAlphaPerAct.matchFor(side: side)
                     if let deltaTime = match.itemAt(index: row)?.deltaTime {
                         field = String(format: "%lld", deltaTime)
                     }
                 case keyColumnStartBackStrip:
                     let side: StripsSide = .back
-                    let match = criteria.startParticleType == criteria.recoilType ? recoilsPerAct.matchFor(side: side) : fissionsAlphaPerAct.matchFor(side: side)
+                    let match = criteria.startFromRecoil() ? recoilsPerAct.matchFor(side: side) : fissionsAlphaPerAct.matchFor(side: side)
                     if let strip = match.itemAt(index: row)?.strip1_N {
                         field = String(format: "%d", strip)
                     }
                 case keyColumnStartWellSumm:
-                    if row == 0, criteria.startParticleType != criteria.recoilType, let summ = fissionsAlphaWellPerAct.getSummEnergyFrom() {
+                    if row == 0, !criteria.startFromRecoil(), let summ = fissionsAlphaWellPerAct.getSummEnergyFrom() {
                         field = String(format: "%.7f", summ)
                     }
                 case keyColumnStartWellEnergy:
