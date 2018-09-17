@@ -659,7 +659,12 @@ class Processor {
     }
     
     fileprivate func storeRecoil(_ event: Event, energy: Double, heavy: Double, deltaTime: CLongLong) {
+        let id = event.eventId
+        let encoder = dataProtocol.encoderForEventId(Int(id))
+        let strip0_15 = event.param2 >> 12
         let item = DetectorMatchItem(energy: energy,
+                                     encoder: encoder,
+                                     strip0_15: strip0_15,
                                      eventNumber: eventNumber(),
                                      deltaTime: deltaTime,
                                      marker: getMarker(event),
@@ -1090,7 +1095,7 @@ class Processor {
                         field = String(format: "%lld", deltaTime)
                     }
                 case keyColumnStartFrontStrip:
-                    if let strip = fissionsAlphaPerAct.matchFor(side: .front).itemAt(index: row)?.strip1_N {
+                    if let strip = (criteria.startFromRecoil() ? recoilsPerAct : fissionsAlphaPerAct).matchFor(side: .front).itemAt(index: row)?.strip1_N {
                         field = String(format: "%d", strip)
                     }
                 case keyColumnStartBackSumm:
