@@ -794,7 +794,7 @@ class Processor {
     
     fileprivate func isFront(_ event: Event, type: SearchType) -> Bool {
         let eventId = Int(event.eventId)
-        let searchRecoil = type == criteria.recoilType
+        let searchRecoil = type == .recoil || type == .heavy
         let currentRecoil = isRecoil(event)
         let sameType = (searchRecoil && currentRecoil) || (!searchRecoil && !currentRecoil)
         return sameType && dataProtocol.isAlphaFronEvent(eventId)
@@ -807,7 +807,7 @@ class Processor {
     
     fileprivate func isBack(_ event: Event, type: SearchType) -> Bool {
         let eventId = Int(event.eventId)
-        let searchRecoil = type == criteria.recoilType
+        let searchRecoil = type == .recoil || type == .heavy
         let currentRecoil = isRecoil(event)
         let sameType = (searchRecoil && currentRecoil) || (!searchRecoil && !currentRecoil)
         return sameType && dataProtocol.isAlphaBackEvent(eventId)
