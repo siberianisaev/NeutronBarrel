@@ -302,7 +302,7 @@
 				ORGANIZATIONNAME = "Flerov Laboratory";
 				TargetAttributes = {
 					78B6A543193A3B3900C7E36A = {
-						LastSwiftMigration = 0810;
+						LastSwiftMigration = 1000;
 						SystemCapabilities = {
 							com.apple.Sandbox = {
 								enabled = 0;
@@ -616,7 +616,7 @@
 				PRODUCT_NAME = NeutronsReader;
 				SWIFT_OBJC_BRIDGING_HEADER = "NeutronsReader/NeutronsReader-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_VERSION = 4.0;
+				SWIFT_VERSION = 4.2;
 				WRAPPER_EXTENSION = app;
 			};
 			name = Debug;
@@ -635,7 +635,7 @@
 				PRODUCT_MODULE_NAME = NeutronsReader;
 				PRODUCT_NAME = NeutronsReader;
 				SWIFT_OBJC_BRIDGING_HEADER = "NeutronsReader/NeutronsReader-Bridging-Header.h";
-				SWIFT_VERSION = 4.0;
+				SWIFT_VERSION = 4.2;
 				WRAPPER_EXTENSION = app;
 			};
 			name = Release;

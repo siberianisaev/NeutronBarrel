@@ -32,7 +32,7 @@ class CSVWriter {
             let ic = (CharacterSet.newlines as NSCharacterSet).mutableCopy() as! NSMutableCharacterSet
             ic.addCharacters(in: delimiterString)
             ic.addCharacters(in: "\"")
-            illegalCharacters = ic.copy() as! CharacterSet
+            illegalCharacters = ic.copy() as? CharacterSet
         }
     }
     

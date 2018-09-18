@@ -203,7 +203,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     
     @IBAction func viewer(_ sender: Any) {
         if nil == viewerController {
-            viewerController = ViewerController(windowNibName: NSNib.Name(rawValue: "ViewerController"))
+            viewerController = ViewerController(windowNibName: "ViewerController")
         }
         viewerController?.showWindow(nil)
     }
