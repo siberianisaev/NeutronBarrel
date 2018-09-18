@@ -496,11 +496,11 @@ class Processor {
             fgetpos(self.file, &position)
             let t = CUnsignedLongLong(event.param1)
             
-            let isRecoilBackFounded = self.findRecoilBack(t)
+            let recoilBack = self.findRecoilBack(t)
             fseek(self.file, Int(position), SEEK_SET)
-            if isRecoilBackFounded {
+            if let recoilBack = recoilBack {
                 if criteria.startFromRecoil() {
-                    storeFissionAlphaRecoilBack(event, match: recoilsPerAct, type: criteria.startParticleType, deltaTime: deltaTime)
+                    storeFissionAlphaRecoilBack(recoilBack, match: recoilsPerAct, type: criteria.startParticleType, deltaTime: deltaTime)
                 }
             } else if (criteria.requiredRecoilBack) {
                 return false
@@ -535,8 +535,9 @@ class Processor {
         return found
     }
     
-    fileprivate func findRecoilBack(_ timeRecoilFront: CUnsignedLongLong) -> Bool {
+    fileprivate func findRecoilBack(_ timeRecoilFront: CUnsignedLongLong) -> Event? {
         var found: Bool = false
+        var result: Event?
         let directions: Set<SearchDirection> = [.backward, .forward]
         search(directions: directions, startTime: timeRecoilFront, minDeltaTime: 0, maxDeltaTime: criteria.recoilBackMaxTime, maxDeltaTimeBackward: criteria.recoilBackBackwardMaxTime, useCycleTime: false, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
             if self.isBack(event, type: self.criteria.recoilType) {
@@ -545,10 +546,13 @@ class Processor {
                 } else {
                     found = true
                 }
+                if found {
+                    result = event
+                }
                 stop.initialize(to: true)
             }
         }
-        return found
+        return result
     }
     
     fileprivate func findSpecialEvents() {
