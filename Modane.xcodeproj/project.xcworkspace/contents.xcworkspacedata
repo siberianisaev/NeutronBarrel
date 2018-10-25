@@ -2,6 +2,6 @@
 <Workspace
    version = "1.0">
    <FileRef
-      location = "self:NeutronsReader.xcodeproj">
+      location = "self:/Users/SiberianMac/Documents/Development/JINR/NeutronBarrel/Modane.xcodeproj">
    </FileRef>
 </Workspace>

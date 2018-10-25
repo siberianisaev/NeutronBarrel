@@ -12,7 +12,6 @@ import AppKit
 class DataLoader {
     
     var files = [String]()
-    var dataProtocol: DataProtocol!
     
     class var singleton : DataLoader {
         struct Static {
@@ -40,22 +39,7 @@ class DataLoader {
                         selected.append(path)
                     }
                 }
-                
-                //TODO: show alert for data with many different protocols
-                let protocolURLString = selected.filter() { $0.hasSuffix(".PRO") }.first
-                let protocolObject = DataProtocol.load(protocolURLString)
-                // Every data file has numeric extension like ".001"
-                let decimalSet = CharacterSet.decimalDigits
-                selected = selected.filter({ (s: String) -> Bool in
-                    if let ext = (s as NSString).components(separatedBy: ".").last {
-                        let set = CharacterSet(charactersIn: ext)
-                        return decimalSet.isSuperset(of: set)
-                    } else {
-                        return false
-                    }
-                })
                 dl.files = selected
-                dl.dataProtocol = protocolObject
                 completion(selected.count > 0)
             }
         }
