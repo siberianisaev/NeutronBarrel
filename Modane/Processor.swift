@@ -138,9 +138,41 @@ class Processor {
         let n2 = Double(neutronsMultiplicityTotal[2] ?? 0)
         let n3 = Double(neutronsMultiplicityTotal[3] ?? 0)
         let n4 = max(Double(neutronsMultiplicityTotal[4] ?? 0), 1)
-        print("2n/3n:\(n2/max(n3,1))")
-        print("3n/4n:\(n3/max(n4,1))")
-        print("2n/4n:\(n2/max(n4,1))")
+        
+        let detected = ["2:3": n2/max(n3,1), "3:4": n3/max(n4,1), "2:4": n2/max(n4,1)]
+        for (key, value) in detected {
+            print("\(key) --- \(value)")
+        }
+        
+        let data = Calibration.singleton.data
+        let ij = [(2, 3), (3, 4), (2, 4)]
+        var dict = [String: Efficiency]()
+        for item in data {
+            for t in ij {
+                let i = t.0
+                let j = t.1
+                let new = item.probability(i: i, j: j)
+                let key = "\(i):\(j)"
+                let ratio = detected[key]!
+                if let old = dict[key]?.probability(i: i, j: j) {
+                    if fabs(new - ratio) < fabs(old - ratio) {
+                        dict[key] = item
+                    }
+                } else {
+                    dict[key] = item
+                }
+            }
+        }
+        
+        print("\nEfficiency:")
+        for t in ij {
+            let i = t.0
+            let j = t.1
+            let key = "\(i):\(j)"
+            if let e = dict[key]?.value {
+                print("\(key) --- \(e * 100)%")
+            }
+        }
         
         print("\nDone!\nTotal time took: \((NSApplication.shared.delegate as! AppDelegate).timeTook())")
     }

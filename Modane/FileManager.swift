@@ -47,30 +47,4 @@ class FileManager {
         return components.joined(separator: "_") + "." + fileExtension
     }
     
-    class func resultsFilePath(_ timeStamp: String, folderName: String) -> String? {
-        let name = fileName(prefix: "results", folderName: folderName, timeStamp: timeStamp, fileExtension: "csv")
-        return self.desktopFilePathWithName(name, folderName: folderName)
-    }
-    
-    class func statisticsFilePath(_ timeStamp: String, folderName: String) -> String? {
-        let name = fileName(prefix: "statistics", folderName: folderName, timeStamp: timeStamp, fileExtension: "csv")
-        return self.desktopFilePathWithName(name, folderName: folderName)
-    }
-    
-    class func inputFilePath(_ timeStamp: String, folderName: String, onEnd: Bool) -> String? {
-        let postfix = onEnd ? "end" : "start"
-        let name = fileName(prefix: "input", folderName: folderName, timeStamp: timeStamp, postfix: postfix, fileExtension: "png")
-        return self.desktopFilePathWithName(name, folderName: folderName)
-    }
-    
-    class func multiplicityFilePath(_ timeStamp: String, folderName: String) -> String? {
-        let name = fileName(prefix: "multiplicity", folderName: folderName, timeStamp: timeStamp, fileExtension: "txt")
-        return self.desktopFilePathWithName(name, folderName: folderName)
-    }
-    
-    class func calibrationFilePath(_ timeStamp: String, folderName: String) -> String? {
-        let name = fileName(prefix: "calibration", folderName: folderName, timeStamp: timeStamp, fileExtension: "txt")
-        return self.desktopFilePathWithName(name, folderName: folderName)
-    }
-    
 }
