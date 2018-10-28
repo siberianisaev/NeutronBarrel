@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import AppKit
 
 class FileManager {
     
@@ -31,6 +32,7 @@ class FileManager {
         if let path = desktopFilePathWithName("results.txt", folderName: nil) {
             do {
                 try string.write(toFile: path, atomically: true, encoding: .utf8)
+                NSWorkspace.shared.openFile(path)
             } catch {
                 print(error)
             }
