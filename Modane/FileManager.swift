@@ -27,6 +27,16 @@ class FileManager {
         }
     }
     
+    class func writeResults(_ string: String) {
+        if let path = desktopFilePathWithName("results.txt", folderName: nil) {
+            do {
+                try string.write(toFile: path, atomically: true, encoding: .utf8)
+            } catch {
+                print(error)
+            }
+        }
+    }
+    
     fileprivate class func desktopFilePathWithName(_ fileName: String, folderName: String?) -> String? {
         var path = self.desktopFolder()
         if let folderName = folderName {

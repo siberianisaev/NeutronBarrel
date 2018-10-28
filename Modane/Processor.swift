@@ -130,18 +130,19 @@ class Processor {
             }
         }
         
-        print("\nNeutrons multiplicity:")
+        var strings = ["Neutrons multiplicity:"]
         let maxValue = neutronsMultiplicityTotal.keys.sorted().last ?? 0
         for i in 1...maxValue {
-            print("\(i) --- \(neutronsMultiplicityTotal[i] ?? 0)")
+            strings.append("\(i) --- \(neutronsMultiplicityTotal[i] ?? 0)")
         }
         let n2 = Double(neutronsMultiplicityTotal[2] ?? 0)
         let n3 = Double(neutronsMultiplicityTotal[3] ?? 0)
         let n4 = max(Double(neutronsMultiplicityTotal[4] ?? 0), 1)
         
+        strings.append("")
         let detected = ["2:3": n2/max(n3,1), "3:4": n3/max(n4,1), "2:4": n2/max(n4,1)]
         for (key, value) in detected {
-            print("\(key) --- \(value)")
+            strings.append("\(key) --- \(value)")
         }
         
         let data = Calibration.singleton.data
@@ -164,15 +165,18 @@ class Processor {
             }
         }
         
-        print("\nEfficiency:")
+        strings.append("")
+        strings.append("Efficiency:")
         for t in ij {
             let i = t.0
             let j = t.1
             let key = "\(i):\(j)"
             if let e = dict[key]?.value {
-                print("\(key) --- \(e * 100)%")
+                strings.append("\(key) --- \(e * 100)%")
             }
         }
+        
+        FileManager.writeResults(strings.joined(separator: "\n"))
         
         print("\nDone!\nTotal time took: \((NSApplication.shared.delegate as! AppDelegate).timeTook())")
     }
