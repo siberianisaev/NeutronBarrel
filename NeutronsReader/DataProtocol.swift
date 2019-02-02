@@ -23,6 +23,8 @@ class DataProtocol {
             BeamIntegral = dict["IntegralHi"]
             AlphaWell = getValues(ofTypes: ["AWel"])
             alphaWellMaxEventId = AlphaWell.max() ?? 0
+            AlphaWellBack = getValues(ofTypes: ["AWBk"])
+            alphaWellBackMaxEventId = AlphaWellBack.max() ?? 0
             AlphaMotherFront = getValues(ofTypes: ["AFr"])
             AlphaDaughterFront = getValues(ofTypes: ["AdFr"])
             AlphaFront = AlphaMotherFront.union(AlphaDaughterFront)
@@ -54,6 +56,8 @@ class DataProtocol {
     fileprivate var CycleTime: Int?
     fileprivate var AlphaWell = Set<Int>()
     fileprivate var alphaWellMaxEventId: Int = 0
+    fileprivate var AlphaWellBack = Set<Int>()
+    fileprivate var alphaWellBackMaxEventId: Int = 0
     fileprivate var AlphaMotherFront = Set<Int>()
     fileprivate var AlphaDaughterFront = Set<Int>()
     fileprivate var AlphaFront = Set<Int>()
@@ -114,7 +118,7 @@ class DataProtocol {
             return cached
         }
         
-        let value = eventId <= alphaWellMaxEventId || isTOFEvent(eventId) || isGammaEvent(eventId) || isNeutronsEvent(eventId) || isVETOEvent(eventId)
+        let value = eventId <= alphaWellMaxEventId || (alphaWellBackMaxEventId > 0 && eventId <= alphaWellBackMaxEventId) || isTOFEvent(eventId) || isGammaEvent(eventId) || isNeutronsEvent(eventId) || isVETOEvent(eventId)
         isValidEventIdForTimeCheckCache[eventId] = value
         return value
     }
@@ -141,6 +145,8 @@ class DataProtocol {
             return "Veto"
         } else if isGammaEvent(eventId) {
             return "Gam"
+        } else if isAlphaWellBackEvent(eventId) {
+            return "WBk"
         } else {
             return "Wel"
         }
@@ -156,6 +162,10 @@ class DataProtocol {
     
     func isAlphaWellEvent(_ eventId: Int) -> Bool {
         return AlphaWell.contains(eventId)
+    }
+    
+    func isAlphaWellBackEvent(_ eventId: Int) -> Bool {
+        return AlphaWellBack.contains(eventId)
     }
     
     func isGammaEvent(_ eventId: Int) -> Bool {
