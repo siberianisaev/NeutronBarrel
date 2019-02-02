@@ -932,6 +932,7 @@ class Processor {
     fileprivate var keyColumnGammaEnergy = "Gamma"
     fileprivate var keyColumnGammaEncoder = "GammaEncoder"
     fileprivate var keyColumnGammaDeltaTime = "dT($Fron-Gamma)"
+    fileprivate var keyColumnGammaCount = "GammaCount"
     fileprivate var keyColumnSpecial = "Special"
     fileprivate func keyColumnSpecialFor(eventId: Int) -> String {
         return keyColumnSpecial + String(eventId)
@@ -998,7 +999,8 @@ class Processor {
         columns.append(contentsOf: [
             keyColumnGammaEnergy,
             keyColumnGammaEncoder,
-            keyColumnGammaDeltaTime
+            keyColumnGammaDeltaTime,
+            keyColumnGammaCount
             ])
         if criteria.searchSpecialEvents {
             let values = criteria.specialEventIds.map({ (i: Int) -> String in
@@ -1191,6 +1193,10 @@ class Processor {
                 case keyColumnGammaDeltaTime:
                     if let deltaTime = gammaPerAct.itemAt(index: row)?.deltaTime {
                         field = String(format: "%lld", deltaTime)
+                    }
+                case keyColumnGammaCount:
+                    if row == 0 {
+                        field = String(format: "%d", gammaPerAct.count)
                     }
                 case _ where column.hasPrefix(keyColumnSpecial):
                     if row == 0 {
