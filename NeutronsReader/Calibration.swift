@@ -39,7 +39,7 @@ class Calibration {
         panel.allowsMultipleSelection = true
         panel.begin { (result) -> Void in
             if result.rawValue == NSFileHandlingPanelOKButton {
-                let urls = panel.urls.filter() { $0.path.hasSuffix(".clb") }
+                let urls = panel.urls.filter() { $0.path.lowercased().hasSuffix(".clb") }
                 clean()
                 let success = calibration.open(urls)
                 completion(success, urls.first?.path)

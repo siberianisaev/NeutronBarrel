@@ -72,7 +72,7 @@ class StripsConfiguration {
         panel.allowsMultipleSelection = false
         panel.begin { (result) -> Void in
             if result.rawValue == NSFileHandlingPanelOKButton {
-                let urls = panel.urls.filter() { $0.path.hasSuffix(".CFG") }
+                let urls = panel.urls.filter() { $0.path.lowercased().hasSuffix(".cfg") }
                 let path = urls.first?.path
                 clean()
                 sc.open(path)
