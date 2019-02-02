@@ -15,6 +15,8 @@
 		5A8423E320D12C100097F7FB /* SearchCriteria.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A8423E220D12C100097F7FB /* SearchCriteria.swift */; };
 		5A8423E420D12C100097F7FB /* SearchCriteria.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A8423E220D12C100097F7FB /* SearchCriteria.swift */; };
 		5A8997571FB4F9F800DD9956 /* StripsConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A8997561FB4F9F800DD9956 /* StripsConfiguration.swift */; };
+		5A9B179D2206137800E80805 /* StripDetectorManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A9B179C2206137800E80805 /* StripDetectorManager.swift */; };
+		5A9B179E2206137800E80805 /* StripDetectorManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A9B179C2206137800E80805 /* StripDetectorManager.swift */; };
 		6512B00B1EDACBB20087131D /* ViewerController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6512B0091EDACBB20087131D /* ViewerController.swift */; };
 		6512B00C1EDACBB20087131D /* ViewerController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 6512B00A1EDACBB20087131D /* ViewerController.xib */; };
 		6513070C1A4E911300E33704 /* FileManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6513070B1A4E911300E33704 /* FileManager.swift */; };
@@ -63,6 +65,7 @@
 		5A2A99372057083A00B3D1A0 /* DetectorMatch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetectorMatch.swift; sourceTree = "<group>"; };
 		5A8423E220D12C100097F7FB /* SearchCriteria.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchCriteria.swift; sourceTree = "<group>"; };
 		5A8997561FB4F9F800DD9956 /* StripsConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StripsConfiguration.swift; sourceTree = "<group>"; };
+		5A9B179C2206137800E80805 /* StripDetectorManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StripDetectorManager.swift; sourceTree = "<group>"; };
 		6512B0091EDACBB20087131D /* ViewerController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ViewerController.swift; sourceTree = "<group>"; };
 		6512B00A1EDACBB20087131D /* ViewerController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = ViewerController.xib; sourceTree = "<group>"; };
 		6513070B1A4E911300E33704 /* FileManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FileManager.swift; sourceTree = "<group>"; };
@@ -137,6 +140,7 @@
 				656A05DB1EADEDD500677B0F /* DataProtocol.swift */,
 				65EDDD4320C51BAB009441D8 /* FolderStatistics.swift */,
 				5A8997561FB4F9F800DD9956 /* StripsConfiguration.swift */,
+				5A9B179C2206137800E80805 /* StripDetectorManager.swift */,
 			);
 			name = Config;
 			sourceTree = "<group>";
@@ -302,7 +306,7 @@
 				ORGANIZATIONNAME = "Flerov Laboratory";
 				TargetAttributes = {
 					78B6A543193A3B3900C7E36A = {
-						LastSwiftMigration = 0810;
+						LastSwiftMigration = 1010;
 						SystemCapabilities = {
 							com.apple.Sandbox = {
 								enabled = 0;
@@ -399,6 +403,7 @@
 				65E78366203AD5B200091FA4 /* Processor.swift in Sources */,
 				5A2A99362056F66800B3D1A0 /* DoubleSidedStripDetectorMatch.swift in Sources */,
 				65DA92A920D594E9002643DB /* CalibrationEquation.swift in Sources */,
+				5A9B179E2206137800E80805 /* StripDetectorManager.swift in Sources */,
 				65E78367203AD5B200091FA4 /* Calibration.swift in Sources */,
 				65E78368203AD5B200091FA4 /* CSVWriter.swift in Sources */,
 				5A8423E420D12C100097F7FB /* SearchCriteria.swift in Sources */,
@@ -426,6 +431,7 @@
 				5A036F711EB0F5C80092D3C4 /* Processor.swift in Sources */,
 				5A2A99352056F66800B3D1A0 /* DoubleSidedStripDetectorMatch.swift in Sources */,
 				65DA92A820D594E9002643DB /* CalibrationEquation.swift in Sources */,
+				5A9B179D2206137800E80805 /* StripDetectorManager.swift in Sources */,
 				651307121A4E94AB00E33704 /* Calibration.swift in Sources */,
 				784150DA1AC184C400831384 /* CSVWriter.swift in Sources */,
 				5A8423E320D12C100097F7FB /* SearchCriteria.swift in Sources */,
@@ -616,7 +622,7 @@
 				PRODUCT_NAME = NeutronsReader;
 				SWIFT_OBJC_BRIDGING_HEADER = "NeutronsReader/NeutronsReader-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_VERSION = 4.0;
+				SWIFT_VERSION = 4.2;
 				WRAPPER_EXTENSION = app;
 			};
 			name = Debug;
@@ -635,7 +641,7 @@
 				PRODUCT_MODULE_NAME = NeutronsReader;
 				PRODUCT_NAME = NeutronsReader;
 				SWIFT_OBJC_BRIDGING_HEADER = "NeutronsReader/NeutronsReader-Bridging-Header.h";
-				SWIFT_VERSION = 4.0;
+				SWIFT_VERSION = 4.2;
 				WRAPPER_EXTENSION = app;
 			};
 			name = Release;

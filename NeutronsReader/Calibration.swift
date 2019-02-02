@@ -31,7 +31,7 @@ class Calibration {
         c.calibrationKeysCache.removeAll()
     }
     
-    class func load(_ completion: @escaping ((Bool, String?) -> ())) {
+    class func load(_ completion: @escaping ((Bool, [String]?) -> ())) {
         let calibration = Calibration.singleton
         let panel = NSOpenPanel()
         panel.canChooseDirectories = false
@@ -42,7 +42,10 @@ class Calibration {
                 let urls = panel.urls.filter() { $0.path.lowercased().hasSuffix(".clb") }
                 clean()
                 let success = calibration.open(urls)
-                completion(success, urls.first?.path)
+                let paths = urls.map({ (u: URL) -> String in
+                    return u.path
+                })
+                completion(success, paths)
             }
         }
     }

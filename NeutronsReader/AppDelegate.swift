@@ -157,14 +157,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         setSelected(false, indicator: indicatorCalibration)
         Calibration.clean()
         buttonRemoveCalibration.isHidden = true
-        showFilePath(nil, label: labelCalibrationFileName)
+        showFilePaths(nil, label: labelCalibrationFileName)
     }
     
     @IBAction func removeStripsConfiguration(_ sender: Any) {
         setSelected(false, indicator: indicatorStripsConfig)
-        StripsConfiguration.clean()
+        StripDetectorManager.cleanStripConfigs()
         buttonRemoveStripsConfiguration.isHidden = true
-        showFilePath(nil, label: labelStripsConfigurationFileName)
+        showFilePaths(nil, label: labelStripsConfigurationFileName)
     }
     
     @IBAction func startParticleChanged(_ sender: Any?) {
@@ -203,7 +203,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     
     @IBAction func viewer(_ sender: Any) {
         if nil == viewerController {
-            viewerController = ViewerController(windowNibName: NSNib.Name(rawValue: "ViewerController"))
+            viewerController = ViewerController(windowNibName: "ViewerController")
         }
         viewerController?.showWindow(nil)
     }
@@ -352,32 +352,35 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         }
     }
     
-    fileprivate func showFilePath(_ path: String?, label: NSTextField?) {
-        label?.stringValue = path?.components(separatedBy: "/").last ?? ""
-        label?.isHidden = path == nil
+    fileprivate func showFilePaths(_ paths: [String]?, label: NSTextField?) {
+        let value = paths?.sorted().map({ (s: String) -> String in
+            return s.components(separatedBy: "/").last ?? ""
+        }).joined(separator: ", ")
+        label?.stringValue = value ?? ""
+        label?.isHidden = value == nil
     }
     
     @IBAction func selectData(_ sender: AnyObject?) {
         DataLoader.load { [weak self] (success: Bool) in
             self?.setSelected(success, indicator: self?.indicatorData)
             self?.viewerController?.loadFile()
-            self?.showFilePath(DataLoader.singleton.files.first, label: self?.labelFirstDataFileName)
+            self?.showFilePaths(DataLoader.singleton.files, label: self?.labelFirstDataFileName)
         }
     }
     
     @IBAction func selectCalibration(_ sender: AnyObject?) {
-        Calibration.load { [weak self] (success: Bool, filePath: String?) in
+        Calibration.load { [weak self] (success: Bool, filePaths: [String]?) in
             self?.setSelected(success, indicator: self?.indicatorCalibration)
             self?.buttonRemoveCalibration?.isHidden = !success
-            self?.showFilePath(filePath, label: self?.labelCalibrationFileName)
+            self?.showFilePaths(filePaths, label: self?.labelCalibrationFileName)
         }
     }
     
     @IBAction func selectStripsConfiguration(_ sender: AnyObject?) {
-        StripsConfiguration.load { [weak self] (success: Bool, filePath: String?) in
+        StripsConfiguration.load { [weak self] (success: Bool, filePaths: [String]?) in
             self?.setSelected(success, indicator: self?.indicatorStripsConfig)
             self?.buttonRemoveStripsConfiguration?.isHidden = !success
-            self?.showFilePath(filePath, label: self?.labelStripsConfigurationFileName)
+            self?.showFilePaths(filePaths, label: self?.labelStripsConfigurationFileName)
         }
     }
     

@@ -17,15 +17,14 @@ class StripsConfiguration {
     
     fileprivate var config = [StripsSide: [[Int]]]()
     
-    var loaded: Bool {
-        return config.count > 0
+    private var useDefaultConversion: Bool
+    
+    init(useDefaultConversion: Bool) {
+        self.useDefaultConversion = useDefaultConversion
     }
     
-    class var singleton : StripsConfiguration {
-        struct Static {
-            static let sharedInstance : StripsConfiguration = StripsConfiguration()
-        }
-        return Static.sharedInstance
+    var loaded: Bool {
+        return config.count > 0
     }
     
     fileprivate var stripsCache = [StripsSide: [Int: [CUnsignedShort: Int]]]()
@@ -53,38 +52,49 @@ class StripsConfiguration {
             }
         }
         
-        // By defaults used 48x48 config
-        /**
-         Strips in focal plane detector are connected alternately to 3 16-channel encoders:
-         | 1.0 | 2.0 | 3.0 | 1.1 | 2.1 | 3.1 | ... | encoder.strip_0_15 |
-         This method used for convert strip from format "encoder + strip 0-15" to format "strip 1-48".
-         */
-        let value = (Int(strip0_15) * 3) + (encoder - 1) + 1
-        cacheStrip(strip: value, side: side, encoder: encoder, strip0_15: strip0_15)
-        return value
-    }
-    
-    class func load(_ completion: @escaping ((Bool, String?) -> ())) {
-        let sc = StripsConfiguration.singleton
-        let panel = NSOpenPanel()
-        panel.canChooseDirectories = false
-        panel.canChooseFiles = true
-        panel.allowsMultipleSelection = false
-        panel.begin { (result) -> Void in
-            if result.rawValue == NSFileHandlingPanelOKButton {
-                let urls = panel.urls.filter() { $0.path.lowercased().hasSuffix(".cfg") }
-                let path = urls.first?.path
-                clean()
-                sc.open(path)
-                completion(sc.loaded, path)
-            }
+        if useDefaultConversion {
+            // By defaults used 48x48 config
+            /**
+             Strips in focal plane detector are connected alternately to 3 16-channel encoders:
+             | 1.0 | 2.0 | 3.0 | 1.1 | 2.1 | 3.1 | ... | encoder.strip_0_15 |
+             This method used for convert strip from format "encoder + strip 0-15" to format "strip 1-48".
+             */
+            let value = (Int(strip0_15) * 3) + (encoder - 1) + 1
+            cacheStrip(strip: value, side: side, encoder: encoder, strip0_15: strip0_15)
+            return value
+        } else {
+            return Int(strip0_15) + 1
         }
     }
     
-    class func clean() {
-        let sc = StripsConfiguration.singleton
-        sc.config.removeAll()
-        sc.stripsCache.removeAll()
+    class func load(_ completion: @escaping ((Bool, [String]?) -> ())) {
+        let panel = NSOpenPanel()
+        panel.canChooseDirectories = false
+        panel.canChooseFiles = true
+        panel.allowsMultipleSelection = true
+        panel.begin { (result) -> Void in
+            if result.rawValue == NSFileHandlingPanelOKButton {
+                let urls = panel.urls.filter() { $0.path.lowercased().hasSuffix(".cfg") }
+                let s = StripDetectorManager.singleton
+                s.stripsConfigurations.removeAll()
+                for url in urls {
+                    let path = url.path
+                    for detector in [.focal, .side] as [StripDetector] {
+                        if path.localizedCaseInsensitiveContains(detector.configName()) {
+                            let sc = StripsConfiguration(useDefaultConversion: detector == .focal)
+                            sc.open(path)
+                            if sc.loaded {
+                                s.stripsConfigurations[detector] = sc
+                            }
+                        }
+                    }
+                }
+                let paths = urls.map({ (u: URL) -> String in
+                    return u.path
+                })
+                completion(s.stripsConfigurations.count > 0, paths)
+            }
+        }
     }
     
     fileprivate func open(_ path: String?) {

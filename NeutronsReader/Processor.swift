@@ -47,8 +47,8 @@ class Processor {
         return Calibration.singleton
     }
     
-    fileprivate var stripsConfiguration: StripsConfiguration {
-        return StripsConfiguration.singleton
+    fileprivate func stripsConfiguration(detector: StripDetector) -> StripsConfiguration? {
+        return StripDetectorManager.singleton.stripsConfigurations[detector]
     }
     
     fileprivate var dataProtocol: DataProtocol! {
@@ -612,7 +612,8 @@ class Processor {
         let strip0_15 = event.param2 >> 12
         let energy = getEnergy(event, type: type)
         let side: StripsSide = .back
-        let item = DetectorMatchItem(energy: energy,
+        let item = DetectorMatchItem(stripDetector: .focal,
+                                     energy: energy,
                                      encoder: encoder,
                                      strip0_15: strip0_15,
                                      eventNumber: eventNumber(),
@@ -638,7 +639,8 @@ class Processor {
         let strip0_15 = event.param2 >> 12
         let energy = getEnergy(event, type: criteria.startParticleType)
         let side: StripsSide = .front
-        let item = DetectorMatchItem(energy: energy,
+        let item = DetectorMatchItem(stripDetector: .focal,
+                                     energy: energy,
                                      encoder: encoder,
                                      strip0_15: strip0_15,
                                      eventNumber: eventNumber(),
@@ -658,7 +660,8 @@ class Processor {
         } else {
             energy = channel
         }
-        let item = DetectorMatchItem(energy: energy,
+        let item = DetectorMatchItem(stripDetector: nil,
+                                     energy: energy,
                                      encoder: encoder,
                                      deltaTime: deltaTime)
         gammaPerAct.append(item)
@@ -668,7 +671,8 @@ class Processor {
         let id = event.eventId
         let encoder = dataProtocol.encoderForEventId(Int(id))
         let strip0_15 = event.param2 >> 12
-        let item = DetectorMatchItem(energy: energy,
+        let item = DetectorMatchItem(stripDetector: .focal,
+                                     energy: energy,
                                      encoder: encoder,
                                      strip0_15: strip0_15,
                                      eventNumber: eventNumber(),
@@ -684,7 +688,8 @@ class Processor {
         let strip0_15 = event.param2 >> 12
         let energy = getEnergy(event, type: criteria.secondParticleType)
         let side: StripsSide = .front
-        let item = DetectorMatchItem(energy: energy,
+        let item = DetectorMatchItem(stripDetector: .focal,
+                                     energy: energy,
                                      encoder: encoder,
                                      strip0_15: strip0_15,
                                      eventNumber: eventNumber(),
@@ -694,7 +699,8 @@ class Processor {
     }
     
     fileprivate func storeRealTOFValue(_ value: Double, deltaTime: CLongLong) {
-        let item = DetectorMatchItem(deltaTime: deltaTime,
+        let item = DetectorMatchItem(stripDetector: nil,
+                                     deltaTime: deltaTime,
                                      value: value)
         tofRealPerAct.append(item)
     }
@@ -702,7 +708,8 @@ class Processor {
     fileprivate func storeVETO(_ event: Event, deltaTime: CLongLong) {
         let strip0_15 = event.param2 >> 12
         let energy = getEnergy(event, type: .veto)
-        let item = DetectorMatchItem(energy: energy,
+        let item = DetectorMatchItem(stripDetector: nil,
+                                     energy: energy,
                                      strip0_15: strip0_15,
                                      eventNumber: eventNumber(),
                                      deltaTime: deltaTime)
@@ -713,7 +720,8 @@ class Processor {
         let energy = getEnergy(event, type: criteria.startParticleType)
         let encoder = dataProtocol.encoderForEventId(Int(event.eventId))
         let strip0_15 = event.param2 >> 12
-        let item = DetectorMatchItem(energy: energy,
+        let item = DetectorMatchItem(stripDetector: .side,
+                                     energy: energy,
                                      encoder: encoder,
                                      strip0_15: strip0_15,
                                      marker: getMarker(event))
@@ -744,8 +752,7 @@ class Processor {
     fileprivate func isEventStripNearToFirstFissionAlpha(_ event: Event, maxDelta: Int, side: StripsSide) -> Bool {
         let strip0_15 = event.param2 >> 12
         let encoder = dataProtocol.encoderForEventId(Int(event.eventId))
-        let strip1_N = stripsConfiguration.strip1_N_For(side: side, encoder: Int(encoder), strip0_15: strip0_15)
-        if let s = fissionsAlphaPerAct.firstItemsFor(side: side)?.strip1_N {
+        if let strip1_N = stripsConfiguration(detector: .focal)?.strip1_N_For(side: side, encoder: Int(encoder), strip0_15: strip0_15), let s = fissionsAlphaPerAct.firstItemsFor(side: side)?.strip1_N {
             return abs(Int32(strip1_N) - Int32(s)) <= Int32(maxDelta)
         }
         return false
@@ -756,11 +763,11 @@ class Processor {
         if let s = fissionsAlphaPerAct.matchFor(side: side).itemWithMaxEnergy()?.strip1_N {
             let strip0_15 = event.param2 >> 12
             let encoder = dataProtocol.encoderForEventId(Int(event.eventId))
-            let strip1_N = stripsConfiguration.strip1_N_For(side: side, encoder: Int(encoder), strip0_15: strip0_15)
-            return abs(Int32(strip1_N) - Int32(s)) <= Int32(criteria.recoilBackMaxDeltaStrips)
-        } else {
-            return false
+            if let strip1_N = stripsConfiguration(detector: .focal)?.strip1_N_For(side: side, encoder: Int(encoder), strip0_15: strip0_15) {
+                return abs(Int32(strip1_N) - Int32(s)) <= Int32(criteria.recoilBackMaxDeltaStrips)
+            }
         }
+        return false
     }
     
     /**
@@ -771,8 +778,9 @@ class Processor {
         if let s = fissionsAlphaPerAct.firstItemsFor(side: side)?.strip1_N {
             let strip0_15 = event.param2 >> 12
             let encoder = dataProtocol.encoderForEventId(Int(event.eventId))
-            let strip1_N = stripsConfiguration.strip1_N_For(side: side, encoder: Int(encoder), strip0_15: strip0_15)
-            return Int(abs(Int32(strip1_N) - Int32(s))) <= 1
+            if let strip1_N = stripsConfiguration(detector: .focal)?.strip1_N_For(side: side, encoder: Int(encoder), strip0_15: strip0_15) {
+                return Int(abs(Int32(strip1_N) - Int32(s))) <= 1
+            }
         }
         return false
     }
@@ -923,10 +931,12 @@ class Processor {
     fileprivate var keyColumnStartWellEnergy = "$Well"
     fileprivate var keyColumnStartWellMarker = "$WellMarker"
     fileprivate var keyColumnStartWellPosition = "$WellPos"
+    fileprivate var keyColumnStartWellStrip = "Strip($Well)"
     fileprivate var keyColumnStartWellBackSumm = "Summ($WellBack)"
     fileprivate var keyColumnStartWellBackEnergy = "$WellBack"
     fileprivate var keyColumnStartWellBackMarker = "$WellBackMarker"
     fileprivate var keyColumnStartWellBackPosition = "$WellBackPos"
+    fileprivate var keyColumnStartWellBackStrip = "Strip($WellBack)"
     fileprivate var keyColumnNeutrons = "Neutrons"
     fileprivate var keyColumnNeutronsBackward = "Neutrons(Backward)"
     fileprivate var keyColumnGammaEnergy = "Gamma"
@@ -984,10 +994,12 @@ class Processor {
                 keyColumnStartWellEnergy,
                 keyColumnStartWellMarker,
                 keyColumnStartWellPosition,
+                keyColumnStartWellStrip,
                 keyColumnStartWellBackSumm,
                 keyColumnStartWellBackEnergy,
                 keyColumnStartWellBackMarker,
-                keyColumnStartWellBackPosition
+                keyColumnStartWellBackPosition,
+                keyColumnStartWellBackStrip
                 ])
         }
         if criteria.searchNeutrons {
@@ -1158,6 +1170,10 @@ class Processor {
                     if let item = fissionsAlphaWellPerAct.matchFor(side: .front).itemAt(index: row), let strip0_15 = item.strip0_15, let encoder = item.encoder {
                         field = String(format: "FWell%d.%d", encoder, strip0_15 + 1)
                     }
+                case keyColumnStartWellStrip:
+                    if let strip = fissionsAlphaWellPerAct.matchFor(side: .front).itemAt(index: row)?.strip1_N {
+                        field = String(format: "%d", strip)
+                    }
                 case keyColumnStartWellBackSumm:
                     if row == 0, !criteria.startFromRecoil(), let summ = fissionsAlphaWellPerAct.matchFor(side: .back).getSummEnergyFrom() {
                         field = String(format: "%.7f", summ)
@@ -1173,6 +1189,10 @@ class Processor {
                 case keyColumnStartWellBackPosition:
                     if let item = fissionsAlphaWellPerAct.matchFor(side: .back).itemAt(index: row), let strip0_15 = item.strip0_15, let encoder = item.encoder {
                         field = String(format: "FWellBack%d.%d", encoder, strip0_15 + 1)
+                    }
+                case keyColumnStartWellBackStrip:
+                    if let strip = fissionsAlphaWellPerAct.matchFor(side: .back).itemAt(index: row)?.strip1_N {
+                        field = String(format: "%d", strip)
                     }
                 case keyColumnNeutrons:
                     if row == 0 {

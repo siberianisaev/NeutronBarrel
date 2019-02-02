@@ -15,11 +15,16 @@ class DetectorMatchItem {
         return _energy
     }
     
+    fileprivate var _stripDetector: StripDetector?
+    var stripDetector: StripDetector? {
+        return _stripDetector
+    }
+    
     fileprivate var _strip1_N: Int?
     var strip1_N: Int? {
         if nil == _strip1_N, let strip0_15 = strip0_15, let encoder = encoder {
-            if let side = side {
-                _strip1_N = StripsConfiguration.singleton.strip1_N_For(side: side, encoder: Int(encoder), strip0_15: strip0_15)
+            if let side = side, let stripDetector = stripDetector {
+                _strip1_N = StripDetectorManager.singleton.stripsConfigurations[stripDetector]?.strip1_N_For(side: side, encoder: Int(encoder), strip0_15: strip0_15)
             } else {
                 print("Unable to calculate 'strip1_N': detector side was not determined!")
             }
@@ -69,7 +74,8 @@ class DetectorMatchItem {
         return _value
     }
     
-    init(energy: Double? = nil, encoder: CUnsignedShort? = nil, strip0_15: CUnsignedShort? = nil, eventNumber: CUnsignedLongLong? = nil, deltaTime: CLongLong? = nil, marker: CUnsignedShort? = nil, channel: CUnsignedShort? = nil, heavy: Double? = nil, value: Double? = nil) {
+    init(stripDetector: StripDetector?, energy: Double? = nil, encoder: CUnsignedShort? = nil, strip0_15: CUnsignedShort? = nil, eventNumber: CUnsignedLongLong? = nil, deltaTime: CLongLong? = nil, marker: CUnsignedShort? = nil, channel: CUnsignedShort? = nil, heavy: Double? = nil, value: Double? = nil) {
+        self._stripDetector = stripDetector
         self._energy = energy
         self._encoder = encoder
         self._strip0_15 = strip0_15
