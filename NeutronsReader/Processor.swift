@@ -717,7 +717,8 @@ class Processor {
     }
     
     fileprivate func storeFissionAlphaWell(_ event: Event, side: StripsSide) {
-        let energy = getEnergy(event, type: criteria.startParticleType)
+        let type = side == .front ? criteria.startParticleType : criteria.startParticleBackType
+        let energy = getEnergy(event, type: type)
         let encoder = dataProtocol.encoderForEventId(Int(event.eventId))
         let strip0_15 = event.param2 >> 12
         let item = DetectorMatchItem(stripDetector: .side,
@@ -932,11 +933,11 @@ class Processor {
     fileprivate var keyColumnStartWellMarker = "$WellMarker"
     fileprivate var keyColumnStartWellPosition = "$WellPos"
     fileprivate var keyColumnStartWellStrip = "Strip($Well)"
-    fileprivate var keyColumnStartWellBackSumm = "Summ($WellBack)"
-    fileprivate var keyColumnStartWellBackEnergy = "$WellBack"
-    fileprivate var keyColumnStartWellBackMarker = "$WellBackMarker"
-    fileprivate var keyColumnStartWellBackPosition = "$WellBackPos"
-    fileprivate var keyColumnStartWellBackStrip = "Strip($WellBack)"
+    fileprivate var keyColumnStartWellBackSumm = "Summ(@WellBack)"
+    fileprivate var keyColumnStartWellBackEnergy = "@WellBack"
+    fileprivate var keyColumnStartWellBackMarker = "@WellBackMarker"
+    fileprivate var keyColumnStartWellBackPosition = "@WellBackPos"
+    fileprivate var keyColumnStartWellBackStrip = "Strip(@WellBack)"
     fileprivate var keyColumnNeutrons = "Neutrons"
     fileprivate var keyColumnNeutronsBackward = "Neutrons(Backward)"
     fileprivate var keyColumnGammaEnergy = "Gamma"
