@@ -23,6 +23,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBOutlet weak var labelStripsConfigurationFileName: NSTextField!
     @IBOutlet weak var labelTask: NSTextField!
     @IBOutlet weak var startParticleControl: NSSegmentedControl!
+    @IBOutlet weak var startParticleBackControl: NSSegmentedControl!
     @IBOutlet weak var secondParticleControl: NSSegmentedControl!
     @IBOutlet weak var tofUnitsControl: NSSegmentedControl!
     @IBOutlet weak var indicatorData: NSTextField!
@@ -140,6 +141,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         setupRecoilTypes()
         startParticleControl.selectedSegment = Settings.getIntSetting(.StartSearchType)
+        startParticleBackControl.selectedSegment = Settings.getIntSetting(.StartBackSearchType)
         secondParticleControl.selectedSegment = Settings.getIntSetting(.SecondSearchType)
         startParticleChanged(nil)
         setupVETOView()
@@ -234,6 +236,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         let sc = SearchCriteria()
         sc.resultsFolderName = sResultsFolderName
         sc.startParticleType = SearchType(rawValue: startParticleControl.selectedSegment) ?? .recoil
+        sc.startParticleBackType = SearchType(rawValue: startParticleBackControl.selectedSegment) ?? .fission
         sc.secondParticleType = SearchType(rawValue: secondParticleControl.selectedSegment) ?? .recoil
         sc.fissionAlphaFrontMinEnergy = Double(sMinFissionEnergy) ?? 0
         sc.fissionAlphaFrontMaxEnergy = Double(sMaxFissionEnergy) ?? 0
@@ -472,6 +475,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         Settings.setObject(trackBeamBackground, forSetting: .TrackBeamBackground)
         Settings.setObject(trackBeamIntegral, forSetting: .TrackBeamIntegral)
         Settings.setObject(startParticleControl.selectedSegment, forSetting: .StartSearchType)
+        Settings.setObject(startParticleBackControl.selectedSegment, forSetting: .StartBackSearchType)
         Settings.setObject(secondParticleControl.selectedSegment, forSetting: .SecondSearchType)
         Settings.setObject(searchFissionAlpha2, forSetting: .SearchFissionAlpha2)
         Settings.setObject(Double(sMinFissionAlpha2Energy), forSetting: .MinFissionAlpha2Energy)

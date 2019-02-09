@@ -464,7 +464,7 @@ class Processor {
     
     fileprivate func findFissionAlphaBack() {
         let match = fissionsAlphaPerAct
-        let type = criteria.startParticleType
+        let type = criteria.startParticleBackType
         let directions: Set<SearchDirection> = [.backward, .forward]
         search(directions: directions, startTime: startEventTime, minDeltaTime: 0, maxDeltaTime: criteria.fissionAlphaMaxTime, maxDeltaTimeBackward: criteria.fissionAlphaBackBackwardMaxTime, useCycleTime: false, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
             if self.isBack(event, type: type) {
@@ -922,11 +922,11 @@ class Processor {
     fileprivate var keyColumnStartFrontMarker = "$FronMarker"
     fileprivate var keyColumnStartFrontDeltaTime = "dT($FronFirst-Next)"
     fileprivate var keyColumnStartFrontStrip = "Strip($Fron)"
-    fileprivate var keyColumnStartBackSumm = "Summ($Back)"
-    fileprivate var keyColumnStartBackEnergy = "$Back"
-    fileprivate var keyColumnStartBackMarker = "$BackMarker"
-    fileprivate var keyColumnStartBackDeltaTime = "dT($Fron-$Back)"
-    fileprivate var keyColumnStartBackStrip = "Strip($Back)"
+    fileprivate var keyColumnStartBackSumm = "Summ(@Back)"
+    fileprivate var keyColumnStartBackEnergy = "@Back"
+    fileprivate var keyColumnStartBackMarker = "@BackMarker"
+    fileprivate var keyColumnStartBackDeltaTime = "dT($Fron-@Back)"
+    fileprivate var keyColumnStartBackStrip = "Strip(@Back)"
     fileprivate var keyColumnStartWellSumm = "Summ($Well)"
     fileprivate var keyColumnStartWellEnergy = "$Well"
     fileprivate var keyColumnStartWellMarker = "$WellMarker"
@@ -1059,9 +1059,10 @@ class Processor {
         }
         
         let first = criteria.startParticleType.symbol()
+        let firstBack = criteria.startParticleBackType.symbol()
         let second = criteria.secondParticleType.symbol()
         let headers = columns.map { (s: String) -> String in
-            return s.replacingOccurrences(of: "$", with: first).replacingOccurrences(of: "&", with: second)
+            return s.replacingOccurrences(of: "$", with: first).replacingOccurrences(of: "@", with: firstBack).replacingOccurrences(of: "&", with: second)
             } as [AnyObject]
         logger.writeResultsLineOfFields(headers)
         logger.finishResultsLine() // +1 line padding
