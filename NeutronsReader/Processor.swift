@@ -717,7 +717,7 @@ class Processor {
     }
     
     fileprivate func storeFissionAlphaWell(_ event: Event, side: StripsSide) {
-        let type = side == .front ? criteria.startParticleType : criteria.startParticleBackType
+        let type = side == .front ? criteria.startParticleType : criteria.wellParticleBackType
         let energy = getEnergy(event, type: type)
         let encoder = dataProtocol.encoderForEventId(Int(event.eventId))
         let strip0_15 = event.param2 >> 12
@@ -933,11 +933,11 @@ class Processor {
     fileprivate var keyColumnStartWellMarker = "$WellMarker"
     fileprivate var keyColumnStartWellPosition = "$WellPos"
     fileprivate var keyColumnStartWellStrip = "Strip($Well)"
-    fileprivate var keyColumnStartWellBackSumm = "Summ(@WellBack)"
-    fileprivate var keyColumnStartWellBackEnergy = "@WellBack"
-    fileprivate var keyColumnStartWellBackMarker = "@WellBackMarker"
-    fileprivate var keyColumnStartWellBackPosition = "@WellBackPos"
-    fileprivate var keyColumnStartWellBackStrip = "Strip(@WellBack)"
+    fileprivate var keyColumnStartWellBackSumm = "Summ(*WellBack)"
+    fileprivate var keyColumnStartWellBackEnergy = "*WellBack"
+    fileprivate var keyColumnStartWellBackMarker = "*WellBackMarker"
+    fileprivate var keyColumnStartWellBackPosition = "*WellBackPos"
+    fileprivate var keyColumnStartWellBackStrip = "Strip(*WellBack)"
     fileprivate var keyColumnNeutrons = "Neutrons"
     fileprivate var keyColumnNeutronsBackward = "Neutrons(Backward)"
     fileprivate var keyColumnGammaEnergy = "Gamma"
@@ -1062,8 +1062,9 @@ class Processor {
         let first = criteria.startParticleType.symbol()
         let firstBack = criteria.startParticleBackType.symbol()
         let second = criteria.secondParticleType.symbol()
+        let wellBack = criteria.wellParticleBackType.symbol()
         let headers = columns.map { (s: String) -> String in
-            return s.replacingOccurrences(of: "$", with: first).replacingOccurrences(of: "@", with: firstBack).replacingOccurrences(of: "&", with: second)
+            return s.replacingOccurrences(of: "$", with: first).replacingOccurrences(of: "@", with: firstBack).replacingOccurrences(of: "*", with: wellBack).replacingOccurrences(of: "&", with: second)
             } as [AnyObject]
         logger.writeResultsLineOfFields(headers)
         logger.finishResultsLine() // +1 line padding
