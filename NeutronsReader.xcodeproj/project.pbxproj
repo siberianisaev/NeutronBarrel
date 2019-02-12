@@ -24,6 +24,8 @@
 		651307141A4E94C500E33704 /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 651307131A4E94C500E33704 /* Logger.swift */; };
 		656A05DC1EADEDD500677B0F /* DataProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 656A05DB1EADEDD500677B0F /* DataProtocol.swift */; };
 		656A05DE1EAE03BC00677B0F /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 656A05DD1EAE03BC00677B0F /* Extensions.swift */; };
+		65BD16C32212C51000022E3B /* DoubleSidedStripDetectorSingleMatch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65BD16C22212C51000022E3B /* DoubleSidedStripDetectorSingleMatch.swift */; };
+		65BD16C42212C51000022E3B /* DoubleSidedStripDetectorSingleMatch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65BD16C22212C51000022E3B /* DoubleSidedStripDetectorSingleMatch.swift */; };
 		65DA929F20D54F65002643DB /* SearchType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65DA929E20D54F65002643DB /* SearchType.swift */; };
 		65DA92A020D54F65002643DB /* SearchType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65DA929E20D54F65002643DB /* SearchType.swift */; };
 		65DA92A220D5527D002643DB /* BeamState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65DA92A120D5527D002643DB /* BeamState.swift */; };
@@ -76,6 +78,7 @@
 		654FC8041F77091D00E75929 /* NeutronsReader.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = NeutronsReader.entitlements; sourceTree = "<group>"; };
 		656A05DB1EADEDD500677B0F /* DataProtocol.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DataProtocol.swift; sourceTree = "<group>"; };
 		656A05DD1EAE03BC00677B0F /* Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
+		65BD16C22212C51000022E3B /* DoubleSidedStripDetectorSingleMatch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DoubleSidedStripDetectorSingleMatch.swift; sourceTree = "<group>"; };
 		65DA929E20D54F65002643DB /* SearchType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchType.swift; sourceTree = "<group>"; };
 		65DA92A120D5527D002643DB /* BeamState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeamState.swift; sourceTree = "<group>"; };
 		65DA92A420D57794002643DB /* DetectorMatchItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetectorMatchItem.swift; sourceTree = "<group>"; };
@@ -164,6 +167,7 @@
 				5A2A99372057083A00B3D1A0 /* DetectorMatch.swift */,
 				65DA92A420D57794002643DB /* DetectorMatchItem.swift */,
 				5A2A99342056F66800B3D1A0 /* DoubleSidedStripDetectorMatch.swift */,
+				65BD16C22212C51000022E3B /* DoubleSidedStripDetectorSingleMatch.swift */,
 				651FDD8F1EC1012F0041CDE8 /* Constants.h */,
 				65E78380203AD7F700091FA4 /* Event.h */,
 				65E7837F203AD7F700091FA4 /* EventNewTime.h */,
@@ -409,6 +413,7 @@
 				5A8423E420D12C100097F7FB /* SearchCriteria.swift in Sources */,
 				65E78369203AD5B200091FA4 /* Logger.swift in Sources */,
 				65DA92A620D57794002643DB /* DetectorMatchItem.swift in Sources */,
+				65BD16C42212C51000022E3B /* DoubleSidedStripDetectorSingleMatch.swift in Sources */,
 				65E7836A203AD5B200091FA4 /* Extensions.swift in Sources */,
 				65E7836B203AD5B200091FA4 /* ViewerController.swift in Sources */,
 				65E7836C203AD5B200091FA4 /* FileManager.swift in Sources */,
@@ -437,6 +442,7 @@
 				5A8423E320D12C100097F7FB /* SearchCriteria.swift in Sources */,
 				651307141A4E94C500E33704 /* Logger.swift in Sources */,
 				65DA92A520D57794002643DB /* DetectorMatchItem.swift in Sources */,
+				65BD16C32212C51000022E3B /* DoubleSidedStripDetectorSingleMatch.swift in Sources */,
 				656A05DE1EAE03BC00677B0F /* Extensions.swift in Sources */,
 				6512B00B1EDACBB20087131D /* ViewerController.swift in Sources */,
 				6513070C1A4E911300E33704 /* FileManager.swift in Sources */,
