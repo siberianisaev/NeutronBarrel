@@ -45,6 +45,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBOutlet weak var buttonRemoveCalibration: NSButton!
     @IBOutlet weak var buttonRemoveStripsConfiguration: NSButton!
     @IBOutlet weak var buttonCancel: NSButton!
+    @IBOutlet weak var fissionAlpha1BackEnergyView: NSView!
     
     fileprivate var viewerController: ViewerController?
     fileprivate var startDate: Date?
@@ -53,6 +54,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBInspectable var sResultsFolderName = ""
     @IBInspectable var sMinFissionEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MinFissionEnergy)) // MeV
     @IBInspectable var sMaxFissionEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MaxFissionEnergy)) // MeV
+    @IBInspectable var sMinFissionBackEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MinFissionBackEnergy)) // MeV
+    @IBInspectable var sMaxFissionBackEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MaxFissionBackEnergy)) // MeV
     @IBInspectable var sMinRecoilEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MinRecoilEnergy)) // MeV
     @IBInspectable var sMaxRecoilEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MaxRecoilEnergy)) // MeV
     @IBInspectable var sMinTOFValue = String(format: "%d", Settings.getIntSetting(.MinTOFValue)) // channel or ns
@@ -113,7 +116,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBInspectable var trackBeamCurrent: Bool = Settings.getBoolSetting(.TrackBeamCurrent)
     @IBInspectable var trackBeamBackground: Bool = Settings.getBoolSetting(.TrackBeamBackground)
     @IBInspectable var trackBeamIntegral: Bool = Settings.getBoolSetting(.TrackBeamIntegral)
-    @IBInspectable var searchFissionBackByFact: Bool = Settings.getBoolSetting(.SearchFissionBackByFact)
+    @IBInspectable var searchFissionBackByFact: Bool = Settings.getBoolSetting(.SearchFissionBackByFact) {
+        didSet {
+            setupFissionAlpha1BackEnergyView()
+        }
+    }
     @IBInspectable var searchFissionBack2ByFact: Bool = Settings.getBoolSetting(.SearchFissionBack2ByFact)
     
     fileprivate let recoilTypes: [SearchType] = [.recoil, .heavy]
@@ -139,6 +146,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         recoilTypeArrayController.setSelectedObjects([array[index]])
     }
     
+    fileprivate func setupFissionAlpha1BackEnergyView() {
+        fissionAlpha1BackEnergyView.isHidden = searchFissionBackByFact
+    }
+    
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         setupRecoilTypes()
         startParticleControl.selectedSegment = Settings.getIntSetting(.StartSearchType)
@@ -149,6 +160,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         setupVETOView()
         setupWellView()
         setupAlpha2FormView()
+        setupFissionAlpha1BackEnergyView()
         tofUnitsControl.selectedSegment = Settings.getIntSetting(.TOFUnits)
         for i in [indicatorData, indicatorCalibration, indicatorStripsConfig] {
             setSelected(false, indicator: i)
@@ -247,6 +259,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         sc.wellParticleBackType = SearchType(rawValue: wellParticleBackControl.selectedSegment) ?? .fission
         sc.fissionAlphaFrontMinEnergy = Double(sMinFissionEnergy) ?? 0
         sc.fissionAlphaFrontMaxEnergy = Double(sMaxFissionEnergy) ?? 0
+        sc.fissionAlphaBackMinEnergy = Double(sMinFissionBackEnergy) ?? 0
+        sc.fissionAlphaBackMaxEnergy = Double(sMaxFissionBackEnergy) ?? 0
         sc.searchFissionAlphaBackByFact = searchFissionBackByFact
         sc.searchFissionAlphaBack2ByFact = searchFissionBack2ByFact
         sc.fissionAlphaMaxTime = UInt64(sMaxFissionTime) ?? 0
@@ -447,6 +461,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     fileprivate func saveSettings() {
         Settings.setObject(Double(sMinFissionEnergy), forSetting: .MinFissionEnergy)
         Settings.setObject(Double(sMaxFissionEnergy), forSetting: .MaxFissionEnergy)
+        Settings.setObject(Double(sMinFissionBackEnergy), forSetting: .MinFissionBackEnergy)
+        Settings.setObject(Double(sMaxFissionBackEnergy), forSetting: .MaxFissionBackEnergy)
         Settings.setObject(Double(sMinRecoilEnergy), forSetting: .MinRecoilEnergy)
         Settings.setObject(Double(sMaxRecoilEnergy), forSetting: .MaxRecoilEnergy)
         Settings.setObject(Float(sBeamEnergyMin), forSetting: .BeamEnergyMin)

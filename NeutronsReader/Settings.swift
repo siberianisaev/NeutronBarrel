@@ -14,6 +14,8 @@ class Settings {
         case
         MinFissionEnergy = "MinFissionEnergy",
         MaxFissionEnergy = "MaxFissionEnergy",
+        MinFissionBackEnergy = "MinFissionBackEnergy",
+        MaxFissionBackEnergy = "MaxFissionBackEnergy",
         MinRecoilEnergy = "MinRecoilEnergy",
         MaxRecoilEnergy = "MaxRecoilEnergy",
         MinTOFValue = "MinTOFValue",
@@ -116,7 +118,7 @@ class Settings {
             return 1000
         case .MinRecoilEnergy:
             return 1
-        case .MaxTOFValue:
+        case .MaxFissionBackEnergy, .MaxTOFValue:
             return 10000
         case .MaxRecoilBackTime, .MaxFissionTime, .MaxVETOTime, .MaxGammaTime, .MinFissionAlpha2Energy:
             return 5
@@ -124,7 +126,7 @@ class Settings {
             return 4
         case .MaxNeutronTime:
             return 132
-        case .MaxRecoilFrontDeltaStrips, .MaxRecoilBackDeltaStrips, .SearchFissionAlpha2, .StartSearchType, .StartBackSearchType, .WellBackSearchType, .SecondSearchType, .TOFUnits, .MinFissionAlpha2Time, .MaxFissionAlpha2FrontDeltaStrips, .MinRecoilTime, .MinTOFValue, .MaxFissionBackBackwardTime, .MaxFissionWellBackwardTime, .MaxRecoilBackBackwardTime:
+        case .MinFissionBackEnergy, .MaxRecoilFrontDeltaStrips, .MaxRecoilBackDeltaStrips, .SearchFissionAlpha2, .StartSearchType, .StartBackSearchType, .WellBackSearchType, .SecondSearchType, .TOFUnits, .MinFissionAlpha2Time, .MaxFissionAlpha2FrontDeltaStrips, .MinRecoilTime, .MinTOFValue, .MaxFissionBackBackwardTime, .MaxFissionWellBackwardTime, .MaxRecoilBackBackwardTime:
             return 0
         case .RequiredFissionAlphaBack, .RequiredRecoilBack, .SearchNeutrons, .TrackBeamEnergy, .TrackBeamCurrent, .TrackBeamBackground, .TrackBeamIntegral, .SearchWell:
             return true

@@ -469,7 +469,7 @@ class Processor {
         search(directions: directions, startTime: startEventTime, minDeltaTime: 0, maxDeltaTime: criteria.fissionAlphaMaxTime, maxDeltaTimeBackward: criteria.fissionAlphaBackBackwardMaxTime, useCycleTime: false, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
             if self.isBack(event, type: type) {
                 let energy = self.getEnergy(event, type: type)
-                if self.criteria.searchFissionAlphaBackByFact || (energy >= self.criteria.fissionAlphaFrontMinEnergy && energy <= self.criteria.fissionAlphaFrontMaxEnergy) {
+                if self.criteria.searchFissionAlphaBackByFact || (energy >= self.criteria.fissionAlphaBackMinEnergy && energy <= self.criteria.fissionAlphaBackMaxEnergy) {
                     self.storeFissionAlphaRecoilBack(event, match: match, type: type, deltaTime: deltaTime)
                 }
             }
