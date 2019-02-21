@@ -6,5 +6,5 @@
 
 #ifdef __OBJC__
     #import <Cocoa/Cocoa.h>
-    #import "NeutronsReader-Swift.h"
+    #import "Modane-Swift.h"
 #endif

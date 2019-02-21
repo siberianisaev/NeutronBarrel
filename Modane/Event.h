@@ -1,8 +1,8 @@
 //
 //  Event.h
-//  NeutronsReader
+//  Modane
 //
-//  Created by Andrey Isaev on 19/02/2018.
+//  Created by Andrey Isaev on 29/10/2018.
 //  Copyright © 2018 Flerov Laboratory. All rights reserved.
 //
 

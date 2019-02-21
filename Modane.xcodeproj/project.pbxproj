@@ -56,42 +56,6 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		5A2A993A20570EC900B3D1A0 /* Helpers */ = {
-			isa = PBXGroup;
-			children = (
-				656A05DD1EAE03BC00677B0F /* Extensions.swift */,
-				6513070B1A4E911300E33704 /* FileManager.swift */,
-			);
-			name = Helpers;
-			sourceTree = "<group>";
-		};
-		5A2A993B20570ED800B3D1A0 /* Config */ = {
-			isa = PBXGroup;
-			children = (
-				784B0B881ABB13F80041FA66 /* Settings.swift */,
-				78FC51301A530D0300FE5737 /* DataLoader.swift */,
-			);
-			name = Config;
-			sourceTree = "<group>";
-		};
-		5A2A993D20570F0C00B3D1A0 /* Model */ = {
-			isa = PBXGroup;
-			children = (
-				7815A0F421830CD1006A1037 /* Fn_U238_12new.txt */,
-				651FDD8F1EC1012F0041CDE8 /* Constants.h */,
-				65E78380203AD7F700091FA4 /* Event.h */,
-			);
-			name = Model;
-			sourceTree = "<group>";
-		};
-		780BC43E1A604AE000EDEECE /* Resources */ = {
-			isa = PBXGroup;
-			children = (
-				78B6A55F193A3B3900C7E36A /* Images.xcassets */,
-			);
-			name = Resources;
-			sourceTree = "<group>";
-		};
 		78B6A53B193A3B3800C7E36A = {
 			isa = PBXGroup;
 			children = (
@@ -131,28 +95,24 @@
 		78B6A54D193A3B3900C7E36A /* Modane */ = {
 			isa = PBXGroup;
 			children = (
+				784B0B881ABB13F80041FA66 /* Settings.swift */,
+				78FC51301A530D0300FE5737 /* DataLoader.swift */,
+				656A05DD1EAE03BC00677B0F /* Extensions.swift */,
+				6513070B1A4E911300E33704 /* FileManager.swift */,
 				78B6A55C193A3B3900C7E36A /* MainMenu.xib */,
-				5A2A993A20570EC900B3D1A0 /* Helpers */,
-				5A2A993B20570ED800B3D1A0 /* Config */,
-				5A2A993D20570F0C00B3D1A0 /* Model */,
 				5A036F701EB0F5C80092D3C4 /* Processor.swift */,
 				7815A0F621830EF9006A1037 /* Calibration.swift */,
 				780BC3A51A5EF99700EDEECE /* AppDelegate.swift */,
-				780BC43E1A604AE000EDEECE /* Resources */,
-				78B6A54E193A3B3900C7E36A /* Supporting Files */,
-			);
-			path = Modane;
-			sourceTree = "<group>";
-		};
-		78B6A54E193A3B3900C7E36A /* Supporting Files */ = {
-			isa = PBXGroup;
-			children = (
+				7815A0F421830CD1006A1037 /* Fn_U238_12new.txt */,
+				651FDD8F1EC1012F0041CDE8 /* Constants.h */,
+				65E78380203AD7F700091FA4 /* Event.h */,
+				78B6A55F193A3B3900C7E36A /* Images.xcassets */,
 				654FC8041F77091D00E75929 /* Modane.entitlements */,
 				78B6A54F193A3B3900C7E36A /* Modane-Info.plist */,
 				78B6A555193A3B3900C7E36A /* Modane-Prefix.pch */,
 				78AF2A13218211CA0024A98E /* Modane-Bridging-Header.h */,
 			);
-			name = "Supporting Files";
+			path = Modane;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */

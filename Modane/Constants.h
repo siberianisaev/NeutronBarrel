@@ -1,8 +1,8 @@
 //
 //  Constants.h
-//  NeutronsReader
+//  Modane
 //
-//  Created by Andrey Isaev on 08/05/2017.
+//  Created by Andrey Isaev on 29/10/2018.
 //  Copyright © 2018 Flerov Laboratory. All rights reserved.
 //
 

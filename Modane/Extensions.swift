@@ -1,8 +1,8 @@
 //
 //  Extensions.swift
-//  NeutronsReader
+//  Modane
 //
-//  Created by Andrey Isaev on 24/04/2017.
+//  Created by Andrey Isaev on 29/10/2018.
 //  Copyright © 2018 Flerov Laboratory. All rights reserved.
 //
 
@@ -25,29 +25,6 @@ extension Event {
     
 }
 
-extension NSWindow {
-    
-    func screenshot() -> NSImage? {
-        if let windowImage = CGWindowListCreateImage(CGRect.null, .optionIncludingWindow, CGWindowID(windowNumber), .nominalResolution) {
-            return NSImage(cgImage: windowImage, size: frame.size)
-        } else {
-            return nil
-        }
-    }
-    
-}
-
-extension NSImage {
-    
-    func imagePNGRepresentation() -> Data? {
-        if let imageTiffData = tiffRepresentation, let imageRep = NSBitmapImageRep(data: imageTiffData) {
-            return imageRep.representation(using: NSBitmapImageRep.FileType.png, properties: [NSBitmapImageRep.PropertyKey.interlaced: NSNumber(value: true)])
-        }
-        return nil
-    }
-    
-}
-
 extension TimeInterval {
     
     func stringFromSeconds() -> String {
@@ -55,14 +32,6 @@ extension TimeInterval {
         let minutes = Int((self / 60).truncatingRemainder(dividingBy: 60))
         let hours = Int(self / 3600)
         return String(format: "%02d:%02d:%02d", hours, minutes, seconds)
-    }
-    
-}
-
-extension timespec {
-    
-    func toTimeInterval() -> TimeInterval {
-        return TimeInterval(tv_sec) + TimeInterval(tv_nsec) * 1e-9
     }
     
 }
