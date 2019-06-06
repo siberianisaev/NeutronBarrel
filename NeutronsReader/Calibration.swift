@@ -99,6 +99,16 @@ class Calibration {
         calibrationKeysCache[type] = typeDict
     }
     
+    fileprivate func keyFor(type: SearchType, eventId: Int, encoder: CUnsignedShort, strip: CUnsignedShort, dataProtocol: DataProtocol) -> String {
+        let position = dataProtocol.position(eventId)
+        var name = type.symbol() + position
+        if encoder != 0 {
+            name += "\(encoder)."
+        }
+        name += String(strip)
+        return name
+    }
+    
     fileprivate func calibrationKeyFor(type: SearchType, eventId: Int, encoder: CUnsignedShort, strip0_15: CUnsignedShort?, dataProtocol: DataProtocol) -> String {
         let strip = (strip0_15 ?? 0) + 1
         if let cached = calibrationKeysCache[type]?[eventId]?[encoder]?[strip] {
@@ -113,13 +123,10 @@ class Calibration {
             let position = dataProtocol.isAlphaFronEvent(eventId) ? "Fron" : "Back"
             key = String(format: "%@%@%d.%d", type.symbol(), position, encoder, strip)
         } else {
-            let position = dataProtocol.position(eventId)
-            var name = type.symbol() + position
-            if encoder != 0 {
-                name += "\(encoder)."
+            key = keyFor(type: type, eventId: eventId, encoder: encoder, strip: strip, dataProtocol: dataProtocol)
+            if false == data.keys.contains(key), let alternative = type.alternativeCalibrationType() {
+                key = keyFor(type: alternative, eventId: eventId, encoder: encoder, strip: strip, dataProtocol: dataProtocol)
             }
-            name += String(strip)
-            key = name
         }
         cacheCalibrationKey(key, type: type, eventId: eventId, encoder: encoder, strip: strip)
         return key

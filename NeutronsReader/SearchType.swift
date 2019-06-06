@@ -34,6 +34,17 @@ enum SearchType: Int {
         }
     }
     
+    func alternativeCalibrationType() -> SearchType? {
+        switch self {
+        case .recoil:
+            return .alpha
+        case .heavy:
+            return .fission
+        default:
+            return nil
+        }
+    }
+    
     func name() -> String {
         switch self {
         case .fission:
