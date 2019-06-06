@@ -936,6 +936,7 @@ class Processor {
     fileprivate var keyColumnStartWellMarker = "$WellMarker"
     fileprivate var keyColumnStartWellPosition = "$WellPos"
     fileprivate var keyColumnStartWellPositionXYZ = "$WellPosXYZ"
+    fileprivate var keyColumnStartWellAngle = "$WellAngle"
     fileprivate var keyColumnStartWellStrip = "Strip($Well)"
     fileprivate var keyColumnStartWellBackEnergy = "*WellBack"
     fileprivate var keyColumnStartWellBackMarker = "*WellBackMarker"
@@ -999,6 +1000,7 @@ class Processor {
                 keyColumnStartWellMarker,
                 keyColumnStartWellPosition,
                 keyColumnStartWellPositionXYZ,
+                keyColumnStartWellAngle,
                 keyColumnStartWellStrip,
                 keyColumnStartWellBackEnergy,
                 keyColumnStartWellBackMarker,
@@ -1182,6 +1184,16 @@ class Processor {
                     if row == 0, let itemFront = fissionsAlphaWellPerAct.itemFor(side: .front), let stripFront0 = itemFront.strip0_15, let itemBack = fissionsAlphaWellPerAct.itemFor(side: .back), let stripBack0 = itemBack.strip0_15, let encoder = itemFront.encoder {
                         let point = DetectorsWellGeometry.coordinatesXYZ(stripDetector: .side, stripFront0: Int(stripFront0), stripBack0: Int(stripBack0), encoderSide: Int(encoder))
                         field = String(format: "(%.1f, %.1f, %.1f)", point.x, point.y, point.z)
+                    }
+                case keyColumnStartWellAngle:
+                    let matchesFocal = criteria.startFromRecoil() ? recoilsPerAct : fissionsAlphaPerAct
+                    if row == 0, let itemFocalFront = matchesFocal.matchFor(side: .front).itemAt(index: row), let stripFocalFront1 = itemFocalFront.strip1_N, let itemFocalBack = matchesFocal.matchFor(side: .back).itemAt(index: row), let stripFocalBack1 = itemFocalBack.strip1_N, let itemSideFront = fissionsAlphaWellPerAct.itemFor(side: .front), let stripSideFront0 = itemSideFront.strip0_15, let itemSideBack = fissionsAlphaWellPerAct.itemFor(side: .back), let stripSideBack0 = itemSideBack.strip0_15, let encoderSide = itemSideFront.encoder {
+                        let pointFront = DetectorsWellGeometry.coordinatesXYZ(stripDetector: .focal, stripFront0: stripFocalFront1 - 1, stripBack0: stripFocalBack1 - 1)
+                        let pointSide = DetectorsWellGeometry.coordinatesXYZ(stripDetector: .side, stripFront0: Int(stripSideFront0), stripBack0: Int(stripSideBack0), encoderSide: Int(encoderSide))
+                        let hypotenuse = sqrt(pow(pointFront.x - pointSide.x, 2) + pow(pointFront.y - pointSide.y, 2) + pow(pointFront.z - pointSide.z, 2))
+                        let sinus = pointSide.z / hypotenuse
+                        let arcsinus = asin(sinus) * 180 / CGFloat.pi
+                        field = String(format: "%.2f", arcsinus)
                     }
                 case keyColumnStartWellStrip:
                     if row == 0, let strip = fissionsAlphaWellPerAct.itemFor(side: .front)?.strip1_N {
