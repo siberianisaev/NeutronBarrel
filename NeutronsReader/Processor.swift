@@ -1138,7 +1138,7 @@ class Processor {
                     let matches = criteria.startFromRecoil() ? recoilsPerAct : fissionsAlphaPerAct
                     if let itemFront = matches.matchFor(side: .front).itemAt(index: row), let stripFront1 = itemFront.strip1_N, let itemBack = matches.matchFor(side: .back).itemAt(index: row), let stripBack1 = itemBack.strip1_N {
                         let point = DetectorsWellGeometry.coordinatesXYZ(stripDetector: .focal, stripFront0: stripFront1 - 1, stripBack0: stripBack1 - 1)
-                        field = String(format: "(%.1f, %.1f, %.1f)", point.x, point.y, point.z)
+                        field = String(format: "%.1f|%.1f|%.1f", point.x, point.y, point.z)
                     }
                 case keyColumnStartBackSumm:
                     if row == 0, !criteria.startFromRecoil(), let summ = fissionsAlphaPerAct.matchFor(side: .back).getSummEnergyFrom() {
@@ -1183,7 +1183,7 @@ class Processor {
                 case keyColumnStartWellPositionXYZ:
                     if row == 0, let itemFront = fissionsAlphaWellPerAct.itemFor(side: .front), let stripFront0 = itemFront.strip0_15, let itemBack = fissionsAlphaWellPerAct.itemFor(side: .back), let stripBack0 = itemBack.strip0_15, let encoder = itemFront.encoder {
                         let point = DetectorsWellGeometry.coordinatesXYZ(stripDetector: .side, stripFront0: Int(stripFront0), stripBack0: Int(stripBack0), encoderSide: Int(encoder))
-                        field = String(format: "(%.1f, %.1f, %.1f)", point.x, point.y, point.z)
+                        field = String(format: "%.1f|%.1f|%.1f", point.x, point.y, point.z)
                     }
                 case keyColumnStartWellAngle:
                     let matchesFocal = criteria.startFromRecoil() ? recoilsPerAct : fissionsAlphaPerAct
