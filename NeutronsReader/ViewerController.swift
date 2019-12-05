@@ -90,7 +90,7 @@ class ViewerController: NSWindowController {
 extension ViewerController: NSTableViewDelegate {
     
     func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
-        if let tableColumn = tableColumn, let index = tableView.tableColumns.index(of: tableColumn) {
+        if let tableColumn = tableColumn, let index = tableView.tableColumns.firstIndex(of: tableColumn) {
             if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: rowIdentifiers[index]), owner: self) as? NSTableCellView {
                 var string = ""
                 if let event = getEventForRow(row) {

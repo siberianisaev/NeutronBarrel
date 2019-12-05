@@ -139,7 +139,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             return t.name()
         }
         var index = 0
-        if let t = SearchType(rawValue: Settings.getIntSetting(.SelectedRecoilType)), let i = recoilTypes.index(of: t) {
+        if let t = SearchType(rawValue: Settings.getIntSetting(.SelectedRecoilType)), let i = recoilTypes.firstIndex(of: t) {
             index = i
         }
         recoilTypeArrayController.content = array
