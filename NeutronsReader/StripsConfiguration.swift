@@ -16,11 +16,10 @@ enum StripsSide: Int {
 class StripsConfiguration {
     
     fileprivate var config = [StripsSide: [[Int]]]()
+    fileprivate var detector: StripDetector
     
-    private var useDefaultConversion: Bool
-    
-    init(useDefaultConversion: Bool) {
-        self.useDefaultConversion = useDefaultConversion
+    init(detector: StripDetector) {
+        self.detector = detector
     }
     
     var loaded: Bool {
@@ -52,7 +51,8 @@ class StripsConfiguration {
             }
         }
         
-        if useDefaultConversion {
+        // Default Config
+        if detector == .focal {
             // By defaults used 48x48 config
             /**
              Strips in focal plane detector are connected alternately to 3 16-channel encoders:
@@ -74,17 +74,19 @@ class StripsConfiguration {
         panel.allowsMultipleSelection = true
         panel.begin { (result) -> Void in
             if result.rawValue == NSFileHandlingPanelOKButton {
+                var hasConfigs: Bool = false
                 let urls = panel.urls.filter() { $0.path.lowercased().hasSuffix(".cfg") }
                 let s = StripDetectorManager.singleton
-                s.stripsConfigurations.removeAll()
+                s.reset()
                 for url in urls {
                     let path = url.path
                     for detector in [.focal, .side] as [StripDetector] {
                         if path.localizedCaseInsensitiveContains(detector.configName()) {
-                            let sc = StripsConfiguration(useDefaultConversion: detector == .focal)
+                            let sc = StripsConfiguration(detector: detector)
                             sc.open(path)
                             if sc.loaded {
-                                s.stripsConfigurations[detector] = sc
+                                s.setStripConfiguration(sc, detector: detector)
+                                hasConfigs = true
                             }
                         }
                     }
@@ -92,7 +94,7 @@ class StripsConfiguration {
                 let paths = urls.map({ (u: URL) -> String in
                     return u.path
                 })
-                completion(s.stripsConfigurations.count > 0, paths)
+                completion(hasConfigs, paths)
             }
         }
     }

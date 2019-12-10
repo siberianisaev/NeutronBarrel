@@ -48,8 +48,8 @@ class Processor {
         return Calibration.singleton
     }
     
-    fileprivate func stripsConfiguration(detector: StripDetector) -> StripsConfiguration? {
-        return StripDetectorManager.singleton.stripsConfigurations[detector]
+    fileprivate func stripsConfiguration(detector: StripDetector) -> StripsConfiguration {
+        return StripDetectorManager.singleton.getStripConfigurations(detector)
     }
     
     fileprivate var dataProtocol: DataProtocol! {
@@ -761,7 +761,8 @@ class Processor {
     fileprivate func isEventStripNearToFirstFissionAlpha(_ event: Event, maxDelta: Int, side: StripsSide) -> Bool {
         let strip0_15 = event.param2 >> 12
         let encoder = dataProtocol.encoderForEventId(Int(event.eventId))
-        if let strip1_N = stripsConfiguration(detector: .focal)?.strip1_N_For(side: side, encoder: Int(encoder), strip0_15: strip0_15), let s = fissionsAlphaPerAct.firstItemsFor(side: side)?.strip1_N {
+        let strip1_N = stripsConfiguration(detector: .focal).strip1_N_For(side: side, encoder: Int(encoder), strip0_15: strip0_15)
+        if let s = fissionsAlphaPerAct.firstItemsFor(side: side)?.strip1_N {
             return abs(Int32(strip1_N) - Int32(s)) <= Int32(maxDelta)
         }
         return false
@@ -772,9 +773,8 @@ class Processor {
         if let s = fissionsAlphaPerAct.matchFor(side: side).itemWithMaxEnergy()?.strip1_N {
             let strip0_15 = event.param2 >> 12
             let encoder = dataProtocol.encoderForEventId(Int(event.eventId))
-            if let strip1_N = stripsConfiguration(detector: .focal)?.strip1_N_For(side: side, encoder: Int(encoder), strip0_15: strip0_15) {
-                return abs(Int32(strip1_N) - Int32(s)) <= Int32(criteria.recoilBackMaxDeltaStrips)
-            }
+            let strip1_N = stripsConfiguration(detector: .focal).strip1_N_For(side: side, encoder: Int(encoder), strip0_15: strip0_15)
+            return abs(Int32(strip1_N) - Int32(s)) <= Int32(criteria.recoilBackMaxDeltaStrips)
         }
         return false
     }
@@ -787,9 +787,8 @@ class Processor {
         if let s = fissionsAlphaPerAct.firstItemsFor(side: side)?.strip1_N {
             let strip0_15 = event.param2 >> 12
             let encoder = dataProtocol.encoderForEventId(Int(event.eventId))
-            if let strip1_N = stripsConfiguration(detector: .focal)?.strip1_N_For(side: side, encoder: Int(encoder), strip0_15: strip0_15) {
-                return Int(abs(Int32(strip1_N) - Int32(s))) <= 1
-            }
+            let strip1_N = stripsConfiguration(detector: .focal).strip1_N_For(side: side, encoder: Int(encoder), strip0_15: strip0_15)
+            return Int(abs(Int32(strip1_N) - Int32(s))) <= 1
         }
         return false
     }
