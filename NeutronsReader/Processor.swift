@@ -27,7 +27,7 @@ class Processor {
     fileprivate var currentCycle: CUnsignedLongLong = 0
     fileprivate var totalEventNumber: CUnsignedLongLong = 0
     fileprivate var startEventTime: CUnsignedLongLong = 0
-    fileprivate var neutronsSummPerAct: CUnsignedLongLong = 0
+    fileprivate var neutronsPerAct = [UInt16]()
     fileprivate var neutrons_N_SummPerAct: CUnsignedLongLong = 0
     fileprivate var neutronsBackwardSummPerAct: CUnsignedLongLong = 0
     fileprivate var currentFileName: String?
@@ -415,7 +415,7 @@ class Processor {
         let directions: Set<SearchDirection> = [.forward]
         search(directions: directions, startTime: startEventTime, minDeltaTime: 0, maxDeltaTime: criteria.maxNeutronTime, useCycleTime: false, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
             if self.dataProtocol.isNeutronsEvent(Int(event.eventId)) {
-                self.neutronsSummPerAct += 1
+                self.neutronsPerAct.append(event.param3)
             }
             if self.dataProtocol.hasNeutrons_N() && self.dataProtocol.isNeutrons_N_Event(Int(event.eventId)) {
                 self.neutrons_N_SummPerAct += 1
@@ -630,7 +630,7 @@ class Processor {
      Summar multiplicity of neutrons calculation over all files
      */
     fileprivate func updateNeutronsMultiplicity() {
-        let key = neutronsSummPerAct
+        let key = neutronsPerAct.count
         var summ = neutronsMultiplicityTotal[Int(key)] ?? 0
         summ += 1 // One event for all neutrons in one act of fission
         neutronsMultiplicityTotal[Int(key)] = summ
@@ -742,7 +742,7 @@ class Processor {
     }
     
     fileprivate func clearActInfo() {
-        neutronsSummPerAct = 0
+        neutronsPerAct.removeAll()
         neutrons_N_SummPerAct = 0
         neutronsBackwardSummPerAct = 0
         fissionsAlphaPerAct.removeAll()
@@ -947,6 +947,7 @@ class Processor {
     fileprivate var keyColumnStartWellBackMarker = "*WellBackMarker"
     fileprivate var keyColumnStartWellBackPosition = "*WellBackPos"
     fileprivate var keyColumnStartWellBackStrip = "Strip(*WellBack)"
+    fileprivate var keyColumnNeutronsAverageTime = "NeutronsAverageTime"
     fileprivate var keyColumnNeutrons = "Neutrons"
     fileprivate var keyColumnNeutrons_N = "N1...N4"
     fileprivate var keyColumnNeutronsBackward = "Neutrons(Backward)"
@@ -1015,7 +1016,7 @@ class Processor {
                 ])
         }
         if criteria.searchNeutrons {
-            columns.append(keyColumnNeutrons)
+            columns.append(contentsOf: [keyColumnNeutronsAverageTime, keyColumnNeutrons])
             if dataProtocol.hasNeutrons_N() {
                 columns.append(keyColumnNeutrons_N)
             }
@@ -1222,9 +1223,19 @@ class Processor {
                     if row == 0, let strip = fissionsAlphaWellPerAct.itemFor(side: .back)?.strip1_N {
                         field = String(format: "%d", strip)
                     }
+                case keyColumnNeutronsAverageTime:
+                    if row == 0 {
+                        let count = neutronsPerAct.count
+                        if count > 0 {
+                            let average = Float(neutronsPerAct.reduce(0, +))/Float(count)
+                            field = String(format: "%.1f", average)
+                        } else {
+                            field = "0"
+                        }
+                    }
                 case keyColumnNeutrons:
                     if row == 0 {
-                        field = String(format: "%llu", neutronsSummPerAct)
+                        field = String(format: "%llu", neutronsPerAct.count)
                     }
                 case keyColumnNeutrons_N:
                     if row == 0 {
