@@ -28,6 +28,7 @@ class Processor {
     fileprivate var totalEventNumber: CUnsignedLongLong = 0
     fileprivate var startEventTime: CUnsignedLongLong = 0
     fileprivate var neutronsSummPerAct: CUnsignedLongLong = 0
+    fileprivate var neutrons_N_SummPerAct: CUnsignedLongLong = 0
     fileprivate var neutronsBackwardSummPerAct: CUnsignedLongLong = 0
     fileprivate var currentFileName: String?
     fileprivate var neutronsMultiplicityTotal = [Int: Int]()
@@ -416,6 +417,9 @@ class Processor {
             if self.dataProtocol.isNeutronsEvent(Int(event.eventId)) {
                 self.neutronsSummPerAct += 1
             }
+            if self.dataProtocol.hasNeutrons_N() && self.dataProtocol.isNeutrons_N_Event(Int(event.eventId)) {
+                self.neutrons_N_SummPerAct += 1
+            }
         }
     }
     
@@ -739,6 +743,7 @@ class Processor {
     
     fileprivate func clearActInfo() {
         neutronsSummPerAct = 0
+        neutrons_N_SummPerAct = 0
         neutronsBackwardSummPerAct = 0
         fissionsAlphaPerAct.removeAll()
         gammaPerAct.removeAll()
@@ -943,6 +948,7 @@ class Processor {
     fileprivate var keyColumnStartWellBackPosition = "*WellBackPos"
     fileprivate var keyColumnStartWellBackStrip = "Strip(*WellBack)"
     fileprivate var keyColumnNeutrons = "Neutrons"
+    fileprivate var keyColumnNeutrons_N = "N1...N4"
     fileprivate var keyColumnNeutronsBackward = "Neutrons(Backward)"
     fileprivate var keyColumnGammaEnergy = "Gamma"
     fileprivate var keyColumnGammaEncoder = "GammaEncoder"
@@ -1009,10 +1015,11 @@ class Processor {
                 ])
         }
         if criteria.searchNeutrons {
-            columns.append(contentsOf: [
-                keyColumnNeutrons,
-                keyColumnNeutronsBackward
-                ])
+            columns.append(keyColumnNeutrons)
+            if dataProtocol.hasNeutrons_N() {
+                columns.append(keyColumnNeutrons_N)
+            }
+            columns.append(keyColumnNeutronsBackward)
         }
         columns.append(contentsOf: [
             keyColumnGammaEnergy,
@@ -1218,6 +1225,10 @@ class Processor {
                 case keyColumnNeutrons:
                     if row == 0 {
                         field = String(format: "%llu", neutronsSummPerAct)
+                    }
+                case keyColumnNeutrons_N:
+                    if row == 0 {
+                        field = String(format: "%llu", neutrons_N_SummPerAct)
                     }
                 case keyColumnNeutronsBackward:
                     if row == 0 {

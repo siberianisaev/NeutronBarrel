@@ -16,6 +16,7 @@ class DataProtocol {
             AVeto = dict["AVeto"]
             TOF = dict["TOF"]
             Neutrons = dict["Neutrons"]
+            Neutrons_N = getValues(ofTypes: ["N1", "N2", "N3", "N4"], prefix: false)
             CycleTime = dict["THi"]
             BeamEnergy = dict["EnergyHi"]
             BeamCurrent = dict["BeamTokHi"]
@@ -35,11 +36,15 @@ class DataProtocol {
         }
     }
     
-    fileprivate func getValues(ofTypes types: [String]) -> Set<Int> {
+    fileprivate func getValues(ofTypes types: [String], prefix: Bool = true) -> Set<Int> {
         var result = [Int]()
         for type in types {
             let values = dict.filter({ (key: String, value: Int) -> Bool in
-                return self.keyFor(value: value)?.hasPrefix(type) == true
+                if prefix {
+                    return self.keyFor(value: value)?.hasPrefix(type) == true
+                } else {
+                    return self.keyFor(value: value) == type
+                }
             }).values
             result.append(contentsOf: values)
         }
@@ -53,6 +58,7 @@ class DataProtocol {
     fileprivate var AVeto: Int?
     fileprivate var TOF: Int?
     fileprivate var Neutrons: Int?
+    fileprivate var Neutrons_N = Set<Int>()
     fileprivate var CycleTime: Int?
     fileprivate var AlphaWell = Set<Int>()
     fileprivate var alphaWellMaxEventId: Int = 0
@@ -118,7 +124,7 @@ class DataProtocol {
             return cached
         }
         
-        let value = eventId <= alphaWellMaxEventId || (alphaWellBackMaxEventId > 0 && eventId <= alphaWellBackMaxEventId) || isTOFEvent(eventId) || isGammaEvent(eventId) || isNeutronsEvent(eventId) || isVETOEvent(eventId)
+        let value = eventId <= alphaWellMaxEventId || (alphaWellBackMaxEventId > 0 && eventId <= alphaWellBackMaxEventId) || isTOFEvent(eventId) || isGammaEvent(eventId) || isNeutronsEvent(eventId) || isNeutrons_N_Event(eventId) || isVETOEvent(eventId)
         isValidEventIdForTimeCheckCache[eventId] = value
         return value
     }
@@ -182,6 +188,14 @@ class DataProtocol {
     
     func isNeutronsEvent(_ eventId: Int) -> Bool {
         return Neutrons == eventId
+    }
+    
+    func isNeutrons_N_Event(_ eventId: Int) -> Bool {
+        return Neutrons_N.contains(eventId)
+    }
+    
+    func hasNeutrons_N() -> Bool {
+        return Neutrons_N.count > 0
     }
     
     func isCycleTimeEvent(_ eventId: Int) -> Bool {
