@@ -27,7 +27,7 @@ class Processor {
     fileprivate var currentCycle: CUnsignedLongLong = 0
     fileprivate var totalEventNumber: CUnsignedLongLong = 0
     fileprivate var startEventTime: CUnsignedLongLong = 0
-    fileprivate var neutronsPerAct = [UInt16]()
+    fileprivate var neutronsPerAct = [Float]()
     fileprivate var neutrons_N_SummPerAct: CUnsignedLongLong = 0
     fileprivate var neutronsBackwardSummPerAct: CUnsignedLongLong = 0
     fileprivate var currentFileName: String?
@@ -415,7 +415,8 @@ class Processor {
         let directions: Set<SearchDirection> = [.forward]
         search(directions: directions, startTime: startEventTime, minDeltaTime: 0, maxDeltaTime: criteria.maxNeutronTime, useCycleTime: false, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
             if self.dataProtocol.isNeutronsEvent(Int(event.eventId)) {
-                self.neutronsPerAct.append(event.param3)
+                let t = Float(event.param3 & Mask.neutrons.rawValue)
+                self.neutronsPerAct.append(t)
             }
             if self.dataProtocol.hasNeutrons_N() && self.dataProtocol.isNeutrons_N_Event(Int(event.eventId)) {
                 self.neutrons_N_SummPerAct += 1
@@ -1226,7 +1227,7 @@ class Processor {
                     if row == 0 {
                         let count = neutronsPerAct.count
                         if count > 0 {
-                            let average = Float(neutronsPerAct.reduce(0, +))/Float(count)
+                            let average = neutronsPerAct.reduce(0, +)/Float(count)
                             field = String(format: "%.1f", average)
                         } else {
                             field = "0"
