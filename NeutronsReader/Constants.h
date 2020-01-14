@@ -13,5 +13,6 @@ typedef NS_ENUM(unsigned short, Mask) {
     MaskGamma = 0x1FFF,
     MaskTOF = 0x1FFF,
     MaskRecoilOrAlpha = 0x1FFF,
-    MaskSpecial = 0xFFFF
+    MaskSpecial = 0xFFFF,
+    MaskNeutrons = 0x007F
 };
