@@ -947,6 +947,7 @@ class Processor {
     fileprivate var keyColumnStartWellBackPosition = "*WellBackPos"
     fileprivate var keyColumnStartWellBackStrip = "Strip(*WellBack)"
     fileprivate var keyColumnNeutronsAverageTime = "NeutronsAverageTime"
+    fileprivate var keyColumnNeutronTime = "NeutronTime"
     fileprivate var keyColumnNeutrons = "Neutrons"
     fileprivate var keyColumnNeutrons_N = "N1...N4"
     fileprivate var keyColumnNeutronsBackward = "Neutrons(Backward)"
@@ -1015,7 +1016,7 @@ class Processor {
                 ])
         }
         if criteria.searchNeutrons {
-            columns.append(contentsOf: [keyColumnNeutronsAverageTime, keyColumnNeutrons])
+            columns.append(contentsOf: [keyColumnNeutronsAverageTime, keyColumnNeutronTime, keyColumnNeutrons])
             if dataProtocol.hasNeutrons_N() {
                 columns.append(keyColumnNeutrons_N)
             }
@@ -1082,8 +1083,20 @@ class Processor {
         logger.finishResultsLine() // +1 line padding
     }
     
+    // Need special results block for neutron times, so we skeep one line.
+    fileprivate func neutronsCountWithNewLine() -> Int {
+        let count = neutronsPerAct.count
+        if count > 0 {
+            return count + 1
+        } else {
+            return 0
+        }
+    }
+    
+    fileprivate var currentStartEventNumber: CUnsignedLongLong?
+    
     fileprivate func logActResults() {
-        let rowsMax = max(max(max(1, [gammaPerAct, vetoPerAct].max(by: { $0.count < $1.count })!.count), fissionsAlphaPerAct.count), recoilsPerAct.count)
+        let rowsMax = max(max(max(max(1, [gammaPerAct, vetoPerAct].max(by: { $0.count < $1.count })!.count), fissionsAlphaPerAct.count), recoilsPerAct.count), neutronsCountWithNewLine())
         for row in 0 ..< rowsMax {
             for column in columns {
                 var field = ""
@@ -1119,6 +1132,9 @@ class Processor {
                     }
                 case keyColumnStartEvent:
                     if let eventNumber = fissionsAlphaPerAct.matchFor(side: .front).itemAt(index: row)?.eventNumber {
+                        field = currentFileEventNumber(eventNumber)
+                        currentStartEventNumber = eventNumber
+                    } else if row < neutronsCountWithNewLine(), let eventNumber = currentStartEventNumber { // Need track start event number for neutron times results
                         field = currentFileEventNumber(eventNumber)
                     }
                 case keyColumnStartFrontSumm:
@@ -1230,6 +1246,13 @@ class Processor {
                             field = String(format: "%.1f", average)
                         } else {
                             field = "0"
+                        }
+                    }
+                case keyColumnNeutronTime:
+                    if row > 0 { // skip new line
+                        let index = row - 1
+                        if index < neutronsPerAct.count {
+                            field = String(format: "%hu", neutronsPerAct[index])
                         }
                     }
                 case keyColumnNeutrons:
