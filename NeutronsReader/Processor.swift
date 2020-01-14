@@ -1253,7 +1253,7 @@ class Processor {
                     if row > 0 { // skip new line
                         let index = row - 1
                         if index < neutronsPerAct.count {
-                            field = String(format: "%hu", neutronsPerAct[index])
+                            field = String(format: "%.1f", neutronsPerAct[index])
                         }
                     }
                 case keyColumnNeutrons:
