@@ -75,7 +75,10 @@ class StripsConfiguration {
         panel.begin { (result) -> Void in
             if result.rawValue == NSFileHandlingPanelOKButton {
                 var hasConfigs: Bool = false
-                let urls = panel.urls.filter() { $0.path.lowercased().hasSuffix(".cfg") }
+                let urls = panel.urls.filter { (u: URL) -> Bool in
+                    let p = u.path.lowercased()
+                    return p.hasSuffix(".cfg") || p.hasSuffix(".ini")
+                }
                 let s = StripDetectorManager.singleton
                 s.reset()
                 for url in urls {

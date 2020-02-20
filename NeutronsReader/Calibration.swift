@@ -64,7 +64,13 @@ class Calibration {
                     if 3 == components.count {
                         let b = Double(components[0]) ?? 0
                         let a = Double(components[1]) ?? 0
-                        let name = components[2] as String
+                        var name = (components[2] as String)
+                        if !name.localizedCaseInsensitiveContains("Fron") {
+                            name = name.replacingOccurrences(of: "Fr", with: "Fron")
+                        }
+                        if !name.localizedCaseInsensitiveContains("Back") {
+                            name = name.replacingOccurrences(of: "Bk", with: "Back")
+                        }
                         string += String(format: "%.6f\t%.6f\t%@\n", b, a, name)
                         data[name] = CalibrationEquation(a: a, b: b)
                     }
