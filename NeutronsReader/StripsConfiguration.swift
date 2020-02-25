@@ -71,26 +71,23 @@ class StripsConfiguration {
         let panel = NSOpenPanel()
         panel.canChooseDirectories = false
         panel.canChooseFiles = true
-        panel.allowsMultipleSelection = true
+        panel.allowsMultipleSelection = false
         panel.begin { (result) -> Void in
             if result.rawValue == NSFileHandlingPanelOKButton {
                 var hasConfigs: Bool = false
                 let urls = panel.urls.filter { (u: URL) -> Bool in
-                    let p = u.path.lowercased()
-                    return p.hasSuffix(".cfg") || p.hasSuffix(".ini")
+                    return u.path.lowercased().hasSuffix(".ini")
                 }
                 let s = StripDetectorManager.singleton
                 s.reset()
                 for url in urls {
                     let path = url.path
                     for detector in [.focal, .side] as [StripDetector] {
-                        if path.localizedCaseInsensitiveContains(detector.configName()) {
-                            let sc = StripsConfiguration(detector: detector)
-                            sc.open(path)
-                            if sc.loaded {
-                                s.setStripConfiguration(sc, detector: detector)
-                                hasConfigs = true
-                            }
+                        let sc = StripsConfiguration(detector: detector)
+                        sc.open(path, detector: detector)
+                        if sc.loaded {
+                            s.setStripConfiguration(sc, detector: detector)
+                            hasConfigs = true
                         }
                     }
                 }
@@ -102,21 +99,47 @@ class StripsConfiguration {
         }
     }
     
-    fileprivate func open(_ path: String?) {
+    fileprivate func open(_ path: String?, detector: StripDetector) {
         if let path = path {
             do {
                 let content = try String(contentsOfFile: path, encoding: String.Encoding.utf8)
                 var frontData = [[Int]]()
                 var backData = [[Int]]()
-                var fillFront = true
+                var fillFront = false
+                var fillBack = false
                 for line in content.components(separatedBy: CharacterSet.newlines) {
-                    if line.contains("Front") {
-                        fillFront = true
-                        continue
-                    }
-                    if line.contains("Back") {
-                        fillFront = false
-                        continue
+                    if detector == .side {
+                        if line.contains("[Well inside detector strips configuration]") {
+                            fillFront = true
+                            fillBack = false
+                            continue
+                        }
+                        if line.contains("[Well outside detector strips configuration]") {
+                            fillFront = false
+                            fillBack = true
+                            continue
+                        }
+                        if line.contains("[") {
+                            fillFront = false
+                            fillBack = false
+                            continue
+                        }
+                    } else {
+                        if line.contains("[Front 128x128 detector strips configuration]") {
+                            fillFront = true
+                            fillBack = false
+                            continue
+                        }
+                        if line.contains("[Back 128x128 detector strips configuration]") {
+                            fillFront = false
+                            fillBack = true
+                            continue
+                        }
+                        if line.contains("[") {
+                            fillFront = false
+                            fillBack = false
+                            continue
+                        }
                     }
                     
                     let set = CharacterSet.whitespaces
@@ -128,7 +151,11 @@ class StripsConfiguration {
                         }
                     }
                     if values.count > 0 {
-                        fillFront ? frontData.append(values) : backData.append(values)
+                        if fillFront {
+                            frontData.append(values)
+                        } else if fillBack {
+                            backData.append(values)
+                        }
                     }
                 }
                 

@@ -11,15 +11,6 @@ import Foundation
 enum StripDetector {
     case focal
     case side
-    
-    func configName() -> String {
-        switch self {
-        case .focal:
-            return "128x128"
-        default:
-            return "welstrip"
-        }
-    }
 }
 
 class StripDetectorManager {
