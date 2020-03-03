@@ -47,6 +47,7 @@ class SearchCriteria {
     var requiredRecoil = false
     var requiredGamma = false
     var requiredTOF = false
+    var useTOF2 = false
     var requiredVETO = false
     var searchVETO = false
     var trackBeamEnergy = false

@@ -9,12 +9,18 @@
 import Foundation
 import AppKit
 
+enum TOFKind: String {
+    case TOF = "TOF"
+    case TOF2 = "TOF2"
+}
+
 class DataProtocol {
     
     fileprivate var dict = [String: Int]() {
         didSet {
             AVeto = dict["AVeto"]
-            TOF = dict["TOF"]
+            TOF = dict[TOFKind.TOF.rawValue]
+            TOF2 = dict[TOFKind.TOF2.rawValue]
             Neutrons = dict["Neutrons"]
             Neutrons_N = getValues(ofTypes: ["N1", "N2", "N3", "N4"], prefix: false)
             CycleTime = dict["THi"]
@@ -57,6 +63,7 @@ class DataProtocol {
     fileprivate var BeamIntegral: Int?
     fileprivate var AVeto: Int?
     fileprivate var TOF: Int?
+    fileprivate var TOF2: Int?
     fileprivate var Neutrons: Int?
     fileprivate var Neutrons_N = Set<Int>()
     fileprivate var CycleTime: Int?
@@ -73,8 +80,7 @@ class DataProtocol {
     fileprivate var Gamma = Set<Int>()
     
     class func load(_ path: String?) -> DataProtocol {
-        let p = DataProtocol()
-        
+        var result = [String: Int]()
         if let path = path {
             do {
                 var content = try String(contentsOfFile: path, encoding: String.Encoding.utf8)
@@ -92,7 +98,7 @@ class DataProtocol {
                     if words == count {
                         let key = components[count-1]
                         let value = Int(components[0])
-                        p.dict[key] = value
+                        result[key] = value
                     }
                 }
             } catch {
@@ -100,6 +106,8 @@ class DataProtocol {
             }
         }
         
+        let p = DataProtocol()
+        p.dict = result
         if p.dict.count == 0 {
             let alert = NSAlert()
             alert.messageText = "Error"
@@ -124,7 +132,7 @@ class DataProtocol {
             return cached
         }
         
-        let value = eventId <= alphaWellMaxEventId || (alphaWellBackMaxEventId > 0 && eventId <= alphaWellBackMaxEventId) || isTOFEvent(eventId) || isGammaEvent(eventId) || isNeutronsEvent(eventId) || isNeutrons_N_Event(eventId) || isVETOEvent(eventId)
+        let value = eventId <= alphaWellMaxEventId || (alphaWellBackMaxEventId > 0 && eventId <= alphaWellBackMaxEventId) || isTOFEvent(eventId) != nil || isGammaEvent(eventId) || isNeutronsEvent(eventId) || isNeutrons_N_Event(eventId) || isVETOEvent(eventId)
         isValidEventIdForTimeCheckCache[eventId] = value
         return value
     }
@@ -182,8 +190,13 @@ class DataProtocol {
         return AVeto == eventId
     }
     
-    func isTOFEvent(_ eventId: Int) -> Bool {
-        return TOF == eventId
+    func isTOFEvent(_ eventId: Int) -> TOFKind? {
+        if TOF == eventId {
+            return .TOF
+        } else if TOF2 == eventId {
+            return .TOF2
+        }
+        return nil
     }
     
     func isNeutronsEvent(_ eventId: Int) -> Bool {

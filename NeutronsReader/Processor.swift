@@ -39,6 +39,7 @@ class Processor {
     fileprivate var recoilsPerAct = DoubleSidedStripDetectorMatch()
     fileprivate var fissionsAlphaWellPerAct = DoubleSidedStripDetectorSingleMatch()
     fileprivate var tofRealPerAct = DetectorMatch()
+    fileprivate var tof2PerAct = DetectorMatch()
     fileprivate var vetoPerAct = DetectorMatch()
     fileprivate var gammaPerAct = DetectorMatch()
     fileprivate var stoped = false
@@ -513,9 +514,14 @@ class Processor {
                 return false
             }
             
-            let isTOFFounded = self.findTOFForRecoil(event, timeRecoil: t)
+            let isTOFFounded = self.findTOFForRecoil(event, timeRecoil: t, kind: .TOF)
             fseek(self.file, Int(position), SEEK_SET)
-            if (criteria.requiredTOF && !isTOFFounded) {
+            var isTOF2Founded = false
+            if criteria.useTOF2 {
+                isTOF2Founded = self.findTOFForRecoil(event, timeRecoil: t, kind: .TOF2)
+                fseek(self.file, Int(position), SEEK_SET)
+            }
+            if (criteria.requiredTOF && !(isTOFFounded || isTOF2Founded)) {
                 return false
             }
             
@@ -526,14 +532,14 @@ class Processor {
         return false
     }
     
-    fileprivate func findTOFForRecoil(_ eventRecoil: Event, timeRecoil: CUnsignedLongLong) -> Bool {
+    fileprivate func findTOFForRecoil(_ eventRecoil: Event, timeRecoil: CUnsignedLongLong, kind: TOFKind) -> Bool {
         var found: Bool = false
         let directions: Set<SearchDirection> = [.forward, .backward]
         search(directions: directions, startTime: timeRecoil, minDeltaTime: 0, maxDeltaTime: criteria.maxTOFTime, useCycleTime: false, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
-            if self.dataProtocol.isTOFEvent(Int(event.eventId)) {
+            if let k = self.dataProtocol.isTOFEvent(Int(event.eventId)), k == kind {
                 let value = self.valueTOF(event, eventRecoil: eventRecoil)
                 if value >= self.criteria.minTOFValue && value <= self.criteria.maxTOFValue {
-                    self.storeRealTOFValue(value, deltaTime: deltaTime)
+                    self.storeRealTOFValue(value, deltaTime: deltaTime, kind: k)
                     found = true
                     stop.initialize(to: true)
                 }
@@ -703,11 +709,11 @@ class Processor {
         fissionsAlpha2PerAct.append(item, side: side)
     }
     
-    fileprivate func storeRealTOFValue(_ value: Double, deltaTime: CLongLong) {
+    fileprivate func storeRealTOFValue(_ value: Double, deltaTime: CLongLong, kind: TOFKind) {
         let item = DetectorMatchItem(stripDetector: nil,
                                      deltaTime: deltaTime,
                                      value: value)
-        tofRealPerAct.append(item)
+        kind == .TOF ? tofRealPerAct.append(item) : tof2PerAct.append(item)
     }
     
     fileprivate func storeVETO(_ event: Event, deltaTime: CLongLong) {
@@ -754,6 +760,7 @@ class Processor {
         recoilsPerAct.removeAll()
         fissionsAlpha2PerAct.removeAll()
         tofRealPerAct.removeAll()
+        tof2PerAct.removeAll()
         vetoPerAct.removeAll()
     }
     
@@ -924,7 +931,9 @@ class Processor {
         return "E(\(keyRecoilHeavy)Fron)"
     }
     fileprivate var keyColumnTof = "TOF"
+    fileprivate var keyColumnTof2 = "TOF2"
     fileprivate var keyColumnTofDeltaTime = "dT(TOF-RFron)"
+    fileprivate var keyColumnTof2DeltaTime = "dT(TOF2-RFron)"
     fileprivate var keyColumnStartEvent = "Event($)"
     fileprivate var keyColumnStartFrontSumm = "Summ($Fron)"
     fileprivate var keyColumnStartFrontEnergy = "$Fron"
@@ -988,7 +997,15 @@ class Processor {
             keyColumnRecoilFrontMarker,
             keyColumnRecoilDeltaTime,
             keyColumnTof,
-            keyColumnTofDeltaTime,
+            keyColumnTofDeltaTime
+        ]
+        if criteria.useTOF2 {
+            columns.append(contentsOf: [
+                keyColumnTof2,
+                keyColumnTof2DeltaTime,
+            ])
+        }
+        columns.append(contentsOf: [
             keyColumnStartEvent,
             keyColumnStartFrontSumm,
             keyColumnStartFrontEnergy,
@@ -1000,8 +1017,7 @@ class Processor {
             keyColumnStartBackEnergy,
             keyColumnStartBackMarker,
             keyColumnStartBackDeltaTime,
-            keyColumnStartBackStrip
-        ]
+            keyColumnStartBackStrip])
         if criteria.searchWell {
             columns.append(contentsOf: [
                 keyColumnStartWellEnergy,
@@ -1122,13 +1138,13 @@ class Processor {
                     if let deltaTime = recoilsPerAct.matchFor(side: .front).itemAt(index: row)?.deltaTime {
                         field = String(format: "%lld", deltaTime)
                     }
-                case keyColumnTof:
-                    if let value = tofRealPerAct.itemAt(index: row)?.value {
+                case keyColumnTof, keyColumnTof2:
+                    if let value = (column == keyColumnTof ? tofRealPerAct : tof2PerAct).itemAt(index: row)?.value {
                         let format = "%." + (criteria.unitsTOF == .channels ? "0" : "7") + "f"
                         field = String(format: format, value)
                     }
-                case keyColumnTofDeltaTime:
-                    if let deltaTime = tofRealPerAct.itemAt(index: row)?.deltaTime {
+                case keyColumnTofDeltaTime, keyColumnTof2DeltaTime:
+                    if let deltaTime = (column == keyColumnTofDeltaTime ? tofRealPerAct : tof2PerAct).itemAt(index: row)?.deltaTime {
                         field = String(format: "%lld", deltaTime)
                     }
                 case keyColumnStartEvent:

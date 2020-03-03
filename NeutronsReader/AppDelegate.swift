@@ -80,6 +80,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBInspectable var requiredRecoil: Bool = Settings.getBoolSetting(.RequiredRecoil)
     @IBInspectable var requiredGamma: Bool = Settings.getBoolSetting(.RequiredGamma)
     @IBInspectable var requiredTOF: Bool = Settings.getBoolSetting(.RequiredTOF)
+    @IBInspectable var useTOF2: Bool = Settings.getBoolSetting(.UseTOF2)
     @IBInspectable var requiredVETO: Bool = Settings.getBoolSetting(.RequiredVETO)
     @IBInspectable var searchNeutrons: Bool = Settings.getBoolSetting(.SearchNeutrons)
     @IBInspectable var searchFissionAlpha2: Bool = Settings.getBoolSetting(.SearchFissionAlpha2) {
@@ -290,6 +291,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         sc.unitsTOF = tofUnitsControl.selectedSegment == 0 ? .channels : .nanoseconds
         sc.maxTOFTime = UInt64(sMaxTOFTime) ?? 0
         sc.requiredTOF = requiredTOF
+        sc.useTOF2 = useTOF2
         sc.maxVETOTime = UInt64(sMaxVETOTime) ?? 0
         sc.requiredVETO = requiredVETO
         sc.maxGammaTime = UInt64(sMaxGammaTime) ?? 0
@@ -490,6 +492,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         Settings.setObject(requiredRecoil, forSetting: .RequiredRecoil)
         Settings.setObject(requiredGamma, forSetting: .RequiredGamma)
         Settings.setObject(requiredTOF, forSetting: .RequiredTOF)
+        Settings.setObject(useTOF2, forSetting: .UseTOF2)
         Settings.setObject(requiredVETO, forSetting: .RequiredVETO)
         Settings.setObject(searchNeutrons, forSetting: .SearchNeutrons)
         Settings.setObject(searchVETO, forSetting: .SearchVETO)
