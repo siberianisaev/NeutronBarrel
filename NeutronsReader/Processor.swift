@@ -595,6 +595,13 @@ class Processor {
     }
     
     fileprivate func findFissionAlphaBack2() {
+        func minE(front: Bool) -> Double {
+            return front ? criteria.fissionAlpha2MinEnergy : criteria.fissionAlpha2BackMinEnergy
+        }
+        func maxE(front: Bool) -> Double {
+            return front ? criteria.fissionAlpha2MaxEnergy : criteria.fissionAlpha2BackMaxEnergy
+        }
+        
         let alphaTime = absTime(CUnsignedShort(startEventTime), cycle: currentCycle)
         let directions: Set<SearchDirection> = [.forward]
         let type = criteria.secondParticleType
@@ -603,7 +610,7 @@ class Processor {
             if isFront || self.isBack(event, type: type) {
                 let side: StripsSide = isFront ? .front : .back
                 let energy = self.getEnergy(event, type: type)
-                if (!isFront && self.criteria.searchFissionAlphaBack2ByFact) || (energy >= self.criteria.fissionAlpha2MinEnergy && energy <= self.criteria.fissionAlpha2MaxEnergy && self.isEventStripNearToFirstFissionAlpha(event, maxDelta: Int(self.criteria.fissionAlpha2MaxDeltaStrips), side: side)) {
+                if (!isFront && self.criteria.searchFissionAlphaBack2ByFact) || (energy >= minE(front: isFront) && energy <= maxE(front: isFront) && self.isEventStripNearToFirstFissionAlpha(event, maxDelta: Int(self.criteria.fissionAlpha2MaxDeltaStrips), side: side)) {
                     if isFront {
                         self.storeFissionAlpha2(event, deltaTime: deltaTime)
                     } else {

@@ -46,6 +46,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBOutlet weak var buttonRemoveStripsConfiguration: NSButton!
     @IBOutlet weak var buttonCancel: NSButton!
     @IBOutlet weak var fissionAlpha1BackEnergyView: NSView!
+    @IBOutlet weak var fissionAlpha2BackEnergyView: NSView!
     
     fileprivate var viewerController: ViewerController?
     fileprivate var startDate: Date?
@@ -93,6 +94,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBInspectable var sBeamEnergyMax = String(format: "%.1f", Settings.getDoubleSetting(.BeamEnergyMax)) // MeV
     @IBInspectable var sMinFissionAlpha2Energy = String(format: "%.1f", Settings.getDoubleSetting(.MinFissionAlpha2Energy)) // MeV
     @IBInspectable var sMaxFissionAlpha2Energy = String(format: "%.1f", Settings.getDoubleSetting(.MaxFissionAlpha2Energy)) // MeV
+    @IBInspectable var sMinFissionAlpha2BackEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MinFissionAlpha2BackEnergy)) // MeV
+    @IBInspectable var sMaxFissionAlpha2BackEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MaxFissionAlpha2BackEnergy)) // MeV
     @IBInspectable var sMinFissionAlpha2Time = String(format: "%d", Settings.getIntSetting(.MinFissionAlpha2Time)) // mks
     @IBInspectable var sMaxFissionAlpha2Time = String(format: "%d", Settings.getIntSetting(.MaxFissionAlpha2Time)) // mks
     @IBInspectable var sMaxFissionAlpha2FrontDeltaStrips = String(format: "%d", Settings.getIntSetting(.MaxFissionAlpha2FrontDeltaStrips))
@@ -122,7 +125,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             setupFissionAlpha1BackEnergyView()
         }
     }
-    @IBInspectable var searchFissionBack2ByFact: Bool = Settings.getBoolSetting(.SearchFissionBack2ByFact)
+    @IBInspectable var searchFissionBack2ByFact: Bool = Settings.getBoolSetting(.SearchFissionBack2ByFact) {
+        didSet {
+            setupFissionAlpha2BackEnergyView()
+        }
+    }
     
     fileprivate let recoilTypes: [SearchType] = [.recoil, .heavy]
     fileprivate var selectedRecoilType: SearchType {
@@ -151,6 +158,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         fissionAlpha1BackEnergyView.isHidden = searchFissionBackByFact
     }
     
+    fileprivate func setupFissionAlpha2BackEnergyView() {
+        fissionAlpha2BackEnergyView.isHidden = searchFissionBack2ByFact
+    }
+    
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         setupRecoilTypes()
         startParticleControl.selectedSegment = Settings.getIntSetting(.StartSearchType)
@@ -162,6 +173,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         setupWellView()
         setupAlpha2FormView()
         setupFissionAlpha1BackEnergyView()
+        setupFissionAlpha2BackEnergyView()
         tofUnitsControl.selectedSegment = Settings.getIntSetting(.TOFUnits)
         for i in [indicatorData, indicatorCalibration, indicatorStripsConfig] {
             setSelected(false, indicator: i)
@@ -272,6 +284,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         sc.searchFissionAlpha2 = searchFissionAlpha2
         sc.fissionAlpha2MinEnergy = Double(sMinFissionAlpha2Energy) ?? 0
         sc.fissionAlpha2MaxEnergy = Double(sMaxFissionAlpha2Energy) ?? 0
+        sc.fissionAlpha2BackMinEnergy = Double(sMinFissionAlpha2BackEnergy) ?? 0
+        sc.fissionAlpha2BackMaxEnergy = Double(sMaxFissionAlpha2BackEnergy) ?? 0
         sc.fissionAlpha2MinTime = UInt64(sMinFissionAlpha2Time) ?? 0
         sc.fissionAlpha2MaxTime = UInt64(sMaxFissionAlpha2Time) ?? 0
         sc.fissionAlpha2MaxDeltaStrips = Int(sMaxFissionAlpha2FrontDeltaStrips) ?? 0
@@ -507,6 +521,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         Settings.setObject(searchFissionAlpha2, forSetting: .SearchFissionAlpha2)
         Settings.setObject(Double(sMinFissionAlpha2Energy), forSetting: .MinFissionAlpha2Energy)
         Settings.setObject(Double(sMaxFissionAlpha2Energy), forSetting: .MaxFissionAlpha2Energy)
+        Settings.setObject(Double(sMinFissionAlpha2BackEnergy), forSetting: .MinFissionAlpha2BackEnergy)
+        Settings.setObject(Double(sMaxFissionAlpha2BackEnergy), forSetting: .MaxFissionAlpha2BackEnergy)
         Settings.setObject(Int(sMinFissionAlpha2Time), forSetting: .MinFissionAlpha2Time)
         Settings.setObject(Int(sMaxFissionAlpha2Time), forSetting: .MaxFissionAlpha2Time)
         Settings.setObject(Int(sMaxFissionAlpha2FrontDeltaStrips), forSetting: .MaxFissionAlpha2FrontDeltaStrips)

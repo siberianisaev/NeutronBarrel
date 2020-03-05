@@ -56,6 +56,8 @@ class Settings {
         TrackBeamIntegral = "TrackBeamIntegral",
         MinFissionAlpha2Energy = "MinFissionAlpha2Energy",
         MaxFissionAlpha2Energy = "MaxFissionAlpha2Energy",
+        MinFissionAlpha2BackEnergy = "MinFissionAlpha2BackEnergy",
+        MaxFissionAlpha2BackEnergy = "MaxFissionAlpha2BackEnergy",
         MinFissionAlpha2Time = "MinFissionAlpha2Time",
         MaxFissionAlpha2Time = "MaxFissionAlpha2Time",
         MaxFissionAlpha2FrontDeltaStrips = "MaxFissionAlpha2FrontDeltaStrips",
@@ -113,7 +115,7 @@ class Settings {
             return 200
         case .BeamEnergyMax:
             return 300
-        case .MinFissionEnergy, .MaxFissionAlpha2Energy, .MaxRecoilEnergy:
+        case .MinFissionEnergy, .MaxFissionAlpha2Energy, .MaxFissionAlpha2BackEnergy, .MaxRecoilEnergy:
             return 20
         case .MaxFissionAlpha2Time, .MaxFissionEnergy, .MaxRecoilTime:
             return 1000
@@ -121,7 +123,7 @@ class Settings {
             return 1
         case .MaxFissionBackEnergy, .MaxTOFValue:
             return 10000
-        case .MaxRecoilBackTime, .MaxFissionTime, .MaxVETOTime, .MaxGammaTime, .MinFissionAlpha2Energy:
+        case .MaxRecoilBackTime, .MaxFissionTime, .MaxVETOTime, .MaxGammaTime, .MinFissionAlpha2Energy, .MinFissionAlpha2BackEnergy:
             return 5
         case .MaxTOFTime:
             return 4

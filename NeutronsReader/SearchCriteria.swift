@@ -61,6 +61,8 @@ class SearchCriteria {
     var searchFissionAlpha2 = false
     var fissionAlpha2MinEnergy: Double = 0
     var fissionAlpha2MaxEnergy: Double = 0
+    var fissionAlpha2BackMinEnergy: Double = 0
+    var fissionAlpha2BackMaxEnergy: Double = 0
     var fissionAlpha2MinTime: CUnsignedLongLong = 0
     var fissionAlpha2MaxTime: CUnsignedLongLong = 0
     var fissionAlpha2MaxDeltaStrips: Int = 0
