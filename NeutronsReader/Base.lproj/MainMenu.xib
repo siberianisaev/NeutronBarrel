@@ -1474,8 +1474,8 @@
                                         <segmentedCell key="cell" borderStyle="border" alignment="left" style="rounded" trackingMode="selectOne" id="Pr3-SH-nxc">
                                             <font key="font" metaFont="system"/>
                                             <segments>
-                                                <segment label="FFront" width="78" selected="YES"/>
-                                                <segment label="AFront" width="78" tag="1"/>
+                                                <segment label="FBack" width="78" selected="YES"/>
+                                                <segment label="ABack" width="78" tag="1"/>
                                             </segments>
                                         </segmentedCell>
                                     </segmentedControl>
