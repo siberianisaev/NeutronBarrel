@@ -46,7 +46,8 @@ class Settings {
         SearchNeutrons = "SearchNeutrons",
         StartSearchType = "StartSearchType",
         StartBackSearchType = "StartBackSearchType",
-        SecondSearchType = "SecondSearchType",
+        SecondFrontSearchType = "SecondFrontSearchType",
+        SecondBackSearchType = "SecondBackSearchType",
         WellBackSearchType = "WellBackSearchType",
         SearchFissionAlpha2 = "SearchFissionAlpha2",
         SearchVETO = "SearchVETO",
@@ -129,7 +130,7 @@ class Settings {
             return 4
         case .MaxNeutronTime:
             return 132
-        case .MinFissionBackEnergy, .MaxRecoilFrontDeltaStrips, .MaxRecoilBackDeltaStrips, .SearchFissionAlpha2, .StartSearchType, .StartBackSearchType, .WellBackSearchType, .SecondSearchType, .TOFUnits, .MinFissionAlpha2Time, .MaxFissionAlpha2FrontDeltaStrips, .MinRecoilTime, .MinTOFValue, .MaxFissionBackBackwardTime, .MaxFissionWellBackwardTime, .MaxRecoilBackBackwardTime:
+        case .MinFissionBackEnergy, .MaxRecoilFrontDeltaStrips, .MaxRecoilBackDeltaStrips, .SearchFissionAlpha2, .StartSearchType, .StartBackSearchType, .WellBackSearchType, .SecondFrontSearchType, .SecondBackSearchType, .TOFUnits, .MinFissionAlpha2Time, .MaxFissionAlpha2FrontDeltaStrips, .MinRecoilTime, .MinTOFValue, .MaxFissionBackBackwardTime, .MaxFissionWellBackwardTime, .MaxRecoilBackBackwardTime:
             return 0
         case .RequiredFissionAlphaBack, .RequiredRecoilBack, .SearchNeutrons, .TrackBeamEnergy, .TrackBeamCurrent, .TrackBeamBackground, .TrackBeamIntegral, .SearchWell:
             return true

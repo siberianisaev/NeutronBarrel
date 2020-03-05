@@ -601,20 +601,23 @@ class Processor {
         func maxE(front: Bool) -> Double {
             return front ? criteria.fissionAlpha2MaxEnergy : criteria.fissionAlpha2BackMaxEnergy
         }
+        func type(front: Bool) -> SearchType {
+            return front ? criteria.secondParticleFrontType : criteria.secondParticleBackType
+        }
         
         let alphaTime = absTime(CUnsignedShort(startEventTime), cycle: currentCycle)
         let directions: Set<SearchDirection> = [.forward]
-        let type = criteria.secondParticleType
         search(directions: directions, startTime: alphaTime, minDeltaTime: criteria.fissionAlpha2MinTime, maxDeltaTime: criteria.fissionAlpha2MaxTime, useCycleTime: true, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>) in
-            let isFront = self.isFront(event, type: type)
-            if isFront || self.isBack(event, type: type) {
+            let t = type(front: self.isFront(event))
+            let isFront = self.isFront(event, type: t)
+            if isFront || self.isBack(event, type: t) {
                 let side: StripsSide = isFront ? .front : .back
-                let energy = self.getEnergy(event, type: type)
+                let energy = self.getEnergy(event, type: t)
                 if self.isEventStripNearToFirstFissionAlpha(event, maxDelta: Int(self.criteria.fissionAlpha2MaxDeltaStrips), side: side) && ((!isFront && self.criteria.searchFissionAlphaBack2ByFact) || (energy >= minE(front: isFront) && energy <= maxE(front: isFront))) {
                     if isFront {
-                        self.storeFissionAlpha2(event, deltaTime: deltaTime)
+                        self.storeFissionAlpha2(event, type: t, deltaTime: deltaTime)
                     } else {
-                        self.storeFissionAlphaRecoilBack(event, match: self.fissionsAlpha2PerAct, type: type, deltaTime: deltaTime)
+                        self.storeFissionAlphaRecoilBack(event, match: self.fissionsAlpha2PerAct, type: t, deltaTime: deltaTime)
                     }
                 }
             }
@@ -700,11 +703,11 @@ class Processor {
         recoilsPerAct.append(item, side: .front)
     }
     
-    fileprivate func storeFissionAlpha2(_ event: Event, deltaTime: CLongLong) {
+    fileprivate func storeFissionAlpha2(_ event: Event, type: SearchType, deltaTime: CLongLong) {
         let id = event.eventId
         let encoder = dataProtocol.encoderForEventId(Int(id))
         let strip0_15 = event.param2 >> 12
-        let energy = getEnergy(event, type: criteria.secondParticleType)
+        let energy = getEnergy(event, type: type)
         let side: StripsSide = .front
         let item = DetectorMatchItem(stripDetector: .focal,
                                      energy: energy,
@@ -835,11 +838,15 @@ class Processor {
     }
     
     fileprivate func isFront(_ event: Event, type: SearchType) -> Bool {
-        let eventId = Int(event.eventId)
         let searchRecoil = type == .recoil || type == .heavy
         let currentRecoil = isRecoil(event)
         let sameType = (searchRecoil && currentRecoil) || (!searchRecoil && !currentRecoil)
-        return sameType && dataProtocol.isAlphaFronEvent(eventId)
+        return sameType && isFront(event)
+    }
+    
+    fileprivate func isFront(_ event: Event) -> Bool {
+        let eventId = Int(event.eventId)
+        return dataProtocol.isAlphaFronEvent(eventId)
     }
     
     fileprivate func isFissionOrAlphaWell(_ event: Event, side: StripsSide) -> Bool {
@@ -990,11 +997,11 @@ class Processor {
     fileprivate var keyColumnFissionAlphaFront2Marker = "&Front2Marker"
     fileprivate var keyColumnFissionAlphaFront2DeltaTime = "dT($Front1-&Front2)"
     fileprivate var keyColumnFissionAlphaFront2Strip = "Strip(&Front2)"
-    fileprivate var keyColumnFissionAlphaBack2Summ = "Summ(&Back2)"
-    fileprivate var keyColumnFissionAlphaBack2Energy = "&Back2"
-    fileprivate var keyColumnFissionAlphaBack2Marker = "&Back2Marker"
-    fileprivate var keyColumnFissionAlphaBack2DeltaTime = "dT(&Fron2-&Back2)"
-    fileprivate var keyColumnFissionAlphaBack2Strip = "Strip(&Back2)"
+    fileprivate var keyColumnFissionAlphaBack2Summ = "Summ(^Back2)"
+    fileprivate var keyColumnFissionAlphaBack2Energy = "^Back2"
+    fileprivate var keyColumnFissionAlphaBack2Marker = "^Back2Marker"
+    fileprivate var keyColumnFissionAlphaBack2DeltaTime = "dT(&Fron2-^Back2)"
+    fileprivate var keyColumnFissionAlphaBack2Strip = "Strip(^Back2)"
     
     fileprivate func logResultsHeader() {
         columns = [
@@ -1096,13 +1103,24 @@ class Processor {
                 ])
         }
         
-        let first = criteria.startParticleType.symbol()
+        // TODO: incapsulate in SearchType
+        let firstFront = criteria.startParticleType.symbol()
         let firstBack = criteria.startParticleBackType.symbol()
-        let second = criteria.secondParticleType.symbol()
         let wellBack = criteria.wellParticleBackType.symbol()
+        let secondFront = criteria.secondParticleFrontType.symbol()
+        let secondBack = criteria.secondParticleBackType.symbol()
+        let dict = ["$": firstFront,
+                    "@": firstBack,
+                    "*": wellBack,
+                    "&": secondFront,
+                    "^": secondBack]
         let headers = columns.map { (s: String) -> String in
-            return s.replacingOccurrences(of: "$", with: first).replacingOccurrences(of: "@", with: firstBack).replacingOccurrences(of: "*", with: wellBack).replacingOccurrences(of: "&", with: second)
-            } as [AnyObject]
+            var result = s
+            for (key, value) in dict {
+                result = result.replacingOccurrences(of: key, with: value)
+            }
+            return result
+        } as [AnyObject]
         logger.writeResultsLineOfFields(headers)
         logger.finishResultsLine() // +1 line padding
     }

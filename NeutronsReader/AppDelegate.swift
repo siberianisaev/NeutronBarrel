@@ -24,7 +24,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBOutlet weak var labelTask: NSTextField!
     @IBOutlet weak var startParticleControl: NSSegmentedControl!
     @IBOutlet weak var startParticleBackControl: NSSegmentedControl!
-    @IBOutlet weak var secondParticleControl: NSSegmentedControl!
+    @IBOutlet weak var secondParticleFrontControl: NSSegmentedControl!
+    @IBOutlet weak var secondParticleBackControl: NSSegmentedControl!
     @IBOutlet weak var wellParticleBackControl: NSSegmentedControl!
     @IBOutlet weak var tofUnitsControl: NSSegmentedControl!
     @IBOutlet weak var indicatorData: NSTextField!
@@ -86,7 +87,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBInspectable var searchNeutrons: Bool = Settings.getBoolSetting(.SearchNeutrons)
     @IBInspectable var searchFissionAlpha2: Bool = Settings.getBoolSetting(.SearchFissionAlpha2) {
         didSet {
-            secondParticleChanged(nil)
+            secondParticleFrontChanged(nil)
             setupAlpha2FormView()
         }
     }
@@ -166,7 +167,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         setupRecoilTypes()
         startParticleControl.selectedSegment = Settings.getIntSetting(.StartSearchType)
         startParticleBackControl.selectedSegment = Settings.getIntSetting(.StartBackSearchType)
-        secondParticleControl.selectedSegment = Settings.getIntSetting(.SecondSearchType)
+        secondParticleFrontControl.selectedSegment = Settings.getIntSetting(.SecondFrontSearchType)
+        secondParticleBackControl.selectedSegment = Settings.getIntSetting(.SecondBackSearchType)
         wellParticleBackControl.selectedSegment = Settings.getIntSetting(.WellBackSearchType)
         startParticleChanged(nil)
         setupVETOView()
@@ -206,7 +208,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             requiredRecoilButton.isEnabled = !isRecoil
             fissionAlpha1View.isHidden = isRecoil
             fissionAlpha1TextField.stringValue = (type != .alpha ? "F" : "A") + "Front 1st"
-            secondParticleChanged(nil)
+            secondParticleFrontChanged(nil)
             if sender != nil, !isRecoil {
                 startParticleBackControl.selectedSegment = type.rawValue
                 wellParticleBackControl.selectedSegment = type.rawValue
@@ -214,8 +216,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         }
     }
     
-    @IBAction func secondParticleChanged(_ sender: Any?) {
-        if let type = SearchType(rawValue: secondParticleControl.selectedSegment) {
+    @IBAction func secondParticleFrontChanged(_ sender: Any?) {
+        if let type = SearchType(rawValue: secondParticleFrontControl.selectedSegment) {
             var title = "Search "
             if searchFissionAlpha2 {
                 title += (type != .alpha ? "F" : "A") + "Front 2nd"
@@ -268,7 +270,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         sc.resultsFolderName = sResultsFolderName
         sc.startParticleType = SearchType(rawValue: startParticleControl.selectedSegment) ?? .recoil
         sc.startParticleBackType = SearchType(rawValue: startParticleBackControl.selectedSegment) ?? .fission
-        sc.secondParticleType = SearchType(rawValue: secondParticleControl.selectedSegment) ?? .recoil
+        sc.secondParticleFrontType = SearchType(rawValue: secondParticleFrontControl.selectedSegment) ?? .recoil
+        sc.secondParticleBackType = SearchType(rawValue: secondParticleBackControl.selectedSegment) ?? .recoil
         sc.wellParticleBackType = SearchType(rawValue: wellParticleBackControl.selectedSegment) ?? .fission
         sc.fissionAlphaFrontMinEnergy = Double(sMinFissionEnergy) ?? 0
         sc.fissionAlphaFrontMaxEnergy = Double(sMaxFissionEnergy) ?? 0
@@ -516,7 +519,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         Settings.setObject(trackBeamIntegral, forSetting: .TrackBeamIntegral)
         Settings.setObject(startParticleControl.selectedSegment, forSetting: .StartSearchType)
         Settings.setObject(startParticleBackControl.selectedSegment, forSetting: .StartBackSearchType)
-        Settings.setObject(secondParticleControl.selectedSegment, forSetting: .SecondSearchType)
+        Settings.setObject(secondParticleFrontControl.selectedSegment, forSetting: .SecondFrontSearchType)
+        Settings.setObject(secondParticleBackControl.selectedSegment, forSetting: .SecondBackSearchType)
         Settings.setObject(wellParticleBackControl.selectedSegment, forSetting: .WellBackSearchType)
         Settings.setObject(searchFissionAlpha2, forSetting: .SearchFissionAlpha2)
         Settings.setObject(Double(sMinFissionAlpha2Energy), forSetting: .MinFissionAlpha2Energy)

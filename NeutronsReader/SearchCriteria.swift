@@ -13,7 +13,8 @@ class SearchCriteria {
     var resultsFolderName: String = ""
     var startParticleType: SearchType = .fission
     var startParticleBackType: SearchType = .fission
-    var secondParticleType: SearchType = .fission
+    var secondParticleFrontType: SearchType = .fission
+    var secondParticleBackType: SearchType = .fission
     var wellParticleBackType: SearchType = .fission
     var fissionAlphaFrontMinEnergy: Double = 0
     var fissionAlphaFrontMaxEnergy: Double = 0
