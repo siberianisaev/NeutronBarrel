@@ -346,7 +346,7 @@ class Processor {
             }
             
             if criteria.searchFissionAlpha2 {
-                findFissionAlphaBack2()
+                findFissionAlpha2()
                 fseek(file, Int(position), SEEK_SET)
                 let match = fissionsAlpha2PerAct
                 if 0 == match.matchFor(side: .front).count || (criteria.requiredFissionAlphaBack && 0 == match.matchFor(side: .back).count) {
@@ -594,7 +594,7 @@ class Processor {
         }
     }
     
-    fileprivate func findFissionAlphaBack2() {
+    fileprivate func findFissionAlpha2() {
         func minE(front: Bool) -> Double {
             return front ? criteria.fissionAlpha2MinEnergy : criteria.fissionAlpha2BackMinEnergy
         }
@@ -610,7 +610,7 @@ class Processor {
             if isFront || self.isBack(event, type: type) {
                 let side: StripsSide = isFront ? .front : .back
                 let energy = self.getEnergy(event, type: type)
-                if (!isFront && self.criteria.searchFissionAlphaBack2ByFact) || (energy >= minE(front: isFront) && energy <= maxE(front: isFront) && self.isEventStripNearToFirstFissionAlpha(event, maxDelta: Int(self.criteria.fissionAlpha2MaxDeltaStrips), side: side)) {
+                if self.isEventStripNearToFirstFissionAlpha(event, maxDelta: Int(self.criteria.fissionAlpha2MaxDeltaStrips), side: side) && ((!isFront && self.criteria.searchFissionAlphaBack2ByFact) || (energy >= minE(front: isFront) && energy <= maxE(front: isFront))) {
                     if isFront {
                         self.storeFissionAlpha2(event, deltaTime: deltaTime)
                     } else {
