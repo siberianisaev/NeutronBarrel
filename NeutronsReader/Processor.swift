@@ -1043,7 +1043,7 @@ class Processor {
     fileprivate var keyColumnFissionAlphaBack2Summ = "Summ(^Back2)"
     fileprivate var keyColumnFissionAlphaBack2Energy = "^Back2"
     fileprivate var keyColumnFissionAlphaBack2Marker = "^Back2Marker"
-    fileprivate var keyColumnFissionAlphaBack2DeltaTime = "dT(&Fron2-^Back2)"
+    fileprivate var keyColumnFissionAlphaBack2DeltaTime = "dT(&Fron1-^Back2)"
     fileprivate var keyColumnFissionAlphaBack2Strip = "Strip(^Back2)"
     
     fileprivate func logResultsHeader() {
