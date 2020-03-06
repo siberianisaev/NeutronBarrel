@@ -182,6 +182,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         secondParticleBackControl.selectedSegment = Settings.getIntSetting(.SecondBackSearchType)
         wellParticleBackControl.selectedSegment = Settings.getIntSetting(.WellBackSearchType)
         startParticleChanged(nil)
+        secondParticleFrontChanged(nil)
+        secondParticleBackChanged(nil)
         setupVETOView()
         setupWellView()
         setupAlpha2FormView()
@@ -223,7 +225,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             secondParticleFrontChanged(nil)
             if sender != nil, !isRecoil {
                 startParticleBackControl.selectedSegment = type.rawValue
-                wellParticleBackControl.selectedSegment = type.rawValue
+                if !searchExtraFromParticle2 {
+                    wellParticleBackControl.selectedSegment = type.rawValue
+                }
             }
         }
     }
@@ -237,6 +241,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
                 title += "2nd Particle"
             }
             fissionAlpha2Button.title = title
+        }
+    }
+    
+    @IBAction func secondParticleBackChanged(_ sender: Any?) {
+        if let type = SearchType(rawValue: secondParticleBackControl.selectedSegment), searchExtraFromParticle2 {
+            wellParticleBackControl.selectedSegment = type.rawValue
         }
     }
     
