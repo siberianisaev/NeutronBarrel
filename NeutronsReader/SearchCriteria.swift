@@ -47,6 +47,7 @@ class SearchCriteria {
     var requiredRecoilBack = false
     var requiredRecoil = false
     var requiredGamma = false
+    var searchExtraFromParticle2 = false
     var requiredTOF = false
     var useTOF2 = false
     var requiredVETO = false

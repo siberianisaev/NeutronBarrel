@@ -40,6 +40,7 @@ class Settings {
         RequiredRecoilBack = "RequiredRecoilBack",
         RequiredRecoil = "RequiredRecoil",
         RequiredGamma = "RequiredGamma",
+        SearchExtraFromParticle2 = "SearchExtraFromParticle2",
         RequiredTOF = "RequiredTOF",
         UseTOF2 = "UseTOF2",
         RequiredVETO = "RequiredVETO",
@@ -134,7 +135,7 @@ class Settings {
             return 0
         case .RequiredFissionAlphaBack, .RequiredRecoilBack, .SearchNeutrons, .TrackBeamEnergy, .TrackBeamCurrent, .TrackBeamBackground, .TrackBeamIntegral, .SearchWell:
             return true
-        case .SummarizeFissionsFront, .SummarizeFissionsFront2, .RequiredRecoil, .RequiredGamma, .RequiredTOF, .RequiredVETO, .SearchSpecialEvents, .SearchVETO, .SearchFissionBackByFact, .SearchFissionBack2ByFact, .UseTOF2:
+        case .SummarizeFissionsFront, .SummarizeFissionsFront2, .RequiredRecoil, .RequiredGamma, .RequiredTOF, .RequiredVETO, .SearchSpecialEvents, .SearchVETO, .SearchFissionBackByFact, .SearchFissionBack2ByFact, .UseTOF2, .SearchExtraFromParticle2:
             return false
         case .SpecialEventIds:
             return nil

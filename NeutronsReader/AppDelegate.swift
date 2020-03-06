@@ -35,6 +35,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBOutlet weak var recoilFrontView: NSView!
     @IBOutlet weak var fissionAlpha2View: NSView!
     @IBOutlet weak var fissionAlpha2FormView: NSView!
+    @IBOutlet weak var searchExtraView: NSView!
     @IBOutlet weak var vetoView: NSView!
     @IBOutlet weak var wellView: NSView!
     @IBOutlet weak var fissionAlpha1View: NSView!
@@ -81,6 +82,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBInspectable var requiredRecoilBack: Bool = Settings.getBoolSetting(.RequiredRecoilBack)
     @IBInspectable var requiredRecoil: Bool = Settings.getBoolSetting(.RequiredRecoil)
     @IBInspectable var requiredGamma: Bool = Settings.getBoolSetting(.RequiredGamma)
+    @IBInspectable var searchExtraFromParticle2: Bool = Settings.getBoolSetting(.SearchExtraFromParticle2)
     @IBInspectable var requiredTOF: Bool = Settings.getBoolSetting(.RequiredTOF)
     @IBInspectable var useTOF2: Bool = Settings.getBoolSetting(.UseTOF2)
     @IBInspectable var requiredVETO: Bool = Settings.getBoolSetting(.RequiredVETO)
@@ -137,10 +139,19 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         return recoilTypes[recoilTypeArrayController.selectionIndex]
     }
     
+    fileprivate var formColor: CGColor {
+        return NSColor.lightGray.withAlphaComponent(0.2).cgColor
+    }
+    
     fileprivate func setupAlpha2FormView() {
         fissionAlpha2FormView.isHidden = !searchFissionAlpha2
         fissionAlpha2FormView.wantsLayer = true
-        fissionAlpha2FormView.layer?.backgroundColor = NSColor.lightGray.withAlphaComponent(0.2).cgColor
+        fissionAlpha2FormView.layer?.backgroundColor = formColor
+    }
+    
+    fileprivate func setupSearchExtraView() {
+        searchExtraView.wantsLayer = true
+        searchExtraView.layer?.backgroundColor = formColor
     }
     
     fileprivate func setupRecoilTypes() {
@@ -174,6 +185,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         setupVETOView()
         setupWellView()
         setupAlpha2FormView()
+        setupSearchExtraView()
         setupFissionAlpha1BackEnergyView()
         setupFissionAlpha2BackEnergyView()
         tofUnitsControl.selectedSegment = Settings.getIntSetting(.TOFUnits)
@@ -313,6 +325,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         sc.requiredVETO = requiredVETO
         sc.maxGammaTime = UInt64(sMaxGammaTime) ?? 0
         sc.requiredGamma = requiredGamma
+        sc.searchExtraFromParticle2 = searchExtraFromParticle2
         sc.searchNeutrons = searchNeutrons
         sc.maxNeutronTime = UInt64(sMaxNeutronTime) ?? 0
         sc.searchSpecialEvents = searchSpecialEvents
@@ -508,6 +521,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         Settings.setObject(requiredRecoilBack, forSetting: .RequiredRecoilBack)
         Settings.setObject(requiredRecoil, forSetting: .RequiredRecoil)
         Settings.setObject(requiredGamma, forSetting: .RequiredGamma)
+        Settings.setObject(searchExtraFromParticle2, forSetting: .SearchExtraFromParticle2)
         Settings.setObject(requiredTOF, forSetting: .RequiredTOF)
         Settings.setObject(useTOF2, forSetting: .UseTOF2)
         Settings.setObject(requiredVETO, forSetting: .RequiredVETO)
