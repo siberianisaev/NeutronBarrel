@@ -39,6 +39,18 @@ class DetectorMatch {
         return item
     }
     
+    /*
+     Used for Recoil signals.
+     */
+    func keepOnlyItemWithMaxEnergy() {
+        if count > 1, let item = itemWithMaxEnergy() {
+            items = [item]
+        }
+    }
+    
+    /*
+     Used for divided per strips Fission fragments signals.
+     */
     func filterItemsByMaxEnergy(maxStripsDelta: Int) {
         if count > 1, let item = itemWithMaxEnergy(), let strip1_N = item.strip1_N {
             let array = items.filter( { (i: DetectorMatchItem) -> Bool in

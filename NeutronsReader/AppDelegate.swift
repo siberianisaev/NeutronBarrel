@@ -202,7 +202,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         setupSearchExtraView()
         setupFissionAlpha1BackEnergyView()
         setupFissionAlpha2BackEnergyView()
-        setupFissionAlpha2BackEnergyView()
+        setupRecoilBackEnergyView()
         tofUnitsControl.selectedSegment = Settings.getIntSetting(.TOFUnits)
         for i in [indicatorData, indicatorCalibration, indicatorStripsConfig] {
             setSelected(false, indicator: i)
@@ -578,6 +578,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         Settings.setObject(selectedRecoilType.rawValue, forSetting: .SelectedRecoilType)
         Settings.setObject(searchFissionBackByFact, forSetting: .SearchFissionBackByFact)
         Settings.setObject(searchFissionBack2ByFact, forSetting: .SearchFissionBack2ByFact)
+        Settings.setObject(searchRecoilBackByFact, forSetting: .SearchRecoilBackByFact)
         Settings.setObject(searchWell, forSetting: .SearchWell)
     }
     

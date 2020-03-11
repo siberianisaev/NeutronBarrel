@@ -590,7 +590,7 @@ class Processor {
             }
         }
         fseek(self.file, Int(position), SEEK_SET)
-        recoilsPerAct.matchFor(side: .back).filterItemsByMaxEnergy(maxStripsDelta: criteria.recoilBackMaxDeltaStrips)
+        recoilsPerAct.matchFor(side: .back).keepOnlyItemWithMaxEnergy()
         return found
     }
     
