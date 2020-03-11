@@ -526,16 +526,6 @@ class Processor {
             fgetpos(self.file, &position)
             let t = CUnsignedLongLong(event.param1)
             
-            let recoilBack = self.findRecoilBack(t)
-            fseek(self.file, Int(position), SEEK_SET)
-            if let recoilBack = recoilBack {
-                if criteria.startFromRecoil() {
-                    storeFissionAlphaRecoilBack(recoilBack, match: recoilsPerAct, type: criteria.startParticleType, deltaTime: deltaTime)
-                }
-            } else if (criteria.requiredRecoilBack) {
-                return false
-            }
-            
             let isTOFFounded = self.findTOFForRecoil(event, timeRecoil: t, kind: .TOF)
             fseek(self.file, Int(position), SEEK_SET)
             var isTOF2Founded = false
@@ -544,6 +534,11 @@ class Processor {
                 fseek(self.file, Int(position), SEEK_SET)
             }
             if (criteria.requiredTOF && !(isTOFFounded || isTOF2Founded)) {
+                return false
+            }
+            
+            let found = findRecoilBack(t, position: Int(position))
+            if (!found && criteria.requiredRecoilBack) {
                 return false
             }
             
@@ -570,24 +565,33 @@ class Processor {
         return found
     }
     
-    fileprivate func findRecoilBack(_ timeRecoilFront: CUnsignedLongLong) -> Event? {
+    fileprivate func findRecoilBack(_ timeRecoilFront: CUnsignedLongLong, position: Int) -> Bool {
         var found: Bool = false
-        var result: Event?
         let directions: Set<SearchDirection> = [.backward, .forward]
         search(directions: directions, startTime: timeRecoilFront, minDeltaTime: 0, maxDeltaTime: criteria.recoilBackMaxTime, maxDeltaTimeBackward: criteria.recoilBackBackwardMaxTime, useCycleTime: false, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>, _) in
-            if self.isBack(event, type: self.criteria.recoilType) {
-                if (self.criteria.requiredRecoilBack && !self.criteria.startFromRecoil()) {
-                    found = self.isRecoilBackStripNearToFissionAlphaBack(event)
-                } else {
+            // Note: 'recoil' type must be always
+            let type: SearchType = .recoil
+            if self.isBack(event, type: type) {
+                var store = self.criteria.searchRecoilBackByFact
+                if !store {
+                    let energy = self.getEnergy(event, type: type)
+                    if energy >= self.criteria.recoilBackMinEnergy && energy <= self.criteria.recoilBackMaxEnergy {
+                        if !self.criteria.startFromRecoil() {
+                            store = self.isRecoilBackStripNearToFissionAlphaBack(event)
+                        } else {
+                            store = true
+                        }
+                    }
+                }
+                if store {
                     found = true
+                    self.storeFissionAlphaRecoilBack(event, match: self.recoilsPerAct, type: type, deltaTime: deltaTime)
                 }
-                if found {
-                    result = event
-                }
-                stop.initialize(to: true)
             }
         }
-        return result
+        fseek(self.file, Int(position), SEEK_SET)
+        recoilsPerAct.matchFor(side: .back).filterItemsByMaxEnergy(maxStripsDelta: criteria.recoilBackMaxDeltaStrips)
+        return found
     }
     
     fileprivate func findSpecialEvents() {
@@ -617,31 +621,18 @@ class Processor {
     }
     
     fileprivate func findFissionAlpha2() {
-        func minE(front: Bool) -> Double {
-            return front ? criteria.fissionAlpha2MinEnergy : criteria.fissionAlpha2BackMinEnergy
-        }
-        func maxE(front: Bool) -> Double {
-            return front ? criteria.fissionAlpha2MaxEnergy : criteria.fissionAlpha2BackMaxEnergy
-        }
-        func type(front: Bool) -> SearchType {
-            return front ? criteria.secondParticleFrontType : criteria.secondParticleBackType
-        }
-        
         let alphaTime = absTime(CUnsignedShort(startEventTime), cycle: currentCycle)
         let directions: Set<SearchDirection> = [.forward]
         search(directions: directions, startTime: alphaTime, minDeltaTime: criteria.fissionAlpha2MinTime, maxDeltaTime: criteria.fissionAlpha2MaxTime, useCycleTime: true, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>, position: Int) in
-            let t = type(front: self.isFront(event))
+            let t = self.criteria.secondParticleFrontType
             let isFront = self.isFront(event, type: t)
-            if isFront || self.isBack(event, type: t) {
+            if isFront {
                 self.secondEventTime = UInt64(event.param1)
-                let side: StripsSide = isFront ? .front : .back
                 let energy = self.getEnergy(event, type: t)
-                if self.isEventStripNearToFirstFissionAlpha(event, maxDelta: Int(self.criteria.fissionAlpha2MaxDeltaStrips), side: side) && ((!isFront && self.criteria.searchFissionAlphaBack2ByFact) || (energy >= minE(front: isFront) && energy <= maxE(front: isFront))) {
-                    if isFront {
-                        self.storeFissionAlpha2(event, type: t, deltaTime: deltaTime)
-                    } else {
-                        self.storeFissionAlphaRecoilBack(event, match: self.fissionsAlpha2PerAct, type: t, deltaTime: deltaTime)
-                    }
+                if self.isEventStripNearToFirstFissionAlpha(event, maxDelta: Int(self.criteria.fissionAlpha2MaxDeltaStrips), side: .front) && ((!isFront && self.criteria.searchFissionAlphaBack2ByFact) || (energy >= self.criteria.fissionAlpha2MinEnergy && energy <= self.criteria.fissionAlpha2MaxEnergy)) {
+                    self.storeFissionAlpha2(event, type: t, deltaTime: deltaTime)
+                    // Recoil Back
+                    self.findFissionAlpha2Back(position)
                     // Extra Search
                     if self.criteria.searchExtraFromParticle2 {
                         self.findFissionsAlphaWell(position)
@@ -651,7 +642,28 @@ class Processor {
                 }
             }
         }
-        fissionsAlpha2PerAct.matchFor(side: .back).filterItemsByMaxEnergy(maxStripsDelta: criteria.recoilBackMaxDeltaStrips)
+    }
+    
+    fileprivate func findFissionAlpha2Back(_ position: Int) {
+        let directions: Set<SearchDirection> = [.forward, .backward]
+        search(directions: directions, startTime: secondEventTime, minDeltaTime: 0, maxDeltaTime: criteria.fissionAlphaMaxTime, maxDeltaTimeBackward: criteria.fissionAlphaBackBackwardMaxTime, useCycleTime: false, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>, position: Int) in
+            let t = self.criteria.secondParticleBackType
+            let isBack = self.isBack(event, type: t)
+            if isBack {
+                var store = self.criteria.searchFissionAlphaBack2ByFact
+                if !store {
+                    let energy = self.getEnergy(event, type: t)
+                    if self.isEventStripNearToFirstFissionAlpha(event, maxDelta: Int(self.criteria.fissionAlpha2MaxDeltaStrips), side: .back) && (energy >= self.criteria.fissionAlpha2BackMinEnergy && energy <= self.criteria.fissionAlpha2BackMaxEnergy) {
+                        store = true
+                    }
+                }
+                if store {
+                    self.storeFissionAlphaRecoilBack(event, match: self.fissionsAlpha2PerAct, type: t, deltaTime: deltaTime)
+                }
+            }
+        }
+        fseek(file, position, SEEK_SET)
+        fissionsAlpha2PerAct.matchFor(side: .back).filterItemsByMaxEnergy(maxStripsDelta: criteria.fissionAlpha2MaxDeltaStrips)
     }
     
     // MARK: - Storage
@@ -959,28 +971,30 @@ class Processor {
     }
     
     fileprivate var columns = [String]()
-    fileprivate var keyColumnRecoilEvent: String {
+    fileprivate var keyColumnRecoilFrontEvent: String {
         let name = criteria.recoilType == .recoil ? "Recoil" : "Heavy Recoil"
         return "Event(\(name))"
     }
     fileprivate var keyRecoil: String {
         return  criteria.recoilType == .recoil ? "R" : "HR"
     }
-    fileprivate var keyColumnRecoilEnergy: String {
+    fileprivate var keyColumnRecoilFrontEnergy: String {
         return "E(\(keyRecoil)Fron)"
     }
-    fileprivate var keyColumnRecoilFrontMarker: String {
+    fileprivate var keyColumnRecoilFrontFrontMarker: String {
         return "\(keyRecoil)FronMarker"
     }
-    fileprivate var keyColumnRecoilDeltaTime: String {
+    fileprivate var keyColumnRecoilFrontDeltaTime: String {
         return "dT(\(keyRecoil)Fron-$Fron)"
     }
     fileprivate var keyRecoilHeavy: String {
         return criteria.heavyType == .heavy ? "HR" : "R"
     }
-    fileprivate var keyColumnRecoilHeavyEnergy: String {
+    fileprivate var keyColumnRecoilFrontHeavyEnergy: String {
         return "E(\(keyRecoilHeavy)Fron)"
     }
+    fileprivate let keyColumnRecoilBackEvent: String = "Event(RBack)"
+    fileprivate let keyColumnRecoilBackEnergy: String = "E(RBack)"
     fileprivate var keyColumnTof = "TOF"
     fileprivate var keyColumnTof2 = "TOF2"
     fileprivate var keyColumnTofDeltaTime = "dT(TOF-RFron)"
@@ -1048,11 +1062,11 @@ class Processor {
     
     fileprivate func logResultsHeader() {
         columns = [
-            keyColumnRecoilEvent,
-            keyColumnRecoilEnergy,
-            keyColumnRecoilHeavyEnergy,
-            keyColumnRecoilFrontMarker,
-            keyColumnRecoilDeltaTime,
+            keyColumnRecoilFrontEvent,
+            keyColumnRecoilFrontEnergy,
+            keyColumnRecoilFrontHeavyEnergy,
+            keyColumnRecoilFrontFrontMarker,
+            keyColumnRecoilFrontDeltaTime,
             keyColumnTof,
             keyColumnTofDeltaTime
         ]
@@ -1186,25 +1200,33 @@ class Processor {
             for column in columns {
                 var field = ""
                 switch column {
-                case keyColumnRecoilEvent:
+                case keyColumnRecoilFrontEvent:
                     if let eventNumber = recoilsPerAct.matchFor(side: .front).itemAt(index: row)?.eventNumber {
                         field = currentFileEventNumber(eventNumber)
                     }
-                case keyColumnRecoilEnergy:
+                case keyColumnRecoilFrontEnergy:
                     if let energy = recoilsPerAct.matchFor(side: .front).itemAt(index: row)?.energy {
                         field = String(format: "%.7f", energy)
                     }
-                case keyColumnRecoilHeavyEnergy:
+                case keyColumnRecoilFrontHeavyEnergy:
                     if let heavy = recoilsPerAct.matchFor(side: .front).itemAt(index: row)?.heavy {
                         field = String(format: "%.7f", heavy)
                     }
-                case keyColumnRecoilFrontMarker:
+                case keyColumnRecoilFrontFrontMarker:
                     if let marker = recoilsPerAct.matchFor(side: .front).itemAt(index: row)?.marker {
                         field = String(format: "%hu", marker)
                     }
-                case keyColumnRecoilDeltaTime:
+                case keyColumnRecoilFrontDeltaTime:
                     if let deltaTime = recoilsPerAct.matchFor(side: .front).itemAt(index: row)?.deltaTime {
                         field = String(format: "%lld", deltaTime)
+                    }
+                case keyColumnRecoilBackEvent:
+                    if let eventNumber = recoilsPerAct.matchFor(side: .back).itemAt(index: row)?.eventNumber {
+                        field = currentFileEventNumber(eventNumber)
+                    }
+                case keyColumnRecoilBackEnergy:
+                    if let energy = recoilsPerAct.matchFor(side: .back).itemAt(index: row)?.energy {
+                        field = String(format: "%.7f", energy)
                     }
                 case keyColumnTof, keyColumnTof2:
                     if let value = (column == keyColumnTof ? tofRealPerAct : tof2PerAct).itemAt(index: row)?.value {

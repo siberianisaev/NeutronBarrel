@@ -16,8 +16,10 @@ class Settings {
         MaxFissionEnergy = "MaxFissionEnergy",
         MinFissionBackEnergy = "MinFissionBackEnergy",
         MaxFissionBackEnergy = "MaxFissionBackEnergy",
-        MinRecoilEnergy = "MinRecoilEnergy",
-        MaxRecoilEnergy = "MaxRecoilEnergy",
+        MinRecoilFrontEnergy = "MinRecoilFrontEnergy",
+        MaxRecoilFrontEnergy = "MaxRecoilFrontEnergy",
+        MinRecoilBackEnergy = "MinRecoilBackEnergy",
+        MaxRecoilBackEnergy = "MaxRecoilBackEnergy",
         MinTOFValue = "MinTOFValue",
         MaxTOFValue = "MaxTOFValue",
         TOFUnits = "TOFUnits",
@@ -69,6 +71,7 @@ class Settings {
         SelectedRecoilType = "SelectedRecoilType",
         SearchFissionBackByFact = "SearchFissionBackByFact",
         SearchFissionBack2ByFact = "SearchFissionBack2ByFact",
+        SearchRecoilBackByFact = "SearchRecoilBackByFact",
         SearchWell = "SearchWell",
         BeamEnergyMin = "BeamEnergyMin",
         BeamEnergyMax = "BeamEnergyMax"
@@ -117,11 +120,11 @@ class Settings {
             return 200
         case .BeamEnergyMax:
             return 300
-        case .MinFissionEnergy, .MaxFissionAlpha2Energy, .MaxFissionAlpha2BackEnergy, .MaxRecoilEnergy:
+        case .MinFissionEnergy, .MaxFissionAlpha2Energy, .MaxFissionAlpha2BackEnergy, .MaxRecoilFrontEnergy, .MaxRecoilBackEnergy:
             return 20
         case .MaxFissionAlpha2Time, .MaxFissionEnergy, .MaxRecoilTime:
             return 1000
-        case .MinRecoilEnergy:
+        case .MinRecoilFrontEnergy, .MinRecoilBackEnergy:
             return 1
         case .MaxFissionBackEnergy, .MaxTOFValue:
             return 10000
@@ -135,7 +138,7 @@ class Settings {
             return 0
         case .RequiredFissionAlphaBack, .RequiredRecoilBack, .SearchNeutrons, .TrackBeamEnergy, .TrackBeamCurrent, .TrackBeamBackground, .TrackBeamIntegral, .SearchWell:
             return true
-        case .SummarizeFissionsFront, .SummarizeFissionsFront2, .RequiredRecoil, .RequiredGamma, .RequiredTOF, .RequiredVETO, .SearchSpecialEvents, .SearchVETO, .SearchFissionBackByFact, .SearchFissionBack2ByFact, .UseTOF2, .SearchExtraFromParticle2:
+        case .SummarizeFissionsFront, .SummarizeFissionsFront2, .RequiredRecoil, .RequiredGamma, .RequiredTOF, .RequiredVETO, .SearchSpecialEvents, .SearchVETO, .SearchFissionBackByFact, .SearchFissionBack2ByFact, .SearchRecoilBackByFact, .UseTOF2, .SearchExtraFromParticle2:
             return false
         case .SpecialEventIds:
             return nil

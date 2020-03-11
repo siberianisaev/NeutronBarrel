@@ -24,6 +24,9 @@ class SearchCriteria {
     var searchFissionAlphaBack2ByFact: Bool = true
     var recoilFrontMinEnergy: Double = 0
     var recoilFrontMaxEnergy: Double = 0
+    var recoilBackMinEnergy: Double = 0
+    var recoilBackMaxEnergy: Double = 0
+    var searchRecoilBackByFact: Bool = false
     var minTOFValue: Double = 0
     var maxTOFValue: Double = 0
     var beamEnergyMin: Float = 0
