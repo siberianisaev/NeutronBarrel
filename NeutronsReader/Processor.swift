@@ -498,7 +498,7 @@ class Processor {
             if self.isBack(event, type: type) {
                 let energy = self.getEnergy(event, type: type)
                 if self.criteria.searchFissionAlphaBackByFact || (energy >= self.criteria.fissionAlphaBackMinEnergy && energy <= self.criteria.fissionAlphaBackMaxEnergy) {
-                    self.storeFissionAlphaRecoilBack(event, match: match, type: type, deltaTime: deltaTime)
+                    self.storeFissionAlphaBack(event, match: match, type: type, deltaTime: deltaTime)
                 }
             }
         }
@@ -566,8 +566,10 @@ class Processor {
     }
     
     fileprivate func findRecoilBack(_ timeRecoilFront: CUnsignedLongLong, position: Int) -> Bool {
-        var found: Bool = false
+        var items = [DetectorMatchItem]()
+        let side: StripsSide = .back
         let directions: Set<SearchDirection> = [.backward, .forward]
+        
         search(directions: directions, startTime: timeRecoilFront, minDeltaTime: 0, maxDeltaTime: criteria.recoilBackMaxTime, maxDeltaTimeBackward: criteria.recoilBackBackwardMaxTime, useCycleTime: false, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>, _) in
             // Note: 'recoil' type must be always
             let type: SearchType = .recoil
@@ -584,14 +586,20 @@ class Processor {
                     }
                 }
                 if store {
-                    found = true
-                    self.storeFissionAlphaRecoilBack(event, match: self.recoilsPerAct, type: type, deltaTime: deltaTime)
+                    let item = self.focalDetectorMatchItemFrom(event, type: type, deltaTime: deltaTime, side: side)
+                    items.append(item)
                 }
             }
         }
+        
         fseek(self.file, Int(position), SEEK_SET)
-        recoilsPerAct.matchFor(side: .back).keepOnlyItemWithMaxEnergy()
-        return found
+        
+        if let item = DetectorMatch.getItemWithMaxEnergy(items) {
+            recoilsPerAct.append(item, side: side)
+            return true
+        } else {
+            return false
+        }
     }
     
     fileprivate func findSpecialEvents() {
@@ -658,7 +666,7 @@ class Processor {
                     }
                 }
                 if store {
-                    self.storeFissionAlphaRecoilBack(event, match: self.fissionsAlpha2PerAct, type: t, deltaTime: deltaTime)
+                    self.storeFissionAlphaBack(event, match: self.fissionsAlpha2PerAct, type: t, deltaTime: deltaTime)
                 }
             }
         }
@@ -668,12 +676,11 @@ class Processor {
     
     // MARK: - Storage
     
-    fileprivate func storeFissionAlphaRecoilBack(_ event: Event, match: DoubleSidedStripDetectorMatch, type: SearchType, deltaTime: CLongLong) {
+    fileprivate func focalDetectorMatchItemFrom(_ event: Event, type: SearchType, deltaTime: CLongLong, side: StripsSide) -> DetectorMatchItem {
         let id = event.eventId
         let encoder = dataProtocol.encoderForEventId(Int(id))
         let strip0_15 = event.param2 >> 12
         let energy = getEnergy(event, type: type)
-        let side: StripsSide = .back
         let item = DetectorMatchItem(stripDetector: .focal,
                                      energy: energy,
                                      encoder: encoder,
@@ -681,6 +688,12 @@ class Processor {
                                      eventNumber: eventNumber(),
                                      deltaTime: deltaTime,
                                      marker: getMarker(event))
+        return item
+    }
+    
+    fileprivate func storeFissionAlphaBack(_ event: Event, match: DoubleSidedStripDetectorMatch, type: SearchType, deltaTime: CLongLong) {
+        let side: StripsSide = .back
+        let item = focalDetectorMatchItemFrom(event, type: type, deltaTime: deltaTime, side: side)
         match.append(item, side: side)
     }
     

@@ -33,18 +33,20 @@ class DetectorMatch {
     }
     
     func itemWithMaxEnergy() -> DetectorMatchItem? {
-        let item = items.sorted(by: { (i1: DetectorMatchItem, i2: DetectorMatchItem) -> Bool in
-            return (i1.energy ?? 0) > (i2.energy ?? 0)
-        }).first
-        return item
+        return DetectorMatch.getItemWithMaxEnergy(items)
     }
     
     /*
      Used for Recoil signals.
      */
-    func keepOnlyItemWithMaxEnergy() {
-        if count > 1, let item = itemWithMaxEnergy() {
-            items = [item]
+    class func getItemWithMaxEnergy(_ items: [DetectorMatchItem]) -> DetectorMatchItem? {
+        if items.count > 1 {
+            let item = items.sorted(by: { (i1: DetectorMatchItem, i2: DetectorMatchItem) -> Bool in
+                return (i1.energy ?? 0) > (i2.energy ?? 0)
+            }).first
+            return item
+        } else {
+            return items.first
         }
     }
     
