@@ -1067,6 +1067,8 @@ class Processor {
             keyColumnRecoilFrontHeavyEnergy,
             keyColumnRecoilFrontFrontMarker,
             keyColumnRecoilFrontDeltaTime,
+            keyColumnRecoilBackEvent,
+            keyColumnRecoilBackEnergy,
             keyColumnTof,
             keyColumnTofDeltaTime
         ]
