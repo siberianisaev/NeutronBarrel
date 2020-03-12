@@ -64,17 +64,12 @@ class DetectorMatchItem {
         return _channel
     }
     
-    fileprivate var _heavy: Double?
-    var heavy: Double? {
-        return _heavy
-    }
-    
     fileprivate var _value: Double?
     var value: Double? {
         return _value
     }
     
-    init(stripDetector: StripDetector?, energy: Double? = nil, encoder: CUnsignedShort? = nil, strip0_15: CUnsignedShort? = nil, eventNumber: CUnsignedLongLong? = nil, deltaTime: CLongLong? = nil, marker: CUnsignedShort? = nil, channel: CUnsignedShort? = nil, heavy: Double? = nil, value: Double? = nil) {
+    init(stripDetector: StripDetector?, energy: Double? = nil, encoder: CUnsignedShort? = nil, strip0_15: CUnsignedShort? = nil, eventNumber: CUnsignedLongLong? = nil, deltaTime: CLongLong? = nil, marker: CUnsignedShort? = nil, channel: CUnsignedShort? = nil, value: Double? = nil) {
         self._stripDetector = stripDetector
         self._energy = energy
         self._encoder = encoder
@@ -83,7 +78,6 @@ class DetectorMatchItem {
         self._deltaTime = deltaTime
         self._marker = marker
         self._channel = channel
-        self._heavy = heavy
         self._value = value
     }
     

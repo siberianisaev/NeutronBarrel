@@ -554,8 +554,7 @@ class Processor {
                 return false
             }
             
-            let heavy = self.getEnergy(event, type: criteria.heavyType)
-            self.storeRecoil(event, energy: energy, heavy: heavy, deltaTime: deltaTime)
+            self.storeRecoil(event, energy: energy, deltaTime: deltaTime)
             return true
         }
         return false
@@ -761,7 +760,7 @@ class Processor {
         gammaPerAct.append(item)
     }
     
-    fileprivate func storeRecoil(_ event: Event, energy: Double, heavy: Double, deltaTime: CLongLong) {
+    fileprivate func storeRecoil(_ event: Event, energy: Double, deltaTime: CLongLong) {
         let id = event.eventId
         let encoder = dataProtocol.encoderForEventId(Int(id))
         let strip0_15 = event.param2 >> 12
@@ -771,8 +770,7 @@ class Processor {
                                      strip0_15: strip0_15,
                                      eventNumber: eventNumber(),
                                      deltaTime: deltaTime,
-                                     marker: getMarker(event),
-                                     heavy: heavy)
+                                     marker: getMarker(event))
         recoilsPerAct.append(item, side: .front)
     }
     
@@ -1019,12 +1017,6 @@ class Processor {
     fileprivate var keyColumnRecoilFrontDeltaTime: String {
         return "dT(\(keyRecoil)Fron-$Fron)"
     }
-    fileprivate var keyRecoilHeavy: String {
-        return criteria.heavyType == .heavy ? "HR" : "R"
-    }
-    fileprivate var keyColumnRecoilFrontHeavyEnergy: String {
-        return "E(\(keyRecoilHeavy)Fron)"
-    }
     fileprivate let keyColumnRecoilBackEvent: String = "Event(RBack)"
     fileprivate let keyColumnRecoilBackEnergy: String = "E(RBack)"
     fileprivate var keyColumnTof = "TOF"
@@ -1096,7 +1088,6 @@ class Processor {
         columns = [
             keyColumnRecoilFrontEvent,
             keyColumnRecoilFrontEnergy,
-            keyColumnRecoilFrontHeavyEnergy,
             keyColumnRecoilFrontFrontMarker,
             keyColumnRecoilFrontDeltaTime,
             keyColumnRecoilBackEvent,
@@ -1241,10 +1232,6 @@ class Processor {
                 case keyColumnRecoilFrontEnergy:
                     if let energy = recoilsPerAct.matchFor(side: .front).itemAt(index: row)?.energy {
                         field = String(format: "%.7f", energy)
-                    }
-                case keyColumnRecoilFrontHeavyEnergy:
-                    if let heavy = recoilsPerAct.matchFor(side: .front).itemAt(index: row)?.heavy {
-                        field = String(format: "%.7f", heavy)
                     }
                 case keyColumnRecoilFrontFrontMarker:
                     if let marker = recoilsPerAct.matchFor(side: .front).itemAt(index: row)?.marker {

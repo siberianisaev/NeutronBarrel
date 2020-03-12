@@ -75,15 +75,7 @@ class SearchCriteria {
     var searchWell = true
     var specialEventIds = [Int]()
     var unitsTOF: TOFUnits = .channels
-    var recoilType: SearchType = .recoil {
-        didSet {
-            _heavyType = recoilType == .recoil ? .heavy : .recoil
-        }
-    }
-    fileprivate var _heavyType: SearchType = .heavy
-    var heavyType: SearchType {
-        return _heavyType
-    }
+    var recoilType: SearchType = .recoil
     
     func startFromRecoil() -> Bool {
         return startParticleType == .recoil || startParticleType == .heavy
