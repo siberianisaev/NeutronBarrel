@@ -85,6 +85,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBInspectable var requiredRecoilBack: Bool = Settings.getBoolSetting(.RequiredRecoilBack)
     @IBInspectable var requiredRecoil: Bool = Settings.getBoolSetting(.RequiredRecoil)
     @IBInspectable var requiredGamma: Bool = Settings.getBoolSetting(.RequiredGamma)
+    @IBInspectable var requiredWell: Bool = Settings.getBoolSetting(.RequiredWell)
+    @IBInspectable var wellRecoilsAllowed: Bool = Settings.getBoolSetting(.WellRecoilsAllowed)
     @IBInspectable var searchExtraFromParticle2: Bool = Settings.getBoolSetting(.SearchExtraFromParticle2)
     @IBInspectable var requiredTOF: Bool = Settings.getBoolSetting(.RequiredTOF)
     @IBInspectable var useTOF2: Bool = Settings.getBoolSetting(.UseTOF2)
@@ -351,6 +353,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         sc.requiredVETO = requiredVETO
         sc.maxGammaTime = UInt64(sMaxGammaTime) ?? 0
         sc.requiredGamma = requiredGamma
+        sc.requiredWell = requiredWell
+        sc.wellRecoilsAllowed = wellRecoilsAllowed
         sc.searchExtraFromParticle2 = searchExtraFromParticle2
         sc.searchNeutrons = searchNeutrons
         sc.maxNeutronTime = UInt64(sMaxNeutronTime) ?? 0
@@ -549,6 +553,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         Settings.setObject(requiredRecoilBack, forSetting: .RequiredRecoilBack)
         Settings.setObject(requiredRecoil, forSetting: .RequiredRecoil)
         Settings.setObject(requiredGamma, forSetting: .RequiredGamma)
+        Settings.setObject(requiredWell, forSetting: .RequiredWell)
+        Settings.setObject(wellRecoilsAllowed, forSetting: .WellRecoilsAllowed)
         Settings.setObject(searchExtraFromParticle2, forSetting: .SearchExtraFromParticle2)
         Settings.setObject(requiredTOF, forSetting: .RequiredTOF)
         Settings.setObject(useTOF2, forSetting: .UseTOF2)

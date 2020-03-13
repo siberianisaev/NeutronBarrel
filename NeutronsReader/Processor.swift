@@ -345,7 +345,11 @@ class Processor {
                 }
                 
                 if !criteria.searchExtraFromParticle2 {
-                    findFissionsAlphaWell(position)
+                    findFissionAlphaWell(position)
+                    if wellSearchFailed() {
+                        clearActInfo()
+                        return
+                    }
                 }
             }
             
@@ -357,7 +361,7 @@ class Processor {
                     clearActInfo()
                     return
                 }
-                if criteria.searchExtraFromParticle2 && criteria.requiredGamma && 0 == gammaPerAct.count {
+                if criteria.searchExtraFromParticle2 && ((criteria.requiredGamma && 0 == gammaPerAct.count) || wellSearchFailed()) {
                     clearActInfo()
                     return
                 }
@@ -394,6 +398,10 @@ class Processor {
         }
     }
     
+    fileprivate func wellSearchFailed() -> Bool {
+        return criteria.searchWell && criteria.requiredWell && nil == fissionsAlphaWellPerAct.itemFor(side: .front)
+    }
+    
     fileprivate func findAllNeutrons(_ position: Int) {
         if criteria.searchNeutrons {
             findNeutrons()
@@ -415,7 +423,7 @@ class Processor {
         }
     }
     
-    fileprivate func findFissionsAlphaWell(_ position: Int) {
+    fileprivate func findFissionAlphaWell(_ position: Int) {
         if criteria.searchWell {
             let directions: Set<SearchDirection> = [.backward, .forward]
             let start = criteria.searchExtraFromParticle2 ? secondEventTime : startEventTime
@@ -655,7 +663,7 @@ class Processor {
                     self.findFissionAlpha2Back(position)
                     // Extra Search
                     if self.criteria.searchExtraFromParticle2 {
-                        self.findFissionsAlphaWell(position)
+                        self.findFissionAlphaWell(position)
                         self.findGamma(position)
                         self.findAllNeutrons(position)
                     }
@@ -922,7 +930,10 @@ class Processor {
     
     fileprivate func isFissionOrAlphaWell(_ event: Event, side: StripsSide) -> Bool {
         let eventId = Int(event.eventId)
-        return !isRecoil(event) && ((side == .front && dataProtocol.isAlphaWellEvent(eventId)) || (side == .back && dataProtocol.isAlphaWellBackEvent(eventId)))
+        if isRecoil(event) && !criteria.wellRecoilsAllowed {
+            return false
+        }
+        return (side == .front && dataProtocol.isAlphaWellEvent(eventId)) || (side == .back && dataProtocol.isAlphaWellBackEvent(eventId))
     }
     
     fileprivate func isBack(_ event: Event, type: SearchType) -> Bool {
