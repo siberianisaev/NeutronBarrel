@@ -8,9 +8,14 @@
 
 import Cocoa
 
+enum LoggerDestination {
+    case results, gamma
+}
+
 class Logger {
     
     fileprivate var resultsCSVWriter: CSVWriter
+    fileprivate var gammaCSVWriter: CSVWriter
     fileprivate var statisticsCSVWriter: CSVWriter
     fileprivate var folderName: String
     fileprivate var timeStamp: String
@@ -22,6 +27,7 @@ class Logger {
         folderName = name
         timeStamp = stamp
         resultsCSVWriter = CSVWriter(path: FileManager.resultsFilePath(stamp, folderName: name))
+        gammaCSVWriter = CSVWriter(path: FileManager.gammaFilePath(stamp, folderName: name))
         statisticsCSVWriter = CSVWriter(path: FileManager.statisticsFilePath(stamp, folderName: name))
         let f = DateFormatter()
         f.calendar = Calendar(identifier: .gregorian)
@@ -31,16 +37,25 @@ class Logger {
         dateFormatter = f
     }
     
-    func writeResultsLineOfFields(_ fields: [AnyObject]?) {
-        resultsCSVWriter.writeLineOfFields(fields)
+    fileprivate func writerFor(destination: LoggerDestination) -> CSVWriter {
+        switch destination {
+        case .results:
+            return resultsCSVWriter
+        case .gamma:
+            return gammaCSVWriter
+        }
     }
     
-    func writeResultsField(_ field: AnyObject?) {
-        resultsCSVWriter.writeField(field)
+    func writeLineOfFields(_ fields: [AnyObject]?, destination: LoggerDestination) {
+        writerFor(destination: destination).writeLineOfFields(fields)
     }
     
-    func finishResultsLine() {
-        resultsCSVWriter.finishLine()
+    func writeField(_ field: AnyObject?, destination: LoggerDestination) {
+        writerFor(destination: destination).writeField(field)
+    }
+    
+    func finishLine(_ destination: LoggerDestination) {
+        writerFor(destination: destination).finishLine()
     }
     
     fileprivate func logString(_ string: String, path: String?) {

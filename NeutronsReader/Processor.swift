@@ -218,6 +218,7 @@ class Processor {
         logInput(onEnd: false)
         logCalibration()
         logResultsHeader()
+        logGammaHeader()
         
         var folders = [String: FolderStatistics]()
         
@@ -398,6 +399,7 @@ class Processor {
             }
             
             logActResults()
+            logGamma()
             clearActInfo()
         } else {
             updateFolderStatistics(event, folder: folder)
@@ -1092,15 +1094,31 @@ class Processor {
     }
     fileprivate var keyColumnNeutrons_N = "N1...N4"
     fileprivate var keyColumnNeutronsBackward = "Neutrons(Backward)"
-    fileprivate var keyColumnGammaEnergy: String {
+    fileprivate let keyColumnEvent: String = "Event"
+    fileprivate func keyColumnGammaEnergy(_ max: Bool) -> String {
         var s = searchExtraPostfix("Gamma")
+        if max {
+            s += "Max"
+        }
         if criteria.simplifyGamma {
             s += "_Simplified"
         }
         return s
     }
-    fileprivate var keyColumnGammaEncoder = "GammaEncoder"
-    fileprivate var keyColumnGammaDeltaTime = "dT($Fron-Gamma)"
+    fileprivate func keyColumnGammaEncoder(_ max: Bool) -> String {
+        var s = "Gamma"
+        if max {
+            s += "Max"
+        }
+        return s + "Encoder"
+    }
+    fileprivate func keyColumnGammaDeltaTime(_ max: Bool) -> String {
+        var s = "dT($Fron-Gamma"
+        if max {
+            s += "Max"
+        }
+        return s + ")"
+    }
     fileprivate var keyColumnGammaCount = "GammaCount"
     fileprivate var keyColumnSpecial = "Special"
     fileprivate func keyColumnSpecialFor(eventId: Int) -> String {
@@ -1125,6 +1143,21 @@ class Processor {
     fileprivate var keyColumnFissionAlphaBack2Marker = "^Back2Marker"
     fileprivate var keyColumnFissionAlphaBack2DeltaTime = "dT(&Fron1-^Back2)"
     fileprivate var keyColumnFissionAlphaBack2Strip = "Strip(^Back2)"
+    
+    fileprivate var columnsGamma = [String]()
+    
+    fileprivate func logGammaHeader() {
+        columnsGamma.append(contentsOf: [
+        keyColumnEvent,
+        keyColumnGammaEnergy(false),
+        keyColumnGammaEncoder(false),
+        keyColumnGammaDeltaTime(false),
+        keyColumnGammaCount
+        ])
+        let headers = setupHeaders(columnsGamma)
+        logger.writeLineOfFields(headers, destination: .gamma)
+        logger.finishLine(.gamma) // +1 line padding
+    }
     
     fileprivate func logResultsHeader() {
         columns = [
@@ -1178,9 +1211,9 @@ class Processor {
             columns.append(keyColumnNeutronsBackward)
         }
         columns.append(contentsOf: [
-            keyColumnGammaEnergy,
-            keyColumnGammaEncoder,
-            keyColumnGammaDeltaTime,
+            keyColumnGammaEnergy(true),
+            keyColumnGammaEncoder(true),
+            keyColumnGammaDeltaTime(true),
             keyColumnGammaCount
             ])
         if criteria.searchSpecialEvents {
@@ -1226,8 +1259,12 @@ class Processor {
                 keyColumnFissionAlphaBack2Strip
                 ])
         }
-        
-        // TODO: incapsulate in SearchType
+        let headers = setupHeaders(columns)
+        logger.writeLineOfFields(headers, destination: .results)
+        logger.finishLine(.results) // +1 line padding
+    }
+    
+    fileprivate func setupHeaders(_ headers: [String]) -> [AnyObject] {
         let firstFront = criteria.startParticleType.symbol()
         let firstBack = criteria.startParticleBackType.symbol()
         let wellBack = criteria.wellParticleBackType.symbol()
@@ -1238,15 +1275,13 @@ class Processor {
                     "*": wellBack,
                     "&": secondFront,
                     "^": secondBack]
-        let headers = columns.map { (s: String) -> String in
+        return headers.map { (s: String) -> String in
             var result = s
             for (key, value) in dict {
                 result = result.replacingOccurrences(of: key, with: value)
             }
             return result
         } as [AnyObject]
-        logger.writeResultsLineOfFields(headers)
-        logger.finishResultsLine() // +1 line padding
     }
     
     // Need special results block for neutron times, so we skeep one line.
@@ -1273,8 +1308,11 @@ class Processor {
         return m?.matchFor(side: .front)
     }
     
+    fileprivate func gammaAt(row: Int) -> DetectorMatch? {
+        return focalGammaContainer?.itemAt(index: row)?.gamma
+    }
+    
     fileprivate func logGamma() {
-        // TODO: Gamma table
         if let f = focalGammaContainer {
             let count = f.count
             if count > 0 {
@@ -1282,15 +1320,38 @@ class Processor {
                     if let item = f.itemAt(index: i), let gamma = item.gamma {
                         let c = gamma.count
                         if c > 0 {
-                            if let eventNumber = item.eventNumber {
-                                print(currentFileEventNumber(eventNumber))
+                            let rowsMax = c
+                            for row in 0 ..< rowsMax {
+                                for column in columnsGamma {
+                                    var field = ""
+                                    switch column {
+                                    case keyColumnEvent:
+                                        if row == 0, let eventNumber = item.eventNumber {
+                                            field = currentFileEventNumber(eventNumber)
+                                        }
+                                    case keyColumnGammaEnergy(false):
+                                        if let energy = gamma.itemAt(index: row)?.energy {
+                                            field = String(format: "%.7f", energy)
+                                        }
+                                    case keyColumnGammaEncoder(false):
+                                        if let encoder = gamma.itemAt(index: row)?.encoder {
+                                            field = String(format: "%hu", encoder)
+                                        }
+                                    case keyColumnGammaDeltaTime(false):
+                                        if let deltaTime = gamma.itemAt(index: row)?.deltaTime {
+                                            field = String(format: "%lld", deltaTime)
+                                        }
+                                    case keyColumnGammaCount:
+                                        if row == 0 {
+                                            field = String(format: "%d", c)
+                                        }
+                                    default:
+                                        break
+                                    }
+                                    logger.writeField(field as AnyObject, destination: .gamma)
+                                }
+                                logger.finishLine(.gamma)
                             }
-                            print("Gamma Energy | Encoder | Delta Time")
-                            for j in 0...c-1 {
-                                let g = gamma.itemAt(index: j)!
-                                print("\(String(format: "%.7f", g.energy!))\t\(String(format: "%hu", g.encoder!))\t\(String(format: "%lld", g.deltaTime!))")
-                            }
-                            print("Gamma count: \(c)")
                         }
                     }
                 }
@@ -1299,8 +1360,6 @@ class Processor {
     }
     
     fileprivate func logActResults() {
-        logGamma()
-        
         let rowsMax = max(max(max(max(max(1, vetoPerAct.count), fissionsAlphaPerAct.count), recoilsPerAct.count), neutronsCountWithNewLine()), fissionsAlpha2PerAct.count)
         for row in 0 ..< rowsMax {
             for column in columns {
@@ -1476,20 +1535,20 @@ class Processor {
                     if row == 0 {
                         field = String(format: "%llu", neutronsBackwardSummPerAct)
                     }
-                case keyColumnGammaEnergy:
-                    if let energy = focalGammaContainer?.itemAt(index: row)?.gamma?.itemWithMaxEnergy()?.energy {
+                case keyColumnGammaEnergy(true):
+                    if let energy = gammaAt(row: row)?.itemWithMaxEnergy()?.energy {
                         field = String(format: "%.7f", energy)
                     }
-                case keyColumnGammaEncoder:
-                    if let encoder = focalGammaContainer?.itemAt(index: row)?.gamma?.itemWithMaxEnergy()?.encoder {
+                case keyColumnGammaEncoder(true):
+                    if let encoder = gammaAt(row: row)?.itemWithMaxEnergy()?.encoder {
                         field = String(format: "%hu", encoder)
                     }
-                case keyColumnGammaDeltaTime:
-                    if let deltaTime = focalGammaContainer?.itemAt(index: row)?.gamma?.itemWithMaxEnergy()?.deltaTime {
+                case keyColumnGammaDeltaTime(true):
+                    if let deltaTime = gammaAt(row: row)?.itemWithMaxEnergy()?.deltaTime {
                         field = String(format: "%lld", deltaTime)
                     }
                 case keyColumnGammaCount:
-                    if let count = focalGammaContainer?.itemAt(index: row)?.gamma?.count {
+                    if let count = gammaAt(row: row)?.count {
                         field = String(format: "%d", count)
                     }
                 case _ where column.hasPrefix(keyColumnSpecial):
@@ -1563,9 +1622,9 @@ class Processor {
                 default:
                     break
                 }
-                logger.writeResultsField(field as AnyObject)
+                logger.writeField(field as AnyObject, destination: .results)
             }
-            logger.finishResultsLine()
+            logger.finishLine(.results)
         }
     }
     
