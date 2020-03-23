@@ -42,6 +42,7 @@ class Processor {
     fileprivate var tofRealPerAct = DetectorMatch()
     fileprivate var tof2PerAct = DetectorMatch()
     fileprivate var vetoPerAct = DetectorMatch()
+    fileprivate var gammaPerAct = DetectorMatch()
     fileprivate var stoped = false
     fileprivate var logger: Logger!
     
@@ -285,13 +286,6 @@ class Processor {
         return CUnsignedLongLong(lastNumber)/CUnsignedLongLong(Event.size)
     }
     
-    fileprivate var currentPosition: Int {
-        var p = fpos_t()
-        fgetpos(file, &p)
-        let position = Int(p)
-        return position
-    }
-    
     fileprivate func mainCycleEventCheck(_ event: Event, folder: FolderStatistics) {
         if dataProtocol.isCycleTimeEvent(Int(event.eventId)) {
             currentCycle += 1
@@ -310,25 +304,25 @@ class Processor {
                     clearActInfo()
                     return
                 }
-                
-                var gamma: DetectorMatch?
-                if !criteria.searchExtraFromParticle2 {
-                    gamma = findGamma(currentPosition)
-                    if criteria.requiredGamma && 0 == gamma?.count {
-                        clearActInfo()
-                        return
-                    }
-                }
-                
-                storeFissionAlphaFront(event, deltaTime: 0, gamma: gamma)
+                storeFissionAlphaFront(event, deltaTime: 0)
             }
             
-            let position = currentPosition
+            var p = fpos_t()
+            fgetpos(file, &p)
+            let position = Int(p)
             
             if criteria.searchVETO {
                 findVETO()
                 fseek(file, position, SEEK_SET)
                 if criteria.requiredVETO && 0 == vetoPerAct.count {
+                    clearActInfo()
+                    return
+                }
+            }
+            
+            if !criteria.searchExtraFromParticle2 {
+                findGamma(position)
+                if criteria.requiredGamma && 0 == gammaPerAct.count {
                     clearActInfo()
                     return
                 }
@@ -367,7 +361,7 @@ class Processor {
                     clearActInfo()
                     return
                 }
-                if criteria.searchExtraFromParticle2 && wellSearchFailed() {
+                if criteria.searchExtraFromParticle2 && ((criteria.requiredGamma && 0 == gammaPerAct.count) || wellSearchFailed()) {
                     clearActInfo()
                     return
                 }
@@ -473,20 +467,11 @@ class Processor {
         fgetpos(file, &initial)
         var current = initial
         let directions: Set<SearchDirection> = [.forward, .backward]
-        search(directions: directions, startTime: startEventTime, minDeltaTime: 0, maxDeltaTime: criteria.fissionAlphaMaxTime, useCycleTime: false, updateCycle: true) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>, position: Int) in
+        search(directions: directions, startTime: startEventTime, minDeltaTime: 0, maxDeltaTime: criteria.fissionAlphaMaxTime, useCycleTime: false, updateCycle: true) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>, _) in
             // File-position check is used for skip Fission/Alpha First event!
             fgetpos(self.file, &current)
             if current != initial && self.isFront(event, type: self.criteria.startParticleType) && self.isFissionStripNearToFirstFissionFront(event) {
-                var store = true
-                var gamma: DetectorMatch?
-                if !self.criteria.searchExtraFromParticle2 {
-                    gamma = self.findGamma(position)
-                    let gammaCount = gamma?.count ?? 0
-                    store = !self.criteria.requiredGamma || gammaCount > 0
-                }
-                if store {
-                    self.storeFissionAlphaFront(event, deltaTime: deltaTime, gamma: gamma)
-                }
+                self.storeFissionAlphaFront(event, deltaTime: deltaTime)
             } else {
                 self.updateFolderStatistics(event, folder: folder)
             }
@@ -502,18 +487,15 @@ class Processor {
         }
     }
     
-    fileprivate func findGamma(_ position: Int) -> DetectorMatch? {
-        let match = DetectorMatch()
+    fileprivate func findGamma(_ position: Int) {
         let directions: Set<SearchDirection> = [.forward, .backward]
         let start = criteria.searchExtraFromParticle2 ? secondEventTime : startEventTime
         search(directions: directions, startTime: start, minDeltaTime: 0, maxDeltaTime: criteria.maxGammaTime, useCycleTime: false, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>, _) in
             if self.isGammaEvent(event) {
-                let item = self.gammaMatchItem(event, deltaTime: deltaTime)
-                match.append(item)
+                self.storeGamma(event, deltaTime: deltaTime)
             }
         }
         fseek(file, position, SEEK_SET)
-        return match.count > 0 ? match : nil
     }
     
     fileprivate func findFissionAlphaBack() {
@@ -580,17 +562,7 @@ class Processor {
                 return false
             }
             
-            var gamma: DetectorMatch?
-            if criteria.startFromRecoil() {
-                if !criteria.searchExtraFromParticle2 {
-                    gamma = findGamma(Int(position))
-                    if criteria.requiredGamma && 0 == gamma?.count {
-                        return false
-                    }
-                }
-            }
-            
-            self.storeRecoil(event, energy: energy, deltaTime: deltaTime, gamma: gamma)
+            self.storeRecoil(event, energy: energy, deltaTime: deltaTime)
             return true
         }
         return false
@@ -682,21 +654,14 @@ class Processor {
                 self.secondEventTime = UInt64(event.param1)
                 let energy = self.getEnergy(event, type: t)
                 if self.isEventStripNearToFirstFissionAlpha(event, maxDelta: Int(self.criteria.fissionAlpha2MaxDeltaStrips), side: .front) && ((!isFront && self.criteria.searchFissionAlphaBack2ByFact) || (energy >= self.criteria.fissionAlpha2MinEnergy && energy <= self.criteria.fissionAlpha2MaxEnergy)) {
-                    var store = true
-                    var gamma: DetectorMatch?
+                    self.storeFissionAlpha2(event, type: t, deltaTime: deltaTime)
                     // Recoil Back
                     self.findFissionAlpha2Back(position)
                     // Extra Search
                     if self.criteria.searchExtraFromParticle2 {
                         self.findFissionAlphaWell(position)
+                        self.findGamma(position)
                         self.findAllNeutrons(position)
-                        gamma = self.findGamma(position)
-                        if nil == gamma, self.criteria.requiredGamma {
-                            store = false
-                        }
-                    }
-                    if store {
-                        self.storeFissionAlpha2(event, type: t, deltaTime: deltaTime, gamma: gamma)
                     }
                 }
             }
@@ -764,7 +729,7 @@ class Processor {
         neutronsMultiplicityTotal[Int(key)] = summ
     }
     
-    fileprivate func storeFissionAlphaFront(_ event: Event, deltaTime: CLongLong, gamma: DetectorMatch?) {
+    fileprivate func storeFissionAlphaFront(_ event: Event, deltaTime: CLongLong) {
         let id = event.eventId
         let channel = getChannel(event, type: criteria.startParticleType)
         let encoder = dataProtocol.encoderForEventId(Int(id))
@@ -778,12 +743,11 @@ class Processor {
                                      eventNumber: eventNumber(),
                                      deltaTime: deltaTime,
                                      marker: getMarker(event),
-                                     channel: channel,
-                                     gamma: gamma)
+                                     channel: channel)
         fissionsAlphaPerAct.append(item, side: side)
     }
     
-    fileprivate func gammaMatchItem(_ event: Event, deltaTime: CLongLong) -> DetectorMatchItem {
+    fileprivate func storeGamma(_ event: Event, deltaTime: CLongLong) {
         let channel = Double(event.param3 & Mask.gamma.rawValue)
         let eventId = Int(event.eventId)
         let encoder = dataProtocol.encoderForEventId(eventId)
@@ -797,10 +761,10 @@ class Processor {
                                      energy: energy,
                                      encoder: encoder,
                                      deltaTime: deltaTime)
-        return item
+        gammaPerAct.append(item)
     }
     
-    fileprivate func storeRecoil(_ event: Event, energy: Double, deltaTime: CLongLong, gamma: DetectorMatch?) {
+    fileprivate func storeRecoil(_ event: Event, energy: Double, deltaTime: CLongLong) {
         let id = event.eventId
         let encoder = dataProtocol.encoderForEventId(Int(id))
         let strip0_15 = event.param2 >> 12
@@ -810,12 +774,11 @@ class Processor {
                                      strip0_15: strip0_15,
                                      eventNumber: eventNumber(),
                                      deltaTime: deltaTime,
-                                     marker: getMarker(event),
-                                     gamma: gamma)
+                                     marker: getMarker(event))
         recoilsPerAct.append(item, side: .front)
     }
     
-    fileprivate func storeFissionAlpha2(_ event: Event, type: SearchType, deltaTime: CLongLong, gamma: DetectorMatch?) {
+    fileprivate func storeFissionAlpha2(_ event: Event, type: SearchType, deltaTime: CLongLong) {
         let id = event.eventId
         let encoder = dataProtocol.encoderForEventId(Int(id))
         let strip0_15 = event.param2 >> 12
@@ -827,8 +790,7 @@ class Processor {
                                      strip0_15: strip0_15,
                                      eventNumber: eventNumber(),
                                      deltaTime: deltaTime,
-                                     marker: getMarker(event),
-                                     gamma: gamma)
+                                     marker: getMarker(event))
         fissionsAlpha2PerAct.append(item, side: side)
     }
     
@@ -876,6 +838,7 @@ class Processor {
         neutrons_N_SummPerAct = 0
         neutronsBackwardSummPerAct = 0
         fissionsAlphaPerAct.removeAll()
+        gammaPerAct.removeAll()
         specialPerAct.removeAll()
         beamStatePerAct.clean()
         fissionsAlphaWellPerAct.removeAll()
@@ -1267,47 +1230,18 @@ class Processor {
     
     fileprivate var currentStartEventNumber: CUnsignedLongLong?
     
-    fileprivate var focalGammaContainer: DetectorMatch? {
-        var m: DoubleSidedStripDetectorMatch?
-        if criteria.searchExtraFromParticle2 {
-            m = fissionsAlpha2PerAct
-        } else if criteria.startFromRecoil() {
-            m = recoilsPerAct
+    fileprivate var gammaRowsMax: Int {
+        let count = gammaPerAct.count
+        if criteria.simplifyGamma, count > 1 {
+            return 1
         } else {
-            m = fissionsAlphaPerAct
-        }
-        return m?.matchFor(side: .front)
-    }
-    
-    fileprivate func logGamma() {
-        // TODO: Gamma table
-        if let f = focalGammaContainer {
-            let count = f.count
-            if count > 0 {
-                for i in 0...count-1 {
-                    if let item = f.itemAt(index: i), let gamma = item.gamma {
-                        let c = gamma.count
-                        if c > 0 {
-                            if let eventNumber = item.eventNumber {
-                                print(currentFileEventNumber(eventNumber))
-                            }
-                            print("Gamma Energy | Encoder | Delta Time")
-                            for j in 0...c-1 {
-                                let g = gamma.itemAt(index: j)!
-                                print("\(String(format: "%.7f", g.energy!))\t\(String(format: "%hu", g.encoder!))\t\(String(format: "%lld", g.deltaTime!))")
-                            }
-                            print("Gamma count: \(c)")
-                        }
-                    }
-                }
-            }
+            return count
         }
     }
     
     fileprivate func logActResults() {
-        logGamma()
         
-        let rowsMax = max(max(max(max(max(1, vetoPerAct.count), fissionsAlphaPerAct.count), recoilsPerAct.count), neutronsCountWithNewLine()), fissionsAlpha2PerAct.count)
+        let rowsMax = max(max(max(max(max(max(1, vetoPerAct.count), fissionsAlphaPerAct.count), recoilsPerAct.count), neutronsCountWithNewLine()), fissionsAlpha2PerAct.count), gammaRowsMax)
         for row in 0 ..< rowsMax {
             for column in columns {
                 var field = ""
@@ -1483,20 +1417,20 @@ class Processor {
                         field = String(format: "%llu", neutronsBackwardSummPerAct)
                     }
                 case keyColumnGammaEnergy:
-                    if let energy = focalGammaContainer?.itemAt(index: row)?.gamma?.itemWithMaxEnergy()?.energy {
+                    if let energy = gammaAt(row: row)?.energy {
                         field = String(format: "%.7f", energy)
                     }
                 case keyColumnGammaEncoder:
-                    if let encoder = focalGammaContainer?.itemAt(index: row)?.gamma?.itemWithMaxEnergy()?.encoder {
+                    if let encoder = gammaAt(row: row)?.encoder {
                         field = String(format: "%hu", encoder)
                     }
                 case keyColumnGammaDeltaTime:
-                    if let deltaTime = focalGammaContainer?.itemAt(index: row)?.gamma?.itemWithMaxEnergy()?.deltaTime {
+                    if let deltaTime = gammaAt(row: row)?.deltaTime {
                         field = String(format: "%lld", deltaTime)
                     }
                 case keyColumnGammaCount:
-                    if let count = focalGammaContainer?.itemAt(index: row)?.gamma?.count {
-                        field = String(format: "%d", count)
+                    if row == 0 {
+                        field = String(format: "%d", gammaPerAct.count)
                     }
                 case _ where column.hasPrefix(keyColumnSpecial):
                     if row == 0 {
@@ -1572,6 +1506,14 @@ class Processor {
                 logger.writeResultsField(field as AnyObject)
             }
             logger.finishResultsLine()
+        }
+    }
+    
+    fileprivate func gammaAt(row: Int) -> DetectorMatchItem? {
+        if criteria.simplifyGamma {
+            return row == 0 ? gammaPerAct.itemWithMaxEnergy() : nil
+        } else {
+            return gammaPerAct.itemAt(index: row)
         }
     }
     
