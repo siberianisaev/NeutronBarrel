@@ -10,6 +10,8 @@ import Foundation
 
 class DetectorMatchItem {
     
+    var gamma: DetectorMatch?
+    
     fileprivate var _energy: Double?
     var energy: Double? {
         return _energy
@@ -69,7 +71,7 @@ class DetectorMatchItem {
         return _value
     }
     
-    init(stripDetector: StripDetector?, energy: Double? = nil, encoder: CUnsignedShort? = nil, strip0_15: CUnsignedShort? = nil, eventNumber: CUnsignedLongLong? = nil, deltaTime: CLongLong? = nil, marker: CUnsignedShort? = nil, channel: CUnsignedShort? = nil, value: Double? = nil) {
+    init(stripDetector: StripDetector?, energy: Double? = nil, encoder: CUnsignedShort? = nil, strip0_15: CUnsignedShort? = nil, eventNumber: CUnsignedLongLong? = nil, deltaTime: CLongLong? = nil, marker: CUnsignedShort? = nil, channel: CUnsignedShort? = nil, value: Double? = nil, gamma: DetectorMatch? = nil) {
         self._stripDetector = stripDetector
         self._energy = energy
         self._encoder = encoder
@@ -79,6 +81,7 @@ class DetectorMatchItem {
         self._marker = marker
         self._channel = channel
         self._value = value
+        self.gamma = gamma
     }
     
 }
