@@ -526,9 +526,7 @@ class Processor {
                 var store = byFact
                 if !store {
                     let energy = self.getEnergy(event, type: type)
-                    if energy >= self.criteria.fissionAlphaBackMinEnergy && energy <= self.criteria.fissionAlphaBackMaxEnergy {
-                        store = true
-                    }
+                    store = energy >= self.criteria.fissionAlphaBackMinEnergy && energy <= self.criteria.fissionAlphaBackMaxEnergy
                 }
                 if store {
                     self.storeFissionAlphaBack(event, match: match, type: type, deltaTime: deltaTime)
@@ -624,9 +622,7 @@ class Processor {
                 var store = self.criteria.startFromRecoil() || self.isRecoilBackStripNearToFissionAlphaBack(event)
                 if !byFact && store {
                     let energy = self.getEnergy(event, type: type)
-                    if energy >= self.criteria.recoilBackMinEnergy && energy <= self.criteria.recoilBackMaxEnergy {
-                        store = true
-                    }
+                    store = energy >= self.criteria.recoilBackMinEnergy && energy <= self.criteria.recoilBackMaxEnergy
                 }
                 if store {
                     let item = self.focalDetectorMatchItemFrom(event, type: type, deltaTime: deltaTime, side: side)
@@ -713,9 +709,7 @@ class Processor {
                 var store = self.isEventStripNearToFirstFissionAlpha(event, maxDelta: Int(self.criteria.fissionAlpha2MaxDeltaStrips), side: .back)
                 if !byFact && store { // check energy also
                     let energy = self.getEnergy(event, type: t)
-                    if energy >= self.criteria.fissionAlpha2BackMinEnergy && energy <= self.criteria.fissionAlpha2BackMaxEnergy {
-                        store = true
-                    }
+                    store = energy >= self.criteria.fissionAlpha2BackMinEnergy && energy <= self.criteria.fissionAlpha2BackMaxEnergy
                 }
                 if store {
                     self.storeFissionAlphaBack(event, match: self.fissionsAlpha2PerAct, type: t, deltaTime: deltaTime)
