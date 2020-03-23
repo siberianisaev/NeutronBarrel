@@ -593,15 +593,11 @@ class Processor {
             // Note: 'recoil' type must be always
             let type: SearchType = .recoil
             if self.isBack(event, type: type) {
-                var store = byFact
-                if !store {
+                var store = self.criteria.startFromRecoil() || self.isRecoilBackStripNearToFissionAlphaBack(event)
+                if !byFact && store {
                     let energy = self.getEnergy(event, type: type)
                     if energy >= self.criteria.recoilBackMinEnergy && energy <= self.criteria.recoilBackMaxEnergy {
-                        if !self.criteria.startFromRecoil() {
-                            store = self.isRecoilBackStripNearToFissionAlphaBack(event)
-                        } else {
-                            store = true
-                        }
+                        store = true
                     }
                 }
                 if store {
@@ -679,10 +675,10 @@ class Processor {
             let t = self.criteria.secondParticleBackType
             let isBack = self.isBack(event, type: t)
             if isBack {
-                var store = byFact
-                if !store {
+                var store = self.isEventStripNearToFirstFissionAlpha(event, maxDelta: Int(self.criteria.fissionAlpha2MaxDeltaStrips), side: .back)
+                if !byFact && store { // check energy also
                     let energy = self.getEnergy(event, type: t)
-                    if self.isEventStripNearToFirstFissionAlpha(event, maxDelta: Int(self.criteria.fissionAlpha2MaxDeltaStrips), side: .back) && (energy >= self.criteria.fissionAlpha2BackMinEnergy && energy <= self.criteria.fissionAlpha2BackMaxEnergy) {
+                    if energy >= self.criteria.fissionAlpha2BackMinEnergy && energy <= self.criteria.fissionAlpha2BackMaxEnergy {
                         store = true
                     }
                 }
