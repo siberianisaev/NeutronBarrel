@@ -1227,7 +1227,7 @@ class Processor {
     fileprivate var currentStartEventNumber: CUnsignedLongLong?
     
     fileprivate func logActResults() {
-        let rowsMax = max(max(max(max(1, [gammaPerAct, vetoPerAct].max(by: { $0.count < $1.count })!.count), fissionsAlphaPerAct.count), recoilsPerAct.count), neutronsCountWithNewLine())
+        let rowsMax = max(max(max(max(max(1, [gammaPerAct, vetoPerAct].max(by: { $0.count < $1.count })!.count), fissionsAlphaPerAct.count), recoilsPerAct.count), neutronsCountWithNewLine()), fissionsAlpha2PerAct.count)
         for row in 0 ..< rowsMax {
             for column in columns {
                 var field = ""
