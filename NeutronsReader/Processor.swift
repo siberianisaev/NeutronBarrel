@@ -1062,7 +1062,11 @@ class Processor {
     fileprivate var keyColumnNeutrons_N = "N1...N4"
     fileprivate var keyColumnNeutronsBackward = "Neutrons(Backward)"
     fileprivate var keyColumnGammaEnergy: String {
-        return searchExtraPostfix("Gamma")
+        var s = searchExtraPostfix("Gamma")
+        if criteria.simplifyGamma {
+            s += "_Simplified"
+        }
+        return s
     }
     fileprivate var keyColumnGammaEncoder = "GammaEncoder"
     fileprivate var keyColumnGammaDeltaTime = "dT($Fron-Gamma)"
@@ -1226,8 +1230,18 @@ class Processor {
     
     fileprivate var currentStartEventNumber: CUnsignedLongLong?
     
+    fileprivate var gammaRowsMax: Int {
+        let count = gammaPerAct.count
+        if criteria.simplifyGamma, count > 1 {
+            return 1
+        } else {
+            return count
+        }
+    }
+    
     fileprivate func logActResults() {
-        let rowsMax = max(max(max(max(max(1, [gammaPerAct, vetoPerAct].max(by: { $0.count < $1.count })!.count), fissionsAlphaPerAct.count), recoilsPerAct.count), neutronsCountWithNewLine()), fissionsAlpha2PerAct.count)
+        
+        let rowsMax = max(max(max(max(max(max(1, vetoPerAct.count), fissionsAlphaPerAct.count), recoilsPerAct.count), neutronsCountWithNewLine()), fissionsAlpha2PerAct.count), gammaRowsMax)
         for row in 0 ..< rowsMax {
             for column in columns {
                 var field = ""
@@ -1403,15 +1417,15 @@ class Processor {
                         field = String(format: "%llu", neutronsBackwardSummPerAct)
                     }
                 case keyColumnGammaEnergy:
-                    if let energy = gammaPerAct.itemAt(index: row)?.energy {
+                    if let energy = gammaAt(row: row)?.energy {
                         field = String(format: "%.7f", energy)
                     }
                 case keyColumnGammaEncoder:
-                    if let encoder = gammaPerAct.itemAt(index: row)?.encoder {
+                    if let encoder = gammaAt(row: row)?.encoder {
                         field = String(format: "%hu", encoder)
                     }
                 case keyColumnGammaDeltaTime:
-                    if let deltaTime = gammaPerAct.itemAt(index: row)?.deltaTime {
+                    if let deltaTime = gammaAt(row: row)?.deltaTime {
                         field = String(format: "%lld", deltaTime)
                     }
                 case keyColumnGammaCount:
@@ -1492,6 +1506,14 @@ class Processor {
                 logger.writeResultsField(field as AnyObject)
             }
             logger.finishResultsLine()
+        }
+    }
+    
+    fileprivate func gammaAt(row: Int) -> DetectorMatchItem? {
+        if criteria.simplifyGamma {
+            return row == 0 ? gammaPerAct.itemWithMaxEnergy() : nil
+        } else {
+            return gammaPerAct.itemAt(index: row)
         }
     }
     

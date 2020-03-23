@@ -85,6 +85,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBInspectable var requiredRecoilBack: Bool = Settings.getBoolSetting(.RequiredRecoilBack)
     @IBInspectable var requiredRecoil: Bool = Settings.getBoolSetting(.RequiredRecoil)
     @IBInspectable var requiredGamma: Bool = Settings.getBoolSetting(.RequiredGamma)
+    @IBInspectable var simplifyGamma: Bool = Settings.getBoolSetting(.SimplifyGamma)
     @IBInspectable var requiredWell: Bool = Settings.getBoolSetting(.RequiredWell)
     @IBInspectable var wellRecoilsAllowed: Bool = Settings.getBoolSetting(.WellRecoilsAllowed)
     @IBInspectable var searchExtraFromParticle2: Bool = Settings.getBoolSetting(.SearchExtraFromParticle2)
@@ -353,6 +354,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         sc.requiredVETO = requiredVETO
         sc.maxGammaTime = UInt64(sMaxGammaTime) ?? 0
         sc.requiredGamma = requiredGamma
+        sc.simplifyGamma = simplifyGamma
         sc.requiredWell = requiredWell
         sc.wellRecoilsAllowed = wellRecoilsAllowed
         sc.searchExtraFromParticle2 = searchExtraFromParticle2
@@ -553,6 +555,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         Settings.setObject(requiredRecoilBack, forSetting: .RequiredRecoilBack)
         Settings.setObject(requiredRecoil, forSetting: .RequiredRecoil)
         Settings.setObject(requiredGamma, forSetting: .RequiredGamma)
+        Settings.setObject(simplifyGamma, forSetting: .SimplifyGamma)
         Settings.setObject(requiredWell, forSetting: .RequiredWell)
         Settings.setObject(wellRecoilsAllowed, forSetting: .WellRecoilsAllowed)
         Settings.setObject(searchExtraFromParticle2, forSetting: .SearchExtraFromParticle2)

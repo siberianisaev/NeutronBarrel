@@ -723,7 +723,7 @@
         <window title="NeutronsReader" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" animationBehavior="default" id="QvC-M9-y7g">
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
             <rect key="contentRect" x="335" y="390" width="1500" height="706"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="2560" height="1417"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="1440" height="877"/>
             <value key="minSize" type="size" width="1500" height="706"/>
             <value key="maxSize" type="size" width="1500" height="706"/>
             <value key="minFullScreenContentSize" type="size" width="1500" height="706"/>
@@ -1621,7 +1621,7 @@
                         <rect key="frame" x="286" y="171" width="210" height="26"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <textFieldCell key="cell" sendsActionOnEndEditing="YES" alignment="left" title="Values separated by comma-symbol" id="d61-kG-mrA">
-                            <font key="font" metaFont="controlContent" size="11"/>
+                            <font key="font" metaFont="menu" size="11"/>
                             <color key="textColor" name="gridColor" catalog="System" colorSpace="catalog"/>
                             <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>
@@ -2042,7 +2042,7 @@
                                 </subviews>
                             </customView>
                             <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="0iN-ES-PsF">
-                                <rect key="frame" x="30" y="439" width="181" height="18"/>
+                                <rect key="frame" x="29" y="456" width="181" height="18"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <buttonCell key="cell" type="check" title="Gamma required" bezelStyle="regularSquare" imagePosition="left" inset="2" id="qqL-ji-47x">
                                     <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
@@ -2122,6 +2122,17 @@
                                 </buttonCell>
                                 <connections>
                                     <binding destination="Voe-Tx-rLC" name="value" keyPath="self.searchNeutrons" id="MsH-mc-8Oi"/>
+                                </connections>
+                            </button>
+                            <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="MQV-e3-5hf">
+                                <rect key="frame" x="29" y="436" width="181" height="18"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                <buttonCell key="cell" type="check" title="Simplify" bezelStyle="regularSquare" imagePosition="left" inset="2" id="JBj-xG-7VH">
+                                    <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                    <font key="font" size="15" name="HelveticaNeue-Bold"/>
+                                </buttonCell>
+                                <connections>
+                                    <binding destination="Voe-Tx-rLC" name="value" keyPath="self.simplifyGamma" id="ktf-Gh-PUu"/>
                                 </connections>
                             </button>
                         </subviews>
