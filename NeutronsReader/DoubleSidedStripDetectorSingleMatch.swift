@@ -18,7 +18,6 @@ class DoubleSidedStripDetectorSingleMatch {
     }
     
     func setItem(_ item: DetectorMatchItem?, forSide side: StripsSide) {
-        item?.side = side
         side == .front ? (front = item) : (back = item)
     }
     

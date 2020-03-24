@@ -22,7 +22,6 @@ class DoubleSidedStripDetectorMatch {
     }
     
     func append(_ item: DetectorMatchItem, side: StripsSide) {
-        item.side = side
         matchFor(side: side).append(item)
     }
     
