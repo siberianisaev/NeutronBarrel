@@ -449,26 +449,45 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     }
     
     @IBAction func selectData(_ sender: AnyObject?) {
-        DataLoader.load { [weak self] (success: Bool) in
+        DataLoader.load { [weak self] (success: Bool, urls: [URL]) in
             self?.setSelected(success, indicator: self?.indicatorData)
             self?.viewerController?.loadFile()
             self?.showFilePaths(DataLoader.singleton.files, label: self?.labelFirstDataFileName)
+            // Try load calibration and strips config from data folder
+            Calibration.handle(urls: urls) { (s: Bool, filePaths: [String]?) in
+                if s {
+                    self?.didSelectCalibration(s, filePaths: filePaths)
+                }
+            }
+            StripsConfiguration.handle(urls: urls) { (s: Bool, filePaths: [String]?) in
+                if s {
+                    self?.didSelectStripsConfiguration(s, filePaths: filePaths)
+                }
+            }
         }
+    }
+    
+    fileprivate func didSelectCalibration(_ success: Bool, filePaths: [String]?) {
+        setSelected(success, indicator: indicatorCalibration)
+        buttonRemoveCalibration?.isHidden = !success
+        showFilePaths(filePaths, label: labelCalibrationFileName)
     }
     
     @IBAction func selectCalibration(_ sender: AnyObject?) {
         Calibration.load { [weak self] (success: Bool, filePaths: [String]?) in
-            self?.setSelected(success, indicator: self?.indicatorCalibration)
-            self?.buttonRemoveCalibration?.isHidden = !success
-            self?.showFilePaths(filePaths, label: self?.labelCalibrationFileName)
+            self?.didSelectCalibration(success, filePaths: filePaths)
         }
+    }
+    
+    fileprivate func didSelectStripsConfiguration(_ success: Bool, filePaths: [String]?) {
+        setSelected(success, indicator: indicatorStripsConfig)
+        buttonRemoveStripsConfiguration?.isHidden = !success
+        showFilePaths(filePaths, label: labelStripsConfigurationFileName)
     }
     
     @IBAction func selectStripsConfiguration(_ sender: AnyObject?) {
         StripsConfiguration.load { [weak self] (success: Bool, filePaths: [String]?) in
-            self?.setSelected(success, indicator: self?.indicatorStripsConfig)
-            self?.buttonRemoveStripsConfiguration?.isHidden = !success
-            self?.showFilePaths(filePaths, label: self?.labelStripsConfigurationFileName)
+            self?.didSelectStripsConfiguration(success, filePaths: filePaths)
         }
     }
     

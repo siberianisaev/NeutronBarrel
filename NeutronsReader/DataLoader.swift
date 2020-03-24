@@ -21,7 +21,7 @@ class DataLoader {
         return Static.sharedInstance
     }
     
-    class func load(_ completion: @escaping ((Bool) -> ())) {
+    class func load(_ completion: @escaping ((Bool, [URL]) -> ())) {
         let dl = DataLoader.singleton
         let panel = NSOpenPanel()
         panel.canChooseDirectories = true
@@ -31,7 +31,8 @@ class DataLoader {
             if result.rawValue == NSFileHandlingPanelOKButton {
                 var selected = [String]()
                 let fm = Foundation.FileManager.default
-                for URL in panel.urls {
+                let urls = panel.urls
+                for URL in urls {
                     let path = URL.path
                     var isDirectory : ObjCBool = false
                     if fm.fileExists(atPath: path, isDirectory:&isDirectory) && isDirectory.boolValue {
@@ -56,7 +57,7 @@ class DataLoader {
                 })
                 dl.files = selected
                 dl.dataProtocol = protocolObject
-                completion(selected.count > 0)
+                completion(selected.count > 0, urls)
             }
         }
     }
