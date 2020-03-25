@@ -75,4 +75,9 @@ extension String {
         return String(format: "%d_%@_%dd_%02dh_%02dm_%02ds_%dns", components.year!, sMonth, components.day!, components.hour!, components.minute!, components.second!, components.nanosecond!)
     }
     
+    func fileNameAndExtension() -> (String?, String?) {
+        let components = (self as NSString).components(separatedBy: ".")
+        return (components.first, components.last)
+    }
+    
 }
