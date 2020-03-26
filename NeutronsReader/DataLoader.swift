@@ -21,7 +21,7 @@ class DataLoader {
         return Static.sharedInstance
     }
     
-    class func load(_ completion: @escaping ((Bool) -> ())) {
+    class func load(_ completion: @escaping ((Bool, [URL]) -> ())) {
         let dl = DataLoader.singleton
         let panel = NSOpenPanel()
         panel.canChooseDirectories = true
@@ -31,7 +31,8 @@ class DataLoader {
             if result.rawValue == NSFileHandlingPanelOKButton {
                 var selected = [String]()
                 let fm = Foundation.FileManager.default
-                for URL in panel.urls {
+                let urls = panel.urls
+                for URL in urls {
                     let path = URL.path
                     var isDirectory : ObjCBool = false
                     if fm.fileExists(atPath: path, isDirectory:&isDirectory) && isDirectory.boolValue {
@@ -47,16 +48,29 @@ class DataLoader {
                 // Every data file has numeric extension like ".001"
                 let decimalSet = CharacterSet.decimalDigits
                 selected = selected.filter({ (s: String) -> Bool in
-                    if let ext = (s as NSString).components(separatedBy: ".").last {
+                    if let ext = s.fileNameAndExtension().1 {
                         let set = CharacterSet(charactersIn: ext)
                         return decimalSet.isSuperset(of: set)
                     } else {
                         return false
                     }
                 })
+                selected = selected.sorted(by: { (s1: String, s2: String) -> Bool in
+                    let t1 = s1.fileNameAndExtension()
+                    let t2 = s2.fileNameAndExtension()
+                    let n1 = t1.0 ?? ""
+                    let n2 = t2.0 ?? ""
+                    if n1 == n2 {
+                        let e1 = Int(t1.1 ?? "") ?? 0
+                        let e2 = Int(t2.1 ?? "") ?? 0
+                        return e1 < e2
+                    } else {
+                        return n1 < n2
+                    }
+                })
                 dl.files = selected
                 dl.dataProtocol = protocolObject
-                completion(selected.count > 0)
+                completion(selected.count > 0, urls)
             }
         }
     }

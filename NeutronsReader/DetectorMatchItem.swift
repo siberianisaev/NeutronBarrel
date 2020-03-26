@@ -10,6 +10,8 @@ import Foundation
 
 class DetectorMatchItem {
     
+    var subMatches: [SearchType: DetectorMatch?]?
+    
     fileprivate var _energy: Double?
     var energy: Double? {
         return _energy
@@ -42,7 +44,10 @@ class DetectorMatchItem {
         return _strip0_15
     }
     
-    var side: StripsSide?
+    fileprivate var _side: StripsSide?
+    var side: StripsSide? {
+        return _side
+    }
     
     fileprivate var _eventNumber: CUnsignedLongLong?
     var eventNumber: CUnsignedLongLong? {
@@ -69,7 +74,13 @@ class DetectorMatchItem {
         return _value
     }
     
-    init(stripDetector: StripDetector?, energy: Double? = nil, encoder: CUnsignedShort? = nil, strip0_15: CUnsignedShort? = nil, eventNumber: CUnsignedLongLong? = nil, deltaTime: CLongLong? = nil, marker: CUnsignedShort? = nil, channel: CUnsignedShort? = nil, value: Double? = nil) {
+    fileprivate var _type: SearchType?
+    var type: SearchType? {
+        return _type
+    }
+    
+    init(type: SearchType, stripDetector: StripDetector?, energy: Double? = nil, encoder: CUnsignedShort? = nil, strip0_15: CUnsignedShort? = nil, eventNumber: CUnsignedLongLong? = nil, deltaTime: CLongLong? = nil, marker: CUnsignedShort? = nil, channel: CUnsignedShort? = nil, value: Double? = nil, subMatches: [SearchType: DetectorMatch?]? = nil, back: DetectorMatch? = nil, side: StripsSide?) {
+        self._type = type
         self._stripDetector = stripDetector
         self._energy = energy
         self._encoder = encoder
@@ -79,6 +90,8 @@ class DetectorMatchItem {
         self._marker = marker
         self._channel = channel
         self._value = value
+        self.subMatches = subMatches
+        self._side = side
     }
     
 }

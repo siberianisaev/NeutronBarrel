@@ -32,25 +32,28 @@ class Calibration {
     }
     
     class func load(_ completion: @escaping ((Bool, [String]?) -> ())) {
-        let calibration = Calibration.singleton
         let panel = NSOpenPanel()
         panel.canChooseDirectories = false
         panel.canChooseFiles = true
         panel.allowsMultipleSelection = true
         panel.begin { (result) -> Void in
             if result.rawValue == NSFileHandlingPanelOKButton {
-                let urls = panel.urls.filter() { $0.path.lowercased().hasSuffix(".clb") }
-                clean()
-                let success = calibration.open(urls)
-                let paths = urls.map({ (u: URL) -> String in
-                    return u.path
-                })
-                completion(success, paths)
+                handle(urls: panel.urls, showFailAlert: true, completion: completion)
             }
         }
     }
     
-    fileprivate func open(_ URLs: [Foundation.URL]) -> Bool {
+    class func handle(urls: [URL], showFailAlert: Bool = false, completion: @escaping ((Bool, [String]?) -> ())) {
+        let items = urls.filter() { $0.path.lowercased().hasSuffix(".clb") }
+        clean()
+        let success = singleton.open(items, showFailAlert: showFailAlert)
+        let paths = items.map({ (u: URL) -> String in
+            return u.path
+        })
+        completion(success, paths)
+    }
+    
+    fileprivate func open(_ URLs: [Foundation.URL], showFailAlert: Bool) -> Bool {
         for URL in URLs {
             let path = URL.path
             do {
@@ -81,12 +84,14 @@ class Calibration {
             }
         }
         if !hasData() {
-            let alert = NSAlert()
-            alert.messageText = "Error"
-            alert.informativeText = "Wrong calibration file!"
-            alert.addButton(withTitle: "Got It")
-            alert.alertStyle = .warning
-            alert.runModal()
+            if showFailAlert {
+                let alert = NSAlert()
+                alert.messageText = "Error"
+                alert.informativeText = "Wrong calibration file!"
+                alert.addButton(withTitle: "Got It")
+                alert.alertStyle = .warning
+                alert.runModal()
+            }
             return false
         } else {
             return true

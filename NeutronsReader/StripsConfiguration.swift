@@ -74,29 +74,36 @@ class StripsConfiguration {
         panel.allowsMultipleSelection = false
         panel.begin { (result) -> Void in
             if result.rawValue == NSFileHandlingPanelOKButton {
-                var hasConfigs: Bool = false
-                let urls = panel.urls.filter { (u: URL) -> Bool in
-                    return u.path.lowercased().hasSuffix(".ini")
-                }
-                let s = StripDetectorManager.singleton
-                s.reset()
-                for url in urls {
-                    let path = url.path
-                    for detector in [.focal, .side] as [StripDetector] {
-                        let sc = StripsConfiguration(detector: detector)
-                        sc.open(path, detector: detector)
-                        if sc.loaded {
-                            s.setStripConfiguration(sc, detector: detector)
-                            hasConfigs = true
-                        }
-                    }
-                }
-                let paths = urls.map({ (u: URL) -> String in
-                    return u.path
-                })
-                completion(hasConfigs, paths)
+                handle(urls: panel.urls, completion: completion)
             }
         }
+    }
+    
+    class func handle(urls: [URL], completion: @escaping ((Bool, [String]?) -> ())) {
+        var hasConfigs: Bool = false
+        var paths = [String]()
+        let items = urls.filter { (u: URL) -> Bool in
+            return u.path.lowercased().hasSuffix(".ini")
+        }
+        if items.count > 0 {
+            let s = StripDetectorManager.singleton
+            s.reset()
+            for url in items {
+                let path = url.path
+                for detector in [.focal, .side] as [StripDetector] {
+                    let sc = StripsConfiguration(detector: detector)
+                    sc.open(path, detector: detector)
+                    if sc.loaded {
+                        s.setStripConfiguration(sc, detector: detector)
+                        hasConfigs = true
+                    }
+                }
+            }
+            paths = items.map({ (u: URL) -> String in
+                return u.path
+            })
+        }
+        completion(hasConfigs, paths)
     }
     
     fileprivate func open(_ path: String?, detector: StripDetector) {
