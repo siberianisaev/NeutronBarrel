@@ -88,6 +88,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBInspectable var simplifyGamma: Bool = Settings.getBoolSetting(.SimplifyGamma)
     @IBInspectable var requiredWell: Bool = Settings.getBoolSetting(.RequiredWell)
     @IBInspectable var wellRecoilsAllowed: Bool = Settings.getBoolSetting(.WellRecoilsAllowed)
+    @IBOutlet weak var searchExtraFromParticle2Button: NSButton!
     @IBInspectable var searchExtraFromParticle2: Bool = Settings.getBoolSetting(.SearchExtraFromParticle2)
     @IBInspectable var requiredTOF: Bool = Settings.getBoolSetting(.RequiredTOF)
     @IBInspectable var useTOF2: Bool = Settings.getBoolSetting(.UseTOF2)
@@ -97,6 +98,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         didSet {
             secondParticleFrontChanged(nil)
             setupAlpha2FormView()
+            searchExtraFromParticle2 = searchFissionAlpha2
+            searchExtraFromParticle2Button.state = searchExtraFromParticle2 ? .on : .off
         }
     }
     @IBInspectable var sBeamEnergyMin = String(format: "%.1f", Settings.getDoubleSetting(.BeamEnergyMin)) // MeV

@@ -315,7 +315,7 @@ class Processor {
                 var gamma: DetectorMatch?
                 if !criteria.searchExtraFromParticle2 {
                     gamma = findGamma(currentPosition)
-                    if criteria.requiredGamma && 0 == gamma?.count {
+                    if criteria.requiredGamma && nil == gamma {
                         clearActInfo()
                         return
                     }
@@ -482,8 +482,7 @@ class Processor {
                 var gamma: DetectorMatch?
                 if !self.criteria.searchExtraFromParticle2 {
                     gamma = self.findGamma(position)
-                    let gammaCount = gamma?.count ?? 0
-                    store = !self.criteria.requiredGamma || gammaCount > 0
+                    store = !self.criteria.requiredGamma || gamma != nil
                 }
                 if store {
                     self.storeFissionAlphaFront(event, deltaTime: deltaTime, subMatches: [.gamma: gamma])
@@ -580,12 +579,10 @@ class Processor {
             }
             
             var gamma: DetectorMatch?
-            if criteria.startFromRecoil() {
-                if !criteria.searchExtraFromParticle2 {
-                    gamma = findGamma(Int(position))
-                    if criteria.requiredGamma && 0 == gamma?.count {
-                        return false
-                    }
+            if criteria.startFromRecoil(), !criteria.searchExtraFromParticle2 {
+                gamma = findGamma(Int(position))
+                if criteria.requiredGamma && nil == gamma {
+                    return false
                 }
             }
             

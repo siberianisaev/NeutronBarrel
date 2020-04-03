@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="15705" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="16096" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
     <dependencies>
         <deployment identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="15705"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="16096"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
@@ -44,6 +44,7 @@
                 <outlet property="recoilTypeArrayController" destination="Yhr-KV-7ci" id="Bf7-Ia-uFd"/>
                 <outlet property="recoilTypeButton" destination="mc4-AS-H5R" id="aqA-dQ-iP3"/>
                 <outlet property="requiredRecoilButton" destination="9vQ-Df-vN2" id="hBy-6g-kHn"/>
+                <outlet property="searchExtraFromParticle2Button" destination="ruR-mq-JqR" id="4go-M3-CXt"/>
                 <outlet property="searchExtraView" destination="lTh-io-c61" id="a5s-U3-RTr"/>
                 <outlet property="secondParticleBackControl" destination="sNA-6t-fHm" id="sZq-9W-Dta"/>
                 <outlet property="secondParticleFrontControl" destination="gfI-up-Jp9" id="HBB-Xf-1mS"/>
@@ -1965,7 +1966,11 @@
                                     <font key="font" size="15" name="HelveticaNeue-Bold"/>
                                 </buttonCell>
                                 <connections>
-                                    <binding destination="Voe-Tx-rLC" name="value" keyPath="self.searchExtraFromParticle2" id="ccB-V1-qdL"/>
+                                    <binding destination="Voe-Tx-rLC" name="value" keyPath="self.searchExtraFromParticle2" id="qiQ-Ld-wcg">
+                                        <dictionary key="options">
+                                            <bool key="NSConditionallySetsHidden" value="YES"/>
+                                        </dictionary>
+                                    </binding>
                                 </connections>
                             </button>
                             <customView fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="t52-Mm-GFO">
