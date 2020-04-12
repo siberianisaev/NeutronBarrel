@@ -44,7 +44,7 @@
                 <outlet property="recoilTypeArrayController" destination="Yhr-KV-7ci" id="Bf7-Ia-uFd"/>
                 <outlet property="recoilTypeButton" destination="mc4-AS-H5R" id="aqA-dQ-iP3"/>
                 <outlet property="requiredRecoilButton" destination="9vQ-Df-vN2" id="hBy-6g-kHn"/>
-                <outlet property="searchExtraFromParticle2Button" destination="ruR-mq-JqR" id="4go-M3-CXt"/>
+                <outlet property="searchExtraFromEndParticleButton" destination="ruR-mq-JqR" id="4go-M3-CXt"/>
                 <outlet property="searchExtraView" destination="lTh-io-c61" id="a5s-U3-RTr"/>
                 <outlet property="secondParticleBackControl" destination="sNA-6t-fHm" id="sZq-9W-Dta"/>
                 <outlet property="secondParticleFrontControl" destination="gfI-up-Jp9" id="HBB-Xf-1mS"/>
@@ -112,6 +112,19 @@
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <connections>
                                     <action selector="viewer:" target="Voe-Tx-rLC" id="y0T-we-B8q"/>
+                                </connections>
+                            </menuItem>
+                        </items>
+                    </menu>
+                </menuItem>
+                <menuItem title="Cascade" id="kTE-f9-nZx">
+                    <modifierMask key="keyEquivalentModifierMask"/>
+                    <menu key="submenu" title="Cascade" id="VTC-Fh-bTT">
+                        <items>
+                            <menuItem title="Setup" id="NLD-fZ-9ft">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="cascade:" target="Voe-Tx-rLC" id="h4F-KE-Q9A"/>
                                 </connections>
                             </menuItem>
                         </items>
@@ -1622,7 +1635,7 @@
                         <rect key="frame" x="286" y="171" width="210" height="26"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <textFieldCell key="cell" sendsActionOnEndEditing="YES" alignment="left" title="Values separated by comma-symbol" id="d61-kG-mrA">
-                            <font key="font" metaFont="menu" size="11"/>
+                            <font key="font" metaFont="controlContent" size="11"/>
                             <color key="textColor" name="gridColor" catalog="System" colorSpace="catalog"/>
                             <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>
@@ -1959,14 +1972,14 @@
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                         <subviews>
                             <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="ruR-mq-JqR">
-                                <rect key="frame" x="19" y="484" width="185" height="18"/>
+                                <rect key="frame" x="19" y="484" width="205" height="18"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                <buttonCell key="cell" type="check" title="Search From Particle 2" bezelStyle="regularSquare" imagePosition="left" inset="2" id="mJg-h0-gZY">
+                                <buttonCell key="cell" type="check" title="Search From End Particle" bezelStyle="regularSquare" imagePosition="left" inset="2" id="mJg-h0-gZY">
                                     <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                     <font key="font" size="15" name="HelveticaNeue-Bold"/>
                                 </buttonCell>
                                 <connections>
-                                    <binding destination="Voe-Tx-rLC" name="value" keyPath="self.searchExtraFromParticle2" id="qiQ-Ld-wcg">
+                                    <binding destination="Voe-Tx-rLC" name="value" keyPath="self.searchExtraFromEndParticle" id="YcI-1J-VNG">
                                         <dictionary key="options">
                                             <bool key="NSConditionallySetsHidden" value="YES"/>
                                         </dictionary>

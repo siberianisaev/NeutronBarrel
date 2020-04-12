@@ -313,7 +313,7 @@ class Processor {
                 }
                 
                 var gamma: DetectorMatch?
-                if !criteria.searchExtraFromParticle2 {
+                if !criteria.searchExtraFromEndParticle {
                     gamma = findGamma(currentPosition)
                     if criteria.requiredGamma && nil == gamma {
                         clearActInfo()
@@ -351,7 +351,7 @@ class Processor {
                     return
                 }
                 
-                if !criteria.searchExtraFromParticle2 {
+                if !criteria.searchExtraFromEndParticle {
                     findFissionAlphaWell(position)
                     if wellSearchFailed() {
                         clearActInfo()
@@ -367,13 +367,13 @@ class Processor {
                     clearActInfo()
                     return
                 }
-                if criteria.searchExtraFromParticle2 && wellSearchFailed() {
+                if criteria.searchExtraFromEndParticle && wellSearchFailed() {
                     clearActInfo()
                     return
                 }
             }
             
-            if !criteria.searchExtraFromParticle2 {
+            if !criteria.searchExtraFromEndParticle {
                 findAllNeutrons(position)
             }
             
@@ -433,7 +433,7 @@ class Processor {
     fileprivate func findFissionAlphaWell(_ position: Int) {
         if criteria.searchWell {
             let directions: Set<SearchDirection> = [.backward, .forward]
-            let start = criteria.searchExtraFromParticle2 ? secondEventTime : startEventTime
+            let start = criteria.searchExtraFromEndParticle ? secondEventTime : startEventTime
             search(directions: directions, startTime: start, minDeltaTime: 0, maxDeltaTime: criteria.fissionAlphaMaxTime, maxDeltaTimeBackward: criteria.fissionAlphaWellBackwardMaxTime, useCycleTime: false, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>, _) in
                 for side in [.front, .back] as [StripsSide] {
                     if self.isFissionOrAlphaWell(event, side: side) {
@@ -447,7 +447,7 @@ class Processor {
     
     fileprivate func findNeutrons() {
         let directions: Set<SearchDirection> = [.forward]
-        let start = criteria.searchExtraFromParticle2 ? secondEventTime : startEventTime
+        let start = criteria.searchExtraFromEndParticle ? secondEventTime : startEventTime
         search(directions: directions, startTime: start, minDeltaTime: 0, maxDeltaTime: criteria.maxNeutronTime, useCycleTime: false, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>, _) in
             if self.dataProtocol.isNeutronsEvent(Int(event.eventId)) {
                 let t = Float(event.param3 & Mask.neutrons.rawValue)
@@ -461,7 +461,7 @@ class Processor {
     
     fileprivate func findNeutronsBack() {
         let directions: Set<SearchDirection> = [.backward]
-        let start = criteria.searchExtraFromParticle2 ? secondEventTime : startEventTime
+        let start = criteria.searchExtraFromEndParticle ? secondEventTime : startEventTime
         search(directions: directions, startTime: start, minDeltaTime: 0, maxDeltaTime: 10, useCycleTime: false, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>, _) in
             if self.dataProtocol.isNeutronsEvent(Int(event.eventId)) {
                 self.neutronsBackwardSummPerAct += 1
@@ -480,7 +480,7 @@ class Processor {
             if current != initial && self.isFront(event, type: self.criteria.startParticleType) && self.isFissionStripNearToFirstFissionFront(event) {
                 var store = true
                 var gamma: DetectorMatch?
-                if !self.criteria.searchExtraFromParticle2 {
+                if !self.criteria.searchExtraFromEndParticle {
                     gamma = self.findGamma(position)
                     store = !self.criteria.requiredGamma || gamma != nil
                 }
@@ -505,7 +505,7 @@ class Processor {
     fileprivate func findGamma(_ position: Int) -> DetectorMatch? {
         let match = DetectorMatch()
         let directions: Set<SearchDirection> = [.forward, .backward]
-        let start = criteria.searchExtraFromParticle2 ? secondEventTime : startEventTime
+        let start = criteria.searchExtraFromEndParticle ? secondEventTime : startEventTime
         search(directions: directions, startTime: start, minDeltaTime: 0, maxDeltaTime: criteria.maxGammaTime, useCycleTime: false, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>, _) in
             if self.isGammaEvent(event) {
                 let item = self.gammaMatchItem(event, deltaTime: deltaTime)
@@ -579,7 +579,7 @@ class Processor {
             }
             
             var gamma: DetectorMatch?
-            if criteria.startFromRecoil(), !criteria.searchExtraFromParticle2 {
+            if criteria.startFromRecoil(), !criteria.searchExtraFromEndParticle {
                 gamma = findGamma(Int(position))
                 if criteria.requiredGamma && nil == gamma {
                     return false
@@ -684,7 +684,7 @@ class Processor {
                         store = false
                     } else {
                         // Extra Search
-                        if self.criteria.searchExtraFromParticle2 {
+                        if self.criteria.searchExtraFromEndParticle {
                             self.findFissionAlphaWell(position)
                             self.findAllNeutrons(position)
                             gamma = self.findGamma(position)
@@ -865,7 +865,7 @@ class Processor {
     }
     
     fileprivate func storeFissionAlphaWell(_ event: Event, side: StripsSide) {
-        let type = side == .front ? (criteria.searchExtraFromParticle2 ? criteria.secondParticleFrontType : criteria.startParticleType) : criteria.wellParticleBackType
+        let type = side == .front ? (criteria.searchExtraFromEndParticle ? criteria.secondParticleFrontType : criteria.startParticleType) : criteria.wellParticleBackType
         let energy = getEnergy(event, type: type)
         if let e = fissionsAlphaWellPerAct.itemFor(side: side)?.energy, e >= energy { // Store only well event with max energy
             return
@@ -1053,7 +1053,7 @@ class Processor {
     }
     
     fileprivate func searchExtraPostfix(_ s: String) -> String {
-        if criteria.searchExtraFromParticle2 {
+        if criteria.searchExtraFromEndParticle {
             return s + "(2)"
         } else {
             return s
@@ -1319,7 +1319,7 @@ class Processor {
     fileprivate var currentStartEventNumber: CUnsignedLongLong?
     
     fileprivate var focalGammaContainer: DetectorMatch? {
-        if criteria.searchExtraFromParticle2 {
+        if criteria.searchExtraFromEndParticle {
             return fissionsAlpha2PerAct
         } else if criteria.startFromRecoil() {
             return recoilsPerAct.matchFor(side: .front)

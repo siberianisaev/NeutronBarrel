@@ -53,7 +53,7 @@ class SearchCriteria {
     var simplifyGamma = false
     var requiredWell = false
     var wellRecoilsAllowed = false
-    var searchExtraFromParticle2 = false
+    var searchExtraFromEndParticle = false
     var requiredTOF = false
     var useTOF2 = false
     var requiredVETO = false

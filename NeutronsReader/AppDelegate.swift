@@ -88,8 +88,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBInspectable var simplifyGamma: Bool = Settings.getBoolSetting(.SimplifyGamma)
     @IBInspectable var requiredWell: Bool = Settings.getBoolSetting(.RequiredWell)
     @IBInspectable var wellRecoilsAllowed: Bool = Settings.getBoolSetting(.WellRecoilsAllowed)
-    @IBOutlet weak var searchExtraFromParticle2Button: NSButton!
-    @IBInspectable var searchExtraFromParticle2: Bool = Settings.getBoolSetting(.SearchExtraFromParticle2)
+    @IBOutlet weak var searchExtraFromEndParticleButton: NSButton!
+    @IBInspectable var searchExtraFromEndParticle: Bool = Settings.getBoolSetting(.SearchExtraFromEndParticle)
     @IBInspectable var requiredTOF: Bool = Settings.getBoolSetting(.RequiredTOF)
     @IBInspectable var useTOF2: Bool = Settings.getBoolSetting(.UseTOF2)
     @IBInspectable var requiredVETO: Bool = Settings.getBoolSetting(.RequiredVETO)
@@ -98,8 +98,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         didSet {
             secondParticleFrontChanged(nil)
             setupAlpha2FormView()
-            searchExtraFromParticle2 = searchFissionAlpha2
-            searchExtraFromParticle2Button.state = searchExtraFromParticle2 ? .on : .off
+            searchExtraFromEndParticle = searchFissionAlpha2
+            searchExtraFromEndParticleButton.state = searchExtraFromEndParticle ? .on : .off
         }
     }
     @IBInspectable var sBeamEnergyMin = String(format: "%.1f", Settings.getDoubleSetting(.BeamEnergyMin)) // MeV
@@ -244,7 +244,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             secondParticleFrontChanged(nil)
             if sender != nil, !isRecoil {
                 startParticleBackControl.selectedSegment = type.rawValue
-                if !searchExtraFromParticle2 {
+                if !searchExtraFromEndParticle {
                     wellParticleBackControl.selectedSegment = type.rawValue
                 }
             }
@@ -252,19 +252,17 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     }
     
     @IBAction func secondParticleFrontChanged(_ sender: Any?) {
-        if let type = SearchType(rawValue: secondParticleFrontControl.selectedSegment) {
-            var title = "Search "
-            if searchFissionAlpha2 {
-                title += (type != .alpha ? "F" : "A") + "Front 2nd"
-            } else {
-                title += "2nd Particle"
-            }
-            fissionAlpha2Button.title = title
+        var title: String
+        if searchFissionAlpha2 {
+            title = "Particle 2 Front"
+        } else {
+            title = "Search Particle 2"
         }
+        fissionAlpha2Button.title = title
     }
     
     @IBAction func secondParticleBackChanged(_ sender: Any?) {
-        if let type = SearchType(rawValue: secondParticleBackControl.selectedSegment), searchExtraFromParticle2 {
+        if let type = SearchType(rawValue: secondParticleBackControl.selectedSegment), searchExtraFromEndParticle {
             wellParticleBackControl.selectedSegment = type.rawValue
         }
     }
@@ -282,6 +280,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             //viewerController = ViewerController(windowNibName: NSNib.Name(rawValue: "ViewerController"))
         }
         viewerController?.showWindow(nil)
+    }
+    
+    fileprivate var cascade: CascadeController?
+    
+    @IBAction func cascade(_ sender: Any) {
+        cascade = CascadeController(windowNibName: "CascadeController")
+        cascade?.showWindow(nil)
     }
     
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
@@ -360,7 +365,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         sc.simplifyGamma = simplifyGamma
         sc.requiredWell = requiredWell
         sc.wellRecoilsAllowed = wellRecoilsAllowed
-        sc.searchExtraFromParticle2 = searchExtraFromParticle2
+        sc.searchExtraFromEndParticle = searchExtraFromEndParticle
         sc.searchNeutrons = searchNeutrons
         sc.maxNeutronTime = UInt64(sMaxNeutronTime) ?? 0
         sc.searchSpecialEvents = searchSpecialEvents
@@ -580,7 +585,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         Settings.setObject(simplifyGamma, forSetting: .SimplifyGamma)
         Settings.setObject(requiredWell, forSetting: .RequiredWell)
         Settings.setObject(wellRecoilsAllowed, forSetting: .WellRecoilsAllowed)
-        Settings.setObject(searchExtraFromParticle2, forSetting: .SearchExtraFromParticle2)
+        Settings.setObject(searchExtraFromEndParticle, forSetting: .SearchExtraFromEndParticle)
         Settings.setObject(requiredTOF, forSetting: .RequiredTOF)
         Settings.setObject(useTOF2, forSetting: .UseTOF2)
         Settings.setObject(requiredVETO, forSetting: .RequiredVETO)

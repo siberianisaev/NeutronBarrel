@@ -17,6 +17,10 @@
 		5A8997571FB4F9F800DD9956 /* StripsConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A8997561FB4F9F800DD9956 /* StripsConfiguration.swift */; };
 		5A9B179D2206137800E80805 /* StripDetectorManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A9B179C2206137800E80805 /* StripDetectorManager.swift */; };
 		5A9B179E2206137800E80805 /* StripDetectorManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A9B179C2206137800E80805 /* StripDetectorManager.swift */; };
+		5AAE090A2442F374006BC15E /* CascadeController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AAE09082442F374006BC15E /* CascadeController.swift */; };
+		5AAE090B2442F374006BC15E /* CascadeController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AAE09082442F374006BC15E /* CascadeController.swift */; };
+		5AAE090C2442F374006BC15E /* CascadeController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 5AAE09092442F374006BC15E /* CascadeController.xib */; };
+		5AAE090D2442F374006BC15E /* CascadeController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 5AAE09092442F374006BC15E /* CascadeController.xib */; };
 		5AAE352C22717F8300035B52 /* DetectorsWellGeometry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AAE352B22717F8300035B52 /* DetectorsWellGeometry.swift */; };
 		5AAE352D22717F8300035B52 /* DetectorsWellGeometry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AAE352B22717F8300035B52 /* DetectorsWellGeometry.swift */; };
 		5AAE352F22717FAB00035B52 /* SideDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AAE352E22717FAB00035B52 /* SideDetector.swift */; };
@@ -76,6 +80,8 @@
 		5A8423E220D12C100097F7FB /* SearchCriteria.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchCriteria.swift; sourceTree = "<group>"; };
 		5A8997561FB4F9F800DD9956 /* StripsConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StripsConfiguration.swift; sourceTree = "<group>"; };
 		5A9B179C2206137800E80805 /* StripDetectorManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StripDetectorManager.swift; sourceTree = "<group>"; };
+		5AAE09082442F374006BC15E /* CascadeController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CascadeController.swift; sourceTree = "<group>"; };
+		5AAE09092442F374006BC15E /* CascadeController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = CascadeController.xib; sourceTree = "<group>"; };
 		5AAE352B22717F8300035B52 /* DetectorsWellGeometry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetectorsWellGeometry.swift; sourceTree = "<group>"; };
 		5AAE352E22717FAB00035B52 /* SideDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SideDetector.swift; sourceTree = "<group>"; };
 		5AAE35312271801A00035B52 /* DoubleSidedDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DoubleSidedDetector.swift; sourceTree = "<group>"; };
@@ -169,6 +175,8 @@
 				6512B0091EDACBB20087131D /* ViewerController.swift */,
 				6512B00A1EDACBB20087131D /* ViewerController.xib */,
 				78B6A55C193A3B3900C7E36A /* MainMenu.xib */,
+				5AAE09082442F374006BC15E /* CascadeController.swift */,
+				5AAE09092442F374006BC15E /* CascadeController.xib */,
 			);
 			name = UI;
 			sourceTree = "<group>";
@@ -364,6 +372,7 @@
 			files = (
 				65E78384203ADB4000091FA4 /* Images.xcassets in Resources */,
 				65E78373203AD5B200091FA4 /* ViewerController.xib in Resources */,
+				5AAE090D2442F374006BC15E /* CascadeController.xib in Resources */,
 				65E78374203AD5B200091FA4 /* MainMenu.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -374,6 +383,7 @@
 			files = (
 				78B6A560193A3B3900C7E36A /* Images.xcassets in Resources */,
 				6512B00C1EDACBB20087131D /* ViewerController.xib in Resources */,
+				5AAE090C2442F374006BC15E /* CascadeController.xib in Resources */,
 				78B6A55E193A3B3900C7E36A /* MainMenu.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -421,6 +431,7 @@
 				65E78364203AD5B200091FA4 /* StripsConfiguration.swift in Sources */,
 				65E78365203AD5B200091FA4 /* Settings.swift in Sources */,
 				65E78366203AD5B200091FA4 /* Processor.swift in Sources */,
+				5AAE090B2442F374006BC15E /* CascadeController.swift in Sources */,
 				5A2A99362056F66800B3D1A0 /* DoubleSidedStripDetectorMatch.swift in Sources */,
 				65DA92A920D594E9002643DB /* CalibrationEquation.swift in Sources */,
 				5A9B179E2206137800E80805 /* StripDetectorManager.swift in Sources */,
@@ -454,6 +465,7 @@
 				5A8997571FB4F9F800DD9956 /* StripsConfiguration.swift in Sources */,
 				784B0B891ABB13F80041FA66 /* Settings.swift in Sources */,
 				5A036F711EB0F5C80092D3C4 /* Processor.swift in Sources */,
+				5AAE090A2442F374006BC15E /* CascadeController.swift in Sources */,
 				5A2A99352056F66800B3D1A0 /* DoubleSidedStripDetectorMatch.swift in Sources */,
 				65DA92A820D594E9002643DB /* CalibrationEquation.swift in Sources */,
 				5A9B179D2206137800E80805 /* StripDetectorManager.swift in Sources */,
