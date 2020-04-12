@@ -21,6 +21,8 @@
 		5AAE090B2442F374006BC15E /* CascadeController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AAE09082442F374006BC15E /* CascadeController.swift */; };
 		5AAE090C2442F374006BC15E /* CascadeController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 5AAE09092442F374006BC15E /* CascadeController.xib */; };
 		5AAE090D2442F374006BC15E /* CascadeController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 5AAE09092442F374006BC15E /* CascadeController.xib */; };
+		5AAE090F24432A91006BC15E /* ParticleSearchCriteria.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AAE090E24432A91006BC15E /* ParticleSearchCriteria.swift */; };
+		5AAE091024432A91006BC15E /* ParticleSearchCriteria.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AAE090E24432A91006BC15E /* ParticleSearchCriteria.swift */; };
 		5AAE352C22717F8300035B52 /* DetectorsWellGeometry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AAE352B22717F8300035B52 /* DetectorsWellGeometry.swift */; };
 		5AAE352D22717F8300035B52 /* DetectorsWellGeometry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AAE352B22717F8300035B52 /* DetectorsWellGeometry.swift */; };
 		5AAE352F22717FAB00035B52 /* SideDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AAE352E22717FAB00035B52 /* SideDetector.swift */; };
@@ -82,6 +84,7 @@
 		5A9B179C2206137800E80805 /* StripDetectorManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StripDetectorManager.swift; sourceTree = "<group>"; };
 		5AAE09082442F374006BC15E /* CascadeController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CascadeController.swift; sourceTree = "<group>"; };
 		5AAE09092442F374006BC15E /* CascadeController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = CascadeController.xib; sourceTree = "<group>"; };
+		5AAE090E24432A91006BC15E /* ParticleSearchCriteria.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParticleSearchCriteria.swift; sourceTree = "<group>"; };
 		5AAE352B22717F8300035B52 /* DetectorsWellGeometry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetectorsWellGeometry.swift; sourceTree = "<group>"; };
 		5AAE352E22717FAB00035B52 /* SideDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SideDetector.swift; sourceTree = "<group>"; };
 		5AAE35312271801A00035B52 /* DoubleSidedDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DoubleSidedDetector.swift; sourceTree = "<group>"; };
@@ -187,6 +190,7 @@
 				5AAE352B22717F8300035B52 /* DetectorsWellGeometry.swift */,
 				65DA92A120D5527D002643DB /* BeamState.swift */,
 				5A8423E220D12C100097F7FB /* SearchCriteria.swift */,
+				5AAE090E24432A91006BC15E /* ParticleSearchCriteria.swift */,
 				65DA929E20D54F65002643DB /* SearchType.swift */,
 				5A2A99372057083A00B3D1A0 /* DetectorMatch.swift */,
 				65DA92A420D57794002643DB /* DetectorMatchItem.swift */,
@@ -434,6 +438,7 @@
 				5AAE090B2442F374006BC15E /* CascadeController.swift in Sources */,
 				5A2A99362056F66800B3D1A0 /* DoubleSidedStripDetectorMatch.swift in Sources */,
 				65DA92A920D594E9002643DB /* CalibrationEquation.swift in Sources */,
+				5AAE091024432A91006BC15E /* ParticleSearchCriteria.swift in Sources */,
 				5A9B179E2206137800E80805 /* StripDetectorManager.swift in Sources */,
 				65E78367203AD5B200091FA4 /* Calibration.swift in Sources */,
 				65E78368203AD5B200091FA4 /* CSVWriter.swift in Sources */,
@@ -468,6 +473,7 @@
 				5AAE090A2442F374006BC15E /* CascadeController.swift in Sources */,
 				5A2A99352056F66800B3D1A0 /* DoubleSidedStripDetectorMatch.swift in Sources */,
 				65DA92A820D594E9002643DB /* CalibrationEquation.swift in Sources */,
+				5AAE090F24432A91006BC15E /* ParticleSearchCriteria.swift in Sources */,
 				5A9B179D2206137800E80805 /* StripDetectorManager.swift in Sources */,
 				651307121A4E94AB00E33704 /* Calibration.swift in Sources */,
 				784150DA1AC184C400831384 /* CSVWriter.swift in Sources */,

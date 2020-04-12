@@ -11,44 +11,17 @@ import Foundation
 class SearchCriteria {
     
     var resultsFolderName: String = ""
-    var startParticleType: SearchType = .fission
-    var startParticleBackType: SearchType = .fission
-    var secondParticleFrontType: SearchType = .fission
-    var secondParticleBackType: SearchType = .fission
-    var wellParticleBackType: SearchType = .fission
-    var fissionAlphaFrontMinEnergy: Double = 0
-    var fissionAlphaFrontMaxEnergy: Double = 0
-    var fissionAlphaBackMinEnergy: Double = 0
-    var fissionAlphaBackMaxEnergy: Double = 0
-    var searchFissionAlphaBackByFact: Bool = true
-    var searchFissionAlphaBack2ByFact: Bool = true
-    var recoilFrontMinEnergy: Double = 0
-    var recoilFrontMaxEnergy: Double = 0
-    var recoilBackMinEnergy: Double = 0
-    var recoilBackMaxEnergy: Double = 0
-    var searchRecoilBackByFact: Bool = false
+    var focal = [ParticleSearchCriteria]()
+    var well: ParticleSearchCriteria?
+    var recoil: ParticleSearchCriteria?
     var minTOFValue: Double = 0
     var maxTOFValue: Double = 0
     var beamEnergyMin: Float = 0
     var beamEnergyMax: Float = 0
-    var recoilMinTime: CUnsignedLongLong = 0
-    var recoilMaxTime: CUnsignedLongLong = 0
-    var recoilBackMaxTime: CUnsignedLongLong = 0
-    var fissionAlphaMaxTime: CUnsignedLongLong = 0
-    var recoilBackBackwardMaxTime: CUnsignedLongLong = 0
-    var fissionAlphaBackBackwardMaxTime: CUnsignedLongLong = 0
-    var fissionAlphaWellBackwardMaxTime: CUnsignedLongLong = 0
     var maxTOFTime: CUnsignedLongLong = 0
     var maxVETOTime: CUnsignedLongLong = 0
     var maxGammaTime: CUnsignedLongLong = 0
     var maxNeutronTime: CUnsignedLongLong = 0
-    var recoilFrontMaxDeltaStrips: Int = 0
-    var recoilBackMaxDeltaStrips: Int = 0
-    var summarizeFissionsAlphaFront = false
-    var summarizeFissionsAlphaFront2 = false
-    var requiredFissionAlphaBack = false
-    var requiredRecoilBack = false
-    var requiredRecoil = false
     var requiredGamma = false
     var simplifyGamma = false
     var requiredWell = false
@@ -66,22 +39,21 @@ class SearchCriteria {
         return trackBeamEnergy || trackBeamCurrent || trackBeamBackground || trackBeamIntegral
     }
     var searchNeutrons = false
-    var searchFissionAlpha2 = false
-    var fissionAlpha2MinEnergy: Double = 0
-    var fissionAlpha2MaxEnergy: Double = 0
-    var fissionAlpha2BackMinEnergy: Double = 0
-    var fissionAlpha2BackMaxEnergy: Double = 0
-    var fissionAlpha2MinTime: CUnsignedLongLong = 0
-    var fissionAlpha2MaxTime: CUnsignedLongLong = 0
-    var fissionAlpha2MaxDeltaStrips: Int = 0
     var searchSpecialEvents = false
-    var searchWell = true
     var specialEventIds = [Int]()
     var unitsTOF: TOFUnits = .channels
-    var recoilType: SearchType = .recoil
+    
+    func focal(at index: Int) -> ParticleSearchCriteria? {
+        if index >= 0, index < focal.count {
+            return focal[index]
+        } else {
+            return nil
+        }
+    }
     
     func startFromRecoil() -> Bool {
-        return startParticleType == .recoil || startParticleType == .heavy
+        let type = focal.first?.frontType
+        return type == .recoil || type == .heavy
     }
     
 }

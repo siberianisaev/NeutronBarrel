@@ -313,45 +313,68 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     
     @IBAction func start(_ sender: AnyObject?) {
         let sc = SearchCriteria()
+        let backRequired = requiredFissionAlphaBack
+        
         sc.resultsFolderName = sResultsFolderName
-        sc.startParticleType = SearchType(rawValue: startParticleControl.selectedSegment) ?? .recoil
-        sc.startParticleBackType = SearchType(rawValue: startParticleBackControl.selectedSegment) ?? .fission
-        sc.secondParticleFrontType = SearchType(rawValue: secondParticleFrontControl.selectedSegment) ?? .recoil
-        sc.secondParticleBackType = SearchType(rawValue: secondParticleBackControl.selectedSegment) ?? .recoil
-        sc.wellParticleBackType = SearchType(rawValue: wellParticleBackControl.selectedSegment) ?? .fission
-        sc.fissionAlphaFrontMinEnergy = Double(sMinFissionEnergy) ?? 0
-        sc.fissionAlphaFrontMaxEnergy = Double(sMaxFissionEnergy) ?? 0
-        sc.fissionAlphaBackMinEnergy = Double(sMinFissionBackEnergy) ?? 0
-        sc.fissionAlphaBackMaxEnergy = Double(sMaxFissionBackEnergy) ?? 0
-        sc.searchFissionAlphaBackByFact = searchFissionBackByFact
-        sc.searchFissionAlphaBack2ByFact = searchFissionBack2ByFact
-        sc.searchRecoilBackByFact = searchRecoilBackByFact
-        sc.fissionAlphaMaxTime = UInt64(sMaxFissionTime) ?? 0
-        sc.fissionAlphaBackBackwardMaxTime = UInt64(sMaxFissionBackBackwardTime) ?? 0
-        sc.fissionAlphaWellBackwardMaxTime = UInt64(sMaxFissionWellBackwardTime) ?? 0
-        sc.summarizeFissionsAlphaFront = summarizeFissionsFront
-        sc.summarizeFissionsAlphaFront2 = summarizeFissionsFront2
-        sc.searchFissionAlpha2 = searchFissionAlpha2
-        sc.fissionAlpha2MinEnergy = Double(sMinFissionAlpha2Energy) ?? 0
-        sc.fissionAlpha2MaxEnergy = Double(sMaxFissionAlpha2Energy) ?? 0
-        sc.fissionAlpha2BackMinEnergy = Double(sMinFissionAlpha2BackEnergy) ?? 0
-        sc.fissionAlpha2BackMaxEnergy = Double(sMaxFissionAlpha2BackEnergy) ?? 0
-        sc.fissionAlpha2MinTime = UInt64(sMinFissionAlpha2Time) ?? 0
-        sc.fissionAlpha2MaxTime = UInt64(sMaxFissionAlpha2Time) ?? 0
-        sc.fissionAlpha2MaxDeltaStrips = Int(sMaxFissionAlpha2FrontDeltaStrips) ?? 0
-        sc.recoilFrontMaxDeltaStrips = Int(sMaxRecoilFrontDeltaStrips) ?? 0
-        sc.recoilBackMaxDeltaStrips = Int(sMaxRecoilBackDeltaStrips) ?? 0
-        sc.requiredFissionAlphaBack = requiredFissionAlphaBack
-        sc.requiredRecoilBack = requiredRecoilBack
-        sc.requiredRecoil = requiredRecoil
-        sc.recoilFrontMinEnergy = Double(sMinRecoilFrontEnergy) ?? 0
-        sc.recoilFrontMaxEnergy = Double(sMaxRecoilFrontEnergy) ?? 0
-        sc.recoilBackMinEnergy = Double(sMinRecoilBackEnergy) ?? 0
-        sc.recoilBackMaxEnergy = Double(sMaxRecoilBackEnergy) ?? 0
-        sc.recoilMinTime = UInt64(sMinRecoilTime) ?? 0
-        sc.recoilMaxTime = UInt64(sMaxRecoilTime) ?? 0
-        sc.recoilBackMaxTime = UInt64(sMaxRecoilBackTime) ?? 0
-        sc.recoilBackBackwardMaxTime = UInt64(sMaxRecoilBackBackwardTime) ?? 0
+        
+        let first = ParticleSearchCriteria()
+        first.frontType = SearchType(rawValue: startParticleControl.selectedSegment) ?? .recoil
+        first.backType = SearchType(rawValue: startParticleBackControl.selectedSegment) ?? .fission
+        first.frontEnergyMin = Double(sMinFissionEnergy) ?? 0
+        first.frontEnergyMax = Double(sMaxFissionEnergy) ?? 0
+        first.backEnergyMin = Double(sMinFissionBackEnergy) ?? 0
+        first.backEnergyMax = Double(sMaxFissionBackEnergy) ?? 0
+        first.backByFact = searchFissionBackByFact
+        first.frontNextTimeMax = UInt64(sMaxFissionTime) ?? 0
+        first.backBackwardTimeMax = UInt64(sMaxFissionBackBackwardTime) ?? 0
+        first.frontSummarization = summarizeFissionsFront
+        var focal = [first]
+        if searchFissionAlpha2 {
+            let second = ParticleSearchCriteria()
+            second.frontType = SearchType(rawValue: secondParticleFrontControl.selectedSegment) ?? .recoil
+            second.backType = SearchType(rawValue: secondParticleBackControl.selectedSegment) ?? .recoil
+            second.frontEnergyMin = Double(sMinFissionAlpha2Energy) ?? 0
+            second.frontEnergyMax = Double(sMaxFissionAlpha2Energy) ?? 0
+            second.backEnergyMin = Double(sMinFissionAlpha2BackEnergy) ?? 0
+            second.backEnergyMax = Double(sMaxFissionAlpha2BackEnergy) ?? 0
+            second.backByFact = searchFissionBack2ByFact
+            second.frontTimeMin = UInt64(sMinFissionAlpha2Time) ?? 0
+            second.frontTimeMax = UInt64(sMaxFissionAlpha2Time) ?? 0
+            second.frontMaxDeltaStrips = Int(sMaxFissionAlpha2FrontDeltaStrips) ?? 0
+            second.frontSummarization = summarizeFissionsFront2
+            focal.append(second)
+        }
+        sc.focal = focal
+        
+        // TODO: set other properties there
+        let well = searchWell ? ParticleSearchCriteria() : nil
+        well?.backType = SearchType(rawValue: wellParticleBackControl.selectedSegment) ?? .fission
+        let wellBackward = UInt64(sMaxFissionWellBackwardTime) ?? 0
+        well?.frontBackwardTimeMax = wellBackward
+        well?.backBackwardTimeMax = wellBackward
+        well?.frontNextTimeMax = UInt64(sMaxFissionTime) ?? 0
+        well?.backRequired = backRequired
+        sc.well = well
+        
+        let recoil = ParticleSearchCriteria()
+        recoil.frontMaxDeltaStrips = Int(sMaxRecoilFrontDeltaStrips) ?? 0
+        recoil.backMaxDeltaStrips = Int(sMaxRecoilBackDeltaStrips) ?? 0
+        recoil.frontRequired = requiredRecoil
+        recoil.backRequired = requiredRecoilBack
+        recoil.frontEnergyMin = Double(sMinRecoilFrontEnergy) ?? 0
+        recoil.frontEnergyMax = Double(sMaxRecoilFrontEnergy) ?? 0
+        recoil.backEnergyMin = Double(sMinRecoilBackEnergy) ?? 0
+        recoil.backEnergyMax = Double(sMaxRecoilBackEnergy) ?? 0
+        recoil.frontTimeMin = UInt64(sMinRecoilTime) ?? 0
+        recoil.frontTimeMax = UInt64(sMaxRecoilTime) ?? 0
+        recoil.backTimeMax = UInt64(sMaxRecoilBackTime) ?? 0
+        recoil.backBackwardTimeMax = UInt64(sMaxRecoilBackBackwardTime) ?? 0
+        recoil.backByFact = searchRecoilBackByFact
+        recoil.frontType = selectedRecoilType
+        recoil.backType = .recoil
+        recoil.backRequired = backRequired
+        sc.recoil = recoil
+        
         sc.minTOFValue = Double(sMinTOFValue) ?? 0
         sc.maxTOFValue = Double(sMaxTOFValue) ?? 0
         sc.unitsTOF = tofUnitsControl.selectedSegment == 0 ? .channels : .nanoseconds
@@ -374,8 +397,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         sc.trackBeamCurrent = trackBeamCurrent
         sc.trackBeamBackground = trackBeamBackground
         sc.trackBeamIntegral = trackBeamIntegral
-        sc.recoilType = selectedRecoilType
-        sc.searchWell = searchWell
         sc.beamEnergyMin = Float(sBeamEnergyMin) ?? 0
         sc.beamEnergyMax = Float(sBeamEnergyMax) ?? 0
         let ids = specialEventIds.components(separatedBy: ",").map({ (s: String) -> Int in
