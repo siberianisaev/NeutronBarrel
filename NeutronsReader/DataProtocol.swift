@@ -30,6 +30,8 @@ class DataProtocol {
             BeamIntegral = dict["IntegralHi"]
             AlphaWell = getValues(ofTypes: ["AWel"])
             alphaWellMaxEventId = AlphaWell.max() ?? 0
+            AlphaWellFront = getValues(ofTypes: ["AWFr"])
+            alphaWellFrontMaxEventId = AlphaWellFront.max() ?? 0
             AlphaWellBack = getValues(ofTypes: ["AWBk"])
             alphaWellBackMaxEventId = AlphaWellBack.max() ?? 0
             AlphaMotherFront = getValues(ofTypes: ["AFr"])
@@ -69,6 +71,8 @@ class DataProtocol {
     fileprivate var CycleTime: Int?
     fileprivate var AlphaWell = Set<Int>()
     fileprivate var alphaWellMaxEventId: Int = 0
+    fileprivate var AlphaWellFront = Set<Int>()
+    fileprivate var alphaWellFrontMaxEventId: Int = 0
     fileprivate var AlphaWellBack = Set<Int>()
     fileprivate var alphaWellBackMaxEventId: Int = 0
     fileprivate var AlphaMotherFront = Set<Int>()
@@ -132,7 +136,7 @@ class DataProtocol {
             return cached
         }
         
-        let value = eventId <= alphaWellMaxEventId || (alphaWellBackMaxEventId > 0 && eventId <= alphaWellBackMaxEventId) || isTOFEvent(eventId) != nil || isGammaEvent(eventId) || isNeutronsEvent(eventId) || isNeutrons_N_Event(eventId) || isVETOEvent(eventId)
+        let value = eventId <= alphaWellMaxEventId || (alphaWellFrontMaxEventId > 0 && eventId <= alphaWellFrontMaxEventId) || (alphaWellBackMaxEventId > 0 && eventId <= alphaWellBackMaxEventId) || isTOFEvent(eventId) != nil || isGammaEvent(eventId) || isNeutronsEvent(eventId) || isNeutrons_N_Event(eventId) || isVETOEvent(eventId)
         isValidEventIdForTimeCheckCache[eventId] = value
         return value
     }
@@ -160,7 +164,9 @@ class DataProtocol {
         } else if isGammaEvent(eventId) {
             return "Gam"
         } else if isAlphaWellBackEvent(eventId) {
-            return "WBk"
+            return "WBack"
+        } else if isAlphaWellFrontEvent(eventId) {
+            return "WFront"
         } else {
             return "Wel"
         }
@@ -176,6 +182,10 @@ class DataProtocol {
     
     func isAlphaWellEvent(_ eventId: Int) -> Bool {
         return AlphaWell.contains(eventId)
+    }
+    
+    func isAlphaWellFrontEvent(_ eventId: Int) -> Bool {
+        return AlphaWellFront.contains(eventId)
     }
     
     func isAlphaWellBackEvent(_ eventId: Int) -> Bool {
