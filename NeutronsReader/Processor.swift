@@ -800,6 +800,7 @@ class Processor {
                                      energy: energy,
                                      encoder: encoder,
                                      deltaTime: deltaTime,
+                                     marker: getMarker(event),
                                      side: nil)
         return item
     }
@@ -1139,6 +1140,13 @@ class Processor {
         }
         return s + ")"
     }
+    fileprivate func keyColumnGammaMarker(_ max: Bool) -> String {
+        var s = "Gamma"
+        if max {
+            s += "Max"
+        }
+        return s + "Marker"
+    }
     fileprivate var keyColumnGammaCount = "GammaCount"
     fileprivate var keyColumnSpecial = "Special"
     fileprivate func keyColumnSpecialFor(eventId: Int) -> String {
@@ -1173,6 +1181,7 @@ class Processor {
                 keyColumnGammaEnergy(false),
                 keyColumnGammaEncoder(false),
                 keyColumnGammaDeltaTime(false),
+                keyColumnGammaMarker(false),
                 keyColumnGammaCount
             ])
             let headers = setupHeaders(columnsGamma)
@@ -1360,6 +1369,10 @@ class Processor {
                                     case keyColumnGammaDeltaTime(false):
                                         if let deltaTime = g.itemAt(index: row)?.deltaTime {
                                             field = String(format: "%lld", deltaTime)
+                                        }
+                                    case keyColumnGammaMarker(false):
+                                        if let marker = g.itemAt(index: row)?.marker {
+                                            field = String(format: "%hu", marker)
                                         }
                                     case keyColumnGammaCount:
                                         if row == 0 {
