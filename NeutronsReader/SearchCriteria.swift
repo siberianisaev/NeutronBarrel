@@ -79,6 +79,7 @@ class SearchCriteria {
     var specialEventIds = [Int]()
     var unitsTOF: TOFUnits = .channels
     var recoilType: SearchType = .recoil
+    var recoilBackType: SearchType = .recoil
     
     func startFromRecoil() -> Bool {
         return startParticleType == .recoil || startParticleType == .heavy

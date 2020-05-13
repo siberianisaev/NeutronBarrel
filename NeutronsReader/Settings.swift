@@ -72,6 +72,7 @@ class Settings {
         SearchSpecialEvents = "SearchSpecialEvents",
         SpecialEventIds = "SpecialEventIds",
         SelectedRecoilType = "SelectedRecoilType",
+        SelectedRecoilBackType = "SelectedRecoilBackType",
         SearchFissionBackByFact = "SearchFissionBackByFact",
         SearchFissionBack2ByFact = "SearchFissionBack2ByFact",
         SearchRecoilBackByFact = "SearchRecoilBackByFact",
@@ -145,7 +146,7 @@ class Settings {
             return false
         case .SpecialEventIds:
             return nil
-        case .SelectedRecoilType:
+        case .SelectedRecoilType, .SelectedRecoilBackType:
             return SearchType.recoil.rawValue
         }
     }

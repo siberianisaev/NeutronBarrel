@@ -614,8 +614,7 @@ class Processor {
         let directions: Set<SearchDirection> = [.backward, .forward]
         let byFact = self.criteria.searchRecoilBackByFact
         search(directions: directions, startTime: timeRecoilFront, minDeltaTime: 0, maxDeltaTime: criteria.recoilBackMaxTime, maxDeltaTimeBackward: criteria.recoilBackBackwardMaxTime, useCycleTime: false, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>, _) in
-            // Note: 'recoil' type must be always
-            let type: SearchType = .recoil
+            let type: SearchType = self.criteria.recoilBackType
             if self.isBack(event, type: type) {
                 var store = self.criteria.startFromRecoil() || self.isRecoilBackStripNearToFissionAlphaBack(event)
                 if !byFact && store {
@@ -1078,7 +1077,10 @@ class Processor {
     fileprivate var keyColumnRecoilFrontDeltaTime: String {
         return "dT(\(keyRecoil)Fron-$Fron)"
     }
-    fileprivate let keyColumnRecoilBackEvent: String = "Event(RBack)"
+    fileprivate var keyColumnRecoilBackEvent: String {
+        let name = criteria.recoilBackType == .recoil ? "Recoil" : "Heavy Recoil"
+        return "Event(\(name)Back)"
+    }
     fileprivate let keyColumnRecoilBackEnergy: String = "E(RBack)"
     fileprivate var keyColumnTof = "TOF"
     fileprivate var keyColumnTof2 = "TOF2"

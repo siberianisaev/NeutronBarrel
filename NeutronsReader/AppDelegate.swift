@@ -41,7 +41,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBOutlet weak var fissionAlpha1View: NSView!
     @IBOutlet weak var requiredRecoilButton: NSButton!
     @IBOutlet weak var recoilTypeButton: NSPopUpButton!
+    @IBOutlet weak var recoilBackTypeButton: NSPopUpButton!
     @IBOutlet weak var recoilTypeArrayController: NSArrayController!
+     @IBOutlet weak var recoilBackTypeArrayController: NSArrayController!
     @IBOutlet weak var fissionAlpha1TextField: NSTextField!
     @IBOutlet weak var fissionAlpha2Button: NSButton!
     @IBOutlet weak var buttonRemoveCalibration: NSButton!
@@ -153,6 +155,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         return recoilTypes[recoilTypeArrayController.selectionIndex]
     }
     
+    fileprivate var selectedRecoilBackType: SearchType {
+        return recoilTypes[recoilBackTypeArrayController.selectionIndex]
+    }
+    
     fileprivate var formColor: CGColor {
         return NSColor.lightGray.withAlphaComponent(0.2).cgColor
     }
@@ -180,6 +186,18 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         recoilTypeArrayController.setSelectedObjects([array[index]])
     }
     
+    fileprivate func setupRecoilBackTypes() {
+        let array = recoilTypes.map { (t: SearchType) -> String in
+            return t.name()
+        }
+        var index = 0
+        if let t = SearchType(rawValue: Settings.getIntSetting(.SelectedRecoilBackType)), let i = recoilTypes.firstIndex(of: t) {
+            index = i
+        }
+        recoilBackTypeArrayController.content = array
+        recoilBackTypeArrayController.setSelectedObjects([array[index]])
+    }
+    
     fileprivate func setupFissionAlpha1BackEnergyView() {
         fissionAlpha1BackEnergyView.isHidden = searchFissionBackByFact
     }
@@ -194,6 +212,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         setupRecoilTypes()
+        setupRecoilBackTypes()
         startParticleControl.selectedSegment = Settings.getIntSetting(.StartSearchType)
         startParticleBackControl.selectedSegment = Settings.getIntSetting(.StartBackSearchType)
         secondParticleFrontControl.selectedSegment = Settings.getIntSetting(.SecondFrontSearchType)
@@ -370,6 +389,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         sc.trackBeamBackground = trackBeamBackground
         sc.trackBeamIntegral = trackBeamIntegral
         sc.recoilType = selectedRecoilType
+        sc.recoilBackType = selectedRecoilBackType
         sc.searchWell = searchWell
         sc.beamEnergyMin = Float(sBeamEnergyMin) ?? 0
         sc.beamEnergyMax = Float(sBeamEnergyMax) ?? 0
@@ -607,6 +627,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         Settings.setObject(searchSpecialEvents, forSetting: .SearchSpecialEvents)
         Settings.setObject(specialEventIds, forSetting: .SpecialEventIds)
         Settings.setObject(selectedRecoilType.rawValue, forSetting: .SelectedRecoilType)
+        Settings.setObject(selectedRecoilBackType.rawValue, forSetting: .SelectedRecoilBackType)
         Settings.setObject(searchFissionBackByFact, forSetting: .SearchFissionBackByFact)
         Settings.setObject(searchFissionBack2ByFact, forSetting: .SearchFissionBack2ByFact)
         Settings.setObject(searchRecoilBackByFact, forSetting: .SearchRecoilBackByFact)

@@ -40,6 +40,8 @@
                 <outlet property="labelVersion" destination="Jp9-e5-rtp" id="VMy-Bb-Lfg"/>
                 <outlet property="progressIndicator" destination="jRb-3t-cUo" id="TTa-Pk-rm0"/>
                 <outlet property="recoilBackEnergyView" destination="bad-DE-xTH" id="MIG-3M-C30"/>
+                <outlet property="recoilBackTypeArrayController" destination="OMe-Tq-LMc" id="gTm-H1-Mgt"/>
+                <outlet property="recoilBackTypeButton" destination="x7y-jG-sYX" id="peg-WG-gmk"/>
                 <outlet property="recoilFrontView" destination="mZL-Zy-iIp" id="WHb-Qk-zI7"/>
                 <outlet property="recoilTypeArrayController" destination="Yhr-KV-7ci" id="Bf7-Ia-uFd"/>
                 <outlet property="recoilTypeButton" destination="mc4-AS-H5R" id="aqA-dQ-iP3"/>
@@ -1536,15 +1538,6 @@
                             <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>
                     </textField>
-                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="jEu-71-iKS">
-                        <rect key="frame" x="552" y="398" width="141" height="17"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                        <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Type: Recoil always" id="dXg-s0-BT3">
-                            <font key="font" metaFont="system"/>
-                            <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
-                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                        </textFieldCell>
-                    </textField>
                     <popUpButton verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="mc4-AS-H5R">
                         <rect key="frame" x="593" y="657" width="116" height="26"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
@@ -2200,11 +2193,39 @@
                             </textField>
                         </subviews>
                     </customView>
+                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="R9D-Y8-jRb">
+                        <rect key="frame" x="554" y="397" width="42" height="17"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Type" id="1Iq-Dt-GKo">
+                            <font key="font" metaFont="system"/>
+                            <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                    </textField>
+                    <popUpButton verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="x7y-jG-sYX">
+                        <rect key="frame" x="593" y="392" width="116" height="26"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <popUpButtonCell key="cell" type="push" title="Recoil" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" selectedItem="Lu4-5H-xEP" id="1se-oJ-RuW">
+                            <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="system"/>
+                            <menu key="menu" id="6Lc-XM-9wq">
+                                <items>
+                                    <menuItem title="Recoil" state="on" id="Lu4-5H-xEP"/>
+                                    <menuItem title="Heavy Recoil" id="gmZ-tC-GYY"/>
+                                </items>
+                            </menu>
+                        </popUpButtonCell>
+                        <connections>
+                            <binding destination="OMe-Tq-LMc" name="content" keyPath="arrangedObjects" id="BRA-rt-L5A"/>
+                            <binding destination="OMe-Tq-LMc" name="selectedIndex" keyPath="selectionIndex" previousBinding="BRA-rt-L5A" id="LPW-hp-Wrt"/>
+                        </connections>
+                    </popUpButton>
                 </subviews>
             </view>
             <point key="canvasLocation" x="212" y="536"/>
         </window>
-        <arrayController id="Yhr-KV-7ci"/>
+        <arrayController id="Yhr-KV-7ci" userLabel="Recoil Type Array"/>
+        <arrayController id="OMe-Tq-LMc" userLabel="Recoil Back Type Array"/>
         <userDefaultsController representsSharedInstance="YES" id="aAU-rt-5o7"/>
     </objects>
     <resources>
