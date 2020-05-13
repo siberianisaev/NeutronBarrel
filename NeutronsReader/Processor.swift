@@ -478,15 +478,7 @@ class Processor {
             // File-position check is used for skip Fission/Alpha First event!
             fgetpos(self.file, &current)
             if current != initial && self.isFront(event, type: self.criteria.startParticleType) && self.isFissionStripNearToFirstFissionFront(event) {
-                var store = true
-                var gamma: DetectorMatch?
-                if !self.criteria.searchExtraFromParticle2 {
-                    gamma = self.findGamma(position)
-                    store = !self.criteria.requiredGamma || gamma != nil
-                }
-                if store {
-                    self.storeFissionAlphaFront(event, deltaTime: deltaTime, subMatches: [.gamma: gamma])
-                }
+                self.storeFissionAlphaFront(event, deltaTime: deltaTime, subMatches: nil)
             } else {
                 self.updateFolderStatistics(event, folder: folder)
             }
