@@ -10,7 +10,15 @@ import Foundation
 
 class DetectorMatch {
     
-    fileprivate var items = [DetectorMatchItem]()
+    fileprivate var items: [DetectorMatchItem]
+    
+    init() {
+        self.items = []
+    }
+    
+    init(items: [DetectorMatchItem]) {
+        self.items = items
+    }
     
     func itemAt(index: Int) -> DetectorMatchItem? {
         if index < items.count {
@@ -48,6 +56,13 @@ class DetectorMatch {
         } else {
             return items.first
         }
+    }
+    
+    func filteredByMarker(marker: CUnsignedShort) -> DetectorMatch {
+        let array = items.filter({ (i: DetectorMatchItem) -> Bool in
+            return i.marker == marker
+        })
+        return DetectorMatch(items: array)
     }
     
     /*

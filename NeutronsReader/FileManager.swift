@@ -52,8 +52,8 @@ class FileManager {
         return self.desktopFilePathWithName(name, folderName: folderName)
     }
     
-    class func gammaFilePath(_ timeStamp: String, folderName: String) -> String? {
-        let name = fileName(prefix: "gamma", folderName: folderName, timeStamp: timeStamp, fileExtension: "csv")
+    class func filePath(_ prefix: String, timeStamp: String, folderName: String) -> String? {
+        let name = fileName(prefix: prefix, folderName: folderName, timeStamp: timeStamp, fileExtension: "csv")
         return self.desktopFilePathWithName(name, folderName: folderName)
     }
     

@@ -398,7 +398,9 @@ class Processor {
             }
             
             logActResults()
-            logGamma()
+            for b in [false, true] {
+                logGamma(GeOnly: b)
+            }
             clearActInfo()
         } else {
             updateFolderStatistics(event, folder: folder)
@@ -1179,8 +1181,10 @@ class Processor {
                 keyColumnGammaCount
             ])
             let headers = setupHeaders(columnsGamma)
-            logger.writeLineOfFields(headers, destination: .gamma)
-            logger.finishLine(.gamma) // +1 line padding
+            for destination in [.gammaAll, .gammaGeOnly] as [LoggerDestination] {
+                logger.writeLineOfFields(headers, destination: destination)
+                logger.finishLine(destination) // +1 line padding
+            }
         }
     }
     
@@ -1335,12 +1339,16 @@ class Processor {
         return focalGammaContainer?.itemAt(index: row)?.subMatches?[.gamma] ?? nil
     }
     
-    fileprivate func logGamma() {
+    fileprivate func logGamma(GeOnly: Bool) {
         if !criteria.simplifyGamma, let f = focalGammaContainer {
             let count = f.count
             if count > 0 {
                 for i in 0...count-1 {
-                    if let item = f.itemAt(index: i), let gamma = item.subMatches?[.gamma], let g = gamma {
+                    if let item = f.itemAt(index: i), let gamma = item.subMatches?[.gamma], var g = gamma {
+                        if GeOnly {
+                            g = g.filteredByMarker(marker: 0)
+                        }
+                        let destination: LoggerDestination = GeOnly ? .gammaGeOnly : .gammaAll
                         let c = g.count
                         if c > 0 {
                             let rowsMax = c
@@ -1375,9 +1383,9 @@ class Processor {
                                     default:
                                         break
                                     }
-                                    logger.writeField(field as AnyObject, destination: .gamma)
+                                    logger.writeField(field as AnyObject, destination: destination)
                                 }
-                                logger.finishLine(.gamma)
+                                logger.finishLine(destination)
                             }
                         }
                     }

@@ -9,13 +9,14 @@
 import Cocoa
 
 enum LoggerDestination {
-    case results, gamma
+    case results, gammaAll, gammaGeOnly
 }
 
 class Logger {
     
     fileprivate var resultsCSVWriter: CSVWriter
-    fileprivate var gammaCSVWriter: CSVWriter
+    fileprivate var gammaAllCSVWriter: CSVWriter
+    fileprivate var gammaGeOnlyCSVWriter: CSVWriter
     fileprivate var statisticsCSVWriter: CSVWriter
     fileprivate var folderName: String
     fileprivate var timeStamp: String
@@ -27,7 +28,8 @@ class Logger {
         folderName = name
         timeStamp = stamp
         resultsCSVWriter = CSVWriter(path: FileManager.resultsFilePath(stamp, folderName: name))
-        gammaCSVWriter = CSVWriter(path: FileManager.gammaFilePath(stamp, folderName: name))
+        gammaAllCSVWriter = CSVWriter(path: FileManager.filePath("gamma_all", timeStamp: stamp, folderName: name))
+        gammaGeOnlyCSVWriter = CSVWriter(path: FileManager.filePath("gamma_Ge_only", timeStamp: stamp, folderName: name))
         statisticsCSVWriter = CSVWriter(path: FileManager.statisticsFilePath(stamp, folderName: name))
         let f = DateFormatter()
         f.calendar = Calendar(identifier: .gregorian)
@@ -41,8 +43,10 @@ class Logger {
         switch destination {
         case .results:
             return resultsCSVWriter
-        case .gamma:
-            return gammaCSVWriter
+        case .gammaAll:
+            return gammaAllCSVWriter
+        case .gammaGeOnly:
+            return gammaGeOnlyCSVWriter
         }
     }
     
