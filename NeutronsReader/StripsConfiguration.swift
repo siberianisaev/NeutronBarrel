@@ -73,7 +73,7 @@ class StripsConfiguration {
         panel.canChooseFiles = true
         panel.allowsMultipleSelection = false
         panel.begin { (result) -> Void in
-            if result.rawValue == NSFileHandlingPanelOKButton {
+            if result == NSApplication.ModalResponse.OK {
                 handle(urls: panel.urls, completion: completion)
             }
         }

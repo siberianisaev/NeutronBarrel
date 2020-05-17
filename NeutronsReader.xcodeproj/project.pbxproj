@@ -503,6 +503,7 @@
 				GCC_PREFIX_HEADER = "NeutronsReader/NeutronsReader-Prefix.pch";
 				INFOPLIST_FILE = "$(SRCROOT)/NeutronsReader/NewTimeFormat-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				OTHER_SWIFT_FLAGS = "-DNEW_TIME_FORMAT";
 				PRODUCT_BUNDLE_IDENTIFIER = ru.jinr.flerovlab.NewTimeFormat;
 				PRODUCT_MODULE_NAME = NeutronsReader;
@@ -525,6 +526,7 @@
 				GCC_PREFIX_HEADER = "NeutronsReader/NeutronsReader-Prefix.pch";
 				INFOPLIST_FILE = "$(SRCROOT)/NeutronsReader/NewTimeFormat-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				OTHER_SWIFT_FLAGS = "-DNEW_TIME_FORMAT";
 				PRODUCT_BUNDLE_IDENTIFIER = ru.jinr.flerovlab.NewTimeFormat;
 				PRODUCT_MODULE_NAME = NeutronsReader;
@@ -653,6 +655,7 @@
 				GCC_PREFIX_HEADER = "NeutronsReader/NeutronsReader-Prefix.pch";
 				INFOPLIST_FILE = "NeutronsReader/NeutronsReader-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				MARKETING_VERSION = 7.0;
 				PRODUCT_BUNDLE_IDENTIFIER = ru.jinr.flerovlab.NeutronsReader;
 				PRODUCT_MODULE_NAME = NeutronsReader;
@@ -676,6 +679,7 @@
 				GCC_PREFIX_HEADER = "NeutronsReader/NeutronsReader-Prefix.pch";
 				INFOPLIST_FILE = "NeutronsReader/NeutronsReader-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				MARKETING_VERSION = 7.0;
 				PRODUCT_BUNDLE_IDENTIFIER = ru.jinr.flerovlab.NeutronsReader;
 				PRODUCT_MODULE_NAME = NeutronsReader;

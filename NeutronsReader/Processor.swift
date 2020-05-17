@@ -215,6 +215,7 @@ class Processor {
         clearActInfo()
         
         logger = Logger(folder: criteria.resultsFolderName)
+        logger.logSettings()
         logInput(onEnd: false)
         logCalibration()
         logResultsHeader()

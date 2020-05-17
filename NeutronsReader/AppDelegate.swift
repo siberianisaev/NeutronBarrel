@@ -57,46 +57,127 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     fileprivate var startDate: Date?
     fileprivate var timer: Timer?
     
+    func readSettings() {
+        sMinFissionEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MinFissionEnergy)) // MeV
+        sMaxFissionEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MaxFissionEnergy)) // MeV
+        sMinFissionBackEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MinFissionBackEnergy)) // MeV
+        sMaxFissionBackEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MaxFissionBackEnergy)) // MeV
+        sMinRecoilFrontEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MinRecoilFrontEnergy)) // MeV
+        sMaxRecoilFrontEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MaxRecoilFrontEnergy)) // MeV
+        sMinRecoilBackEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MinRecoilBackEnergy)) // MeV
+        sMaxRecoilBackEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MaxRecoilBackEnergy)) // MeV
+        sMinTOFValue = String(format: "%d", Settings.getIntSetting(.MinTOFValue)) // channel or ns
+        sMaxTOFValue = String(format: "%d", Settings.getIntSetting(.MaxTOFValue)) // channel or ns
+        sMinRecoilTime = String(format: "%d", Settings.getIntSetting(.MinRecoilTime)) // mks
+        sMaxRecoilTime = String(format: "%d", Settings.getIntSetting(.MaxRecoilTime)) // mks
+        sMaxRecoilBackTime = String(format: "%d", Settings.getIntSetting(.MaxRecoilBackTime)) // mks
+        sMaxRecoilBackBackwardTime = String(format: "%d", Settings.getIntSetting(.MaxRecoilBackBackwardTime)) // mks
+        sMaxFissionTime = String(format: "%d", Settings.getIntSetting(.MaxFissionTime)) // mks
+        sMaxFissionBackBackwardTime = String(format: "%d", Settings.getIntSetting(.MaxFissionBackBackwardTime)) // mks
+        sMaxFissionWellBackwardTime = String(format: "%d", Settings.getIntSetting(.MaxFissionWellBackwardTime)) // mks
+        sMaxTOFTime = String(format: "%d", Settings.getIntSetting(.MaxTOFTime)) // mks
+        sMaxVETOTime = String(format: "%d", Settings.getIntSetting(.MaxVETOTime)) // mks
+        sMaxGammaTime = String(format: "%d", Settings.getIntSetting(.MaxGammaTime)) // mks
+        sMaxNeutronTime = String(format: "%d", Settings.getIntSetting(.MaxNeutronTime)) // mks
+        sMaxRecoilFrontDeltaStrips = String(format: "%d", Settings.getIntSetting(.MaxRecoilFrontDeltaStrips))
+        sMaxRecoilBackDeltaStrips = String(format: "%d", Settings.getIntSetting(.MaxRecoilBackDeltaStrips))
+        summarizeFissionsFront = Settings.getBoolSetting(.SummarizeFissionsFront)
+        summarizeFissionsFront2 = Settings.getBoolSetting(.SummarizeFissionsFront2)
+        requiredFissionAlphaBack = Settings.getBoolSetting(.RequiredFissionAlphaBack)
+        requiredRecoilBack = Settings.getBoolSetting(.RequiredRecoilBack)
+        requiredRecoil = Settings.getBoolSetting(.RequiredRecoil)
+        requiredGamma = Settings.getBoolSetting(.RequiredGamma)
+        simplifyGamma = Settings.getBoolSetting(.SimplifyGamma)
+        requiredWell = Settings.getBoolSetting(.RequiredWell)
+        wellRecoilsAllowed = Settings.getBoolSetting(.WellRecoilsAllowed)
+        searchExtraFromParticle2 = Settings.getBoolSetting(.SearchExtraFromParticle2)
+        requiredTOF = Settings.getBoolSetting(.RequiredTOF)
+        useTOF2 = Settings.getBoolSetting(.UseTOF2)
+        requiredVETO = Settings.getBoolSetting(.RequiredVETO)
+        searchNeutrons = Settings.getBoolSetting(.SearchNeutrons)
+        searchFissionAlpha2 = Settings.getBoolSetting(.SearchFissionAlpha2)
+        sBeamEnergyMin = String(format: "%.1f", Settings.getDoubleSetting(.BeamEnergyMin)) // MeV
+        sBeamEnergyMax = String(format: "%.1f", Settings.getDoubleSetting(.BeamEnergyMax)) // MeV
+        sMinFissionAlpha2Energy = String(format: "%.1f", Settings.getDoubleSetting(.MinFissionAlpha2Energy)) // MeV
+        sMaxFissionAlpha2Energy = String(format: "%.1f", Settings.getDoubleSetting(.MaxFissionAlpha2Energy)) // MeV
+        sMinFissionAlpha2BackEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MinFissionAlpha2BackEnergy)) // MeV
+        sMaxFissionAlpha2BackEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MaxFissionAlpha2BackEnergy)) // MeV
+        sMinFissionAlpha2Time = String(format: "%d", Settings.getIntSetting(.MinFissionAlpha2Time)) // mks
+        sMaxFissionAlpha2Time = String(format: "%d", Settings.getIntSetting(.MaxFissionAlpha2Time)) // mks
+        sMaxFissionAlpha2FrontDeltaStrips = String(format: "%d", Settings.getIntSetting(.MaxFissionAlpha2FrontDeltaStrips))
+        sMaxConcurrentOperations = String(format: "%d", Settings.getIntSetting(.MaxConcurrentOperations))
+        searchSpecialEvents = Settings.getBoolSetting(.SearchSpecialEvents)
+        specialEventIds = Settings.getStringSetting(.SpecialEventIds) ?? ""
+        searchVETO = Settings.getBoolSetting(.SearchVETO)
+        searchWell = Settings.getBoolSetting(.SearchWell)
+        trackBeamEnergy = Settings.getBoolSetting(.TrackBeamEnergy)
+        trackBeamCurrent = Settings.getBoolSetting(.TrackBeamCurrent)
+        trackBeamBackground = Settings.getBoolSetting(.TrackBeamBackground)
+        trackBeamIntegral = Settings.getBoolSetting(.TrackBeamIntegral)
+        searchFissionBackByFact = Settings.getBoolSetting(.SearchFissionBackByFact)
+        searchFissionBack2ByFact = Settings.getBoolSetting(.SearchFissionBack2ByFact)
+        searchRecoilBackByFact = Settings.getBoolSetting(.SearchRecoilBackByFact)
+        
+        setupRecoilTypes()
+        setupRecoilBackTypes()
+        startParticleControl.selectedSegment = Settings.getIntSetting(.StartSearchType)
+        startParticleBackControl.selectedSegment = Settings.getIntSetting(.StartBackSearchType)
+        secondParticleFrontControl.selectedSegment = Settings.getIntSetting(.SecondFrontSearchType)
+        secondParticleBackControl.selectedSegment = Settings.getIntSetting(.SecondBackSearchType)
+        wellParticleBackControl.selectedSegment = Settings.getIntSetting(.WellBackSearchType)
+        startParticleChanged(nil)
+        secondParticleFrontChanged(nil)
+        secondParticleBackChanged(nil)
+        setupVETOView()
+        setupWellView()
+        setupAlpha2FormView()
+        setupSearchExtraView()
+        setupFissionAlpha1BackEnergyView()
+        setupFissionAlpha2BackEnergyView()
+        setupRecoilBackEnergyView()
+        tofUnitsControl.selectedSegment = Settings.getIntSetting(.TOFUnits)
+    }
+    
     @IBInspectable var sResultsFolderName = ""
-    @IBInspectable var sMinFissionEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MinFissionEnergy)) // MeV
-    @IBInspectable var sMaxFissionEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MaxFissionEnergy)) // MeV
-    @IBInspectable var sMinFissionBackEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MinFissionBackEnergy)) // MeV
-    @IBInspectable var sMaxFissionBackEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MaxFissionBackEnergy)) // MeV
-    @IBInspectable var sMinRecoilFrontEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MinRecoilFrontEnergy)) // MeV
-    @IBInspectable var sMaxRecoilFrontEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MaxRecoilFrontEnergy)) // MeV
-    @IBInspectable var sMinRecoilBackEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MinRecoilBackEnergy)) // MeV
-    @IBInspectable var sMaxRecoilBackEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MaxRecoilBackEnergy)) // MeV
-    @IBInspectable var sMinTOFValue = String(format: "%d", Settings.getIntSetting(.MinTOFValue)) // channel or ns
-    @IBInspectable var sMaxTOFValue = String(format: "%d", Settings.getIntSetting(.MaxTOFValue)) // channel or ns
-    @IBInspectable var sMinRecoilTime = String(format: "%d", Settings.getIntSetting(.MinRecoilTime)) // mks
-    @IBInspectable var sMaxRecoilTime = String(format: "%d", Settings.getIntSetting(.MaxRecoilTime)) // mks
-    @IBInspectable var sMaxRecoilBackTime = String(format: "%d", Settings.getIntSetting(.MaxRecoilBackTime)) // mks
-    @IBInspectable var sMaxRecoilBackBackwardTime = String(format: "%d", Settings.getIntSetting(.MaxRecoilBackBackwardTime)) // mks
-    @IBInspectable var sMaxFissionTime = String(format: "%d", Settings.getIntSetting(.MaxFissionTime)) // mks
-    @IBInspectable var sMaxFissionBackBackwardTime = String(format: "%d", Settings.getIntSetting(.MaxFissionBackBackwardTime)) // mks
-    @IBInspectable var sMaxFissionWellBackwardTime = String(format: "%d", Settings.getIntSetting(.MaxFissionWellBackwardTime)) // mks
-    @IBInspectable var sMaxTOFTime = String(format: "%d", Settings.getIntSetting(.MaxTOFTime)) // mks
-    @IBInspectable var sMaxVETOTime = String(format: "%d", Settings.getIntSetting(.MaxVETOTime)) // mks
-    @IBInspectable var sMaxGammaTime = String(format: "%d", Settings.getIntSetting(.MaxGammaTime)) // mks
-    @IBInspectable var sMaxNeutronTime = String(format: "%d", Settings.getIntSetting(.MaxNeutronTime)) // mks
-    @IBInspectable var sMaxRecoilFrontDeltaStrips = String(format: "%d", Settings.getIntSetting(.MaxRecoilFrontDeltaStrips))
-    @IBInspectable var sMaxRecoilBackDeltaStrips = String(format: "%d", Settings.getIntSetting(.MaxRecoilBackDeltaStrips))
-    @IBInspectable var summarizeFissionsFront: Bool = Settings.getBoolSetting(.SummarizeFissionsFront)
-    @IBInspectable var summarizeFissionsFront2: Bool = Settings.getBoolSetting(.SummarizeFissionsFront2)
-    @IBInspectable var requiredFissionAlphaBack: Bool = Settings.getBoolSetting(.RequiredFissionAlphaBack)
-    @IBInspectable var requiredRecoilBack: Bool = Settings.getBoolSetting(.RequiredRecoilBack)
-    @IBInspectable var requiredRecoil: Bool = Settings.getBoolSetting(.RequiredRecoil)
-    @IBInspectable var requiredGamma: Bool = Settings.getBoolSetting(.RequiredGamma)
-    @IBInspectable var simplifyGamma: Bool = Settings.getBoolSetting(.SimplifyGamma)
-    @IBInspectable var requiredWell: Bool = Settings.getBoolSetting(.RequiredWell)
-    @IBInspectable var wellRecoilsAllowed: Bool = Settings.getBoolSetting(.WellRecoilsAllowed)
+    @IBInspectable var sMinFissionEnergy: String = ""
+    @IBInspectable var sMaxFissionEnergy: String = ""
+    @IBInspectable var sMinFissionBackEnergy: String = ""
+    @IBInspectable var sMaxFissionBackEnergy: String = ""
+    @IBInspectable var sMinRecoilFrontEnergy: String = ""
+    @IBInspectable var sMaxRecoilFrontEnergy: String = ""
+    @IBInspectable var sMinRecoilBackEnergy: String = ""
+    @IBInspectable var sMaxRecoilBackEnergy: String = ""
+    @IBInspectable var sMinTOFValue: String = ""
+    @IBInspectable var sMaxTOFValue: String = ""
+    @IBInspectable var sMinRecoilTime: String = ""
+    @IBInspectable var sMaxRecoilTime: String = ""
+    @IBInspectable var sMaxRecoilBackTime: String = ""
+    @IBInspectable var sMaxRecoilBackBackwardTime: String = ""
+    @IBInspectable var sMaxFissionTime: String = ""
+    @IBInspectable var sMaxFissionBackBackwardTime: String = ""
+    @IBInspectable var sMaxFissionWellBackwardTime: String = ""
+    @IBInspectable var sMaxTOFTime: String = ""
+    @IBInspectable var sMaxVETOTime: String = ""
+    @IBInspectable var sMaxGammaTime: String = ""
+    @IBInspectable var sMaxNeutronTime: String = ""
+    @IBInspectable var sMaxRecoilFrontDeltaStrips: String = ""
+    @IBInspectable var sMaxRecoilBackDeltaStrips: String = ""
+    @IBInspectable var summarizeFissionsFront: Bool = false
+    @IBInspectable var summarizeFissionsFront2: Bool = false
+    @IBInspectable var requiredFissionAlphaBack: Bool = false
+    @IBInspectable var requiredRecoilBack: Bool = false
+    @IBInspectable var requiredRecoil: Bool = false
+    @IBInspectable var requiredGamma: Bool = false
+    @IBInspectable var simplifyGamma: Bool = false
+    @IBInspectable var requiredWell: Bool = false
+    @IBInspectable var wellRecoilsAllowed: Bool = false
     @IBOutlet weak var searchExtraFromParticle2Button: NSButton!
-    @IBInspectable var searchExtraFromParticle2: Bool = Settings.getBoolSetting(.SearchExtraFromParticle2)
-    @IBInspectable var requiredTOF: Bool = Settings.getBoolSetting(.RequiredTOF)
-    @IBInspectable var useTOF2: Bool = Settings.getBoolSetting(.UseTOF2)
-    @IBInspectable var requiredVETO: Bool = Settings.getBoolSetting(.RequiredVETO)
-    @IBInspectable var searchNeutrons: Bool = Settings.getBoolSetting(.SearchNeutrons)
-    @IBInspectable var searchFissionAlpha2: Bool = Settings.getBoolSetting(.SearchFissionAlpha2) {
+    @IBInspectable var searchExtraFromParticle2: Bool = false
+    @IBInspectable var requiredTOF: Bool = false
+    @IBInspectable var useTOF2: Bool = false
+    @IBInspectable var requiredVETO: Bool = false
+    @IBInspectable var searchNeutrons: Bool = false
+    @IBInspectable var searchFissionAlpha2: Bool = false {
         didSet {
             secondParticleFrontChanged(nil)
             setupAlpha2FormView()
@@ -104,47 +185,47 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             searchExtraFromParticle2Button.state = searchExtraFromParticle2 ? .on : .off
         }
     }
-    @IBInspectable var sBeamEnergyMin = String(format: "%.1f", Settings.getDoubleSetting(.BeamEnergyMin)) // MeV
-    @IBInspectable var sBeamEnergyMax = String(format: "%.1f", Settings.getDoubleSetting(.BeamEnergyMax)) // MeV
-    @IBInspectable var sMinFissionAlpha2Energy = String(format: "%.1f", Settings.getDoubleSetting(.MinFissionAlpha2Energy)) // MeV
-    @IBInspectable var sMaxFissionAlpha2Energy = String(format: "%.1f", Settings.getDoubleSetting(.MaxFissionAlpha2Energy)) // MeV
-    @IBInspectable var sMinFissionAlpha2BackEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MinFissionAlpha2BackEnergy)) // MeV
-    @IBInspectable var sMaxFissionAlpha2BackEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MaxFissionAlpha2BackEnergy)) // MeV
-    @IBInspectable var sMinFissionAlpha2Time = String(format: "%d", Settings.getIntSetting(.MinFissionAlpha2Time)) // mks
-    @IBInspectable var sMaxFissionAlpha2Time = String(format: "%d", Settings.getIntSetting(.MaxFissionAlpha2Time)) // mks
-    @IBInspectable var sMaxFissionAlpha2FrontDeltaStrips = String(format: "%d", Settings.getIntSetting(.MaxFissionAlpha2FrontDeltaStrips))
-    @IBInspectable var sMaxConcurrentOperations = String(format: "%d", Settings.getIntSetting(.MaxConcurrentOperations)) {
+    @IBInspectable var sBeamEnergyMin: String = ""
+    @IBInspectable var sBeamEnergyMax: String = ""
+    @IBInspectable var sMinFissionAlpha2Energy: String = ""
+    @IBInspectable var sMaxFissionAlpha2Energy: String = ""
+    @IBInspectable var sMinFissionAlpha2BackEnergy: String = ""
+    @IBInspectable var sMaxFissionAlpha2BackEnergy: String = ""
+    @IBInspectable var sMinFissionAlpha2Time: String = ""
+    @IBInspectable var sMaxFissionAlpha2Time: String = ""
+    @IBInspectable var sMaxFissionAlpha2FrontDeltaStrips: String = ""
+    @IBInspectable var sMaxConcurrentOperations: String = "" {
         didSet {
             operationQueue.maxConcurrentOperationCount = maxConcurrentOperationCount
         }
     }
-    @IBInspectable var searchSpecialEvents: Bool = Settings.getBoolSetting(.SearchSpecialEvents)
-    @IBInspectable var specialEventIds = Settings.getStringSetting(.SpecialEventIds) ?? ""
-    @IBInspectable var searchVETO: Bool = Settings.getBoolSetting(.SearchVETO) {
+    @IBInspectable var searchSpecialEvents: Bool = false
+    @IBInspectable var specialEventIds: String = ""
+    @IBInspectable var searchVETO: Bool = false {
         didSet {
             setupVETOView()
         }
     }
-    @IBInspectable var searchWell: Bool = Settings.getBoolSetting(.SearchWell) {
+    @IBInspectable var searchWell: Bool = false {
         didSet {
             setupWellView()
         }
     }
-    @IBInspectable var trackBeamEnergy: Bool = Settings.getBoolSetting(.TrackBeamEnergy)
-    @IBInspectable var trackBeamCurrent: Bool = Settings.getBoolSetting(.TrackBeamCurrent)
-    @IBInspectable var trackBeamBackground: Bool = Settings.getBoolSetting(.TrackBeamBackground)
-    @IBInspectable var trackBeamIntegral: Bool = Settings.getBoolSetting(.TrackBeamIntegral)
-    @IBInspectable var searchFissionBackByFact: Bool = Settings.getBoolSetting(.SearchFissionBackByFact) {
+    @IBInspectable var trackBeamEnergy: Bool = false
+    @IBInspectable var trackBeamCurrent: Bool = false
+    @IBInspectable var trackBeamBackground: Bool = false
+    @IBInspectable var trackBeamIntegral: Bool = false
+    @IBInspectable var searchFissionBackByFact: Bool = false {
         didSet {
             setupFissionAlpha1BackEnergyView()
         }
     }
-    @IBInspectable var searchFissionBack2ByFact: Bool = Settings.getBoolSetting(.SearchFissionBack2ByFact) {
+    @IBInspectable var searchFissionBack2ByFact: Bool = false {
         didSet {
             setupFissionAlpha2BackEnergyView()
         }
     }
-    @IBInspectable var searchRecoilBackByFact: Bool = Settings.getBoolSetting(.SearchRecoilBackByFact) {
+    @IBInspectable var searchRecoilBackByFact: Bool = false {
         didSet {
             setupRecoilBackEnergyView()
         }
@@ -211,24 +292,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     }
     
     func applicationDidFinishLaunching(_ aNotification: Notification) {
-        setupRecoilTypes()
-        setupRecoilBackTypes()
-        startParticleControl.selectedSegment = Settings.getIntSetting(.StartSearchType)
-        startParticleBackControl.selectedSegment = Settings.getIntSetting(.StartBackSearchType)
-        secondParticleFrontControl.selectedSegment = Settings.getIntSetting(.SecondFrontSearchType)
-        secondParticleBackControl.selectedSegment = Settings.getIntSetting(.SecondBackSearchType)
-        wellParticleBackControl.selectedSegment = Settings.getIntSetting(.WellBackSearchType)
-        startParticleChanged(nil)
-        secondParticleFrontChanged(nil)
-        secondParticleBackChanged(nil)
-        setupVETOView()
-        setupWellView()
-        setupAlpha2FormView()
-        setupSearchExtraView()
-        setupFissionAlpha1BackEnergyView()
-        setupFissionAlpha2BackEnergyView()
-        setupRecoilBackEnergyView()
-        tofUnitsControl.selectedSegment = Settings.getIntSetting(.TOFUnits)
+        readSettings()
         for i in [indicatorData, indicatorCalibration, indicatorStripsConfig] {
             setSelected(false, indicator: i)
         }
@@ -471,6 +535,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         label?.isHidden = value == nil
     }
     
+    @IBAction func selectSettings(_ sender: AnyObject?) {
+        Settings.readFromFile { [weak self] (success: Bool) in
+            self?.readSettings()
+        }
+    }
+    
     @IBAction func selectData(_ sender: AnyObject?) {
         DataLoader.load { [weak self] (success: Bool, urls: [URL]) in
             self?.setSelected(success, indicator: self?.indicatorData)
@@ -565,73 +635,76 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     // MARK: - Settings
     
     fileprivate func saveSettings() {
-        Settings.setObject(Double(sMinFissionEnergy), forSetting: .MinFissionEnergy)
-        Settings.setObject(Double(sMaxFissionEnergy), forSetting: .MaxFissionEnergy)
-        Settings.setObject(Double(sMinFissionBackEnergy), forSetting: .MinFissionBackEnergy)
-        Settings.setObject(Double(sMaxFissionBackEnergy), forSetting: .MaxFissionBackEnergy)
-        Settings.setObject(Double(sMinRecoilFrontEnergy), forSetting: .MinRecoilFrontEnergy)
-        Settings.setObject(Double(sMaxRecoilFrontEnergy), forSetting: .MaxRecoilFrontEnergy)
-        Settings.setObject(Double(sMinRecoilBackEnergy), forSetting: .MinRecoilBackEnergy)
-        Settings.setObject(Double(sMaxRecoilBackEnergy), forSetting: .MaxRecoilBackEnergy)
-        Settings.setObject(Float(sBeamEnergyMin), forSetting: .BeamEnergyMin)
-        Settings.setObject(Float(sBeamEnergyMax), forSetting: .BeamEnergyMax)
-        Settings.setObject(Int(sMinTOFValue), forSetting: .MinTOFValue)
-        Settings.setObject(Int(sMaxTOFValue), forSetting: .MaxTOFValue)
-        Settings.setObject(tofUnitsControl.selectedSegment, forSetting: .TOFUnits)
-        Settings.setObject(Int(sMinRecoilTime), forSetting: .MinRecoilTime)
-        Settings.setObject(Int(sMaxRecoilTime), forSetting: .MaxRecoilTime)
-        Settings.setObject(Int(sMaxRecoilBackTime), forSetting: .MaxRecoilBackTime)
-        Settings.setObject(Int(sMaxRecoilBackBackwardTime), forSetting: .MaxRecoilBackBackwardTime)
-        Settings.setObject(Int(sMaxFissionTime), forSetting: .MaxFissionTime)
-        Settings.setObject(Int(sMaxFissionBackBackwardTime), forSetting: .MaxFissionBackBackwardTime)
-        Settings.setObject(Int(sMaxFissionWellBackwardTime), forSetting: .MaxFissionWellBackwardTime)
-        Settings.setObject(Int(sMaxTOFTime), forSetting: .MaxTOFTime)
-        Settings.setObject(Int(sMaxVETOTime), forSetting: .MaxVETOTime)
-        Settings.setObject(Int(sMaxGammaTime), forSetting: .MaxGammaTime)
-        Settings.setObject(Int(sMaxNeutronTime), forSetting: .MaxNeutronTime)
-        Settings.setObject(Int(sMaxRecoilFrontDeltaStrips), forSetting: .MaxRecoilFrontDeltaStrips)
-        Settings.setObject(Int(sMaxRecoilBackDeltaStrips), forSetting: .MaxRecoilBackDeltaStrips)
-        Settings.setObject(summarizeFissionsFront, forSetting: .SummarizeFissionsFront)
-        Settings.setObject(summarizeFissionsFront2, forSetting: .SummarizeFissionsFront2)
-        Settings.setObject(requiredFissionAlphaBack, forSetting: .RequiredFissionAlphaBack)
-        Settings.setObject(requiredRecoilBack, forSetting: .RequiredRecoilBack)
-        Settings.setObject(requiredRecoil, forSetting: .RequiredRecoil)
-        Settings.setObject(requiredGamma, forSetting: .RequiredGamma)
-        Settings.setObject(simplifyGamma, forSetting: .SimplifyGamma)
-        Settings.setObject(requiredWell, forSetting: .RequiredWell)
-        Settings.setObject(wellRecoilsAllowed, forSetting: .WellRecoilsAllowed)
-        Settings.setObject(searchExtraFromParticle2, forSetting: .SearchExtraFromParticle2)
-        Settings.setObject(requiredTOF, forSetting: .RequiredTOF)
-        Settings.setObject(useTOF2, forSetting: .UseTOF2)
-        Settings.setObject(requiredVETO, forSetting: .RequiredVETO)
-        Settings.setObject(searchNeutrons, forSetting: .SearchNeutrons)
-        Settings.setObject(searchVETO, forSetting: .SearchVETO)
-        Settings.setObject(trackBeamEnergy, forSetting: .TrackBeamEnergy)
-        Settings.setObject(trackBeamCurrent, forSetting: .TrackBeamCurrent)
-        Settings.setObject(trackBeamBackground, forSetting: .TrackBeamBackground)
-        Settings.setObject(trackBeamIntegral, forSetting: .TrackBeamIntegral)
-        Settings.setObject(startParticleControl.selectedSegment, forSetting: .StartSearchType)
-        Settings.setObject(startParticleBackControl.selectedSegment, forSetting: .StartBackSearchType)
-        Settings.setObject(secondParticleFrontControl.selectedSegment, forSetting: .SecondFrontSearchType)
-        Settings.setObject(secondParticleBackControl.selectedSegment, forSetting: .SecondBackSearchType)
-        Settings.setObject(wellParticleBackControl.selectedSegment, forSetting: .WellBackSearchType)
-        Settings.setObject(searchFissionAlpha2, forSetting: .SearchFissionAlpha2)
-        Settings.setObject(Double(sMinFissionAlpha2Energy), forSetting: .MinFissionAlpha2Energy)
-        Settings.setObject(Double(sMaxFissionAlpha2Energy), forSetting: .MaxFissionAlpha2Energy)
-        Settings.setObject(Double(sMinFissionAlpha2BackEnergy), forSetting: .MinFissionAlpha2BackEnergy)
-        Settings.setObject(Double(sMaxFissionAlpha2BackEnergy), forSetting: .MaxFissionAlpha2BackEnergy)
-        Settings.setObject(Int(sMinFissionAlpha2Time), forSetting: .MinFissionAlpha2Time)
-        Settings.setObject(Int(sMaxFissionAlpha2Time), forSetting: .MaxFissionAlpha2Time)
-        Settings.setObject(Int(sMaxFissionAlpha2FrontDeltaStrips), forSetting: .MaxFissionAlpha2FrontDeltaStrips)
-        Settings.setObject(maxConcurrentOperationCount, forSetting: .MaxConcurrentOperations)
-        Settings.setObject(searchSpecialEvents, forSetting: .SearchSpecialEvents)
-        Settings.setObject(specialEventIds, forSetting: .SpecialEventIds)
-        Settings.setObject(selectedRecoilType.rawValue, forSetting: .SelectedRecoilType)
-        Settings.setObject(selectedRecoilBackType.rawValue, forSetting: .SelectedRecoilBackType)
-        Settings.setObject(searchFissionBackByFact, forSetting: .SearchFissionBackByFact)
-        Settings.setObject(searchFissionBack2ByFact, forSetting: .SearchFissionBack2ByFact)
-        Settings.setObject(searchRecoilBackByFact, forSetting: .SearchRecoilBackByFact)
-        Settings.setObject(searchWell, forSetting: .SearchWell)
+        let dict: [Setting: Any?] = [
+            .MinFissionEnergy: Double(sMinFissionEnergy),
+            .MaxFissionEnergy: Double(sMaxFissionEnergy),
+            .MinFissionBackEnergy: Double(sMinFissionBackEnergy),
+            .MaxFissionBackEnergy: Double(sMaxFissionBackEnergy),
+            .MinRecoilFrontEnergy: Double(sMinRecoilFrontEnergy),
+            .MaxRecoilFrontEnergy: Double(sMaxRecoilFrontEnergy),
+            .MinRecoilBackEnergy: Double(sMinRecoilBackEnergy),
+            .MaxRecoilBackEnergy: Double(sMaxRecoilBackEnergy),
+            .BeamEnergyMin: Float(sBeamEnergyMin),
+            .BeamEnergyMax: Float(sBeamEnergyMax),
+            .MinTOFValue: Int(sMinTOFValue),
+            .MaxTOFValue: Int(sMaxTOFValue),
+            .TOFUnits: tofUnitsControl.selectedSegment,
+            .MinRecoilTime: Int(sMinRecoilTime),
+            .MaxRecoilTime: Int(sMaxRecoilTime),
+            .MaxRecoilBackTime: Int(sMaxRecoilBackTime),
+            .MaxRecoilBackBackwardTime: Int(sMaxRecoilBackBackwardTime),
+            .MaxFissionTime: Int(sMaxFissionTime),
+            .MaxFissionBackBackwardTime: Int(sMaxFissionBackBackwardTime),
+            .MaxFissionWellBackwardTime: Int(sMaxFissionWellBackwardTime),
+            .MaxTOFTime: Int(sMaxTOFTime),
+            .MaxVETOTime: Int(sMaxVETOTime),
+            .MaxGammaTime: Int(sMaxGammaTime),
+            .MaxNeutronTime: Int(sMaxNeutronTime),
+            .MaxRecoilFrontDeltaStrips: Int(sMaxRecoilFrontDeltaStrips),
+            .MaxRecoilBackDeltaStrips: Int(sMaxRecoilBackDeltaStrips),
+            .SummarizeFissionsFront: summarizeFissionsFront,
+            .SummarizeFissionsFront2: summarizeFissionsFront2,
+            .RequiredFissionAlphaBack: requiredFissionAlphaBack,
+            .RequiredRecoilBack: requiredRecoilBack,
+            .RequiredRecoil: requiredRecoil,
+            .RequiredGamma: requiredGamma,
+            .SimplifyGamma: simplifyGamma,
+            .RequiredWell: requiredWell,
+            .WellRecoilsAllowed: wellRecoilsAllowed,
+            .SearchExtraFromParticle2: searchExtraFromParticle2,
+            .RequiredTOF: requiredTOF,
+            .UseTOF2: useTOF2,
+            .RequiredVETO: requiredVETO,
+            .SearchNeutrons: searchNeutrons,
+            .SearchVETO: searchVETO,
+            .TrackBeamEnergy: trackBeamEnergy,
+            .TrackBeamCurrent: trackBeamCurrent,
+            .TrackBeamBackground: trackBeamBackground,
+            .TrackBeamIntegral: trackBeamIntegral,
+            .StartSearchType: startParticleControl.selectedSegment,
+            .StartBackSearchType: startParticleBackControl.selectedSegment,
+            .SecondFrontSearchType: secondParticleFrontControl.selectedSegment,
+            .SecondBackSearchType: secondParticleBackControl.selectedSegment,
+            .WellBackSearchType: wellParticleBackControl.selectedSegment,
+            .SearchFissionAlpha2: searchFissionAlpha2,
+            .MinFissionAlpha2Energy: Double(sMinFissionAlpha2Energy),
+            .MaxFissionAlpha2Energy: Double(sMaxFissionAlpha2Energy),
+            .MinFissionAlpha2BackEnergy: Double(sMinFissionAlpha2BackEnergy),
+            .MaxFissionAlpha2BackEnergy: Double(sMaxFissionAlpha2BackEnergy),
+            .MinFissionAlpha2Time: Int(sMinFissionAlpha2Time),
+            .MaxFissionAlpha2Time: Int(sMaxFissionAlpha2Time),
+            .MaxFissionAlpha2FrontDeltaStrips: Int(sMaxFissionAlpha2FrontDeltaStrips),
+            .MaxConcurrentOperations: maxConcurrentOperationCount,
+            .SearchSpecialEvents: searchSpecialEvents,
+            .SpecialEventIds: specialEventIds,
+            .SelectedRecoilType: selectedRecoilType.rawValue,
+            .SelectedRecoilBackType: selectedRecoilBackType.rawValue,
+            .SearchFissionBackByFact: searchFissionBackByFact,
+            .SearchFissionBack2ByFact: searchFissionBack2ByFact,
+            .SearchRecoilBackByFact: searchRecoilBackByFact,
+            .SearchWell: searchWell
+        ]
+        Settings.change(dict)
     }
     
     // MARK: - App Version

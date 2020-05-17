@@ -114,6 +114,13 @@ class Logger {
         statisticsCSVWriter.finishLine()
     }
     
+    func logSettings() {
+        if let path = FileManager.settingsFilePath(timeStamp, folderName: folderName) {
+            let url = URL(fileURLWithPath: path)
+            Settings.writeToFile(url)
+        }
+    }
+    
     func logInput(_ image: NSImage?, onEnd: Bool) {
         if let path = FileManager.inputFilePath(timeStamp, folderName: folderName, onEnd: onEnd) {
             let url = URL.init(fileURLWithPath: path)

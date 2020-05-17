@@ -7,89 +7,93 @@
 //
 
 import Foundation
+import AppKit
+
+enum Setting: String {
+    case
+    MinFissionEnergy = "MinFissionEnergy",
+    MaxFissionEnergy = "MaxFissionEnergy",
+    MinFissionBackEnergy = "MinFissionBackEnergy",
+    MaxFissionBackEnergy = "MaxFissionBackEnergy",
+    MinRecoilFrontEnergy = "MinRecoilFrontEnergy",
+    MaxRecoilFrontEnergy = "MaxRecoilFrontEnergy",
+    MinRecoilBackEnergy = "MinRecoilBackEnergy",
+    MaxRecoilBackEnergy = "MaxRecoilBackEnergy",
+    MinTOFValue = "MinTOFValue",
+    MaxTOFValue = "MaxTOFValue",
+    TOFUnits = "TOFUnits",
+    MinRecoilTime = "MinRecoilTime",
+    MaxRecoilTime = "MaxRecoilTime",
+    MaxRecoilBackTime = "MaxRecoilBackTime",
+    MaxRecoilBackBackwardTime = "MaxRecoilBackBackwardTime",
+    MaxFissionTime = "MaxFissionTime",
+    MaxFissionBackBackwardTime = "MaxFissionBackBackwardTime",
+    MaxFissionWellBackwardTime = "MaxFissionWellBackwardTime",
+    MaxTOFTime = "MaxTOFTime",
+    MaxVETOTime = "MaxVETOTime",
+    MaxGammaTime = "MaxGammaTime",
+    MaxNeutronTime = "MaxNeutronTime",
+    MaxRecoilFrontDeltaStrips = "MaxRecoilFrontDeltaStrips",
+    MaxRecoilBackDeltaStrips = "MaxRecoilBackDeltaStrips",
+    SummarizeFissionsFront = "SummarizeFissionsFront",
+    SummarizeFissionsFront2 = "SummarizeFissionsFront2",
+    RequiredFissionAlphaBack = "RequiredFissionAlphaBack",
+    RequiredRecoilBack = "RequiredRecoilBack",
+    RequiredRecoil = "RequiredRecoil",
+    RequiredGamma = "RequiredGamma",
+    SimplifyGamma = "SimplifyGamma",
+    RequiredWell = "RequiredWell",
+    WellRecoilsAllowed = "WellRecoilsAllowed",
+    SearchExtraFromParticle2 = "SearchExtraFromParticle2",
+    RequiredTOF = "RequiredTOF",
+    UseTOF2 = "UseTOF2",
+    RequiredVETO = "RequiredVETO",
+    SearchNeutrons = "SearchNeutrons",
+    StartSearchType = "StartSearchType",
+    StartBackSearchType = "StartBackSearchType",
+    SecondFrontSearchType = "SecondFrontSearchType",
+    SecondBackSearchType = "SecondBackSearchType",
+    WellBackSearchType = "WellBackSearchType",
+    SearchFissionAlpha2 = "SearchFissionAlpha2",
+    SearchVETO = "SearchVETO",
+    TrackBeamEnergy = "TrackBeamEnergy",
+    TrackBeamCurrent = "TrackBeamCurrent",
+    TrackBeamBackground = "TrackBeamBackground",
+    TrackBeamIntegral = "TrackBeamIntegral",
+    MinFissionAlpha2Energy = "MinFissionAlpha2Energy",
+    MaxFissionAlpha2Energy = "MaxFissionAlpha2Energy",
+    MinFissionAlpha2BackEnergy = "MinFissionAlpha2BackEnergy",
+    MaxFissionAlpha2BackEnergy = "MaxFissionAlpha2BackEnergy",
+    MinFissionAlpha2Time = "MinFissionAlpha2Time",
+    MaxFissionAlpha2Time = "MaxFissionAlpha2Time",
+    MaxFissionAlpha2FrontDeltaStrips = "MaxFissionAlpha2FrontDeltaStrips",
+    MaxConcurrentOperations = "MaxConcurrentOperations",
+    SearchSpecialEvents = "SearchSpecialEvents",
+    SpecialEventIds = "SpecialEventIds",
+    SelectedRecoilType = "SelectedRecoilType",
+    SelectedRecoilBackType = "SelectedRecoilBackType",
+    SearchFissionBackByFact = "SearchFissionBackByFact",
+    SearchFissionBack2ByFact = "SearchFissionBack2ByFact",
+    SearchRecoilBackByFact = "SearchRecoilBackByFact",
+    SearchWell = "SearchWell",
+    BeamEnergyMin = "BeamEnergyMin",
+    BeamEnergyMax = "BeamEnergyMax"
+}
 
 class Settings {
     
-    enum Setting: String {
-        case
-        MinFissionEnergy = "MinFissionEnergy",
-        MaxFissionEnergy = "MaxFissionEnergy",
-        MinFissionBackEnergy = "MinFissionBackEnergy",
-        MaxFissionBackEnergy = "MaxFissionBackEnergy",
-        MinRecoilFrontEnergy = "MinRecoilFrontEnergy",
-        MaxRecoilFrontEnergy = "MaxRecoilFrontEnergy",
-        MinRecoilBackEnergy = "MinRecoilBackEnergy",
-        MaxRecoilBackEnergy = "MaxRecoilBackEnergy",
-        MinTOFValue = "MinTOFValue",
-        MaxTOFValue = "MaxTOFValue",
-        TOFUnits = "TOFUnits",
-        MinRecoilTime = "MinRecoilTime",
-        MaxRecoilTime = "MaxRecoilTime",
-        MaxRecoilBackTime = "MaxRecoilBackTime",
-        MaxRecoilBackBackwardTime = "MaxRecoilBackBackwardTime",
-        MaxFissionTime = "MaxFissionTime",
-        MaxFissionBackBackwardTime = "MaxFissionBackBackwardTime",
-        MaxFissionWellBackwardTime = "MaxFissionWellBackwardTime",
-        MaxTOFTime = "MaxTOFTime",
-        MaxVETOTime = "MaxVETOTime",
-        MaxGammaTime = "MaxGammaTime",
-        MaxNeutronTime = "MaxNeutronTime",
-        MaxRecoilFrontDeltaStrips = "MaxRecoilFrontDeltaStrips",
-        MaxRecoilBackDeltaStrips = "MaxRecoilBackDeltaStrips",
-        SummarizeFissionsFront = "SummarizeFissionsFront",
-        SummarizeFissionsFront2 = "SummarizeFissionsFront2",
-        RequiredFissionAlphaBack = "RequiredFissionAlphaBack",
-        RequiredRecoilBack = "RequiredRecoilBack",
-        RequiredRecoil = "RequiredRecoil",
-        RequiredGamma = "RequiredGamma",
-        SimplifyGamma = "SimplifyGamma",
-        RequiredWell = "RequiredWell",
-        WellRecoilsAllowed = "WellRecoilsAllowed",
-        SearchExtraFromParticle2 = "SearchExtraFromParticle2",
-        RequiredTOF = "RequiredTOF",
-        UseTOF2 = "UseTOF2",
-        RequiredVETO = "RequiredVETO",
-        SearchNeutrons = "SearchNeutrons",
-        StartSearchType = "StartSearchType",
-        StartBackSearchType = "StartBackSearchType",
-        SecondFrontSearchType = "SecondFrontSearchType",
-        SecondBackSearchType = "SecondBackSearchType",
-        WellBackSearchType = "WellBackSearchType",
-        SearchFissionAlpha2 = "SearchFissionAlpha2",
-        SearchVETO = "SearchVETO",
-        TrackBeamEnergy = "TrackBeamEnergy",
-        TrackBeamCurrent = "TrackBeamCurrent",
-        TrackBeamBackground = "TrackBeamBackground",
-        TrackBeamIntegral = "TrackBeamIntegral",
-        MinFissionAlpha2Energy = "MinFissionAlpha2Energy",
-        MaxFissionAlpha2Energy = "MaxFissionAlpha2Energy",
-        MinFissionAlpha2BackEnergy = "MinFissionAlpha2BackEnergy",
-        MaxFissionAlpha2BackEnergy = "MaxFissionAlpha2BackEnergy",
-        MinFissionAlpha2Time = "MinFissionAlpha2Time",
-        MaxFissionAlpha2Time = "MaxFissionAlpha2Time",
-        MaxFissionAlpha2FrontDeltaStrips = "MaxFissionAlpha2FrontDeltaStrips",
-        MaxConcurrentOperations = "MaxConcurrentOperations",
-        SearchSpecialEvents = "SearchSpecialEvents",
-        SpecialEventIds = "SpecialEventIds",
-        SelectedRecoilType = "SelectedRecoilType",
-        SelectedRecoilBackType = "SelectedRecoilBackType",
-        SearchFissionBackByFact = "SearchFissionBackByFact",
-        SearchFissionBack2ByFact = "SearchFissionBack2ByFact",
-        SearchRecoilBackByFact = "SearchRecoilBackByFact",
-        SearchWell = "SearchWell",
-        BeamEnergyMin = "BeamEnergyMin",
-        BeamEnergyMax = "BeamEnergyMax"
-        
-        func key() -> String {
-            return "Setting.\(self.rawValue)"
-        }
-    }
+    fileprivate static let keySettings = "Settings"
     
-    class func setObject(_ object: Any?, forSetting setting: Setting) {
-        if let object = object {
-            let key = setting.key()
-            UserDefaults.standard.set(object, forKey: key)
+    class func change(_ dict: [Setting: Any?]) {
+        var info = [String: Any]()
+        for (setting, object) in dict {
+            if let object = object {
+                info[setting.rawValue] = object
+            }
         }
+        let ud = UserDefaults.standard
+        ud.set(info, forKey: keySettings)
+        ud.synchronize()
     }
     
     class func getStringSetting(_ setting: Setting) -> String? {
@@ -111,9 +115,50 @@ class Settings {
         return object ?? false
     }
     
+    fileprivate class func currentSettings() -> [String: Any]? {
+        return UserDefaults.standard.object(forKey: keySettings) as? [String: Any]
+    }
+    
+    class func readFromFile(_ completion: @escaping ((Bool)->())) {
+        let panel = NSOpenPanel()
+        panel.canChooseDirectories = false
+        panel.canChooseFiles = true
+        panel.allowsMultipleSelection = false
+        panel.begin { (result) -> Void in
+            if result == NSApplication.ModalResponse.OK {
+                var success: Bool = false
+                if let url = panel.urls.first {
+                    do {
+                        let data = try Data(contentsOf: url)
+                        if let dict = try NSKeyedUnarchiver.unarchiveTopLevelObjectWithData(data) as? [String: Any] {
+                            let ud = UserDefaults.standard
+                            ud.set(dict, forKey: keySettings)
+                            ud.synchronize()
+                            success = true
+                        }
+                    } catch {
+                        print(error)
+                    }
+                }
+                completion(success)
+            }
+        }
+    }
+    
+    class func writeToFile(_ fileURL: URL?) {
+        if let dict = currentSettings(), let url = fileURL {
+            do {
+                let data = try NSKeyedArchiver.archivedData(withRootObject: dict, requiringSecureCoding: false)
+                try data.write(to: url)
+            } catch {
+                print(error)
+            }
+        }
+    }
+    
     fileprivate class func getSetting(_ setting: Setting) -> Any? {
-        let key = setting.key()
-        if let object = UserDefaults.standard.object(forKey: key) {
+        let key = setting.rawValue
+        if let object = currentSettings()?[key] {
             return object
         }
         

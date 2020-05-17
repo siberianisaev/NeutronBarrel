@@ -62,6 +62,11 @@ class FileManager {
         return self.desktopFilePathWithName(name, folderName: folderName)
     }
     
+    class func settingsFilePath(_ timeStamp: String, folderName: String) -> String? {
+        let name = fileName(prefix: "settings", folderName: folderName, timeStamp: timeStamp, fileExtension: "ini")
+        return self.desktopFilePathWithName(name, folderName: folderName)
+    }
+    
     class func inputFilePath(_ timeStamp: String, folderName: String, onEnd: Bool) -> String? {
         let postfix = onEnd ? "end" : "start"
         let name = fileName(prefix: "input", folderName: folderName, timeStamp: timeStamp, postfix: postfix, fileExtension: "png")

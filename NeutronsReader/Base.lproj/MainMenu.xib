@@ -2220,6 +2220,17 @@
                             <binding destination="OMe-Tq-LMc" name="selectedIndex" keyPath="selectionIndex" previousBinding="BRA-rt-L5A" id="LPW-hp-Wrt"/>
                         </connections>
                     </popUpButton>
+                    <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1Iw-FP-dHE">
+                        <rect key="frame" x="1070" y="54" width="200" height="40"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="bevel" title="Select Settings" bezelStyle="regularSquare" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="OTR-28-w1F">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" size="15" name="HelveticaNeue"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="selectSettings:" target="Voe-Tx-rLC" id="CdG-th-W25"/>
+                        </connections>
+                    </button>
                 </subviews>
             </view>
             <point key="canvasLocation" x="212" y="536"/>
