@@ -138,46 +138,46 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         tofUnitsControl.selectedSegment = Settings.getIntSetting(.TOFUnits)
     }
     
-    @IBInspectable var sResultsFolderName = ""
-    @IBInspectable var sMinFissionEnergy: String = ""
-    @IBInspectable var sMaxFissionEnergy: String = ""
-    @IBInspectable var sMinFissionBackEnergy: String = ""
-    @IBInspectable var sMaxFissionBackEnergy: String = ""
-    @IBInspectable var sMinRecoilFrontEnergy: String = ""
-    @IBInspectable var sMaxRecoilFrontEnergy: String = ""
-    @IBInspectable var sMinRecoilBackEnergy: String = ""
-    @IBInspectable var sMaxRecoilBackEnergy: String = ""
-    @IBInspectable var sMinTOFValue: String = ""
-    @IBInspectable var sMaxTOFValue: String = ""
-    @IBInspectable var sMinRecoilTime: String = ""
-    @IBInspectable var sMaxRecoilTime: String = ""
-    @IBInspectable var sMaxRecoilBackTime: String = ""
-    @IBInspectable var sMaxRecoilBackBackwardTime: String = ""
-    @IBInspectable var sMaxFissionTime: String = ""
-    @IBInspectable var sMaxFissionBackBackwardTime: String = ""
-    @IBInspectable var sMaxFissionWellBackwardTime: String = ""
-    @IBInspectable var sMaxTOFTime: String = ""
-    @IBInspectable var sMaxVETOTime: String = ""
-    @IBInspectable var sMaxGammaTime: String = ""
-    @IBInspectable var sMaxNeutronTime: String = ""
-    @IBInspectable var sMaxRecoilFrontDeltaStrips: String = ""
-    @IBInspectable var sMaxRecoilBackDeltaStrips: String = ""
-    @IBInspectable var summarizeFissionsFront: Bool = false
-    @IBInspectable var summarizeFissionsFront2: Bool = false
-    @IBInspectable var requiredFissionAlphaBack: Bool = false
-    @IBInspectable var requiredRecoilBack: Bool = false
-    @IBInspectable var requiredRecoil: Bool = false
-    @IBInspectable var requiredGamma: Bool = false
-    @IBInspectable var simplifyGamma: Bool = false
-    @IBInspectable var requiredWell: Bool = false
-    @IBInspectable var wellRecoilsAllowed: Bool = false
+    @IBInspectable dynamic var sResultsFolderName = ""
+    @IBInspectable dynamic var sMinFissionEnergy: String = ""
+    @IBInspectable dynamic var sMaxFissionEnergy: String = ""
+    @IBInspectable dynamic var sMinFissionBackEnergy: String = ""
+    @IBInspectable dynamic var sMaxFissionBackEnergy: String = ""
+    @IBInspectable dynamic var sMinRecoilFrontEnergy: String = ""
+    @IBInspectable dynamic var sMaxRecoilFrontEnergy: String = ""
+    @IBInspectable dynamic var sMinRecoilBackEnergy: String = ""
+    @IBInspectable dynamic var sMaxRecoilBackEnergy: String = ""
+    @IBInspectable dynamic var sMinTOFValue: String = ""
+    @IBInspectable dynamic var sMaxTOFValue: String = ""
+    @IBInspectable dynamic var sMinRecoilTime: String = ""
+    @IBInspectable dynamic var sMaxRecoilTime: String = ""
+    @IBInspectable dynamic var sMaxRecoilBackTime: String = ""
+    @IBInspectable dynamic var sMaxRecoilBackBackwardTime: String = ""
+    @IBInspectable dynamic var sMaxFissionTime: String = ""
+    @IBInspectable dynamic var sMaxFissionBackBackwardTime: String = ""
+    @IBInspectable dynamic var sMaxFissionWellBackwardTime: String = ""
+    @IBInspectable dynamic var sMaxTOFTime: String = ""
+    @IBInspectable dynamic var sMaxVETOTime: String = ""
+    @IBInspectable dynamic var sMaxGammaTime: String = ""
+    @IBInspectable dynamic var sMaxNeutronTime: String = ""
+    @IBInspectable dynamic var sMaxRecoilFrontDeltaStrips: String = ""
+    @IBInspectable dynamic var sMaxRecoilBackDeltaStrips: String = ""
+    @IBInspectable dynamic var summarizeFissionsFront: Bool = false
+    @IBInspectable dynamic var summarizeFissionsFront2: Bool = false
+    @IBInspectable dynamic var requiredFissionAlphaBack: Bool = false
+    @IBInspectable dynamic var requiredRecoilBack: Bool = false
+    @IBInspectable dynamic var requiredRecoil: Bool = false
+    @IBInspectable dynamic var requiredGamma: Bool = false
+    @IBInspectable dynamic var simplifyGamma: Bool = false
+    @IBInspectable dynamic var requiredWell: Bool = false
+    @IBInspectable dynamic var wellRecoilsAllowed: Bool = false
     @IBOutlet weak var searchExtraFromParticle2Button: NSButton!
-    @IBInspectable var searchExtraFromParticle2: Bool = false
-    @IBInspectable var requiredTOF: Bool = false
-    @IBInspectable var useTOF2: Bool = false
-    @IBInspectable var requiredVETO: Bool = false
-    @IBInspectable var searchNeutrons: Bool = false
-    @IBInspectable var searchFissionAlpha2: Bool = false {
+    @IBInspectable dynamic var searchExtraFromParticle2: Bool = false
+    @IBInspectable dynamic var requiredTOF: Bool = false
+    @IBInspectable dynamic var useTOF2: Bool = false
+    @IBInspectable dynamic var requiredVETO: Bool = false
+    @IBInspectable dynamic var searchNeutrons: Bool = false
+    @IBInspectable dynamic var searchFissionAlpha2: Bool = false {
         didSet {
             secondParticleFrontChanged(nil)
             setupAlpha2FormView()
@@ -185,47 +185,47 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             searchExtraFromParticle2Button.state = searchExtraFromParticle2 ? .on : .off
         }
     }
-    @IBInspectable var sBeamEnergyMin: String = ""
-    @IBInspectable var sBeamEnergyMax: String = ""
-    @IBInspectable var sMinFissionAlpha2Energy: String = ""
-    @IBInspectable var sMaxFissionAlpha2Energy: String = ""
-    @IBInspectable var sMinFissionAlpha2BackEnergy: String = ""
-    @IBInspectable var sMaxFissionAlpha2BackEnergy: String = ""
-    @IBInspectable var sMinFissionAlpha2Time: String = ""
-    @IBInspectable var sMaxFissionAlpha2Time: String = ""
-    @IBInspectable var sMaxFissionAlpha2FrontDeltaStrips: String = ""
-    @IBInspectable var sMaxConcurrentOperations: String = "" {
+    @IBInspectable dynamic var sBeamEnergyMin: String = ""
+    @IBInspectable dynamic var sBeamEnergyMax: String = ""
+    @IBInspectable dynamic var sMinFissionAlpha2Energy: String = ""
+    @IBInspectable dynamic var sMaxFissionAlpha2Energy: String = ""
+    @IBInspectable dynamic var sMinFissionAlpha2BackEnergy: String = ""
+    @IBInspectable dynamic var sMaxFissionAlpha2BackEnergy: String = ""
+    @IBInspectable dynamic var sMinFissionAlpha2Time: String = ""
+    @IBInspectable dynamic var sMaxFissionAlpha2Time: String = ""
+    @IBInspectable dynamic var sMaxFissionAlpha2FrontDeltaStrips: String = ""
+    @IBInspectable dynamic var sMaxConcurrentOperations: String = "" {
         didSet {
             operationQueue.maxConcurrentOperationCount = maxConcurrentOperationCount
         }
     }
-    @IBInspectable var searchSpecialEvents: Bool = false
-    @IBInspectable var specialEventIds: String = ""
-    @IBInspectable var searchVETO: Bool = false {
+    @IBInspectable dynamic var searchSpecialEvents: Bool = false
+    @IBInspectable dynamic var specialEventIds: String = ""
+    @IBInspectable dynamic var searchVETO: Bool = false {
         didSet {
             setupVETOView()
         }
     }
-    @IBInspectable var searchWell: Bool = false {
+    @IBInspectable dynamic var searchWell: Bool = false {
         didSet {
             setupWellView()
         }
     }
-    @IBInspectable var trackBeamEnergy: Bool = false
-    @IBInspectable var trackBeamCurrent: Bool = false
-    @IBInspectable var trackBeamBackground: Bool = false
-    @IBInspectable var trackBeamIntegral: Bool = false
-    @IBInspectable var searchFissionBackByFact: Bool = false {
+    @IBInspectable dynamic var trackBeamEnergy: Bool = false
+    @IBInspectable dynamic var trackBeamCurrent: Bool = false
+    @IBInspectable dynamic var trackBeamBackground: Bool = false
+    @IBInspectable dynamic var trackBeamIntegral: Bool = false
+    @IBInspectable dynamic var searchFissionBackByFact: Bool = false {
         didSet {
             setupFissionAlpha1BackEnergyView()
         }
     }
-    @IBInspectable var searchFissionBack2ByFact: Bool = false {
+    @IBInspectable dynamic var searchFissionBack2ByFact: Bool = false {
         didSet {
             setupFissionAlpha2BackEnergyView()
         }
     }
-    @IBInspectable var searchRecoilBackByFact: Bool = false {
+    @IBInspectable dynamic var searchRecoilBackByFact: Bool = false {
         didSet {
             setupRecoilBackEnergyView()
         }
