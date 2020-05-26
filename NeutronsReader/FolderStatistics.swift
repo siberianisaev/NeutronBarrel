@@ -22,10 +22,10 @@ class FolderStatistics {
         if energyCount == 0 {
             return 0
         } else {
-            return Float(energySumm/Double(energyCount))
+            return Float(energySum/Double(energyCount))
         }
     }
-    fileprivate var energySumm: Double = 0
+    fileprivate var energySum: Double = 0
     fileprivate var energyCount: CUnsignedLong = 0
     
     var integral: Float {
@@ -59,7 +59,7 @@ class FolderStatistics {
     }
     
     func handleEnergy(_ value: Float) {
-        energySumm += Double(value)
+        energySum += Double(value)
         energyCount += 1
     }
     

@@ -29,8 +29,8 @@ class Processor {
     fileprivate var startEventTime: CUnsignedLongLong = 0
     fileprivate var secondEventTime: CUnsignedLongLong = 0
     fileprivate var neutronsPerAct = [Float]()
-    fileprivate var neutrons_N_SummPerAct: CUnsignedLongLong = 0
-    fileprivate var neutronsBackwardSummPerAct: CUnsignedLongLong = 0
+    fileprivate var neutrons_N_SumPerAct: CUnsignedLongLong = 0
+    fileprivate var neutronsBackwardSumPerAct: CUnsignedLongLong = 0
     fileprivate var currentFileName: String?
     fileprivate var neutronsMultiplicityTotal = [Int: Int]()
     fileprivate var specialPerAct = [Int: CUnsignedShort]()
@@ -389,7 +389,7 @@ class Processor {
             fseek(file, position, SEEK_SET)
             
             // Important: this search must be last because we don't do file repositioning here
-            // Summ(FFron or AFron)
+            // Sum(FFron or AFron)
             if !isRecoilSearch && criteria.summarizeFissionsAlphaFront {
                 findNextFissionsAlphaFront(folder)
             }
@@ -457,7 +457,7 @@ class Processor {
                 self.neutronsPerAct.append(t)
             }
             if self.dataProtocol.hasNeutrons_N() && self.dataProtocol.isNeutrons_N_Event(Int(event.eventId)) {
-                self.neutrons_N_SummPerAct += 1
+                self.neutrons_N_SumPerAct += 1
             }
         }
     }
@@ -467,7 +467,7 @@ class Processor {
         let start = criteria.searchExtraFromParticle2 ? secondEventTime : startEventTime
         search(directions: directions, startTime: start, minDeltaTime: 0, maxDeltaTime: 10, useCycleTime: false, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>, _) in
             if self.dataProtocol.isNeutronsEvent(Int(event.eventId)) {
-                self.neutronsBackwardSummPerAct += 1
+                self.neutronsBackwardSumPerAct += 1
             }
         }
     }
@@ -751,9 +751,9 @@ class Processor {
      */
     fileprivate func updateNeutronsMultiplicity() {
         let key = neutronsPerAct.count
-        var summ = neutronsMultiplicityTotal[Int(key)] ?? 0
-        summ += 1 // One event for all neutrons in one act of fission
-        neutronsMultiplicityTotal[Int(key)] = summ
+        var sum = neutronsMultiplicityTotal[Int(key)] ?? 0
+        sum += 1 // One event for all neutrons in one act of fission
+        neutronsMultiplicityTotal[Int(key)] = sum
     }
     
     fileprivate func storeFissionAlphaFront(_ event: Event, deltaTime: CLongLong, subMatches: [SearchType: DetectorMatch?]?) {
@@ -884,8 +884,8 @@ class Processor {
     
     fileprivate func clearActInfo() {
         neutronsPerAct.removeAll()
-        neutrons_N_SummPerAct = 0
-        neutronsBackwardSummPerAct = 0
+        neutrons_N_SumPerAct = 0
+        neutronsBackwardSumPerAct = 0
         fissionsAlphaPerAct.removeAll()
         specialPerAct.removeAll()
         beamStatePerAct.clean()
@@ -1082,13 +1082,13 @@ class Processor {
     fileprivate var keyColumnTofDeltaTime = "dT(TOF-RFron)"
     fileprivate var keyColumnTof2DeltaTime = "dT(TOF2-RFron)"
     fileprivate var keyColumnStartEvent = "Event($)"
-    fileprivate var keyColumnStartFrontSumm = "Summ($Fron)"
+    fileprivate var keyColumnStartFrontSum = "Sum($Fron)"
     fileprivate var keyColumnStartFrontEnergy = "$Fron"
     fileprivate var keyColumnStartFrontMarker = "$FronMarker"
     fileprivate var keyColumnStartFrontDeltaTime = "dT($FronFirst-Next)"
     fileprivate var keyColumnStartFrontStrip = "Strip($Fron)"
     fileprivate var keyColumnStartFocalPositionXYZ = "StartFocalPositionXYZ"
-    fileprivate var keyColumnStartBackSumm = "Summ(@Back)"
+    fileprivate var keyColumnStartBackSum = "Sum(@Back)"
     fileprivate var keyColumnStartBackEnergy = "@Back"
     fileprivate var keyColumnStartBackMarker = "@BackMarker"
     fileprivate var keyColumnStartBackDeltaTime = "dT($Fron-@Back)"
@@ -1145,6 +1145,7 @@ class Processor {
         return s + "Marker"
     }
     fileprivate var keyColumnGammaCount = "GammaCount"
+    fileprivate var keyColumnGammaSumEnergy = "GammaSumEnergy"
     fileprivate var keyColumnSpecial = "Special"
     fileprivate func keyColumnSpecialFor(eventId: Int) -> String {
         return keyColumnSpecial + String(eventId)
@@ -1157,13 +1158,13 @@ class Processor {
     fileprivate var keyColumnVetoEnergy = "E(VETO)"
     fileprivate var keyColumnVetoStrip = "Strip(VETO)"
     fileprivate var keyColumnVetoDeltaTime = "dT($Fron-VETO)"
-    fileprivate var keyColumnFissionAlphaFront2Summ = "Summ(&Front2)"
+    fileprivate var keyColumnFissionAlphaFront2Sum = "Sum(&Front2)"
     fileprivate var keyColumnFissionAlphaFront2Event = "Event(&Front2)"
     fileprivate var keyColumnFissionAlphaFront2Energy = "E(&Front2)"
     fileprivate var keyColumnFissionAlphaFront2Marker = "&Front2Marker"
     fileprivate var keyColumnFissionAlphaFront2DeltaTime = "dT($Front1-&Front2)"
     fileprivate var keyColumnFissionAlphaFront2Strip = "Strip(&Front2)"
-    fileprivate var keyColumnFissionAlphaBack2Summ = "Summ(^Back2)"
+    fileprivate var keyColumnFissionAlphaBack2Sum = "Sum(^Back2)"
     fileprivate var keyColumnFissionAlphaBack2Energy = "^Back2"
     fileprivate var keyColumnFissionAlphaBack2Marker = "^Back2Marker"
     fileprivate var keyColumnFissionAlphaBack2DeltaTime = "dT(&Fron1-^Back2)"
@@ -1176,6 +1177,7 @@ class Processor {
             columnsGamma.append(contentsOf: [
                 keyColumnEvent,
                 keyColumnGammaEnergy(false),
+                keyColumnGammaSumEnergy,
                 keyColumnGammaEncoder(false),
                 keyColumnGammaDeltaTime(false),
                 keyColumnGammaMarker(false),
@@ -1208,13 +1210,13 @@ class Processor {
         }
         columns.append(contentsOf: [
             keyColumnStartEvent,
-            keyColumnStartFrontSumm,
+            keyColumnStartFrontSum,
             keyColumnStartFrontEnergy,
             keyColumnStartFrontMarker,
             keyColumnStartFrontDeltaTime,
             keyColumnStartFrontStrip,
             keyColumnStartFocalPositionXYZ,
-            keyColumnStartBackSumm,
+            keyColumnStartBackSum,
             keyColumnStartBackEnergy,
             keyColumnStartBackMarker,
             keyColumnStartBackDeltaTime,
@@ -1242,6 +1244,7 @@ class Processor {
         }
         columns.append(contentsOf: [
             keyColumnGammaEnergy(true),
+            keyColumnGammaSumEnergy,
             keyColumnGammaEncoder(true),
             keyColumnGammaDeltaTime(true),
             keyColumnGammaCount
@@ -1275,14 +1278,14 @@ class Processor {
         if criteria.searchFissionAlpha2 {
             columns.append(keyColumnFissionAlphaFront2Event)
             if criteria.summarizeFissionsAlphaFront2 {
-                columns.append(keyColumnFissionAlphaFront2Summ)
+                columns.append(keyColumnFissionAlphaFront2Sum)
             }
             columns.append(contentsOf: [
                 keyColumnFissionAlphaFront2Energy,
                 keyColumnFissionAlphaFront2Marker,
                 keyColumnFissionAlphaFront2DeltaTime,
                 keyColumnFissionAlphaFront2Strip,
-                keyColumnFissionAlphaBack2Summ,
+                keyColumnFissionAlphaBack2Sum,
                 keyColumnFissionAlphaBack2Energy,
                 keyColumnFissionAlphaBack2Marker,
                 keyColumnFissionAlphaBack2DeltaTime,
@@ -1365,6 +1368,10 @@ class Processor {
                                         if let energy = g.itemAt(index: row)?.energy {
                                             field = String(format: "%.7f", energy)
                                         }
+                                    case keyColumnGammaSumEnergy:
+                                        if row == 0, let sum = g.getSumEnergy() {
+                                            field = String(format: "%.7f", sum)
+                                        }
                                     case keyColumnGammaEncoder(false):
                                         if let encoder = g.itemAt(index: row)?.encoder {
                                             field = String(format: "%hu", encoder)
@@ -1441,9 +1448,9 @@ class Processor {
                     } else if row < neutronsCountWithNewLine(), let eventNumber = currentStartEventNumber { // Need track start event number for neutron times results
                         field = currentFileEventNumber(eventNumber)
                     }
-                case keyColumnStartFrontSumm:
-                    if row == 0, !criteria.startFromRecoil(), let summ = fissionsAlphaPerAct.matchFor(side: .front).getSummEnergyFrom() {
-                        field = String(format: "%.7f", summ)
+                case keyColumnStartFrontSum:
+                    if row == 0, !criteria.startFromRecoil(), let sum = fissionsAlphaPerAct.matchFor(side: .front).getSumEnergy() {
+                        field = String(format: "%.7f", sum)
                     }
                 case keyColumnStartFrontEnergy:
                     if let energy = fissionsAlphaPerAct.matchFor(side: .front).itemAt(index: row)?.energy {
@@ -1467,9 +1474,9 @@ class Processor {
                         let point = DetectorsWellGeometry.coordinatesXYZ(stripDetector: .focal, stripFront0: stripFront1 - 1, stripBack0: stripBack1 - 1)
                         field = String(format: "%.1f|%.1f|%.1f", point.x, point.y, point.z)
                     }
-                case keyColumnStartBackSumm:
-                    if row == 0, !criteria.startFromRecoil(), let summ = fissionsAlphaPerAct.matchFor(side: .back).getSummEnergyFrom() {
-                        field = String(format: "%.7f", summ)
+                case keyColumnStartBackSum:
+                    if row == 0, !criteria.startFromRecoil(), let sum = fissionsAlphaPerAct.matchFor(side: .back).getSumEnergy() {
+                        field = String(format: "%.7f", sum)
                     }
                 case keyColumnStartBackEnergy:
                     let side: StripsSide = .back
@@ -1565,15 +1572,19 @@ class Processor {
                     }
                 case keyColumnNeutrons_N:
                     if row == 0 {
-                        field = String(format: "%llu", neutrons_N_SummPerAct)
+                        field = String(format: "%llu", neutrons_N_SumPerAct)
                     }
                 case keyColumnNeutronsBackward:
                     if row == 0 {
-                        field = String(format: "%llu", neutronsBackwardSummPerAct)
+                        field = String(format: "%llu", neutronsBackwardSumPerAct)
                     }
                 case keyColumnGammaEnergy(true):
                     if let energy = gammaAt(row: row)?.itemWithMaxEnergy()?.energy {
                         field = String(format: "%.7f", energy)
+                    }
+                case keyColumnGammaSumEnergy:
+                    if row == 0, let sum = gammaAt(row: row)?.getSumEnergy() {
+                        field = String(format: "%.7f", sum)
                     }
                 case keyColumnGammaEncoder(true):
                     if let encoder = gammaAt(row: row)?.itemWithMaxEnergy()?.encoder {
@@ -1635,8 +1646,8 @@ class Processor {
                     }
                 case keyColumnFissionAlphaFront2Event:
                     field = fissionAlpha2EventNumber(row, side: .front)
-                case keyColumnFissionAlphaFront2Summ:
-                    field = fissionAlpha2Summ(row, side: .front)
+                case keyColumnFissionAlphaFront2Sum:
+                    field = fissionAlpha2Sum(row, side: .front)
                 case keyColumnFissionAlphaFront2Energy:
                     field = fissionAlpha2Energy(row, side: .front)
                 case keyColumnFissionAlphaFront2Marker:
@@ -1645,8 +1656,8 @@ class Processor {
                     field = fissionAlpha2DeltaTime(row, side: .front)
                 case keyColumnFissionAlphaFront2Strip:
                     field = fissionAlpha2Strip(row, side: .front)
-                case keyColumnFissionAlphaBack2Summ:
-                    field = fissionAlpha2Summ(row, side: .back)
+                case keyColumnFissionAlphaBack2Sum:
+                    field = fissionAlpha2Sum(row, side: .back)
                 case keyColumnFissionAlphaBack2Energy:
                     field = fissionAlpha2Energy(row, side: .back)
                 case keyColumnFissionAlphaBack2Marker:
@@ -1681,9 +1692,9 @@ class Processor {
         }
     }
     
-    fileprivate func fissionAlpha2Summ(_ row: Int, side: StripsSide) -> String {
-        if row == 0, let summ = fissionAlpha2Match(row, side: side)?.getSummEnergyFrom() {
-            return String(format: "%.7f", summ)
+    fileprivate func fissionAlpha2Sum(_ row: Int, side: StripsSide) -> String {
+        if row == 0, let sum = fissionAlpha2Match(row, side: side)?.getSumEnergy() {
+            return String(format: "%.7f", sum)
         } else {
             return ""
         }

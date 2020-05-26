@@ -81,18 +81,18 @@ class DetectorMatch {
         }
     }
     
-    func getSummEnergyFrom() -> Double? {
+    func getSumEnergy() -> Double? {
         if items.count == 0 {
             return nil
         }
         
-        var summ: Double = 0
+        var sum: Double = 0
         for item in items {
             if let energy = item.energy {
-                summ += energy
+                sum += energy
             }
         }
-        return summ
+        return sum
     }
     
 }
