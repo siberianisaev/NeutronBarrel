@@ -75,8 +75,10 @@ class SearchCriteria {
     var fissionAlpha2MaxTime: CUnsignedLongLong = 0
     var fissionAlpha2MaxDeltaStrips: Int = 0
     var searchSpecialEvents = false
+    var specialEventIds = Set<Int>()
+    var gammaEncodersOnly = false
+    var gammaEncoderIds = Set<Int>()
     var searchWell = true
-    var specialEventIds = [Int]()
     var unitsTOF: TOFUnits = .channels
     var recoilType: SearchType = .recoil
     var recoilBackType: SearchType = .recoil

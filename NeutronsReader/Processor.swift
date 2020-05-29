@@ -502,8 +502,7 @@ class Processor {
         let directions: Set<SearchDirection> = [.forward, .backward]
         let start = criteria.searchExtraFromParticle2 ? secondEventTime : startEventTime
         search(directions: directions, startTime: start, minDeltaTime: 0, maxDeltaTime: criteria.maxGammaTime, useCycleTime: false, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>, _) in
-            if self.isGammaEvent(event) {
-                let item = self.gammaMatchItem(event, deltaTime: deltaTime)
+            if self.isGammaEvent(event), let item = self.gammaMatchItem(event, deltaTime: deltaTime) {
                 match.append(item)
             }
         }
@@ -778,10 +777,15 @@ class Processor {
         fissionsAlphaPerAct.append(item, side: side)
     }
     
-    fileprivate func gammaMatchItem(_ event: Event, deltaTime: CLongLong) -> DetectorMatchItem {
+    fileprivate func gammaMatchItem(_ event: Event, deltaTime: CLongLong) -> DetectorMatchItem? {
         let channel = Double(event.param3 & Mask.gamma.rawValue)
         let eventId = Int(event.eventId)
         let encoder = dataProtocol.encoderForEventId(eventId)
+        
+        if criteria.gammaEncodersOnly, !criteria.gammaEncoderIds.contains(Int(encoder)) {
+            return nil
+        }
+        
         let energy: Double
         let type: SearchType = .gamma
         if calibration.hasData() {

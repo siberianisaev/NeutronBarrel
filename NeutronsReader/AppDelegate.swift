@@ -108,6 +108,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         sMaxConcurrentOperations = String(format: "%d", Settings.getIntSetting(.MaxConcurrentOperations))
         searchSpecialEvents = Settings.getBoolSetting(.SearchSpecialEvents)
         specialEventIds = Settings.getStringSetting(.SpecialEventIds) ?? ""
+        gammaEncodersOnly = Settings.getBoolSetting(.GammaEncodersOnly)
+        gammaEncoderIds = Settings.getStringSetting(.GammaEncoderIds) ?? ""
         searchVETO = Settings.getBoolSetting(.SearchVETO)
         searchWell = Settings.getBoolSetting(.SearchWell)
         trackBeamEnergy = Settings.getBoolSetting(.TrackBeamEnergy)
@@ -136,6 +138,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         setupFissionAlpha2BackEnergyView()
         setupRecoilBackEnergyView()
         tofUnitsControl.selectedSegment = Settings.getIntSetting(.TOFUnits)
+        setupGammaEncodersView()
     }
     
     @IBInspectable dynamic var sResultsFolderName = ""
@@ -199,6 +202,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             operationQueue.maxConcurrentOperationCount = maxConcurrentOperationCount
         }
     }
+    @IBOutlet weak var gammaEncodersView: NSView!
+    @IBInspectable dynamic var gammaEncodersOnly: Bool = false {
+        didSet {
+            setupGammaEncodersView()
+        }
+    }
+    @IBInspectable dynamic var gammaEncoderIds: String = ""
     @IBInspectable dynamic var searchSpecialEvents: Bool = false
     @IBInspectable dynamic var specialEventIds: String = ""
     @IBInspectable dynamic var searchVETO: Bool = false {
@@ -242,6 +252,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     
     fileprivate var formColor: CGColor {
         return NSColor.lightGray.withAlphaComponent(0.2).cgColor
+    }
+    
+    fileprivate func setupGammaEncodersView() {
+        gammaEncodersView.isHidden = !gammaEncodersOnly
     }
     
     fileprivate func setupAlpha2FormView() {
@@ -447,6 +461,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         sc.searchNeutrons = searchNeutrons
         sc.maxNeutronTime = UInt64(sMaxNeutronTime) ?? 0
         sc.searchSpecialEvents = searchSpecialEvents
+        sc.gammaEncodersOnly = gammaEncodersOnly
         sc.searchVETO = searchVETO
         sc.trackBeamEnergy = trackBeamEnergy
         sc.trackBeamCurrent = trackBeamCurrent
@@ -457,12 +472,17 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         sc.searchWell = searchWell
         sc.beamEnergyMin = Float(sBeamEnergyMin) ?? 0
         sc.beamEnergyMax = Float(sBeamEnergyMax) ?? 0
-        let ids = specialEventIds.components(separatedBy: ",").map({ (s: String) -> Int in
-            return Int(s) ?? 0
-        }).filter({ (i: Int) -> Bool in
-            return i > 0
-        })
-        sc.specialEventIds = ids
+        
+        func idsFrom(string: String) -> Set<Int> {
+            let ids = string.components(separatedBy: ",").map({ (s: String) -> Int in
+                return Int(s) ?? 0
+            }).filter({ (i: Int) -> Bool in
+                return i > 0
+            })
+            return Set(ids)
+        }
+        sc.specialEventIds = idsFrom(string: specialEventIds)
+        sc.gammaEncoderIds = idsFrom(string: gammaEncoderIds)
         
         let id = UUID().uuidString
         let processor = Processor(criteria: sc, delegate: self)
@@ -697,6 +717,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             .MaxConcurrentOperations: maxConcurrentOperationCount,
             .SearchSpecialEvents: searchSpecialEvents,
             .SpecialEventIds: specialEventIds,
+            .GammaEncodersOnly: gammaEncodersOnly,
+            .GammaEncoderIds: gammaEncoderIds,
             .SelectedRecoilType: selectedRecoilType.rawValue,
             .SelectedRecoilBackType: selectedRecoilBackType.rawValue,
             .SearchFissionBackByFact: searchFissionBackByFact,

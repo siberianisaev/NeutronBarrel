@@ -70,6 +70,8 @@ enum Setting: String {
     MaxConcurrentOperations = "MaxConcurrentOperations",
     SearchSpecialEvents = "SearchSpecialEvents",
     SpecialEventIds = "SpecialEventIds",
+    GammaEncodersOnly = "GammaEncodersOnly",
+    GammaEncoderIds = "GammaEncoderIds",
     SelectedRecoilType = "SelectedRecoilType",
     SelectedRecoilBackType = "SelectedRecoilBackType",
     SearchFissionBackByFact = "SearchFissionBackByFact",
@@ -187,9 +189,9 @@ class Settings {
             return 0
         case .RequiredFissionAlphaBack, .RequiredRecoilBack, .SearchNeutrons, .TrackBeamEnergy, .TrackBeamCurrent, .TrackBeamBackground, .TrackBeamIntegral, .SearchWell:
             return true
-        case .SummarizeFissionsFront, .SummarizeFissionsFront2, .RequiredRecoil, .RequiredGamma, .SimplifyGamma, .RequiredWell, .WellRecoilsAllowed, .RequiredTOF, .RequiredVETO, .SearchSpecialEvents, .SearchVETO, .SearchFissionBackByFact, .SearchFissionBack2ByFact, .SearchRecoilBackByFact, .UseTOF2, .SearchExtraFromParticle2:
+        case .SummarizeFissionsFront, .SummarizeFissionsFront2, .RequiredRecoil, .RequiredGamma, .SimplifyGamma, .RequiredWell, .WellRecoilsAllowed, .RequiredTOF, .RequiredVETO, .SearchSpecialEvents, .GammaEncodersOnly, .SearchVETO, .SearchFissionBackByFact, .SearchFissionBack2ByFact, .SearchRecoilBackByFact, .UseTOF2, .SearchExtraFromParticle2:
             return false
-        case .SpecialEventIds:
+        case .SpecialEventIds, .GammaEncoderIds:
             return nil
         case .SelectedRecoilType, .SelectedRecoilBackType:
             return SearchType.recoil.rawValue
