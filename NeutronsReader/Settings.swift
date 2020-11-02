@@ -79,7 +79,8 @@ enum Setting: String {
     SearchRecoilBackByFact = "SearchRecoilBackByFact",
     SearchWell = "SearchWell",
     BeamEnergyMin = "BeamEnergyMin",
-    BeamEnergyMax = "BeamEnergyMax"
+    BeamEnergyMax = "BeamEnergyMax",
+    ResultsFolderName = "ResultsFolderName"
 }
 
 class Settings {
@@ -195,6 +196,8 @@ class Settings {
             return nil
         case .SelectedRecoilType, .SelectedRecoilBackType:
             return SearchType.recoil.rawValue
+        case .ResultsFolderName:
+            return ""
         }
     }
     

@@ -58,6 +58,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     fileprivate var timer: Timer?
     
     func readSettings() {
+        sResultsFolderName = Settings.getStringSetting(.ResultsFolderName) ?? ""
         sMinFissionEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MinFissionEnergy)) // MeV
         sMaxFissionEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MaxFissionEnergy)) // MeV
         sMinFissionBackEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MinFissionBackEnergy)) // MeV
@@ -708,7 +709,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             .SearchFissionBackByFact: searchFissionBackByFact,
             .SearchFissionBack2ByFact: searchFissionBack2ByFact,
             .SearchRecoilBackByFact: searchRecoilBackByFact,
-            .SearchWell: searchWell
+            .SearchWell: searchWell,
+            .ResultsFolderName: sResultsFolderName
         ]
         Settings.change(dict)
     }
