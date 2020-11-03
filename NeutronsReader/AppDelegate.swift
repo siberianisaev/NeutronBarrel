@@ -391,8 +391,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBAction func start(_ sender: AnyObject?) {
         let sc = SearchCriteria()
         sc.resultsFolderName = sResultsFolderName
-        sc.startParticleType = SearchType(rawValue: startParticleControl.selectedSegment) ?? .recoil
-        sc.startParticleBackType = SearchType(rawValue: startParticleBackControl.selectedSegment) ?? .fission
+        let startFrontType = SearchType(rawValue: startParticleControl.selectedSegment) ?? .recoil
+        let startFromRecoil = startFrontType == .recoil
+        sc.startParticleType = startFromRecoil ? selectedRecoilType : startFrontType
+        sc.startParticleBackType = startFromRecoil ? selectedRecoilBackType : SearchType(rawValue: startParticleBackControl.selectedSegment) ?? .fission
         sc.secondParticleFrontType = SearchType(rawValue: secondParticleFrontControl.selectedSegment) ?? .recoil
         sc.secondParticleBackType = SearchType(rawValue: secondParticleBackControl.selectedSegment) ?? .recoil
         sc.wellParticleBackType = SearchType(rawValue: wellParticleBackControl.selectedSegment) ?? .fission
