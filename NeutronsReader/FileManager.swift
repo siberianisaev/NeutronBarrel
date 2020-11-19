@@ -27,18 +27,24 @@ class FileManager {
         }
     }
     
-    fileprivate class func desktopFilePathWithName(_ fileName: String, folderName: String?) -> String? {
-        var path = self.desktopFolder()
-        if let folderName = folderName {
-            path = path?.appendingPathComponent(folderName) as NSString?
-            createIfNeedsDirectoryAtPath(path as String?)
+    fileprivate class func filePathWithName(_ fileName: String, folderName: String?) -> String? {
+        var path: NSString?
+        if let fn = folderName, fn.contains("/") { // User select custom path to directory
+            path = fn as NSString
+        } else { // Use Desktop folder by default
+            path = self.desktopFolder()
+            if let folderName = folderName {
+                path = path?.appendingPathComponent(folderName) as NSString?
+            }
         }
+        createIfNeedsDirectoryAtPath(path as String?)
         return path?.appendingPathComponent(fileName)
     }
     
     fileprivate class func fileName(prefix: String, folderName: String, timeStamp: String, postfix: String? = nil, fileExtension: String) -> String {
-        var components = [prefix, folderName]
-        if folderName != timeStamp {
+        let lastFolder = (folderName as NSString).lastPathComponent
+        var components = [prefix, lastFolder]
+        if lastFolder != timeStamp {
             components.append(timeStamp)
         }
         if let postfix = postfix {
@@ -49,38 +55,38 @@ class FileManager {
     
     class func resultsFilePath(_ timeStamp: String, folderName: String) -> String? {
         let name = fileName(prefix: "results", folderName: folderName, timeStamp: timeStamp, fileExtension: "csv")
-        return self.desktopFilePathWithName(name, folderName: folderName)
+        return filePathWithName(name, folderName: folderName)
     }
     
     class func filePath(_ prefix: String, timeStamp: String, folderName: String) -> String? {
         let name = fileName(prefix: prefix, folderName: folderName, timeStamp: timeStamp, fileExtension: "csv")
-        return self.desktopFilePathWithName(name, folderName: folderName)
+        return filePathWithName(name, folderName: folderName)
     }
     
     class func statisticsFilePath(_ timeStamp: String, folderName: String) -> String? {
         let name = fileName(prefix: "statistics", folderName: folderName, timeStamp: timeStamp, fileExtension: "csv")
-        return self.desktopFilePathWithName(name, folderName: folderName)
+        return filePathWithName(name, folderName: folderName)
     }
     
     class func settingsFilePath(_ timeStamp: String, folderName: String) -> String? {
         let name = fileName(prefix: "settings", folderName: folderName, timeStamp: timeStamp, fileExtension: "ini")
-        return self.desktopFilePathWithName(name, folderName: folderName)
+        return filePathWithName(name, folderName: folderName)
     }
     
     class func inputFilePath(_ timeStamp: String, folderName: String, onEnd: Bool) -> String? {
         let postfix = onEnd ? "end" : "start"
         let name = fileName(prefix: "input", folderName: folderName, timeStamp: timeStamp, postfix: postfix, fileExtension: "png")
-        return self.desktopFilePathWithName(name, folderName: folderName)
+        return filePathWithName(name, folderName: folderName)
     }
     
     class func multiplicityFilePath(_ timeStamp: String, folderName: String) -> String? {
         let name = fileName(prefix: "multiplicity", folderName: folderName, timeStamp: timeStamp, fileExtension: "txt")
-        return self.desktopFilePathWithName(name, folderName: folderName)
+        return filePathWithName(name, folderName: folderName)
     }
     
     class func calibrationFilePath(_ timeStamp: String, folderName: String) -> String? {
         let name = fileName(prefix: "calibration", folderName: folderName, timeStamp: timeStamp, fileExtension: "txt")
-        return self.desktopFilePathWithName(name, folderName: folderName)
+        return filePathWithName(name, folderName: folderName)
     }
     
 }

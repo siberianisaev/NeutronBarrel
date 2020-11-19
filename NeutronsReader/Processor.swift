@@ -38,6 +38,9 @@ class Processor {
     fileprivate var fissionsAlphaPerAct = DoubleSidedStripDetectorMatch()
     fileprivate var fissionsAlpha2PerAct = DetectorMatch()
     fileprivate var recoilsPerAct = DoubleSidedStripDetectorMatch()
+    fileprivate var firstParticlePerAct: DoubleSidedStripDetectorMatch {
+        return criteria.startFromRecoil() ? recoilsPerAct : fissionsAlphaPerAct
+    }
     fileprivate var fissionsAlphaWellPerAct = DoubleSidedStripDetectorSingleMatch()
     fileprivate var tofRealPerAct = DetectorMatch()
     fileprivate var tof2PerAct = DetectorMatch()
@@ -541,7 +544,7 @@ class Processor {
         search(directions: directions, startTime: fissionTime, minDeltaTime: criteria.recoilMinTime, maxDeltaTime: criteria.recoilMaxTime, useCycleTime: true, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>, _) in
             let isRecoil = self.isFront(event, type: self.criteria.recoilType)
             if isRecoil {
-                let isNear = self.isEventStripNearToFirstFissionAlpha(event, maxDelta: Int(self.criteria.recoilFrontMaxDeltaStrips), side: .front)
+                let isNear = self.isEventStripNearToFirstParticle(event, maxDelta: Int(self.criteria.recoilFrontMaxDeltaStrips), side: .front)
                 if isNear {
                     self.validateRecoil(event, deltaTime: deltaTime)
                 }
@@ -668,7 +671,7 @@ class Processor {
             if isFront {
                 self.secondEventTime = UInt64(event.param1)
                 let energy = self.getEnergy(event, type: t)
-                if self.isEventStripNearToFirstFissionAlpha(event, maxDelta: Int(self.criteria.fissionAlpha2MaxDeltaStrips), side: .front) && ((!isFront && self.criteria.searchFissionAlphaBack2ByFact) || (energy >= self.criteria.fissionAlpha2MinEnergy && energy <= self.criteria.fissionAlpha2MaxEnergy)) {
+                if self.isEventStripNearToFirstParticle(event, maxDelta: Int(self.criteria.fissionAlpha2MaxDeltaStrips), side: .front) && ((!isFront && self.criteria.searchFissionAlphaBack2ByFact) || (energy >= self.criteria.fissionAlpha2MinEnergy && energy <= self.criteria.fissionAlpha2MaxEnergy)) {
                     var store = true
                     var gamma: DetectorMatch?
                     // Back
@@ -702,7 +705,7 @@ class Processor {
             let t = self.criteria.secondParticleBackType
             let isBack = self.isBack(event, type: t)
             if isBack {
-                var store = self.isEventStripNearToFirstFissionAlpha(event, maxDelta: Int(self.criteria.fissionAlpha2MaxDeltaStrips), side: .back)
+                var store = self.isEventStripNearToFirstParticle(event, maxDelta: Int(self.criteria.fissionAlpha2MaxDeltaStrips), side: .back)
                 if !byFact && store { // check energy also
                     let energy = self.getEnergy(event, type: t)
                     store = energy >= self.criteria.fissionAlpha2BackMinEnergy && energy <= self.criteria.fissionAlpha2BackMaxEnergy
@@ -903,11 +906,11 @@ class Processor {
     
     // MARK: - Helpers
     
-    fileprivate func isEventStripNearToFirstFissionAlpha(_ event: Event, maxDelta: Int, side: StripsSide) -> Bool {
+    fileprivate func isEventStripNearToFirstParticle(_ event: Event, maxDelta: Int, side: StripsSide) -> Bool {
         let strip0_15 = event.param2 >> 12
         let encoder = dataProtocol.encoderForEventId(Int(event.eventId))
         let strip1_N = stripsConfiguration(detector: .focal).strip1_N_For(side: side, encoder: Int(encoder), strip0_15: strip0_15)
-        if let s = fissionsAlphaPerAct.firstItemsFor(side: side)?.strip1_N {
+        if let s = firstParticlePerAct.firstItemsFor(side: side)?.strip1_N {
             return abs(Int32(strip1_N) - Int32(s)) <= Int32(maxDelta)
         }
         return false
@@ -1171,7 +1174,7 @@ class Processor {
     fileprivate var keyColumnFissionAlphaBack2Sum = "Sum(^Back2)"
     fileprivate var keyColumnFissionAlphaBack2Energy = "^Back2"
     fileprivate var keyColumnFissionAlphaBack2Marker = "^Back2Marker"
-    fileprivate var keyColumnFissionAlphaBack2DeltaTime = "dT(&Fron1-^Back2)"
+    fileprivate var keyColumnFissionAlphaBack2DeltaTime = "dT(&Fron2-^Back2)"
     fileprivate var keyColumnFissionAlphaBack2Strip = "Strip(^Back2)"
     
     fileprivate var columnsGamma = [String]()
@@ -1196,16 +1199,21 @@ class Processor {
     }
     
     fileprivate func logResultsHeader() {
-        columns = [
-            keyColumnRecoilFrontEvent,
-            keyColumnRecoilFrontEnergy,
-            keyColumnRecoilFrontFrontMarker,
-            keyColumnRecoilFrontDeltaTime,
-            keyColumnRecoilBackEvent,
-            keyColumnRecoilBackEnergy,
+        columns = []
+        if !criteria.startFromRecoil() {
+            columns.append(contentsOf: [
+                keyColumnRecoilFrontEvent,
+                keyColumnRecoilFrontEnergy,
+                keyColumnRecoilFrontFrontMarker,
+                keyColumnRecoilFrontDeltaTime,
+                keyColumnRecoilBackEvent,
+                keyColumnRecoilBackEnergy
+            ])
+        }
+        columns.append(contentsOf: [
             keyColumnTof,
             keyColumnTofDeltaTime
-        ]
+        ])
         if criteria.useTOF2 {
             columns.append(contentsOf: [
                 keyColumnTof2,
@@ -1446,7 +1454,7 @@ class Processor {
                         field = String(format: "%lld", deltaTime)
                     }
                 case keyColumnStartEvent:
-                    if let eventNumber = fissionsAlphaPerAct.matchFor(side: .front).itemAt(index: row)?.eventNumber {
+                    if let eventNumber = firstParticlePerAct.matchFor(side: .front).itemAt(index: row)?.eventNumber {
                         field = currentFileEventNumber(eventNumber)
                         currentStartEventNumber = eventNumber
                     } else if row < neutronsCountWithNewLine(), let eventNumber = currentStartEventNumber { // Need track start event number for neutron times results
@@ -1457,23 +1465,23 @@ class Processor {
                         field = String(format: "%.7f", sum)
                     }
                 case keyColumnStartFrontEnergy:
-                    if let energy = fissionsAlphaPerAct.matchFor(side: .front).itemAt(index: row)?.energy {
+                    if let energy = firstParticlePerAct.matchFor(side: .front).itemAt(index: row)?.energy {
                         field = String(format: "%.7f", energy)
                     }
                 case keyColumnStartFrontMarker:
-                    if let marker = fissionsAlphaPerAct.matchFor(side: .front).itemAt(index: row)?.marker {
+                    if let marker = firstParticlePerAct.matchFor(side: .front).itemAt(index: row)?.marker {
                         field = String(format: "%hu", marker)
                     }
                 case keyColumnStartFrontDeltaTime:
-                    if let deltaTime = fissionsAlphaPerAct.matchFor(side: .front).itemAt(index: row)?.deltaTime {
+                    if let deltaTime = firstParticlePerAct.matchFor(side: .front).itemAt(index: row)?.deltaTime {
                         field = String(format: "%lld", deltaTime)
                     }
                 case keyColumnStartFrontStrip:
-                    if let strip = (criteria.startFromRecoil() ? recoilsPerAct : fissionsAlphaPerAct).matchFor(side: .front).itemAt(index: row)?.strip1_N {
+                    if let strip = firstParticlePerAct.matchFor(side: .front).itemAt(index: row)?.strip1_N {
                         field = String(format: "%d", strip)
                     }
                 case keyColumnStartFocalPositionXYZ:
-                    let matches = criteria.startFromRecoil() ? recoilsPerAct : fissionsAlphaPerAct
+                    let matches = firstParticlePerAct
                     if let itemFront = matches.matchFor(side: .front).itemAt(index: row), let stripFront1 = itemFront.strip1_N, let itemBack = matches.matchFor(side: .back).itemAt(index: row), let stripBack1 = itemBack.strip1_N {
                         let point = DetectorsWellGeometry.coordinatesXYZ(stripDetector: .focal, stripFront0: stripFront1 - 1, stripBack0: stripBack1 - 1)
                         field = String(format: "%.1f|%.1f|%.1f", point.x, point.y, point.z)
@@ -1484,25 +1492,25 @@ class Processor {
                     }
                 case keyColumnStartBackEnergy:
                     let side: StripsSide = .back
-                    let match = criteria.startFromRecoil() ? recoilsPerAct.matchFor(side: side) : fissionsAlphaPerAct.matchFor(side: side)
+                    let match = firstParticlePerAct.matchFor(side: side)
                     if let energy = match.itemAt(index: row)?.energy {
                         field = String(format: "%.7f", energy)
                     }
                 case keyColumnStartBackMarker:
                     let side: StripsSide = .back
-                    let match = criteria.startFromRecoil() ? recoilsPerAct.matchFor(side: side) : fissionsAlphaPerAct.matchFor(side: side)
+                    let match = firstParticlePerAct.matchFor(side: side)
                     if let marker = match.itemAt(index: row)?.marker {
                         field = String(format: "%hu", marker)
                     }
                 case keyColumnStartBackDeltaTime:
                     let side: StripsSide = .back
-                    let match = criteria.startFromRecoil() ? recoilsPerAct.matchFor(side: side) : fissionsAlphaPerAct.matchFor(side: side)
+                    let match = firstParticlePerAct.matchFor(side: side)
                     if let deltaTime = match.itemAt(index: row)?.deltaTime {
                         field = String(format: "%lld", deltaTime)
                     }
                 case keyColumnStartBackStrip:
                     let side: StripsSide = .back
-                    let match = criteria.startFromRecoil() ? recoilsPerAct.matchFor(side: side) : fissionsAlphaPerAct.matchFor(side: side)
+                    let match = firstParticlePerAct.matchFor(side: side)
                     if let strip = match.itemAt(index: row)?.strip1_N {
                         field = String(format: "%d", strip)
                     }
@@ -1524,8 +1532,8 @@ class Processor {
                         field = String(format: "%.1f|%.1f|%.1f", point.x, point.y, point.z)
                     }
                 case keyColumnWellAngle:
-                    let matchesFocal = criteria.startFromRecoil() ? recoilsPerAct : fissionsAlphaPerAct
-                    if row == 0, let itemFocalFront = matchesFocal.matchFor(side: .front).itemAt(index: row), let stripFocalFront1 = itemFocalFront.strip1_N, let itemFocalBack = matchesFocal.matchFor(side: .back).itemAt(index: row), let stripFocalBack1 = itemFocalBack.strip1_N, let itemSideFront = fissionsAlphaWellPerAct.itemFor(side: .front), let stripSideFront0 = itemSideFront.strip0_15, let itemSideBack = fissionsAlphaWellPerAct.itemFor(side: .back), let stripSideBack0 = itemSideBack.strip0_15, let encoderSide = itemSideFront.encoder {
+                    let matches = firstParticlePerAct
+                    if row == 0, let itemFocalFront = matches.matchFor(side: .front).itemAt(index: row), let stripFocalFront1 = itemFocalFront.strip1_N, let itemFocalBack = matches.matchFor(side: .back).itemAt(index: row), let stripFocalBack1 = itemFocalBack.strip1_N, let itemSideFront = fissionsAlphaWellPerAct.itemFor(side: .front), let stripSideFront0 = itemSideFront.strip0_15, let itemSideBack = fissionsAlphaWellPerAct.itemFor(side: .back), let stripSideBack0 = itemSideBack.strip0_15, let encoderSide = itemSideFront.encoder {
                         let pointFront = DetectorsWellGeometry.coordinatesXYZ(stripDetector: .focal, stripFront0: stripFocalFront1 - 1, stripBack0: stripFocalBack1 - 1)
                         let pointSide = DetectorsWellGeometry.coordinatesXYZ(stripDetector: .side, stripFront0: Int(stripSideFront0), stripBack0: Int(stripSideBack0), encoderSide: Int(encoderSide))
                         let hypotenuse = sqrt(pow(pointFront.x - pointSide.x, 2) + pow(pointFront.y - pointSide.y, 2) + pow(pointFront.z - pointSide.z, 2))

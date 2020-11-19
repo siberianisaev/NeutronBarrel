@@ -43,7 +43,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBOutlet weak var recoilTypeButton: NSPopUpButton!
     @IBOutlet weak var recoilBackTypeButton: NSPopUpButton!
     @IBOutlet weak var recoilTypeArrayController: NSArrayController!
-     @IBOutlet weak var recoilBackTypeArrayController: NSArrayController!
+    @IBOutlet weak var recoilBackTypeArrayController: NSArrayController!
     @IBOutlet weak var fissionAlpha1TextField: NSTextField!
     @IBOutlet weak var fissionAlpha2Button: NSButton!
     @IBOutlet weak var buttonRemoveCalibration: NSButton!
@@ -58,6 +58,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     fileprivate var timer: Timer?
     
     func readSettings() {
+        sResultsFolderName = Settings.getStringSetting(.ResultsFolderName) ?? ""
         sMinFissionEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MinFissionEnergy)) // MeV
         sMaxFissionEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MaxFissionEnergy)) // MeV
         sMinFissionBackEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MinFissionBackEnergy)) // MeV
@@ -128,7 +129,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         secondParticleBackControl.selectedSegment = Settings.getIntSetting(.SecondBackSearchType)
         wellParticleBackControl.selectedSegment = Settings.getIntSetting(.WellBackSearchType)
         startParticleChanged(nil)
-        secondParticleFrontChanged(nil)
         secondParticleBackChanged(nil)
         setupVETOView()
         setupWellView()
@@ -182,7 +182,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBInspectable dynamic var searchNeutrons: Bool = false
     @IBInspectable dynamic var searchFissionAlpha2: Bool = false {
         didSet {
-            secondParticleFrontChanged(nil)
             setupAlpha2FormView()
             searchExtraFromParticle2 = searchFissionAlpha2
             searchExtraFromParticle2Button.state = searchExtraFromParticle2 ? .on : .off
@@ -331,32 +330,18 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBAction func startParticleChanged(_ sender: Any?) {
         if let type = SearchType(rawValue: startParticleControl.selectedSegment) {
             let isRecoil = type == .recoil
-            fissionAlpha2View.isHidden = isRecoil
             requiredRecoil = requiredRecoil || isRecoil
             recoilFrontView.isHidden = isRecoil
             requiredRecoilButton.state = NSControl.StateValue(rawValue: requiredRecoil ? 1 : 0)
             requiredRecoilButton.isEnabled = !isRecoil
             fissionAlpha1View.isHidden = isRecoil
             fissionAlpha1TextField.stringValue = (type != .alpha ? "F" : "A") + "Front 1st"
-            secondParticleFrontChanged(nil)
             if sender != nil, !isRecoil {
                 startParticleBackControl.selectedSegment = type.rawValue
                 if !searchExtraFromParticle2 {
                     wellParticleBackControl.selectedSegment = type.rawValue
                 }
             }
-        }
-    }
-    
-    @IBAction func secondParticleFrontChanged(_ sender: Any?) {
-        if let type = SearchType(rawValue: secondParticleFrontControl.selectedSegment) {
-            var title = "Search "
-            if searchFissionAlpha2 {
-                title += (type != .alpha ? "F" : "A") + "Front 2nd"
-            } else {
-                title += "2nd Particle"
-            }
-            fissionAlpha2Button.title = title
         }
     }
     
@@ -406,8 +391,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBAction func start(_ sender: AnyObject?) {
         let sc = SearchCriteria()
         sc.resultsFolderName = sResultsFolderName
-        sc.startParticleType = SearchType(rawValue: startParticleControl.selectedSegment) ?? .recoil
-        sc.startParticleBackType = SearchType(rawValue: startParticleBackControl.selectedSegment) ?? .fission
+        let startFrontType = SearchType(rawValue: startParticleControl.selectedSegment) ?? .recoil
+        let startFromRecoil = startFrontType == .recoil
+        sc.startParticleType = startFromRecoil ? selectedRecoilType : startFrontType
+        sc.startParticleBackType = startFromRecoil ? selectedRecoilBackType : SearchType(rawValue: startParticleBackControl.selectedSegment) ?? .fission
         sc.secondParticleFrontType = SearchType(rawValue: secondParticleFrontControl.selectedSegment) ?? .recoil
         sc.secondParticleBackType = SearchType(rawValue: secondParticleBackControl.selectedSegment) ?? .recoil
         sc.wellParticleBackType = SearchType(rawValue: wellParticleBackControl.selectedSegment) ?? .fission
@@ -724,7 +711,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             .SearchFissionBackByFact: searchFissionBackByFact,
             .SearchFissionBack2ByFact: searchFissionBack2ByFact,
             .SearchRecoilBackByFact: searchRecoilBackByFact,
-            .SearchWell: searchWell
+            .SearchWell: searchWell,
+            .ResultsFolderName: sResultsFolderName
         ]
         Settings.change(dict)
     }
