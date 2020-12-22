@@ -28,7 +28,7 @@ class DataLoader {
         panel.canChooseFiles = true
         panel.allowsMultipleSelection = true
         panel.begin { (result) -> Void in
-            if result.rawValue == NSFileHandlingPanelOKButton {
+            if result.rawValue == NSApplication.ModalResponse.OK.rawValue {
                 var selected = [String]()
                 let fm = Foundation.FileManager.default
                 let urls = panel.urls
