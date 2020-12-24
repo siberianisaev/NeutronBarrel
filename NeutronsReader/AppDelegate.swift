@@ -28,6 +28,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBOutlet weak var secondParticleBackControl: NSSegmentedControl!
     @IBOutlet weak var wellParticleBackControl: NSSegmentedControl!
     @IBOutlet weak var tofUnitsControl: NSSegmentedControl!
+    @IBOutlet weak var focalDetectorControl: NSSegmentedControl!
     @IBOutlet weak var indicatorData: NSTextField!
     @IBOutlet weak var indicatorCalibration: NSTextField!
     @IBOutlet weak var indicatorStripsConfig: NSTextField!
@@ -138,6 +139,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         setupFissionAlpha2BackEnergyView()
         setupRecoilBackEnergyView()
         tofUnitsControl.selectedSegment = Settings.getIntSetting(.TOFUnits)
+        focalDetectorControl.selectedSegment = Settings.getIntSetting(.FocalDetectorType, defaultValue: FocalDetectorType.large.rawValue)
         setupGammaEncodersView()
     }
     
@@ -325,6 +327,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         StripDetectorManager.cleanStripConfigs()
         buttonRemoveStripsConfiguration.isHidden = true
         showFilePaths(nil, label: labelStripsConfigurationFileName)
+    }
+    
+    @IBAction func focalDetectorChanged(_ sender: Any) {
+        Settings.changeSingle(.FocalDetectorType, value: focalDetectorControl.selectedSegment)
+        StripDetectorManager.singleton.reset()
+        didSelectStripsConfiguration(false, filePaths: nil)
     }
     
     @IBAction func startParticleChanged(_ sender: Any?) {

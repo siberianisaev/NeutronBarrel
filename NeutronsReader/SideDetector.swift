@@ -8,6 +8,7 @@
 
 import Foundation
 
+// TODO: старый и новый детекторы
 class SideDetector: DoubleSidedDetector {
     
     override class func stripsCount() -> (front: Int, back: Int) {

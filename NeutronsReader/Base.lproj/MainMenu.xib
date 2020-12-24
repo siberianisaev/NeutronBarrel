@@ -27,6 +27,7 @@
                 <outlet property="fissionAlpha2Button" destination="FFp-Wl-PwC" id="sOV-aP-Z7a"/>
                 <outlet property="fissionAlpha2FormView" destination="Qot-rQ-0rl" id="avx-v3-iPb"/>
                 <outlet property="fissionAlpha2View" destination="3cn-vC-YcO" id="gFQ-SA-lGd"/>
+                <outlet property="focalDetectorControl" destination="C6M-rp-BQ8" id="JIX-FT-8fy"/>
                 <outlet property="gammaEncodersView" destination="8n9-Xw-BSR" id="dZy-sb-woO"/>
                 <outlet property="indicatorCalibration" destination="XqW-b9-4q2" id="1bX-rn-I9g"/>
                 <outlet property="indicatorData" destination="dGH-Qw-g6c" id="ew5-EN-2OK"/>
@@ -727,7 +728,7 @@
         <window title="NeutronsReader" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" animationBehavior="default" id="QvC-M9-y7g">
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
             <rect key="contentRect" x="335" y="390" width="1500" height="706"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="1440" height="877"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="1920" height="1057"/>
             <value key="minSize" type="size" width="1500" height="706"/>
             <value key="maxSize" type="size" width="1500" height="706"/>
             <value key="minFullScreenContentSize" type="size" width="1500" height="706"/>
@@ -1635,7 +1636,7 @@
                         </connections>
                     </textField>
                     <textField verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="F2z-kR-DT6">
-                        <rect key="frame" x="279" y="91" width="236" height="25"/>
+                        <rect key="frame" x="281" y="67" width="236" height="25"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="name" drawsBackground="YES" id="HFW-BB-wpM">
                             <font key="font" metaFont="system"/>
@@ -1651,7 +1652,7 @@
                         </connections>
                     </textField>
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="9WZ-XC-HGh">
-                        <rect key="frame" x="277" y="124" width="104" height="17"/>
+                        <rect key="frame" x="279" y="100" width="104" height="17"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Results Folder" id="Zeh-Tb-9sP">
                             <font key="font" metaFont="system"/>
@@ -1660,7 +1661,7 @@
                         </textFieldCell>
                     </textField>
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="pBc-ug-YVa">
-                        <rect key="frame" x="277" y="67" width="240" height="17"/>
+                        <rect key="frame" x="279" y="43" width="240" height="17"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Max concurrent operations" id="0yY-kD-jll">
                             <font key="font" metaFont="system"/>
@@ -1669,7 +1670,7 @@
                         </textFieldCell>
                     </textField>
                     <textField verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="gEa-Bb-Qvp">
-                        <rect key="frame" x="279" y="37" width="100" height="22"/>
+                        <rect key="frame" x="281" y="13" width="100" height="22"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="left" title="8" placeholderString="8" drawsBackground="YES" id="lXi-vw-vXb">
                             <font key="font" metaFont="system"/>
@@ -2265,7 +2266,7 @@
                         </connections>
                     </popUpButton>
                     <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1Iw-FP-dHE">
-                        <rect key="frame" x="277" y="152" width="200" height="40"/>
+                        <rect key="frame" x="277" y="201" width="200" height="40"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <buttonCell key="cell" type="bevel" title="Select Settings" bezelStyle="regularSquare" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="OTR-28-w1F">
                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -2275,6 +2276,29 @@
                             <action selector="selectSettings:" target="Voe-Tx-rLC" id="CdG-th-W25"/>
                         </connections>
                     </button>
+                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="ezr-Mu-kNd">
+                        <rect key="frame" x="279" y="172" width="124" height="17"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Focal Detector" id="PAz-Xc-Wvd">
+                            <font key="font" metaFont="system"/>
+                            <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                    </textField>
+                    <segmentedControl verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="C6M-rp-BQ8">
+                        <rect key="frame" x="279" y="141" width="163" height="24"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <segmentedCell key="cell" borderStyle="border" alignment="left" style="rounded" trackingMode="selectOne" id="1v0-mr-UzV">
+                            <font key="font" metaFont="system"/>
+                            <segments>
+                                <segment label="48x48" width="78"/>
+                                <segment label="128x128" width="78" selected="YES" tag="1"/>
+                            </segments>
+                        </segmentedCell>
+                        <connections>
+                            <action selector="focalDetectorChanged:" target="Voe-Tx-rLC" id="ojP-UB-WMD"/>
+                        </connections>
+                    </segmentedControl>
                 </subviews>
             </view>
             <point key="canvasLocation" x="212" y="536"/>

@@ -80,7 +80,8 @@ enum Setting: String {
     SearchWell = "SearchWell",
     BeamEnergyMin = "BeamEnergyMin",
     BeamEnergyMax = "BeamEnergyMax",
-    ResultsFolderName = "ResultsFolderName"
+    ResultsFolderName = "ResultsFolderName",
+    FocalDetectorType = "FocalDetectorType"
 }
 
 class Settings {
@@ -99,6 +100,14 @@ class Settings {
         ud.synchronize()
     }
     
+    class func changeSingle(_ name: Setting, value: Any?) {
+        let ud = UserDefaults.standard
+        var settings: [String: Any] = (ud.value(forKey: keySettings) as? [String: Any]) ?? [:]
+        settings[name.rawValue] = value
+        ud.set(settings, forKey: keySettings)
+        ud.synchronize()
+    }
+    
     class func getStringSetting(_ setting: Setting) -> String? {
         return getSetting(setting) as? String
     }
@@ -108,9 +117,9 @@ class Settings {
         return object ?? 0
     }
     
-    class func getIntSetting(_ setting: Setting) -> Int {
+    class func getIntSetting(_ setting: Setting, defaultValue: Int = 0) -> Int {
         let object = getSetting(setting) as? Int
-        return object ?? 0
+        return object ?? defaultValue
     }
     
     class func getBoolSetting(_ setting: Setting) -> Bool {
@@ -198,6 +207,8 @@ class Settings {
             return SearchType.recoil.rawValue
         case .ResultsFolderName:
             return ""
+        case .FocalDetectorType:
+            return FocalDetectorType.large
         }
     }
     

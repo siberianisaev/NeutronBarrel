@@ -54,8 +54,8 @@ class StripsConfiguration {
         // Default Config
         if detector == .focal {
             var value: Int?
-            switch FocalDetector.stripsCount().front {
-            case 128:
+            switch FocalDetector.type {
+            case .large:
                 /**
                  Strips are connected in pairs to 16-channel encoders (8 in total):
                     
@@ -102,15 +102,13 @@ class StripsConfiguration {
                  97 99 101 103 105 107 109 111 113 115 117 119 121 123 125 127
                  */
                 value = (encoder / 2) * 32 + (encoder % 2) + Int(strip0_15) * 2
-            case 48:
+            case .small:
                 /**
                  Strips are connected alternately to 3 16-channel encoders:
                  | 1.0 | 2.0 | 3.0 | 1.1 | 2.1 | 3.1 | ... | encoder.strip_0_15 |
                  This method used for convert strip from format "encoder + strip 0-15" to format "strip 1-48".
                  */
                 value = (Int(strip0_15) * 3) + (encoder - 1) + 1
-            default:
-                break
             }
             if let value = value {
                 cacheStrip(strip: value, side: side, encoder: encoder, strip0_15: strip0_15)
