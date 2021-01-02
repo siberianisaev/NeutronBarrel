@@ -38,15 +38,20 @@ class Calibration {
         panel.allowsMultipleSelection = true
         panel.begin { (result) -> Void in
             if result == NSApplication.ModalResponse.OK {
-                handle(urls: panel.urls, showFailAlert: true, completion: completion)
+                handle(urls: panel.urls, silent: false, completion: completion)
             }
         }
     }
     
-    class func handle(urls: [URL], showFailAlert: Bool = false, completion: @escaping ((Bool, [String]?) -> ())) {
+    class func handle(urls: [URL], silent: Bool = true, completion: @escaping ((Bool, [String]?) -> ())) {
         let items = urls.filter() { $0.path.lowercased().hasSuffix(".clb") }
+        if items.count == 0 && silent {
+            completion(false, [])
+            return
+        }
+        
         clean()
-        let success = singleton.open(items, showFailAlert: showFailAlert)
+        let success = singleton.open(items, showFailAlert: !silent)
         let paths = items.map({ (u: URL) -> String in
             return u.path
         })

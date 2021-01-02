@@ -329,7 +329,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         showFilePaths(nil, label: labelStripsConfigurationFileName)
     }
     
-    @IBAction func focalDetectorChanged(_ sender: Any) {
+    @IBAction func focalDetectorChanged(_ sender: Any?) {
         Settings.changeSingle(.FocalDetectorType, value: focalDetectorControl.selectedSegment)
         StripDetectorManager.singleton.reset()
         didSelectStripsConfiguration(false, filePaths: nil)
@@ -720,7 +720,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             .SearchFissionBack2ByFact: searchFissionBack2ByFact,
             .SearchRecoilBackByFact: searchRecoilBackByFact,
             .SearchWell: searchWell,
-            .ResultsFolderName: sResultsFolderName
+            .ResultsFolderName: sResultsFolderName,
+            .FocalDetectorType: focalDetectorControl.selectedSegment
         ]
         Settings.change(dict)
     }
