@@ -374,6 +374,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         viewerController?.showWindow(nil)
     }
     
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+        NSApplication.shared.dockTile.badgeLabel = ""
+        return true
+    }
+    
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
         return true
     }
@@ -540,6 +545,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             stopTimer()
             progressIndicator.stopAnimation(self)
         }
+        NSApplication.shared.dockTile.badgeLabel = (run || NSApplication.shared.isActive) ? "" : "1"
     }
     
     fileprivate func showFilePaths(_ paths: [String]?, label: NSTextField?) {
