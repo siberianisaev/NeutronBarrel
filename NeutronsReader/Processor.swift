@@ -278,7 +278,9 @@ class Processor {
             logger.logMultiplicity(neutronsMultiplicityTotal)
         }
         
-        print("\nDone!\nTotal time took: \((NSApplication.shared.delegate as! AppDelegate).timeTook())")
+        DispatchQueue.main.async {
+            print("\nDone!\nTotal time took: \((NSApplication.shared.delegate as! AppDelegate).timeTook())")
+        }
     }
     
     class func calculateTotalEventNumberForFile(_ file: UnsafeMutablePointer<FILE>!) -> CUnsignedLongLong {
@@ -1050,9 +1052,11 @@ class Processor {
     // MARK: - Output
     
     fileprivate func logInput(onEnd: Bool) {
-        let appDelegate = NSApplication.shared.delegate as! AppDelegate
-        let image = appDelegate.window.screenshot()
-        logger.logInput(image, onEnd: onEnd)
+        DispatchQueue.main.async { [weak self] in
+            let appDelegate = NSApplication.shared.delegate as! AppDelegate
+            let image = appDelegate.window.screenshot()
+            self?.logger.logInput(image, onEnd: onEnd)
+        }
     }
     
     fileprivate func logCalibration() {
