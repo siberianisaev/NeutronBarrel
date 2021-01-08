@@ -156,9 +156,9 @@ class DataProtocol {
         } else if AlphaMotherBack.contains(eventId) {
             return "Back"
         } else if AlphaDaughterFront.contains(eventId) {
-            return "dFr"
+            return "dFron"
         } else if AlphaDaughterBack.contains(eventId) {
-            return "dBk"
+            return "dBack"
         } else if isVETOEvent(eventId) {
             return "Veto"
         } else if isGammaEvent(eventId) {
