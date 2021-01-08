@@ -303,6 +303,7 @@ class Processor {
         } else if isFront(event, type: criteria.startParticleType) {
             startEventTime = UInt64(event.param1)
             
+            var gamma: DetectorMatch?
             let isRecoilSearch = criteria.startFromRecoil()
             if isRecoilSearch {
                 if !validateRecoil(event, deltaTime: 0) {
@@ -316,7 +317,6 @@ class Processor {
                     return
                 }
                 
-                var gamma: DetectorMatch?
                 if !criteria.searchExtraFromParticle2 {
                     gamma = findGamma(currentPosition)
                     if criteria.requiredGamma && nil == gamma {
@@ -375,6 +375,11 @@ class Processor {
                     clearActInfo()
                     return
                 }
+            }
+            
+            if !criteria.startFromRecoil() && criteria.requiredGammaOrWell && gamma == nil && nil == fissionsAlphaWellPerAct.itemFor(side: .front) {
+                clearActInfo()
+                return
             }
             
             if !criteria.searchExtraFromParticle2 {

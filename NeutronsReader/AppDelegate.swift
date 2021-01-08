@@ -89,6 +89,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         requiredRecoilBack = Settings.getBoolSetting(.RequiredRecoilBack)
         requiredRecoil = Settings.getBoolSetting(.RequiredRecoil)
         requiredGamma = Settings.getBoolSetting(.RequiredGamma)
+        requiredGammaOrWell = Settings.getBoolSetting(.RequiredGammaOrWell)
         simplifyGamma = Settings.getBoolSetting(.SimplifyGamma)
         requiredWell = Settings.getBoolSetting(.RequiredWell)
         wellRecoilsAllowed = Settings.getBoolSetting(.WellRecoilsAllowed)
@@ -173,6 +174,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBInspectable dynamic var requiredRecoilBack: Bool = false
     @IBInspectable dynamic var requiredRecoil: Bool = false
     @IBInspectable dynamic var requiredGamma: Bool = false
+    @IBInspectable dynamic var requiredGammaOrWell: Bool = false
     @IBInspectable dynamic var simplifyGamma: Bool = false
     @IBInspectable dynamic var requiredWell: Bool = false
     @IBInspectable dynamic var wellRecoilsAllowed: Bool = false
@@ -454,6 +456,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         sc.requiredVETO = requiredVETO
         sc.maxGammaTime = UInt64(sMaxGammaTime) ?? 0
         sc.requiredGamma = requiredGamma
+        sc.requiredGammaOrWell = requiredGammaOrWell
         sc.simplifyGamma = simplifyGamma
         sc.requiredWell = requiredWell
         sc.wellRecoilsAllowed = wellRecoilsAllowed
@@ -695,6 +698,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             .RequiredRecoilBack: requiredRecoilBack,
             .RequiredRecoil: requiredRecoil,
             .RequiredGamma: requiredGamma,
+            .RequiredGammaOrWell: requiredGammaOrWell,
             .SimplifyGamma: simplifyGamma,
             .RequiredWell: requiredWell,
             .WellRecoilsAllowed: wellRecoilsAllowed,

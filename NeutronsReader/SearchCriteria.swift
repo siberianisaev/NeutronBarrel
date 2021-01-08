@@ -50,6 +50,7 @@ class SearchCriteria {
     var requiredRecoilBack = false
     var requiredRecoil = false
     var requiredGamma = false
+    var requiredGammaOrWell = false
     var simplifyGamma = false
     var requiredWell = false
     var wellRecoilsAllowed = false
