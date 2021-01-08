@@ -312,7 +312,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             setSelected(false, indicator: i)
         }
         showAppVersion()
-        updateRunState()
+        updateRunState(withDockTitle: false)
     }
     
     @IBAction func removeCalibration(_ sender: Any) {
@@ -375,7 +375,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     }
     
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
-        NSApplication.shared.dockTile.badgeLabel = ""
+        showDockTitleBadge("")
         return true
     }
     
@@ -527,7 +527,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         return max(Int(sMaxConcurrentOperations) ?? 1, 1)
     }
     
-    fileprivate func updateRunState() {
+    fileprivate func updateRunState(withDockTitle: Bool = true) {
         let count = operations.count
         let run = count > 0
         buttonCancel.isHidden = !run
@@ -545,7 +545,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             stopTimer()
             progressIndicator.stopAnimation(self)
         }
-        NSApplication.shared.dockTile.badgeLabel = (run || NSApplication.shared.isActive) ? "" : "1"
+        if withDockTitle {
+            showDockTitleBadge((run || NSApplication.shared.isActive) ? "" : "1")
+        }
+    }
+    
+    fileprivate func showDockTitleBadge(_ badge: String) {
+        NSApplication.shared.dockTile.badgeLabel = badge
     }
     
     fileprivate func showFilePaths(_ paths: [String]?, label: NSTextField?) {
