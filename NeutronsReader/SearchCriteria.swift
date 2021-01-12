@@ -16,6 +16,7 @@ class SearchCriteria {
     var secondParticleFrontType: SearchType = .fission
     var secondParticleBackType: SearchType = .fission
     var wellParticleBackType: SearchType = .fission
+    var neutronsDetectorEfficiency: Double = 0
     var fissionAlphaFrontMinEnergy: Double = 0
     var fissionAlphaFrontMaxEnergy: Double = 0
     var fissionAlphaBackMinEnergy: Double = 0

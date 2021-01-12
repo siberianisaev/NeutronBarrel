@@ -275,7 +275,7 @@ class Processor {
         logInput(onEnd: true)
         logger.logStatistics(folders)
         if criteria.searchNeutrons {
-            logger.logMultiplicity(neutronsMultiplicityTotal)
+            logger.logMultiplicity(neutronsMultiplicityTotal, efficiency: criteria.neutronsDetectorEfficiency)
         }
         
         DispatchQueue.main.async {

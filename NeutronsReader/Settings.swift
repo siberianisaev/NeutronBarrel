@@ -11,6 +11,7 @@ import AppKit
 
 enum Setting: String {
     case
+    NeutronsDetectorEfficiency = "NeutronsDetectorEfficiency",
     MinFissionEnergy = "MinFissionEnergy",
     MaxFissionEnergy = "MaxFissionEnergy",
     MinFissionBackEnergy = "MinFissionBackEnergy",
@@ -176,6 +177,8 @@ class Settings {
         }
         
         switch setting {
+        case .NeutronsDetectorEfficiency:
+            return 43
         case .MaxConcurrentOperations:
             return 8
         case .BeamEnergyMin:

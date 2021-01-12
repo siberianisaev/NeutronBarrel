@@ -60,6 +60,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     
     func readSettings() {
         sResultsFolderName = Settings.getStringSetting(.ResultsFolderName) ?? ""
+        sNeutronsDetectorEfficiency = String(format: "%.1f", Settings.getDoubleSetting(.NeutronsDetectorEfficiency)) // %
         sMinFissionEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MinFissionEnergy)) // MeV
         sMaxFissionEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MaxFissionEnergy)) // MeV
         sMinFissionBackEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MinFissionBackEnergy)) // MeV
@@ -145,6 +146,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     }
     
     @IBInspectable dynamic var sResultsFolderName = ""
+    @IBInspectable dynamic var sNeutronsDetectorEfficiency: String = ""
     @IBInspectable dynamic var sMinFissionEnergy: String = ""
     @IBInspectable dynamic var sMaxFissionEnergy: String = ""
     @IBInspectable dynamic var sMinFissionBackEnergy: String = ""
@@ -408,6 +410,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         sc.resultsFolderName = sResultsFolderName
         let startFrontType = SearchType(rawValue: startParticleControl.selectedSegment) ?? .recoil
         let startFromRecoil = startFrontType == .recoil
+        sc.neutronsDetectorEfficiency = Double(sNeutronsDetectorEfficiency) ?? 0
         sc.startParticleType = startFromRecoil ? selectedRecoilType : startFrontType
         sc.startParticleBackType = startFromRecoil ? selectedRecoilBackType : SearchType(rawValue: startParticleBackControl.selectedSegment) ?? .fission
         sc.secondParticleFrontType = SearchType(rawValue: secondParticleFrontControl.selectedSegment) ?? .recoil
@@ -666,6 +669,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     
     fileprivate func saveSettings() {
         let dict: [Setting: Any?] = [
+            .NeutronsDetectorEfficiency: Double(sNeutronsDetectorEfficiency),
             .MinFissionEnergy: Double(sMinFissionEnergy),
             .MaxFissionEnergy: Double(sMaxFissionEnergy),
             .MinFissionBackEnergy: Double(sMinFissionBackEnergy),
