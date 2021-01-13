@@ -20,6 +20,8 @@ enum Setting: String {
     MaxRecoilFrontEnergy = "MaxRecoilFrontEnergy",
     MinRecoilBackEnergy = "MinRecoilBackEnergy",
     MaxRecoilBackEnergy = "MaxRecoilBackEnergy",
+    MinFissionWellEnergy = "MinFissionWellEnergy",
+    MaxFissionWellEnergy = "MaxFissionWellEnergy",
     MinTOFValue = "MinTOFValue",
     MaxTOFValue = "MaxTOFValue",
     TOFUnits = "TOFUnits",
@@ -187,7 +189,7 @@ class Settings {
             return 300
         case .MinFissionEnergy, .MaxFissionAlpha2Energy, .MaxFissionAlpha2BackEnergy, .MaxRecoilFrontEnergy, .MaxRecoilBackEnergy:
             return 20
-        case .MaxFissionAlpha2Time, .MaxFissionEnergy, .MaxRecoilTime:
+        case .MaxFissionAlpha2Time, .MaxFissionEnergy, .MaxRecoilTime, .MaxFissionWellEnergy:
             return 1000
         case .MinRecoilFrontEnergy, .MinRecoilBackEnergy:
             return 1
@@ -199,7 +201,7 @@ class Settings {
             return 4
         case .MaxNeutronTime:
             return 132
-        case .MinFissionBackEnergy, .MaxRecoilFrontDeltaStrips, .MaxRecoilBackDeltaStrips, .SearchFissionAlpha2, .StartSearchType, .StartBackSearchType, .WellBackSearchType, .SecondFrontSearchType, .SecondBackSearchType, .TOFUnits, .MinFissionAlpha2Time, .MaxFissionAlpha2FrontDeltaStrips, .MinRecoilTime, .MinTOFValue, .MaxFissionBackBackwardTime, .MaxFissionWellBackwardTime, .MaxRecoilBackBackwardTime:
+        case .MinFissionBackEnergy, .MaxRecoilFrontDeltaStrips, .MaxRecoilBackDeltaStrips, .SearchFissionAlpha2, .StartSearchType, .StartBackSearchType, .WellBackSearchType, .SecondFrontSearchType, .SecondBackSearchType, .TOFUnits, .MinFissionAlpha2Time, .MaxFissionAlpha2FrontDeltaStrips, .MinRecoilTime, .MinTOFValue, .MaxFissionBackBackwardTime, .MaxFissionWellBackwardTime, .MaxRecoilBackBackwardTime, .MinFissionWellEnergy:
             return 0
         case .RequiredFissionAlphaBack, .RequiredRecoilBack, .SearchNeutrons, .TrackBeamEnergy, .TrackBeamCurrent, .TrackBeamBackground, .TrackBeamIntegral, .SearchWell:
             return true

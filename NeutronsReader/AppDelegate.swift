@@ -69,6 +69,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         sMaxRecoilFrontEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MaxRecoilFrontEnergy)) // MeV
         sMinRecoilBackEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MinRecoilBackEnergy)) // MeV
         sMaxRecoilBackEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MaxRecoilBackEnergy)) // MeV
+        sMinFissionWellEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MinFissionWellEnergy)) // MeV
+        sMaxFissionWellEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MaxFissionWellEnergy)) // MeV
         sMinTOFValue = String(format: "%d", Settings.getIntSetting(.MinTOFValue)) // channel or ns
         sMaxTOFValue = String(format: "%d", Settings.getIntSetting(.MaxTOFValue)) // channel or ns
         sMinRecoilTime = String(format: "%d", Settings.getIntSetting(.MinRecoilTime)) // mks
@@ -155,6 +157,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBInspectable dynamic var sMaxRecoilFrontEnergy: String = ""
     @IBInspectable dynamic var sMinRecoilBackEnergy: String = ""
     @IBInspectable dynamic var sMaxRecoilBackEnergy: String = ""
+    @IBInspectable dynamic var sMinFissionWellEnergy: String = ""
+    @IBInspectable dynamic var sMaxFissionWellEnergy: String = ""
     @IBInspectable dynamic var sMinTOFValue: String = ""
     @IBInspectable dynamic var sMaxTOFValue: String = ""
     @IBInspectable dynamic var sMinRecoilTime: String = ""
@@ -420,6 +424,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         sc.fissionAlphaFrontMaxEnergy = Double(sMaxFissionEnergy) ?? 0
         sc.fissionAlphaBackMinEnergy = Double(sMinFissionBackEnergy) ?? 0
         sc.fissionAlphaBackMaxEnergy = Double(sMaxFissionBackEnergy) ?? 0
+        sc.fissionAlphaWellFrontMinEnergy = Double(sMinFissionWellEnergy) ?? 0
+        sc.fissionAlphaWellFrontMaxEnergy = Double(sMaxFissionWellEnergy) ?? 0
         sc.searchFissionAlphaBackByFact = searchFissionBackByFact
         sc.searchFissionAlphaBack2ByFact = searchFissionBack2ByFact
         sc.searchRecoilBackByFact = searchRecoilBackByFact
@@ -678,6 +684,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             .MaxRecoilFrontEnergy: Double(sMaxRecoilFrontEnergy),
             .MinRecoilBackEnergy: Double(sMinRecoilBackEnergy),
             .MaxRecoilBackEnergy: Double(sMaxRecoilBackEnergy),
+            .MinFissionWellEnergy: Double(sMinFissionWellEnergy),
+            .MaxFissionWellEnergy: Double(sMaxFissionWellEnergy),
             .BeamEnergyMin: Float(sBeamEnergyMin),
             .BeamEnergyMax: Float(sBeamEnergyMax),
             .MinTOFValue: Int(sMinTOFValue),
