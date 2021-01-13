@@ -21,8 +21,8 @@ class SearchCriteria {
     var fissionAlphaFrontMaxEnergy: Double = 0
     var fissionAlphaBackMinEnergy: Double = 0
     var fissionAlphaBackMaxEnergy: Double = 0
-    var fissionAlphaWellFrontMinEnergy: Double = 0
-    var fissionAlphaWellFrontMaxEnergy: Double = 0
+    var fissionAlphaWellMinEnergy: Double = 0
+    var fissionAlphaWellMaxEnergy: Double = 0
     var searchFissionAlphaBackByFact: Bool = true
     var searchFissionAlphaBack2ByFact: Bool = true
     var recoilFrontMinEnergy: Double = 0

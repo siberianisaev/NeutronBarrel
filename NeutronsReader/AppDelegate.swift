@@ -424,8 +424,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         sc.fissionAlphaFrontMaxEnergy = Double(sMaxFissionEnergy) ?? 0
         sc.fissionAlphaBackMinEnergy = Double(sMinFissionBackEnergy) ?? 0
         sc.fissionAlphaBackMaxEnergy = Double(sMaxFissionBackEnergy) ?? 0
-        sc.fissionAlphaWellFrontMinEnergy = Double(sMinFissionWellEnergy) ?? 0
-        sc.fissionAlphaWellFrontMaxEnergy = Double(sMaxFissionWellEnergy) ?? 0
+        sc.fissionAlphaWellMinEnergy = Double(sMinFissionWellEnergy) ?? 0
+        sc.fissionAlphaWellMaxEnergy = Double(sMaxFissionWellEnergy) ?? 0
         sc.searchFissionAlphaBackByFact = searchFissionBackByFact
         sc.searchFissionAlphaBack2ByFact = searchFissionBack2ByFact
         sc.searchRecoilBackByFact = searchRecoilBackByFact

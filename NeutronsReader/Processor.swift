@@ -448,7 +448,7 @@ class Processor {
             search(directions: directions, startTime: start, minDeltaTime: 0, maxDeltaTime: criteria.fissionAlphaMaxTime, maxDeltaTimeBackward: criteria.fissionAlphaWellBackwardMaxTime, useCycleTime: false, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>, _) in
                 for side in [.front, .back] as [StripsSide] {
                     if self.isFissionOrAlphaWell(event, side: side) {
-                        self.storeFissionAlphaWell(event, side: side)
+                        self.filterAndStoreFissionAlphaWell(event, side: side)
                     }
                 }
             }
@@ -880,9 +880,12 @@ class Processor {
         vetoPerAct.append(item)
     }
     
-    fileprivate func storeFissionAlphaWell(_ event: Event, side: StripsSide) {
+    fileprivate func filterAndStoreFissionAlphaWell(_ event: Event, side: StripsSide) {
         let type = side == .front ? (criteria.searchExtraFromParticle2 ? criteria.secondParticleFrontType : criteria.startParticleType) : criteria.wellParticleBackType
         let energy = getEnergy(event, type: type)
+        if energy < criteria.fissionAlphaWellMinEnergy || energy > criteria.fissionAlphaWellMaxEnergy {
+            return
+        }
         if let e = fissionsAlphaWellPerAct.itemFor(side: side)?.energy, e >= energy { // Store only well event with max energy
             return
         }
