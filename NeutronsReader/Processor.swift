@@ -551,7 +551,10 @@ class Processor {
             if isRecoil {
                 let isNear = self.isEventStripNearToFirstParticle(event, maxDelta: Int(self.criteria.recoilFrontMaxDeltaStrips), side: .front)
                 if isNear {
-                    self.validateRecoil(event, deltaTime: deltaTime)
+                    let found = self.validateRecoil(event, deltaTime: deltaTime)
+                    if found && self.criteria.searchFirstRecoilOnly {
+                        stop.initialize(to: true)
+                    }
                 }
             }
         }
@@ -635,7 +638,7 @@ class Processor {
                 if store {
                     let item = self.focalDetectorMatchItemFrom(event, type: type, deltaTime: deltaTime, side: side)
                     items.append(item)
-                    if byFact { // just stop on first one
+                    if byFact || self.criteria.searchFirstRecoilOnly { // just stop on first one
                         stop.initialize(to: true)
                     }
                 }

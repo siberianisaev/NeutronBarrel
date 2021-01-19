@@ -49,6 +49,7 @@ class SearchCriteria {
     var recoilBackMaxDeltaStrips: Int = 0
     var summarizeFissionsAlphaFront = false
     var summarizeFissionsAlphaFront2 = false
+    var searchFirstRecoilOnly = false
     var requiredFissionAlphaBack = false
     var requiredRecoilBack = false
     var requiredRecoil = false
