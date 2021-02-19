@@ -44,7 +44,8 @@ class NeutronsMultiplicity {
         }
         if neutrons > 0, efficiency > 0, efficiencyError > 0 {
             let average = Double(neutrons)/Double(events)
-            string += "\nAverage: \(average)\n----"
+            let averageError = (Double(neutrons)/Double(events))*(1/Double(neutrons) + 1/Double(events)).squareRoot()
+            string += "\nAverage: \(average) ± \(averageError)\n---------------"
             string += "\nDetector efficiency: \(efficiency)%"
             string += "\nEfficiency error: \(efficiencyError)%"
             /*
@@ -52,8 +53,8 @@ class NeutronsMultiplicity {
              Hudson D.J. STATISTICS, 1970 (RU edition), equation 66
              delta = root square from sum of squares of d(Xi)/Xi.
              */
-            let averageError = (Double(neutrons)/(Double(events) * (efficiency/100)))*(1/Double(neutrons) + 1/Double(events) + pow(efficiencyError/efficiency, 2)).squareRoot()
-            string += "\n*Average: \(average * 100.0/efficiency)±\(averageError)"
+            let averageErrorWithEfficiency = (Double(neutrons)/(Double(events) * (efficiency/100)))*(1/Double(neutrons) + 1/Double(events) + pow(efficiencyError/efficiency, 2)).squareRoot()
+            string += "\n*Average: \(average * 100.0/efficiency) ± \(averageErrorWithEfficiency)"
             let meanOfSquares =  Double(neutronsSquares)/Double(events)
             /*
              Dispersion formula from work:
