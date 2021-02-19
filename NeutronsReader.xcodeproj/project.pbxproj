@@ -17,6 +17,7 @@
 		5AAE352F22717FAB00035B52 /* SideDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AAE352E22717FAB00035B52 /* SideDetector.swift */; };
 		5AAE35322271801A00035B52 /* DoubleSidedDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AAE35312271801A00035B52 /* DoubleSidedDetector.swift */; };
 		5AAE35352271856500035B52 /* FocalDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AAE35342271856500035B52 /* FocalDetector.swift */; };
+		65036BF225DFC01200856D7E /* NeutronsMultiplicity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65036BF125DFC01200856D7E /* NeutronsMultiplicity.swift */; };
 		6512B00B1EDACBB20087131D /* ViewerController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6512B0091EDACBB20087131D /* ViewerController.swift */; };
 		6512B00C1EDACBB20087131D /* ViewerController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 6512B00A1EDACBB20087131D /* ViewerController.xib */; };
 		6513070C1A4E911300E33704 /* FileManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6513070B1A4E911300E33704 /* FileManager.swift */; };
@@ -51,6 +52,7 @@
 		5AAE352E22717FAB00035B52 /* SideDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SideDetector.swift; sourceTree = "<group>"; };
 		5AAE35312271801A00035B52 /* DoubleSidedDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DoubleSidedDetector.swift; sourceTree = "<group>"; };
 		5AAE35342271856500035B52 /* FocalDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FocalDetector.swift; sourceTree = "<group>"; };
+		65036BF125DFC01200856D7E /* NeutronsMultiplicity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NeutronsMultiplicity.swift; sourceTree = "<group>"; };
 		6512B0091EDACBB20087131D /* ViewerController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ViewerController.swift; sourceTree = "<group>"; };
 		6512B00A1EDACBB20087131D /* ViewerController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = ViewerController.xib; sourceTree = "<group>"; };
 		6513070B1A4E911300E33704 /* FileManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FileManager.swift; sourceTree = "<group>"; };
@@ -139,6 +141,7 @@
 			isa = PBXGroup;
 			children = (
 				5AAE352B22717F8300035B52 /* DetectorsWellGeometry.swift */,
+				65036BF125DFC01200856D7E /* NeutronsMultiplicity.swift */,
 				65DA92A120D5527D002643DB /* BeamState.swift */,
 				5A8423E220D12C100097F7FB /* SearchCriteria.swift */,
 				65DA929E20D54F65002643DB /* SearchType.swift */,
@@ -340,6 +343,7 @@
 				5A2A99352056F66800B3D1A0 /* DoubleSidedStripDetectorMatch.swift in Sources */,
 				65DA92A820D594E9002643DB /* CalibrationEquation.swift in Sources */,
 				5A9B179D2206137800E80805 /* StripDetectorManager.swift in Sources */,
+				65036BF225DFC01200856D7E /* NeutronsMultiplicity.swift in Sources */,
 				651307121A4E94AB00E33704 /* Calibration.swift in Sources */,
 				784150DA1AC184C400831384 /* CSVWriter.swift in Sources */,
 				5A8423E320D12C100097F7FB /* SearchCriteria.swift in Sources */,
@@ -491,13 +495,13 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "-";
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 18;
+				CURRENT_PROJECT_VERSION = 19;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "NeutronsReader/NeutronsReader-Prefix.pch";
 				INFOPLIST_FILE = "NeutronsReader/NeutronsReader-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.13;
-				MARKETING_VERSION = 10.0;
+				MARKETING_VERSION = 10.1;
 				PRODUCT_BUNDLE_IDENTIFIER = ru.jinr.flerovlab.NeutronsReader;
 				PRODUCT_MODULE_NAME = NeutronsReader;
 				PRODUCT_NAME = NeutronsReader;
@@ -515,13 +519,13 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "-";
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 18;
+				CURRENT_PROJECT_VERSION = 19;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "NeutronsReader/NeutronsReader-Prefix.pch";
 				INFOPLIST_FILE = "NeutronsReader/NeutronsReader-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.13;
-				MARKETING_VERSION = 10.0;
+				MARKETING_VERSION = 10.1;
 				PRODUCT_BUNDLE_IDENTIFIER = ru.jinr.flerovlab.NeutronsReader;
 				PRODUCT_MODULE_NAME = NeutronsReader;
 				PRODUCT_NAME = NeutronsReader;

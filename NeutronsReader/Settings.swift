@@ -12,6 +12,7 @@ import AppKit
 enum Setting: String {
     case
     NeutronsDetectorEfficiency = "NeutronsDetectorEfficiency",
+    NeutronsDetectorEfficiencyError = "NeutronsDetectorEfficiencyError",
     MinFissionEnergy = "MinFissionEnergy",
     MaxFissionEnergy = "MaxFissionEnergy",
     MinFissionBackEnergy = "MinFissionBackEnergy",
@@ -192,7 +193,7 @@ class Settings {
             return 20
         case .MaxFissionAlpha2Time, .MaxFissionEnergy, .MaxRecoilTime, .MaxFissionWellEnergy:
             return 1000
-        case .MinRecoilFrontEnergy, .MinRecoilBackEnergy:
+        case .MinRecoilFrontEnergy, .MinRecoilBackEnergy, .NeutronsDetectorEfficiencyError:
             return 1
         case .MaxFissionBackEnergy, .MaxTOFValue:
             return 10000

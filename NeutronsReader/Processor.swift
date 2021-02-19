@@ -32,7 +32,7 @@ class Processor {
     fileprivate var neutrons_N_SumPerAct: CUnsignedLongLong = 0
     fileprivate var neutronsBackwardSumPerAct: CUnsignedLongLong = 0
     fileprivate var currentFileName: String?
-    fileprivate var neutronsMultiplicityTotal = [Int: Int]()
+    fileprivate var neutronsMultiplicity: NeutronsMultiplicity?
     fileprivate var specialPerAct = [Int: CUnsignedShort]()
     fileprivate var beamStatePerAct = BeamState()
     fileprivate var fissionsAlphaPerAct = DoubleSidedStripDetectorMatch()
@@ -211,7 +211,7 @@ class Processor {
             return
         }
         
-        neutronsMultiplicityTotal = [:]
+        neutronsMultiplicity = NeutronsMultiplicity(efficiency: criteria.neutronsDetectorEfficiency, efficiencyError: criteria.neutronsDetectorEfficiencyError)
         totalEventNumber = 0
         clearActInfo()
         
@@ -274,8 +274,8 @@ class Processor {
         
         logInput(onEnd: true)
         logger.logStatistics(folders)
-        if criteria.searchNeutrons {
-            logger.logMultiplicity(neutronsMultiplicityTotal, efficiency: criteria.neutronsDetectorEfficiency)
+        if criteria.searchNeutrons, let multiplicity = neutronsMultiplicity {
+            logger.log(multiplicity: multiplicity)
         }
         
         DispatchQueue.main.async {
@@ -403,7 +403,7 @@ class Processor {
             }
             
             if criteria.searchNeutrons {
-                updateNeutronsMultiplicity()
+                neutronsMultiplicity?.update(neutronsPerAct: neutronsPerAct)
             }
             
             logActResults()
@@ -763,16 +763,6 @@ class Processor {
         let side: StripsSide = .back
         let item = focalDetectorMatchItemFrom(event, type: type, deltaTime: deltaTime, side: side)
         match.append(item, side: side)
-    }
-    
-    /**
-     Summar multiplicity of neutrons calculation over all files
-     */
-    fileprivate func updateNeutronsMultiplicity() {
-        let key = neutronsPerAct.count
-        var sum = neutronsMultiplicityTotal[Int(key)] ?? 0
-        sum += 1 // One event for all neutrons in one act of fission
-        neutronsMultiplicityTotal[Int(key)] = sum
     }
     
     fileprivate func storeFissionAlphaFront(_ event: Event, deltaTime: CLongLong, subMatches: [SearchType: DetectorMatch?]?) {

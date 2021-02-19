@@ -72,25 +72,8 @@ class Logger {
         }
     }
     
-    func logMultiplicity(_ info: [Int: Int], efficiency: Double) {
-        var string = "Multiplicity\tCount\n"
-        let sortedKeys = Array(info.keys).sorted(by: { (i1: Int, i2: Int) -> Bool in
-            return i1 < i2
-        })
-        var neutronsTotal: Int = 0
-        var eventsTotal: Int = 0
-        for key in sortedKeys {
-            let count = info[key]!
-            string += "\(key)\t\(count)\n"
-            eventsTotal += count
-            neutronsTotal += count * key
-        }
-        if neutronsTotal > 0, efficiency > 0 {
-            let average = Double(neutronsTotal)/Double(eventsTotal)
-            string += "\nAverage: \(average)\n"
-            string += "\nAverage(include efficiency): \(average * 100.0 / efficiency)"
-        }
-        logString(string, path: FileManager.multiplicityFilePath(timeStamp, folderName: folderName))
+    func log(multiplicity: NeutronsMultiplicity) {
+        logString(multiplicity.stringValue(), path: FileManager.multiplicityFilePath(timeStamp, folderName: folderName))
     }
 
     func logCalibration(_ string: String) {
