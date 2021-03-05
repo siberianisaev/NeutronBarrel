@@ -41,6 +41,7 @@ enum Setting: String {
     MaxRecoilBackDeltaStrips = "MaxRecoilBackDeltaStrips",
     SummarizeFissionsFront = "SummarizeFissionsFront",
     SummarizeFissionsFront2 = "SummarizeFissionsFront2",
+    SummarizeFissionsBack = "SummarizeFissionsBack",
     RequiredFissionAlphaBack = "RequiredFissionAlphaBack",
     SearchFirstRecoilOnly = "SearchFirstRecoilOnly",
     RequiredRecoilBack = "RequiredRecoilBack",
@@ -207,7 +208,7 @@ class Settings {
             return 0
         case .RequiredFissionAlphaBack, .SearchFirstRecoilOnly, .RequiredRecoilBack, .SearchNeutrons, .TrackBeamEnergy, .TrackBeamCurrent, .TrackBeamBackground, .TrackBeamIntegral, .SearchWell:
             return true
-        case .SummarizeFissionsFront, .SummarizeFissionsFront2, .RequiredRecoil, .RequiredGamma, .RequiredGammaOrWell, .SimplifyGamma, .RequiredWell, .WellRecoilsAllowed, .RequiredTOF, .RequiredVETO, .SearchSpecialEvents, .GammaEncodersOnly, .SearchVETO, .SearchFissionBackByFact, .SearchFissionBack2ByFact, .SearchRecoilBackByFact, .UseTOF2, .SearchExtraFromParticle2:
+        case .SummarizeFissionsFront, .SummarizeFissionsFront2, .SummarizeFissionsBack, .RequiredRecoil, .RequiredGamma, .RequiredGammaOrWell, .SimplifyGamma, .RequiredWell, .WellRecoilsAllowed, .RequiredTOF, .RequiredVETO, .SearchSpecialEvents, .GammaEncodersOnly, .SearchVETO, .SearchFissionBackByFact, .SearchFissionBack2ByFact, .SearchRecoilBackByFact, .UseTOF2, .SearchExtraFromParticle2:
             return false
         case .SpecialEventIds, .GammaEncoderIds:
             return nil

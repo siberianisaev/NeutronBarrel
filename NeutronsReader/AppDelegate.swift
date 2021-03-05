@@ -179,6 +179,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBInspectable dynamic var sMaxRecoilBackDeltaStrips: String = ""
     @IBInspectable dynamic var summarizeFissionsFront: Bool = false
     @IBInspectable dynamic var summarizeFissionsFront2: Bool = false
+    @IBInspectable dynamic var summarizeFissionsBack: Bool = false
     @IBInspectable dynamic var requiredFissionAlphaBack: Bool = false
     @IBInspectable dynamic var searchFirstRecoilOnly: Bool = false
     @IBInspectable dynamic var requiredRecoilBack: Bool = false
@@ -439,6 +440,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         sc.fissionAlphaWellBackwardMaxTime = UInt64(sMaxFissionWellBackwardTime) ?? 0
         sc.summarizeFissionsAlphaFront = summarizeFissionsFront
         sc.summarizeFissionsAlphaFront2 = summarizeFissionsFront2
+        sc.summarizeFissionsAlphaBack = summarizeFissionsBack
         sc.searchFissionAlpha2 = searchFissionAlpha2
         sc.fissionAlpha2MinEnergy = Double(sMinFissionAlpha2Energy) ?? 0
         sc.fissionAlpha2MaxEnergy = Double(sMaxFissionAlpha2Energy) ?? 0
@@ -713,6 +715,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             .MaxRecoilBackDeltaStrips: Int(sMaxRecoilBackDeltaStrips),
             .SummarizeFissionsFront: summarizeFissionsFront,
             .SummarizeFissionsFront2: summarizeFissionsFront2,
+            .SummarizeFissionsBack: summarizeFissionsBack,
             .RequiredFissionAlphaBack: requiredFissionAlphaBack,
             .SearchFirstRecoilOnly: searchFirstRecoilOnly,
             .RequiredRecoilBack: requiredRecoilBack,

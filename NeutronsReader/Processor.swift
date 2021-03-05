@@ -538,7 +538,7 @@ class Processor {
                 }
             }
         }
-        if !byFact {
+        if !criteria.summarizeFissionsAlphaBack {
             match.matchFor(side: .back).filterItemsByMaxEnergy(maxStripsDelta: criteria.recoilBackMaxDeltaStrips)
         }
     }
