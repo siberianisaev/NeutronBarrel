@@ -11,13 +11,13 @@ import Foundation
 class SearchCriteria {
     
     var resultsFolderName: String = ""
-    var startParticleType: SearchType = .fission
-    var startParticleBackType: SearchType = .fission
-    var secondParticleFrontType: SearchType = .fission
-    var secondParticleBackType: SearchType = .fission
     var wellParticleBackType: SearchType = .fission
     var neutronsDetectorEfficiency: Double = 0
     var neutronsDetectorEfficiencyError: Double = 0
+    
+    var startParticleType: SearchType = .fission
+    var startParticleBackType: SearchType = .fission
+    var summarizeFissionsAlphaFront = false
     var fissionAlphaFrontMinEnergy: Double = 0
     var fissionAlphaFrontMaxEnergy: Double = 0
     var fissionAlphaBackMinEnergy: Double = 0
@@ -25,7 +25,8 @@ class SearchCriteria {
     var fissionAlphaWellMinEnergy: Double = 0
     var fissionAlphaWellMaxEnergy: Double = 0
     var searchFissionAlphaBackByFact: Bool = true
-    var searchFissionAlphaBack2ByFact: Bool = true
+    var summarizeFissionsAlphaBack = false
+    
     var recoilFrontMinEnergy: Double = 0
     var recoilFrontMaxEnergy: Double = 0
     var recoilBackMinEnergy: Double = 0
@@ -48,9 +49,7 @@ class SearchCriteria {
     var maxNeutronTime: CUnsignedLongLong = 0
     var recoilFrontMaxDeltaStrips: Int = 0
     var recoilBackMaxDeltaStrips: Int = 0
-    var summarizeFissionsAlphaFront = false
-    var summarizeFissionsAlphaFront2 = false
-    var summarizeFissionsAlphaBack = false
+    
     var searchFirstRecoilOnly = false
     var requiredFissionAlphaBack = false
     var requiredRecoilBack = false
@@ -60,7 +59,7 @@ class SearchCriteria {
     var simplifyGamma = false
     var requiredWell = false
     var wellRecoilsAllowed = false
-    var searchExtraFromParticle2 = false
+    var searchExtraFromLastParticle = false
     var requiredTOF = false
     var useTOF2 = false
     var requiredVETO = false
@@ -73,14 +72,12 @@ class SearchCriteria {
         return trackBeamEnergy || trackBeamCurrent || trackBeamBackground || trackBeamIntegral
     }
     var searchNeutrons = false
-    var searchFissionAlpha2 = false
-    var fissionAlpha2MinEnergy: Double = 0
-    var fissionAlpha2MaxEnergy: Double = 0
-    var fissionAlpha2BackMinEnergy: Double = 0
-    var fissionAlpha2BackMaxEnergy: Double = 0
-    var fissionAlpha2MinTime: CUnsignedLongLong = 0
-    var fissionAlpha2MaxTime: CUnsignedLongLong = 0
-    var fissionAlpha2MaxDeltaStrips: Int = 0
+    
+    var next = [Int: SearchNextCriteria]()
+    func nextMaxIndex() -> Int? {
+        return Array(next.keys).max()
+    }
+    
     var searchSpecialEvents = false
     var specialEventIds = Set<Int>()
     var gammaEncodersOnly = false
@@ -92,6 +89,36 @@ class SearchCriteria {
     
     func startFromRecoil() -> Bool {
         return startParticleType == .recoil || startParticleType == .heavy
+    }
+    
+}
+
+class SearchNextCriteria {
+    
+    var summarizeFront = false
+    var frontMinEnergy: Double = 0
+    var frontMaxEnergy: Double = 0
+    var backMinEnergy: Double = 0
+    var backMaxEnergy: Double = 0
+    var minTime: CUnsignedLongLong = 0
+    var maxTime: CUnsignedLongLong = 0
+    var maxDeltaStrips: Int = 0
+    var backByFact: Bool = true
+    var frontType: SearchType = .fission
+    var backType: SearchType = .fission
+    
+    init(summarizeFront: Bool, frontMinEnergy: Double, frontMaxEnergy: Double, backMinEnergy: Double, backMaxEnergy: Double, minTime: CUnsignedLongLong, maxTime: CUnsignedLongLong, maxDeltaStrips: Int, backByFact: Bool, frontType: SearchType, backType: SearchType) {
+        self.summarizeFront = summarizeFront
+        self.frontMinEnergy = frontMinEnergy
+        self.frontMaxEnergy = frontMaxEnergy
+        self.backMinEnergy = backMinEnergy
+        self.backMaxEnergy = backMaxEnergy
+        self.minTime = minTime
+        self.maxTime = maxTime
+        self.maxDeltaStrips = maxDeltaStrips
+        self.backByFact = backByFact
+        self.frontType = frontType
+        self.backType = backType
     }
     
 }
