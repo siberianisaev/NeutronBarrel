@@ -1101,7 +1101,7 @@ class Processor {
     
     fileprivate func searchExtraPostfix(_ s: String) -> String {
         if criteria.searchExtraFromLastParticle {
-            return s + "(\(criteria.nextMaxIndex() ?? 0)"
+            return s + "(\(criteria.nextMaxIndex() ?? 0))"
         } else {
             return s
         }
@@ -1425,8 +1425,8 @@ class Processor {
         }
     }
     
-    fileprivate func tof(row: Int, type: SearchType) -> DetectorMatch? {
-        return recoilsPerAct.matchFor(side: .front).itemAt(index: row)?.subMatches?[type] ?? nil
+    fileprivate func firstTOF(row: Int, type: SearchType) -> DetectorMatchItem? {
+        return recoilsPerAct.matchFor(side: .front).itemAt(index: row)?.subMatches?[type]??.itemAt(index: 0) ?? nil
     }
     
     fileprivate var currentStartEventNumber: CUnsignedLongLong?
@@ -1537,12 +1537,12 @@ class Processor {
                         field = String(format: "%.7f", energy)
                     }
                 case keyColumnTof, keyColumnTof2:
-                    if let value = tof(row: row, type: column == keyColumnTof ? .tof : .tof2)?.itemAt(index: 0)?.value {
+                    if let value = firstTOF(row: row, type: column == keyColumnTof ? .tof : .tof2)?.value {
                         let format = "%." + (criteria.unitsTOF == .channels ? "0" : "7") + "f"
                         field = String(format: format, value)
                     }
                 case keyColumnTofDeltaTime, keyColumnTof2DeltaTime:
-                    if let deltaTime = tof(row: row, type: column == keyColumnTof ? .tof : .tof2)?.itemAt(index: 0)?.deltaTime {
+                    if let deltaTime = firstTOF(row: row, type: column == keyColumnTofDeltaTime ? .tof : .tof2)?.deltaTime {
                         field = String(format: "%lld", deltaTime)
                     }
                 case keyColumnStartEvent:
