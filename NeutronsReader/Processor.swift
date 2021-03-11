@@ -722,19 +722,19 @@ class Processor {
                         }
                     }
                     if store {
-                        self.storeFissionAlpha(index, event: event, type: t, deltaTime: deltaTime, subMatches: [.gamma: gamma, c.backType: back])
+                        self.storeFissionAlpha(index, event: event, type: t, deltaTime: deltaTime, subMatches: [.gamma: gamma], back: back)
                     }
                 }
             }
         }
     }
     
-    fileprivate func findFissionAlphaBack(_ index: Int, position: Int, startTime: CUnsignedLongLong) -> DetectorMatch? {
+    fileprivate func findFissionAlphaBack(_ index: Int, position: Int, startTime: CUnsignedLongLong) -> DetectorMatchItem? {
         guard let c = criteria.next[index] else {
             return nil
         }
         
-        let match = DetectorMatch()
+        var items = [DetectorMatchItem]()
         let directions: Set<SearchDirection> = [.forward, .backward]
         let byFact = c.backByFact
         search(directions: directions, startTime: startTime, minDeltaTime: 0, maxDeltaTime: criteria.fissionAlphaMaxTime, maxDeltaTimeBackward: criteria.fissionAlphaBackBackwardMaxTime, useCycleTime: false, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>, position: Int) in
@@ -748,7 +748,7 @@ class Processor {
                 }
                 if store {
                     let item = self.focalDetectorMatchItemFrom(event, type: t, deltaTime: deltaTime, side: .back)
-                    match.append(item)
+                    items.append(item)
                     if byFact { // just stop on first one
                         stop.initialize(to: true)
                     }
@@ -756,7 +756,10 @@ class Processor {
             }
         }
         fseek(file, position, SEEK_SET)
-        return match.count > 0 ? match : nil
+        if let item = DetectorMatch.getItemWithMaxEnergy(items) {
+            return item
+        }
+        return nil
     }
     
     // MARK: - Storage
@@ -850,7 +853,7 @@ class Processor {
         recoilsPerAct.append(item, side: side)
     }
     
-    fileprivate func storeFissionAlpha(_ index: Int, event: Event, type: SearchType, deltaTime: CLongLong, subMatches: [SearchType: DetectorMatch?]?) {
+    fileprivate func storeFissionAlpha(_ index: Int, event: Event, type: SearchType, deltaTime: CLongLong, subMatches: [SearchType: DetectorMatch?]?, back: DetectorMatchItem?) {
         let id = event.eventId
         let encoder = dataProtocol.encoderForEventId(Int(id))
         let strip0_15 = event.param2 >> 12
@@ -868,6 +871,9 @@ class Processor {
                                      side: side)
         let match = fissionsAlphaNextPerAct[index] ?? DoubleSidedStripDetectorMatch()
         match.append(item, side: side)
+        if let back = back {
+            match.append(back, side: .back)
+        }
         fissionsAlphaNextPerAct[index] = match
     }
     
