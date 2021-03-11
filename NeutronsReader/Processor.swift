@@ -41,7 +41,7 @@ class Processor {
     fileprivate var firstParticlePerAct: DoubleSidedStripDetectorMatch {
         return criteria.startFromRecoil() ? recoilsPerAct : fissionsAlphaPerAct
     }
-    fileprivate var fissionsAlphaWellPerAct = DoubleSidedStripDetectorSingleMatch()
+    fileprivate var fissionsAlphaWellPerAct = DoubleSidedStripDetectorMatch()
     fileprivate var vetoPerAct = DetectorMatch()
     fileprivate var stoped = false
     fileprivate var logger: Logger!
@@ -387,7 +387,7 @@ class Processor {
                 }
             }
             
-            if !criteria.startFromRecoil() && criteria.requiredGammaOrWell && gamma == nil && nil == fissionsAlphaWellPerAct.itemFor(side: .front) {
+            if !criteria.startFromRecoil() && criteria.requiredGammaOrWell && gamma == nil && fissionsAlphaWellPerAct.matchFor(side: .front).count == 0 {
                 clearActInfo()
                 return
             }
@@ -427,7 +427,7 @@ class Processor {
     }
     
     fileprivate func wellSearchFailed() -> Bool {
-        return criteria.searchWell && criteria.requiredWell && nil == fissionsAlphaWellPerAct.itemFor(side: .front)
+        return criteria.searchWell && criteria.requiredWell && fissionsAlphaWellPerAct.matchFor(side: .front).count == 0
     }
     
     fileprivate func findAllNeutrons(_ position: Int) {
@@ -912,9 +912,6 @@ class Processor {
         if energy < criteria.fissionAlphaWellMinEnergy || energy > criteria.fissionAlphaWellMaxEnergy {
             return
         }
-        if let e = fissionsAlphaWellPerAct.itemFor(side: side)?.energy, e >= energy { // Store only well event with max energy
-            return
-        }
         let encoder = dataProtocol.encoderForEventId(Int(event.eventId))
         let strip0_15 = event.param2 >> 12
         let item = DetectorMatchItem(type: type,
@@ -924,7 +921,9 @@ class Processor {
                                      strip0_15: strip0_15,
                                      marker: getMarker(event),
                                      side: side)
-        fissionsAlphaWellPerAct.setItem(item, forSide: side)
+        fissionsAlphaWellPerAct.append(item, side: side)
+        // Store only well event with max energy
+        fissionsAlphaWellPerAct.matchFor(side: side).filterItemsByMaxEnergy(maxStripsDelta: criteria.recoilBackMaxDeltaStrips)
     }
     
     fileprivate func storeSpecial(_ event: Event, id: Int) {
@@ -1603,25 +1602,25 @@ class Processor {
                         field = String(format: "%d", strip)
                     }
                 case keyColumnWellEnergy:
-                    if row == 0, let energy = fissionsAlphaWellPerAct.itemFor(side: .front)?.energy {
+                    if row == 0, let energy = fissionsAlphaWellPerAct.matchFor(side: .front).itemAt(index: 0)?.energy {
                         field = String(format: "%.7f", energy)
                     }
                 case keyColumnWellMarker:
-                    if row == 0, let marker = fissionsAlphaWellPerAct.itemFor(side: .front)?.marker {
+                    if row == 0, let marker = fissionsAlphaWellPerAct.matchFor(side: .front).itemAt(index: 0)?.marker {
                         field = String(format: "%hu", marker)
                     }
                 case keyColumnWellPosition:
-                    if row == 0, let item = fissionsAlphaWellPerAct.itemFor(side: .front), let strip0_15 = item.strip0_15, let encoder = item.encoder {
+                    if row == 0, let item = fissionsAlphaWellPerAct.matchFor(side: .front).itemAt(index: 0), let strip0_15 = item.strip0_15, let encoder = item.encoder {
                         field = String(format: "FWell%d.%d", encoder, strip0_15 + 1)
                     }
                 case keyColumnWellPositionXYZ:
-                    if row == 0, let itemFront = fissionsAlphaWellPerAct.itemFor(side: .front), let stripFront0 = itemFront.strip0_15, let itemBack = fissionsAlphaWellPerAct.itemFor(side: .back), let stripBack0 = itemBack.strip0_15, let encoder = itemFront.encoder {
+                    if row == 0, let itemFront = fissionsAlphaWellPerAct.matchFor(side: .front).itemAt(index: 0), let stripFront0 = itemFront.strip0_15, let itemBack = fissionsAlphaWellPerAct.matchFor(side: .back).itemAt(index: 0), let stripBack0 = itemBack.strip0_15, let encoder = itemFront.encoder {
                         let point = DetectorsWellGeometry.coordinatesXYZ(stripDetector: .side, stripFront0: Int(stripFront0), stripBack0: Int(stripBack0), encoderSide: Int(encoder))
                         field = String(format: "%.1f|%.1f|%.1f", point.x, point.y, point.z)
                     }
                 case keyColumnWellAngle:
                     let matches = firstParticlePerAct
-                    if row == 0, let itemFocalFront = matches.matchFor(side: .front).itemAt(index: row), let stripFocalFront1 = itemFocalFront.strip1_N, let itemFocalBack = matches.matchFor(side: .back).itemAt(index: row), let stripFocalBack1 = itemFocalBack.strip1_N, let itemSideFront = fissionsAlphaWellPerAct.itemFor(side: .front), let stripSideFront0 = itemSideFront.strip0_15, let itemSideBack = fissionsAlphaWellPerAct.itemFor(side: .back), let stripSideBack0 = itemSideBack.strip0_15, let encoderSide = itemSideFront.encoder {
+                    if row == 0, let itemFocalFront = matches.matchFor(side: .front).itemAt(index: row), let stripFocalFront1 = itemFocalFront.strip1_N, let itemFocalBack = matches.matchFor(side: .back).itemAt(index: row), let stripFocalBack1 = itemFocalBack.strip1_N, let itemSideFront = fissionsAlphaWellPerAct.matchFor(side: .front).itemAt(index: 0), let stripSideFront0 = itemSideFront.strip0_15, let itemSideBack = fissionsAlphaWellPerAct.matchFor(side: .back).itemAt(index: 0), let stripSideBack0 = itemSideBack.strip0_15, let encoderSide = itemSideFront.encoder {
                         let pointFront = DetectorsWellGeometry.coordinatesXYZ(stripDetector: .focal, stripFront0: stripFocalFront1 - 1, stripBack0: stripFocalBack1 - 1)
                         let pointSide = DetectorsWellGeometry.coordinatesXYZ(stripDetector: .side, stripFront0: Int(stripSideFront0), stripBack0: Int(stripSideBack0), encoderSide: Int(encoderSide))
                         let hypotenuse = sqrt(pow(pointFront.x - pointSide.x, 2) + pow(pointFront.y - pointSide.y, 2) + pow(pointFront.z - pointSide.z, 2))
@@ -1630,23 +1629,23 @@ class Processor {
                         field = String(format: "%.2f", arcsinus)
                     }
                 case keyColumnWellStrip:
-                    if row == 0, let strip = fissionsAlphaWellPerAct.itemFor(side: .front)?.strip1_N {
+                    if row == 0, let strip = fissionsAlphaWellPerAct.matchFor(side: .front).itemAt(index: 0)?.strip1_N {
                         field = String(format: "%d", strip)
                     }
                 case keyColumnWellBackEnergy:
-                    if row == 0, let energy = fissionsAlphaWellPerAct.itemFor(side: .back)?.energy {
+                    if row == 0, let energy = fissionsAlphaWellPerAct.matchFor(side: .back).itemAt(index: 0)?.energy {
                         field = String(format: "%.7f", energy)
                     }
                 case keyColumnWellBackMarker:
-                    if row == 0, let marker = fissionsAlphaWellPerAct.itemFor(side: .back)?.marker {
+                    if row == 0, let marker = fissionsAlphaWellPerAct.matchFor(side: .back).itemAt(index: 0)?.marker {
                         field = String(format: "%hu", marker)
                     }
                 case keyColumnWellBackPosition:
-                    if row == 0, let item = fissionsAlphaWellPerAct.itemFor(side: .back), let strip0_15 = item.strip0_15, let encoder = item.encoder {
+                    if row == 0, let item = fissionsAlphaWellPerAct.matchFor(side: .back).itemAt(index: 0), let strip0_15 = item.strip0_15, let encoder = item.encoder {
                         field = String(format: "FWellBack%d.%d", encoder, strip0_15 + 1)
                     }
                 case keyColumnWellBackStrip:
-                    if row == 0, let strip = fissionsAlphaWellPerAct.itemFor(side: .back)?.strip1_N {
+                    if row == 0, let strip = fissionsAlphaWellPerAct.matchFor(side: .back).itemAt(index: 0)?.strip1_N {
                         field = String(format: "%d", strip)
                     }
                 case keyColumnNeutronsAverageTime:
