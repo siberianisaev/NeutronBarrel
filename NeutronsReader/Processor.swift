@@ -21,26 +21,9 @@ enum TOFUnits {
     case nanoseconds
 }
 
-class NeutronsInfo {
-    
-    var perAct = [Float]()
-    var N_SumPerAct: CUnsignedLongLong = 0
-    var backwardSumPerAct: CUnsignedLongLong = 0
-    
-    func average() -> Float {
-        let count = perAct.count
-        return count > 0 ? perAct.reduce(0, +)/Float(perAct.count) : 0
-    }
-    
-}
-
 class Processor {
     
-    fileprivate var file: UnsafeMutablePointer<FILE>!
-    fileprivate var currentCycle: CUnsignedLongLong = 0
-    fileprivate var totalEventNumber: CUnsignedLongLong = 0
-    fileprivate var neutrons = NeutronsInfo()
-    fileprivate var currentFileName: String?
+    fileprivate var neutronsPerAct = NeutronsMatch()
     fileprivate var neutronsMultiplicity: NeutronsMultiplicity?
     fileprivate var specialPerAct = [Int: CUnsignedShort]()
     fileprivate var beamStatePerAct = BeamState()
@@ -58,6 +41,7 @@ class Processor {
     }
     fileprivate var fissionsAlphaWellPerAct = DoubleSidedStripDetectorMatch()
     fileprivate var vetoPerAct = DetectorMatch()
+    
     fileprivate var stoped = false
     fileprivate var logger: Logger!
     fileprivate var resultsTable: ResultsTable!
@@ -78,10 +62,14 @@ class Processor {
         return DataLoader.singleton.files
     }
     
+    var filesFinishedCount: Int = 0
+    fileprivate var file: UnsafeMutablePointer<FILE>!
+    fileprivate var currentFileName: String?
+    fileprivate var currentCycle: CUnsignedLongLong = 0
+    fileprivate var totalEventNumber: CUnsignedLongLong = 0
+    
     fileprivate var criteria = SearchCriteria()
     fileprivate weak var delegate: ProcessorDelegate?
-    
-    var filesFinishedCount: Int = 0
     
     init(criteria: SearchCriteria, delegate: ProcessorDelegate) {
         self.criteria = criteria
@@ -430,7 +418,7 @@ class Processor {
             }
             
             if criteria.searchNeutrons {
-                neutronsMultiplicity?.update(neutronsPerAct: neutrons.perAct)
+                neutronsMultiplicity?.update(neutronsPerAct: neutronsPerAct.times)
             }
             
             resultsTable.logActResults()
@@ -487,10 +475,10 @@ class Processor {
         search(directions: directions, startTime: currentEventTime, minDeltaTime: 0, maxDeltaTime: criteria.maxNeutronTime, useCycleTime: false, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>, _) in
             if self.dataProtocol.isNeutronsEvent(Int(event.eventId)) {
                 let t = Float(event.param3 & Mask.neutrons.rawValue)
-                self.neutrons.perAct.append(t)
+                self.neutronsPerAct.times.append(t)
             }
             if self.dataProtocol.hasNeutrons_N() && self.dataProtocol.isNeutrons_N_Event(Int(event.eventId)) {
-                self.neutrons.N_SumPerAct += 1
+                self.neutronsPerAct.NSum += 1
             }
         }
     }
@@ -499,7 +487,7 @@ class Processor {
         let directions: Set<SearchDirection> = [.backward]
         search(directions: directions, startTime: currentEventTime, minDeltaTime: 0, maxDeltaTime: 10, useCycleTime: false, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>, _) in
             if self.dataProtocol.isNeutronsEvent(Int(event.eventId)) {
-                self.neutrons.backwardSumPerAct += 1
+                self.neutronsPerAct.backwardSum += 1
             }
         }
     }
@@ -948,7 +936,7 @@ class Processor {
     }
     
     fileprivate func clearActInfo() {
-        neutrons = NeutronsInfo()
+        neutronsPerAct = NeutronsMatch()
         fissionsAlphaPerAct.removeAll()
         specialPerAct.removeAll()
         beamStatePerAct.clean()
@@ -1116,7 +1104,7 @@ extension Processor: ResultsTableDelegate {
     
     // Need special results block for neutron times, so we skeep one line.
     func neutronsCountWithNewLine() -> Int {
-        let count = neutrons.perAct.count
+        let count = neutrons().count
         if count > 0 {
             return count + 1
         } else {
@@ -1124,8 +1112,8 @@ extension Processor: ResultsTableDelegate {
         }
     }
     
-    func neutronsInfo() -> NeutronsInfo {
-        return neutrons
+    func neutrons() -> NeutronsMatch {
+        return neutronsPerAct
     }
     
     func currentFileEventNumber(_ number: CUnsignedLongLong) -> String {

@@ -12,7 +12,7 @@ protocol ResultsTableDelegate: class {
     
     func rowsCountForCurrentResult() -> Int
     func neutronsCountWithNewLine() -> Int
-    func neutronsInfo() -> NeutronsInfo
+    func neutrons() -> NeutronsMatch
     func currentFileEventNumber(_ number: CUnsignedLongLong) -> String
     func focalGammaContainer() -> DetectorMatch?
     func vetoAt(index: Int) -> DetectorMatchItem?
@@ -565,7 +565,7 @@ class ResultsTable {
                     }
                 case keyColumnNeutronsAverageTime:
                     if row == 0 {
-                        let average = delegate.neutronsInfo().average()
+                        let average = delegate.neutrons().averageTime
                         if average > 0 {
                             field = String(format: "%.1f", average)
                         } else {
@@ -575,22 +575,22 @@ class ResultsTable {
                 case keyColumnNeutronTime:
                     if row > 0 { // skip new line
                         let index = row - 1
-                        let perAct = delegate.neutronsInfo().perAct
-                        if index < perAct.count {
-                            field = String(format: "%.1f", perAct[index])
+                        let times = delegate.neutrons().times
+                        if index < times.count {
+                            field = String(format: "%.1f", times[index])
                         }
                     }
                 case keyColumnNeutrons:
                     if row == 0 {
-                        field = String(format: "%llu", delegate.neutronsInfo().perAct.count)
+                        field = String(format: "%llu", delegate.neutrons().count)
                     }
                 case keyColumnNeutrons_N:
                     if row == 0 {
-                        field = String(format: "%llu", delegate.neutronsInfo().N_SumPerAct)
+                        field = String(format: "%llu", delegate.neutrons().NSum)
                     }
                 case keyColumnNeutronsBackward:
                     if row == 0 {
-                        field = String(format: "%llu", delegate.neutronsInfo().backwardSumPerAct)
+                        field = String(format: "%llu", delegate.neutrons().backwardSum)
                     }
                 case keyColumnGammaEnergy(true):
                     if let energy = gammaAt(row: row)?.itemWithMaxEnergy()?.energy {
