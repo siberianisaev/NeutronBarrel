@@ -10,6 +10,8 @@ import Foundation
 
 class DoubleSidedStripDetectorMatch {
     
+    var currentEventTime: CUnsignedLongLong = 0
+    
     fileprivate var front = DetectorMatch()
     fileprivate var back = DetectorMatch()
     
