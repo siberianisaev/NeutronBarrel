@@ -48,7 +48,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBOutlet weak var recoilBackTypeButton: NSPopUpButton!
     @IBOutlet weak var recoilTypeArrayController: NSArrayController!
     @IBOutlet weak var recoilBackTypeArrayController: NSArrayController!
-    @IBOutlet weak var fissionAlpha1TextField: NSTextField!
     @IBOutlet weak var fissionAlpha2Button: NSButton!
     @IBOutlet weak var fissionAlpha3Button: NSButton!
     @IBOutlet weak var buttonRemoveCalibration: NSButton!
@@ -407,7 +406,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             requiredRecoilButton.state = NSControl.StateValue(rawValue: requiredRecoil ? 1 : 0)
             requiredRecoilButton.isEnabled = !isRecoil
             fissionAlpha1View.isHidden = isRecoil
-            fissionAlpha1TextField.stringValue = (type != .alpha ? "F" : "A") + "Front 1st"
             if sender != nil, !isRecoil {
                 startParticleBackControl.selectedSegment = type.rawValue
                 if !searchExtraFromLastParticle {
