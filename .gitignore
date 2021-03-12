@@ -26,3 +26,4 @@ DerivedData
 # Pods/
 
 --symbolic
+.DS_Store
