@@ -413,6 +413,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             requiredRecoilButton.state = NSControl.StateValue(rawValue: requiredRecoil ? 1 : 0)
             requiredRecoilButton.isEnabled = !isRecoil
             fissionAlpha1View.isHidden = isRecoil
+            fissionAlpha2View.isHidden = isRecoil
             if sender != nil, !isRecoil {
                 startParticleBackControl.selectedSegment = type.rawValue
                 if !searchExtraFromLastParticle {
