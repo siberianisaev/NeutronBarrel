@@ -414,7 +414,7 @@ class Processor {
             // Important: this search must be last because we don't do file repositioning here
             // Sum(FFron or AFron)
             if !isRecoilSearch && criteria.summarizeFissionsAlphaFront {
-                findNextFissionsAlphaFront(folder)
+                findAllFirstFissionsAlphaFront(folder)
             }
             
             if criteria.searchNeutrons {
@@ -492,7 +492,7 @@ class Processor {
         }
     }
     
-    fileprivate func findNextFissionsAlphaFront(_ folder: FolderStatistics) {
+    fileprivate func findAllFirstFissionsAlphaFront(_ folder: FolderStatistics) {
         var initial = fpos_t()
         fgetpos(file, &initial)
         var current = initial
@@ -742,7 +742,7 @@ class Processor {
             let t = c.backType
             let isBack = self.isBack(event, type: t)
             if isBack {
-                var store = self.isEventStripNearToFirstParticle(event, maxDelta: Int(c.maxDeltaStrips), side: .back)
+                var store = self.isEventStripNearToFirstParticle(event, maxDelta: Int(self.criteria.recoilBackMaxDeltaStrips), side: .back)
                 if !byFact && store { // check energy also
                     let energy = self.getEnergy(event, type: t)
                     store = energy >= c.backMinEnergy && energy <= c.backMaxEnergy

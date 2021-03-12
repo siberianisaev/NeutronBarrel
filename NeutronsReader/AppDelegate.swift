@@ -57,6 +57,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBOutlet weak var fissionAlpha2BackEnergyView: NSView!
     @IBOutlet weak var fissionAlpha3BackEnergyView: NSView!
     @IBOutlet weak var recoilBackEnergyView: NSView!
+    @IBOutlet weak var actionsView: NSView!
     
     fileprivate var viewerController: ViewerController?
     fileprivate var startDate: Date?
@@ -159,6 +160,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         setupAlpha3FormView()
         setupAlpha2FormView()
         setupSearchExtraView()
+        setupActionsView()
         setupFissionAlpha1BackEnergyView()
         setupFissionAlpha2BackEnergyView()
         setupFissionAlpha3BackEnergyView()
@@ -327,6 +329,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     fileprivate func setupSearchExtraView() {
         searchExtraView.wantsLayer = true
         searchExtraView.layer?.backgroundColor = formColor
+    }
+    
+    fileprivate func setupActionsView() {
+        actionsView.wantsLayer = true
+        actionsView.layer?.backgroundColor = NSColor.blue.withAlphaComponent(0.05).cgColor
     }
     
     fileprivate func setupRecoilTypes() {
