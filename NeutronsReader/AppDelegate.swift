@@ -57,6 +57,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBOutlet weak var fissionAlpha2BackEnergyView: NSView!
     @IBOutlet weak var fissionAlpha3BackEnergyView: NSView!
     @IBOutlet weak var recoilBackEnergyView: NSView!
+    @IBOutlet weak var actionsView: NSView!
     
     fileprivate var viewerController: ViewerController?
     fileprivate var startDate: Date?
@@ -78,8 +79,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         sMaxFissionWellEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MaxFissionWellEnergy)) // MeV
         sMinTOFValue = String(format: "%d", Settings.getIntSetting(.MinTOFValue)) // channel or ns
         sMaxTOFValue = String(format: "%d", Settings.getIntSetting(.MaxTOFValue)) // channel or ns
-        sMinRecoilTime = String(format: "%d", Settings.getIntSetting(.MinRecoilTime)) // mks
-        sMaxRecoilTime = String(format: "%d", Settings.getIntSetting(.MaxRecoilTime)) // mks
+        sMinRecoilTime = String(format: "%d", Settings.getUInt64Setting(.MinRecoilTime)) // mks
+        sMaxRecoilTime = String(format: "%d", Settings.getUInt64Setting(.MaxRecoilTime)) // mks
         sMaxRecoilBackTime = String(format: "%d", Settings.getIntSetting(.MaxRecoilBackTime)) // mks
         sMaxRecoilBackBackwardTime = String(format: "%d", Settings.getIntSetting(.MaxRecoilBackBackwardTime)) // mks
         sMaxFissionTime = String(format: "%d", Settings.getIntSetting(.MaxFissionTime)) // mks
@@ -116,15 +117,15 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         sMaxFissionAlpha2Energy = String(format: "%.1f", Settings.getDoubleSetting(.MaxFissionAlpha2Energy)) // MeV
         sMinFissionAlpha2BackEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MinFissionAlpha2BackEnergy)) // MeV
         sMaxFissionAlpha2BackEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MaxFissionAlpha2BackEnergy)) // MeV
-        sMinFissionAlpha2Time = String(format: "%d", Settings.getIntSetting(.MinFissionAlpha2Time)) // mks
-        sMaxFissionAlpha2Time = String(format: "%d", Settings.getIntSetting(.MaxFissionAlpha2Time)) // mks
+        sMinFissionAlpha2Time = String(format: "%d", Settings.getUInt64Setting(.MinFissionAlpha2Time)) // mks
+        sMaxFissionAlpha2Time = String(format: "%d", Settings.getUInt64Setting(.MaxFissionAlpha2Time)) // mks
         sMaxFissionAlpha2FrontDeltaStrips = String(format: "%d", Settings.getIntSetting(.MaxFissionAlpha2FrontDeltaStrips))
         sMinFissionAlpha3Energy = String(format: "%.1f", Settings.getDoubleSetting(.MinFissionAlpha3Energy)) // MeV
         sMaxFissionAlpha3Energy = String(format: "%.1f", Settings.getDoubleSetting(.MaxFissionAlpha3Energy)) // MeV
         sMinFissionAlpha3BackEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MinFissionAlpha3BackEnergy)) // MeV
         sMaxFissionAlpha3BackEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MaxFissionAlpha3BackEnergy)) // MeV
-        sMinFissionAlpha3Time = String(format: "%d", Settings.getIntSetting(.MinFissionAlpha3Time)) // mks
-        sMaxFissionAlpha3Time = String(format: "%d", Settings.getIntSetting(.MaxFissionAlpha3Time)) // mks
+        sMinFissionAlpha3Time = String(format: "%d", Settings.getUInt64Setting(.MinFissionAlpha3Time)) // mks
+        sMaxFissionAlpha3Time = String(format: "%d", Settings.getUInt64Setting(.MaxFissionAlpha3Time)) // mks
         sMaxFissionAlpha3FrontDeltaStrips = String(format: "%d", Settings.getIntSetting(.MaxFissionAlpha3FrontDeltaStrips))
         sMaxConcurrentOperations = String(format: "%d", Settings.getIntSetting(.MaxConcurrentOperations))
         searchSpecialEvents = Settings.getBoolSetting(.SearchSpecialEvents)
@@ -159,6 +160,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         setupAlpha3FormView()
         setupAlpha2FormView()
         setupSearchExtraView()
+        setupActionsView()
         setupFissionAlpha1BackEnergyView()
         setupFissionAlpha2BackEnergyView()
         setupFissionAlpha3BackEnergyView()
@@ -329,6 +331,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         searchExtraView.layer?.backgroundColor = formColor
     }
     
+    fileprivate func setupActionsView() {
+        actionsView.wantsLayer = true
+        actionsView.layer?.backgroundColor = NSColor.blue.withAlphaComponent(0.05).cgColor
+    }
+    
     fileprivate func setupRecoilTypes() {
         let array = recoilTypes.map { (t: SearchType) -> String in
             return t.name()
@@ -406,6 +413,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             requiredRecoilButton.state = NSControl.StateValue(rawValue: requiredRecoil ? 1 : 0)
             requiredRecoilButton.isEnabled = !isRecoil
             fissionAlpha1View.isHidden = isRecoil
+            fissionAlpha2View.isHidden = isRecoil
             if sender != nil, !isRecoil {
                 startParticleBackControl.selectedSegment = type.rawValue
                 if !searchExtraFromLastParticle {

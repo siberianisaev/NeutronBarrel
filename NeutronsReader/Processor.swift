@@ -23,13 +23,7 @@ enum TOFUnits {
 
 class Processor {
     
-    fileprivate var file: UnsafeMutablePointer<FILE>!
-    fileprivate var currentCycle: CUnsignedLongLong = 0
-    fileprivate var totalEventNumber: CUnsignedLongLong = 0
-    fileprivate var neutronsPerAct = [Float]()
-    fileprivate var neutrons_N_SumPerAct: CUnsignedLongLong = 0
-    fileprivate var neutronsBackwardSumPerAct: CUnsignedLongLong = 0
-    fileprivate var currentFileName: String?
+    fileprivate var neutronsPerAct = NeutronsMatch()
     fileprivate var neutronsMultiplicity: NeutronsMultiplicity?
     fileprivate var specialPerAct = [Int: CUnsignedShort]()
     fileprivate var beamStatePerAct = BeamState()
@@ -47,8 +41,10 @@ class Processor {
     }
     fileprivate var fissionsAlphaWellPerAct = DoubleSidedStripDetectorMatch()
     fileprivate var vetoPerAct = DetectorMatch()
+    
     fileprivate var stoped = false
     fileprivate var logger: Logger!
+    fileprivate var resultsTable: ResultsTable!
     
     fileprivate var calibration: Calibration {
         return Calibration.singleton
@@ -66,10 +62,14 @@ class Processor {
         return DataLoader.singleton.files
     }
     
+    var filesFinishedCount: Int = 0
+    fileprivate var file: UnsafeMutablePointer<FILE>!
+    fileprivate var currentFileName: String?
+    fileprivate var currentCycle: CUnsignedLongLong = 0
+    fileprivate var totalEventNumber: CUnsignedLongLong = 0
+    
     fileprivate var criteria = SearchCriteria()
     fileprivate weak var delegate: ProcessorDelegate?
-    
-    var filesFinishedCount: Int = 0
     
     init(criteria: SearchCriteria, delegate: ProcessorDelegate) {
         self.criteria = criteria
@@ -223,8 +223,9 @@ class Processor {
         logger.logSettings()
         logInput(onEnd: false)
         logCalibration()
-        logResultsHeader()
-        logGammaHeader()
+        resultsTable = ResultsTable(criteria: criteria, logger: logger, delegate: self)
+        resultsTable.logResultsHeader()
+        resultsTable.logGammaHeader()
         
         var folders = [String: FolderStatistics]()
         
@@ -413,16 +414,16 @@ class Processor {
             // Important: this search must be last because we don't do file repositioning here
             // Sum(FFron or AFron)
             if !isRecoilSearch && criteria.summarizeFissionsAlphaFront {
-                findNextFissionsAlphaFront(folder)
+                findAllFirstFissionsAlphaFront(folder)
             }
             
             if criteria.searchNeutrons {
-                neutronsMultiplicity?.update(neutronsPerAct: neutronsPerAct)
+                neutronsMultiplicity?.update(neutronsPerAct: neutronsPerAct.times)
             }
             
-            logActResults()
+            resultsTable.logActResults()
             for b in [false, true] {
-                logGamma(GeOnly: b)
+                resultsTable.logGamma(GeOnly: b)
             }
             clearActInfo()
         } else {
@@ -474,10 +475,10 @@ class Processor {
         search(directions: directions, startTime: currentEventTime, minDeltaTime: 0, maxDeltaTime: criteria.maxNeutronTime, useCycleTime: false, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>, _) in
             if self.dataProtocol.isNeutronsEvent(Int(event.eventId)) {
                 let t = Float(event.param3 & Mask.neutrons.rawValue)
-                self.neutronsPerAct.append(t)
+                self.neutronsPerAct.times.append(t)
             }
             if self.dataProtocol.hasNeutrons_N() && self.dataProtocol.isNeutrons_N_Event(Int(event.eventId)) {
-                self.neutrons_N_SumPerAct += 1
+                self.neutronsPerAct.NSum += 1
             }
         }
     }
@@ -486,12 +487,12 @@ class Processor {
         let directions: Set<SearchDirection> = [.backward]
         search(directions: directions, startTime: currentEventTime, minDeltaTime: 0, maxDeltaTime: 10, useCycleTime: false, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>, _) in
             if self.dataProtocol.isNeutronsEvent(Int(event.eventId)) {
-                self.neutronsBackwardSumPerAct += 1
+                self.neutronsPerAct.backwardSum += 1
             }
         }
     }
     
-    fileprivate func findNextFissionsAlphaFront(_ folder: FolderStatistics) {
+    fileprivate func findAllFirstFissionsAlphaFront(_ folder: FolderStatistics) {
         var initial = fpos_t()
         fgetpos(file, &initial)
         var current = initial
@@ -741,7 +742,7 @@ class Processor {
             let t = c.backType
             let isBack = self.isBack(event, type: t)
             if isBack {
-                var store = self.isEventStripNearToFirstParticle(event, maxDelta: Int(c.maxDeltaStrips), side: .back)
+                var store = self.isEventStripNearToFirstParticle(event, maxDelta: Int(self.criteria.recoilBackMaxDeltaStrips), side: .back)
                 if !byFact && store { // check energy also
                     let energy = self.getEnergy(event, type: t)
                     store = energy >= c.backMinEnergy && energy <= c.backMaxEnergy
@@ -935,9 +936,7 @@ class Processor {
     }
     
     fileprivate func clearActInfo() {
-        neutronsPerAct.removeAll()
-        neutrons_N_SumPerAct = 0
-        neutronsBackwardSumPerAct = 0
+        neutronsPerAct = NeutronsMatch()
         fissionsAlphaPerAct.removeAll()
         specialPerAct.removeAll()
         beamStatePerAct.clean()
@@ -1065,10 +1064,6 @@ class Processor {
         }
     }
     
-    fileprivate func currentFileEventNumber(_ number: CUnsignedLongLong) -> String {
-        return String(format: "%@_%llu", currentFileName ?? "", number)
-    }
-    
     fileprivate func valueTOF(_ eventTOF: Event, eventRecoil: Event) -> Double {
         let channel = Double(channelForTOF(eventTOF))
         if criteria.unitsTOF == .channels || !calibration.hasData() {
@@ -1099,325 +1094,17 @@ class Processor {
         logger.logCalibration(calibration.stringValue ?? "")
     }
     
-    fileprivate func searchExtraPostfix(_ s: String) -> String {
-        if criteria.searchExtraFromLastParticle {
-            return s + "(\(criteria.nextMaxIndex() ?? 0))"
-        } else {
-            return s
-        }
-    }
+}
+
+extension Processor: ResultsTableDelegate {
     
-    fileprivate var columns = [String]()
-    fileprivate var keyColumnRecoilFrontEvent: String {
-        let name = criteria.recoilType == .recoil ? "Recoil" : "Heavy Recoil"
-        return "Event(\(name))"
-    }
-    fileprivate var keyRecoil: String {
-        return  criteria.recoilType == .recoil ? "R" : "HR"
-    }
-    fileprivate var keyColumnRecoilFrontEnergy: String {
-        return "E(\(keyRecoil)Fron)"
-    }
-    fileprivate var keyColumnRecoilFrontFrontMarker: String {
-        return "\(keyRecoil)FronMarker"
-    }
-    fileprivate var keyColumnRecoilFrontDeltaTime: String {
-        return "dT(\(keyRecoil)Fron-$Fron)"
-    }
-    fileprivate var keyColumnRecoilBackEvent: String {
-        let name = criteria.recoilBackType == .recoil ? "Recoil" : "Heavy Recoil"
-        return "Event(\(name)Back)"
-    }
-    fileprivate let keyColumnRecoilBackEnergy: String = "E(RBack)"
-    fileprivate var keyColumnTof = "TOF"
-    fileprivate var keyColumnTof2 = "TOF2"
-    fileprivate var keyColumnTofDeltaTime = "dT(TOF-RFron)"
-    fileprivate var keyColumnTof2DeltaTime = "dT(TOF2-RFron)"
-    fileprivate var keyColumnStartEvent = "Event($)"
-    fileprivate var keyColumnStartFrontSum = "Sum($Fron)"
-    fileprivate var keyColumnStartFrontEnergy = "$Fron"
-    fileprivate var keyColumnStartFrontMarker = "$FronMarker"
-    fileprivate var keyColumnStartFrontDeltaTime = "dT($FronFirst-Next)"
-    fileprivate var keyColumnStartFrontStrip = "Strip($Fron)"
-    fileprivate var keyColumnStartFocalPositionXYZ = "StartFocalPositionXYZ"
-    fileprivate var keyColumnStartBackSum = "Sum(@Back)"
-    fileprivate var keyColumnStartBackEnergy = "@Back"
-    fileprivate var keyColumnStartBackMarker = "@BackMarker"
-    fileprivate var keyColumnStartBackDeltaTime = "dT($Fron-@Back)"
-    fileprivate var keyColumnStartBackStrip = "Strip(@Back)"
-    fileprivate var keyColumnWellEnergy: String {
-        return searchExtraPostfix("$Well")
-    }
-    fileprivate var keyColumnWellMarker = "$WellMarker"
-    fileprivate var keyColumnWellPosition = "$WellPos"
-    fileprivate var keyColumnWellPositionXYZ = "$WellPosXYZ"
-    fileprivate var keyColumnWellAngle = "$WellAngle"
-    fileprivate var keyColumnWellStrip = "Strip($Well)"
-    fileprivate var keyColumnWellBackEnergy = "*WellBack"
-    fileprivate var keyColumnWellBackMarker = "*WellBackMarker"
-    fileprivate var keyColumnWellBackPosition = "*WellBackPos"
-    fileprivate var keyColumnWellBackStrip = "Strip(*WellBack)"
-    fileprivate var keyColumnNeutronsAverageTime = "NeutronsAverageTime"
-    fileprivate var keyColumnNeutronTime = "NeutronTime"
-    fileprivate var keyColumnNeutrons: String {
-        return searchExtraPostfix("Neutrons")
-    }
-    fileprivate var keyColumnNeutrons_N = "N1...N4"
-    fileprivate var keyColumnNeutronsBackward = "Neutrons(Backward)"
-    fileprivate let keyColumnEvent: String = "Event"
-    fileprivate func keyColumnGammaEnergy(_ max: Bool) -> String {
-        var s = searchExtraPostfix("Gamma")
-        if max {
-            s += "Max"
-        }
-        if criteria.simplifyGamma {
-            s += "_Simplified"
-        }
-        return s
-    }
-    fileprivate func keyColumnGammaEncoder(_ max: Bool) -> String {
-        var s = "Gamma"
-        if max {
-            s += "Max"
-        }
-        return s + "Encoder"
-    }
-    fileprivate func keyColumnGammaDeltaTime(_ max: Bool) -> String {
-        var s = "dT($Fron-Gamma"
-        if max {
-            s += "Max"
-        }
-        return s + ")"
-    }
-    fileprivate func keyColumnGammaMarker(_ max: Bool) -> String {
-        var s = "Gamma"
-        if max {
-            s += "Max"
-        }
-        return s + "Marker"
-    }
-    fileprivate var keyColumnGammaCount = "GammaCount"
-    fileprivate var keyColumnGammaSumEnergy = "GammaSumEnergy"
-    fileprivate var keyColumnSpecial = "Special"
-    fileprivate func keyColumnSpecialFor(eventId: Int) -> String {
-        return keyColumnSpecial + String(eventId)
-    }
-    fileprivate var keyColumnBeamEnergy = "BeamEnergy"
-    fileprivate var keyColumnBeamCurrent = "BeamCurrent"
-    fileprivate var keyColumnBeamBackground = "BeamBackground"
-    fileprivate var keyColumnBeamIntegral = "BeamIntegral"
-    fileprivate var keyColumnVetoEvent = "Event(VETO)"
-    fileprivate var keyColumnVetoEnergy = "E(VETO)"
-    fileprivate var keyColumnVetoStrip = "Strip(VETO)"
-    fileprivate var keyColumnVetoDeltaTime = "dT($Fron-VETO)"
-    fileprivate func keyColumnFissionAlphaFrontSum(_ index: Int) -> String {
-        return "Sum(&Front\(index))"
-    }
-    fileprivate func keyColumnFissionAlphaFrontEvent(_ index: Int) -> String {
-        return "Event(&Front\(index))"
-    }
-    fileprivate func keyColumnFissionAlphaFrontEnergy(_ index: Int) -> String {
-        return "E(&Front\(index))"
-    }
-    fileprivate func keyColumnFissionAlphaFrontMarker(_ index: Int) -> String {
-        return "&Front\(index)Marker"
-    }
-    fileprivate func keyColumnFissionAlphaFrontDeltaTime(_ index: Int) -> String {
-        return "dT($Front\(index-1)-&Front\(index))"
-    }
-    fileprivate func keyColumnFissionAlphaFrontStrip(_ index: Int) -> String {
-        return "Strip(&Front\(index))"
-    }
-    fileprivate func keyColumnFissionAlphaBackSum(_ index: Int) -> String {
-        return "Sum(^Back\(index))"
-    }
-    fileprivate func keyColumnFissionAlphaBackEnergy(_ index: Int) -> String {
-        return "^Back\(index)"
-    }
-    fileprivate func keyColumnFissionAlphaBackMarker(_ index: Int) -> String {
-        return "^Back\(index)Marker"
-    }
-    fileprivate func keyColumnFissionAlphaBackDeltaTime(_ index: Int) -> String {
-        return "dT($Front\(index)-&Back\(index))"
-    }
-    fileprivate func keyColumnFissionAlphaBackStrip(_ index: Int) -> String {
-        return "Strip(^Back\(index))"
-    }
-    
-    fileprivate var columnsGamma = [String]()
-    
-    fileprivate func logGammaHeader() {
-        if !criteria.simplifyGamma {
-            columnsGamma.append(contentsOf: [
-                keyColumnEvent,
-                keyColumnGammaEnergy(false),
-                keyColumnGammaSumEnergy,
-                keyColumnGammaEncoder(false),
-                keyColumnGammaDeltaTime(false),
-                keyColumnGammaMarker(false),
-                keyColumnGammaCount
-            ])
-            let headers = setupHeaders(columnsGamma)
-            for destination in [.gammaAll, .gammaGeOnly] as [LoggerDestination] {
-                logger.writeLineOfFields(headers, destination: destination)
-                logger.finishLine(destination) // +1 line padding
-            }
-        }
-    }
-    
-    fileprivate func logResultsHeader() {
-        columns = []
-        if !criteria.startFromRecoil() {
-            columns.append(contentsOf: [
-                keyColumnRecoilFrontEvent,
-                keyColumnRecoilFrontEnergy,
-                keyColumnRecoilFrontFrontMarker,
-                keyColumnRecoilFrontDeltaTime,
-                keyColumnRecoilBackEvent,
-                keyColumnRecoilBackEnergy
-            ])
-        }
-        columns.append(contentsOf: [
-            keyColumnTof,
-            keyColumnTofDeltaTime
-        ])
-        if criteria.useTOF2 {
-            columns.append(contentsOf: [
-                keyColumnTof2,
-                keyColumnTof2DeltaTime,
-            ])
-        }
-        columns.append(contentsOf: [
-            keyColumnStartEvent,
-            keyColumnStartFrontSum,
-            keyColumnStartFrontEnergy,
-            keyColumnStartFrontMarker,
-            keyColumnStartFrontDeltaTime,
-            keyColumnStartFrontStrip,
-            keyColumnStartFocalPositionXYZ,
-            keyColumnStartBackSum,
-            keyColumnStartBackEnergy,
-            keyColumnStartBackMarker,
-            keyColumnStartBackDeltaTime,
-            keyColumnStartBackStrip])
-        if criteria.searchWell {
-            columns.append(contentsOf: [
-                keyColumnWellEnergy,
-                keyColumnWellMarker,
-                keyColumnWellPosition,
-                keyColumnWellPositionXYZ,
-                keyColumnWellAngle,
-                keyColumnWellStrip,
-                keyColumnWellBackEnergy,
-                keyColumnWellBackMarker,
-                keyColumnWellBackPosition,
-                keyColumnWellBackStrip
-                ])
-        }
-        if criteria.searchNeutrons {
-            columns.append(contentsOf: [keyColumnNeutronsAverageTime, keyColumnNeutronTime, keyColumnNeutrons])
-            if dataProtocol.hasNeutrons_N() {
-                columns.append(keyColumnNeutrons_N)
-            }
-            columns.append(keyColumnNeutronsBackward)
-        }
-        columns.append(contentsOf: [
-            keyColumnGammaEnergy(true),
-            keyColumnGammaSumEnergy,
-            keyColumnGammaEncoder(true),
-            keyColumnGammaDeltaTime(true),
-            keyColumnGammaCount
-            ])
-        if criteria.searchSpecialEvents {
-            let values = criteria.specialEventIds.map({ (i: Int) -> String in
-                return keyColumnSpecialFor(eventId: i)
-            })
-            columns.append(contentsOf: values)
-        }
-        if criteria.trackBeamEnergy {
-            columns.append(keyColumnBeamEnergy)
-        }
-        if criteria.trackBeamCurrent {
-            columns.append(keyColumnBeamCurrent)
-        }
-        if criteria.trackBeamBackground {
-            columns.append(keyColumnBeamBackground)
-        }
-        if criteria.trackBeamIntegral {
-            columns.append(keyColumnBeamIntegral)
-        }
-        if criteria.searchVETO {
-            columns.append(contentsOf: [
-                keyColumnVetoEvent,
-                keyColumnVetoEnergy,
-                keyColumnVetoStrip,
-                keyColumnVetoDeltaTime
-                ])
-        }
-        if let c2 = criteria.next[2] {
-            columns.append(keyColumnFissionAlphaFrontEvent(2))
-            if c2.summarizeFront {
-                columns.append(keyColumnFissionAlphaFrontSum(2))
-            }
-            columns.append(contentsOf: [
-                keyColumnFissionAlphaFrontEnergy(2),
-                keyColumnFissionAlphaFrontMarker(2),
-                keyColumnFissionAlphaFrontDeltaTime(2),
-                keyColumnFissionAlphaFrontStrip(2),
-                keyColumnFissionAlphaBackSum(2),
-                keyColumnFissionAlphaBackEnergy(2),
-                keyColumnFissionAlphaBackMarker(2),
-                keyColumnFissionAlphaBackDeltaTime(2),
-                keyColumnFissionAlphaBackStrip(2)
-                ])
-            if let c3 = criteria.next[3]  {
-                columns.append(keyColumnFissionAlphaFrontEvent(3))
-                if c3.summarizeFront {
-                    columns.append(keyColumnFissionAlphaFrontSum(3))
-                }
-                columns.append(contentsOf: [
-                    keyColumnFissionAlphaFrontEnergy(3),
-                    keyColumnFissionAlphaFrontMarker(3),
-                    keyColumnFissionAlphaFrontDeltaTime(3),
-                    keyColumnFissionAlphaFrontStrip(3),
-                    keyColumnFissionAlphaBackSum(3),
-                    keyColumnFissionAlphaBackEnergy(3),
-                    keyColumnFissionAlphaBackMarker(3),
-                    keyColumnFissionAlphaBackDeltaTime(3),
-                    keyColumnFissionAlphaBackStrip(3)
-                    ])
-            }
-        }
-        let headers = setupHeaders(columns)
-        logger.writeLineOfFields(headers, destination: .results)
-        logger.finishLine(.results) // +1 line padding
-    }
-    
-    fileprivate func setupHeaders(_ headers: [String]) -> [AnyObject] {
-        let firstFront = criteria.startParticleType.symbol()
-        let firstBack = criteria.startParticleBackType.symbol()
-        let wellBack = criteria.wellParticleBackType.symbol()
-        // TODO: criteria.next all symbols handling
-        let last = criteria.next[criteria.nextMaxIndex() ?? -1]
-        let secondFront = last?.frontType.symbol() ?? ""
-        let secondBack = last?.backType.symbol() ?? ""
-        let dict = ["$": firstFront,
-                    "@": firstBack,
-                    "*": wellBack,
-                    "&": secondFront,
-                    "^": secondBack]
-        return headers.map { (s: String) -> String in
-            var result = s
-            for (key, value) in dict {
-                result = result.replacingOccurrences(of: key, with: value)
-            }
-            return result
-        } as [AnyObject]
+    func rowsCountForCurrentResult() -> Int {
+        return max(max(max(max(max(1, vetoPerAct.count), fissionsAlphaPerAct.count), recoilsPerAct.count), neutronsCountWithNewLine()), fissionsAlphaNextPerAct.values.map { $0.count }.max() ?? 0)
     }
     
     // Need special results block for neutron times, so we skeep one line.
-    fileprivate func neutronsCountWithNewLine() -> Int {
-        let count = neutronsPerAct.count
+    func neutronsCountWithNewLine() -> Int {
+        let count = neutrons().count
         if count > 0 {
             return count + 1
         } else {
@@ -1425,13 +1112,15 @@ class Processor {
         }
     }
     
-    fileprivate func firstTOF(row: Int, type: SearchType) -> DetectorMatchItem? {
-        return recoilsPerAct.matchFor(side: .front).itemAt(index: row)?.subMatches?[type]??.itemAt(index: 0) ?? nil
+    func neutrons() -> NeutronsMatch {
+        return neutronsPerAct
     }
     
-    fileprivate var currentStartEventNumber: CUnsignedLongLong?
+    func currentFileEventNumber(_ number: CUnsignedLongLong) -> String {
+        return String(format: "%@_%llu", currentFileName ?? "", number)
+    }
     
-    fileprivate var focalGammaContainer: DetectorMatch? {
+    func focalGammaContainer() -> DetectorMatch? {
         var match: DoubleSidedStripDetectorMatch?
         if criteria.searchExtraFromLastParticle {
             match = lastFissionAlphaNextPerAct
@@ -1443,402 +1132,32 @@ class Processor {
         return match?.matchFor(side: .front)
     }
     
-    fileprivate func gammaAt(row: Int) -> DetectorMatch? {
-        return focalGammaContainer?.itemAt(index: row)?.subMatches?[.gamma] ?? nil
+    func vetoAt(index: Int) -> DetectorMatchItem? {
+        return vetoPerAct.itemAt(index: index)
     }
     
-    fileprivate func logGamma(GeOnly: Bool) {
-        if !criteria.simplifyGamma, let f = focalGammaContainer {
-            let count = f.count
-            if count > 0 {
-                for i in 0...count-1 {
-                    if let item = f.itemAt(index: i), let gamma = item.subMatches?[.gamma], var g = gamma {
-                        if GeOnly {
-                            g = g.filteredByMarker(marker: 0)
-                        }
-                        let destination: LoggerDestination = GeOnly ? .gammaGeOnly : .gammaAll
-                        let c = g.count
-                        if c > 0 {
-                            let rowsMax = c
-                            for row in 0 ..< rowsMax {
-                                for column in columnsGamma {
-                                    var field = ""
-                                    switch column {
-                                    case keyColumnEvent:
-                                        if row == 0, let eventNumber = item.eventNumber {
-                                            field = currentFileEventNumber(eventNumber)
-                                        }
-                                    case keyColumnGammaEnergy(false):
-                                        if let energy = g.itemAt(index: row)?.energy {
-                                            field = String(format: "%.7f", energy)
-                                        }
-                                    case keyColumnGammaSumEnergy:
-                                        if row == 0, let sum = g.getSumEnergy() {
-                                            field = String(format: "%.7f", sum)
-                                        }
-                                    case keyColumnGammaEncoder(false):
-                                        if let encoder = g.itemAt(index: row)?.encoder {
-                                            field = String(format: "%hu", encoder)
-                                        }
-                                    case keyColumnGammaDeltaTime(false):
-                                        if let deltaTime = g.itemAt(index: row)?.deltaTime {
-                                            field = String(format: "%lld", deltaTime)
-                                        }
-                                    case keyColumnGammaMarker(false):
-                                        if let marker = g.itemAt(index: row)?.marker {
-                                            field = String(format: "%hu", marker)
-                                        }
-                                    case keyColumnGammaCount:
-                                        if row == 0 {
-                                            field = String(format: "%d", c)
-                                        }
-                                    default:
-                                        break
-                                    }
-                                    logger.writeField(field as AnyObject, destination: destination)
-                                }
-                                logger.finishLine(destination)
-                            }
-                        }
-                    }
-                }
-            }
-        }
+    func recoilAt(side: StripsSide, index: Int) -> DetectorMatchItem? {
+        return recoilsPerAct.matchFor(side: side).itemAt(index: index)
     }
     
-    fileprivate func logActResults() {
-        let rowsMax = max(max(max(max(max(1, vetoPerAct.count), fissionsAlphaPerAct.count), recoilsPerAct.count), neutronsCountWithNewLine()), fissionsAlphaNextPerAct.values.map { $0.count }.max() ?? 0)
-        for row in 0 ..< rowsMax {
-            for column in columns {
-                var field = ""
-                switch column {
-                case keyColumnRecoilFrontEvent:
-                    if let eventNumber = recoilsPerAct.matchFor(side: .front).itemAt(index: row)?.eventNumber {
-                        field = currentFileEventNumber(eventNumber)
-                    }
-                case keyColumnRecoilFrontEnergy:
-                    if let energy = recoilsPerAct.matchFor(side: .front).itemAt(index: row)?.energy {
-                        field = String(format: "%.7f", energy)
-                    }
-                case keyColumnRecoilFrontFrontMarker:
-                    if let marker = recoilsPerAct.matchFor(side: .front).itemAt(index: row)?.marker {
-                        field = String(format: "%hu", marker)
-                    }
-                case keyColumnRecoilFrontDeltaTime:
-                    if let deltaTime = recoilsPerAct.matchFor(side: .front).itemAt(index: row)?.deltaTime {
-                        field = String(format: "%lld", deltaTime)
-                    }
-                case keyColumnRecoilBackEvent:
-                    if let eventNumber = recoilsPerAct.matchFor(side: .back).itemAt(index: row)?.eventNumber {
-                        field = currentFileEventNumber(eventNumber)
-                    }
-                case keyColumnRecoilBackEnergy:
-                    if let energy = recoilsPerAct.matchFor(side: .back).itemAt(index: row)?.energy {
-                        field = String(format: "%.7f", energy)
-                    }
-                case keyColumnTof, keyColumnTof2:
-                    if let value = firstTOF(row: row, type: column == keyColumnTof ? .tof : .tof2)?.value {
-                        let format = "%." + (criteria.unitsTOF == .channels ? "0" : "7") + "f"
-                        field = String(format: format, value)
-                    }
-                case keyColumnTofDeltaTime, keyColumnTof2DeltaTime:
-                    if let deltaTime = firstTOF(row: row, type: column == keyColumnTofDeltaTime ? .tof : .tof2)?.deltaTime {
-                        field = String(format: "%lld", deltaTime)
-                    }
-                case keyColumnStartEvent:
-                    if let eventNumber = firstParticlePerAct.matchFor(side: .front).itemAt(index: row)?.eventNumber {
-                        field = currentFileEventNumber(eventNumber)
-                        currentStartEventNumber = eventNumber
-                    } else if row < neutronsCountWithNewLine(), let eventNumber = currentStartEventNumber { // Need track start event number for neutron times results
-                        field = currentFileEventNumber(eventNumber)
-                    }
-                case keyColumnStartFrontSum:
-                    if row == 0, !criteria.startFromRecoil(), let sum = fissionsAlphaPerAct.matchFor(side: .front).getSumEnergy() {
-                        field = String(format: "%.7f", sum)
-                    }
-                case keyColumnStartFrontEnergy:
-                    if let energy = firstParticlePerAct.matchFor(side: .front).itemAt(index: row)?.energy {
-                        field = String(format: "%.7f", energy)
-                    }
-                case keyColumnStartFrontMarker:
-                    if let marker = firstParticlePerAct.matchFor(side: .front).itemAt(index: row)?.marker {
-                        field = String(format: "%hu", marker)
-                    }
-                case keyColumnStartFrontDeltaTime:
-                    if let deltaTime = firstParticlePerAct.matchFor(side: .front).itemAt(index: row)?.deltaTime {
-                        field = String(format: "%lld", deltaTime)
-                    }
-                case keyColumnStartFrontStrip:
-                    if let strip = firstParticlePerAct.matchFor(side: .front).itemAt(index: row)?.strip1_N {
-                        field = String(format: "%d", strip)
-                    }
-                case keyColumnStartFocalPositionXYZ:
-                    let matches = firstParticlePerAct
-                    if let itemFront = matches.matchFor(side: .front).itemAt(index: row), let stripFront1 = itemFront.strip1_N, let itemBack = matches.matchFor(side: .back).itemAt(index: row), let stripBack1 = itemBack.strip1_N {
-                        let point = DetectorsWellGeometry.coordinatesXYZ(stripDetector: .focal, stripFront0: stripFront1 - 1, stripBack0: stripBack1 - 1)
-                        field = String(format: "%.1f|%.1f|%.1f", point.x, point.y, point.z)
-                    }
-                case keyColumnStartBackSum:
-                    if row == 0, !criteria.startFromRecoil(), let sum = fissionsAlphaPerAct.matchFor(side: .back).getSumEnergy() {
-                        field = String(format: "%.7f", sum)
-                    }
-                case keyColumnStartBackEnergy:
-                    let side: StripsSide = .back
-                    let match = firstParticlePerAct.matchFor(side: side)
-                    if let energy = match.itemAt(index: row)?.energy {
-                        field = String(format: "%.7f", energy)
-                    }
-                case keyColumnStartBackMarker:
-                    let side: StripsSide = .back
-                    let match = firstParticlePerAct.matchFor(side: side)
-                    if let marker = match.itemAt(index: row)?.marker {
-                        field = String(format: "%hu", marker)
-                    }
-                case keyColumnStartBackDeltaTime:
-                    let side: StripsSide = .back
-                    let match = firstParticlePerAct.matchFor(side: side)
-                    if let deltaTime = match.itemAt(index: row)?.deltaTime {
-                        field = String(format: "%lld", deltaTime)
-                    }
-                case keyColumnStartBackStrip:
-                    let side: StripsSide = .back
-                    let match = firstParticlePerAct.matchFor(side: side)
-                    if let strip = match.itemAt(index: row)?.strip1_N {
-                        field = String(format: "%d", strip)
-                    }
-                case keyColumnWellEnergy:
-                    if row == 0, let energy = fissionsAlphaWellPerAct.matchFor(side: .front).itemAt(index: 0)?.energy {
-                        field = String(format: "%.7f", energy)
-                    }
-                case keyColumnWellMarker:
-                    if row == 0, let marker = fissionsAlphaWellPerAct.matchFor(side: .front).itemAt(index: 0)?.marker {
-                        field = String(format: "%hu", marker)
-                    }
-                case keyColumnWellPosition:
-                    if row == 0, let item = fissionsAlphaWellPerAct.matchFor(side: .front).itemAt(index: 0), let strip0_15 = item.strip0_15, let encoder = item.encoder {
-                        field = String(format: "FWell%d.%d", encoder, strip0_15 + 1)
-                    }
-                case keyColumnWellPositionXYZ:
-                    if row == 0, let itemFront = fissionsAlphaWellPerAct.matchFor(side: .front).itemAt(index: 0), let stripFront0 = itemFront.strip0_15, let itemBack = fissionsAlphaWellPerAct.matchFor(side: .back).itemAt(index: 0), let stripBack0 = itemBack.strip0_15, let encoder = itemFront.encoder {
-                        let point = DetectorsWellGeometry.coordinatesXYZ(stripDetector: .side, stripFront0: Int(stripFront0), stripBack0: Int(stripBack0), encoderSide: Int(encoder))
-                        field = String(format: "%.1f|%.1f|%.1f", point.x, point.y, point.z)
-                    }
-                case keyColumnWellAngle:
-                    let matches = firstParticlePerAct
-                    if row == 0, let itemFocalFront = matches.matchFor(side: .front).itemAt(index: row), let stripFocalFront1 = itemFocalFront.strip1_N, let itemFocalBack = matches.matchFor(side: .back).itemAt(index: row), let stripFocalBack1 = itemFocalBack.strip1_N, let itemSideFront = fissionsAlphaWellPerAct.matchFor(side: .front).itemAt(index: 0), let stripSideFront0 = itemSideFront.strip0_15, let itemSideBack = fissionsAlphaWellPerAct.matchFor(side: .back).itemAt(index: 0), let stripSideBack0 = itemSideBack.strip0_15, let encoderSide = itemSideFront.encoder {
-                        let pointFront = DetectorsWellGeometry.coordinatesXYZ(stripDetector: .focal, stripFront0: stripFocalFront1 - 1, stripBack0: stripFocalBack1 - 1)
-                        let pointSide = DetectorsWellGeometry.coordinatesXYZ(stripDetector: .side, stripFront0: Int(stripSideFront0), stripBack0: Int(stripSideBack0), encoderSide: Int(encoderSide))
-                        let hypotenuse = sqrt(pow(pointFront.x - pointSide.x, 2) + pow(pointFront.y - pointSide.y, 2) + pow(pointFront.z - pointSide.z, 2))
-                        let sinus = pointSide.z / hypotenuse
-                        let arcsinus = asin(sinus) * 180 / CGFloat.pi
-                        field = String(format: "%.2f", arcsinus)
-                    }
-                case keyColumnWellStrip:
-                    if row == 0, let strip = fissionsAlphaWellPerAct.matchFor(side: .front).itemAt(index: 0)?.strip1_N {
-                        field = String(format: "%d", strip)
-                    }
-                case keyColumnWellBackEnergy:
-                    if row == 0, let energy = fissionsAlphaWellPerAct.matchFor(side: .back).itemAt(index: 0)?.energy {
-                        field = String(format: "%.7f", energy)
-                    }
-                case keyColumnWellBackMarker:
-                    if row == 0, let marker = fissionsAlphaWellPerAct.matchFor(side: .back).itemAt(index: 0)?.marker {
-                        field = String(format: "%hu", marker)
-                    }
-                case keyColumnWellBackPosition:
-                    if row == 0, let item = fissionsAlphaWellPerAct.matchFor(side: .back).itemAt(index: 0), let strip0_15 = item.strip0_15, let encoder = item.encoder {
-                        field = String(format: "FWellBack%d.%d", encoder, strip0_15 + 1)
-                    }
-                case keyColumnWellBackStrip:
-                    if row == 0, let strip = fissionsAlphaWellPerAct.matchFor(side: .back).itemAt(index: 0)?.strip1_N {
-                        field = String(format: "%d", strip)
-                    }
-                case keyColumnNeutronsAverageTime:
-                    if row == 0 {
-                        let count = neutronsPerAct.count
-                        if count > 0 {
-                            let average = neutronsPerAct.reduce(0, +)/Float(count)
-                            field = String(format: "%.1f", average)
-                        } else {
-                            field = "0"
-                        }
-                    }
-                case keyColumnNeutronTime:
-                    if row > 0 { // skip new line
-                        let index = row - 1
-                        if index < neutronsPerAct.count {
-                            field = String(format: "%.1f", neutronsPerAct[index])
-                        }
-                    }
-                case keyColumnNeutrons:
-                    if row == 0 {
-                        field = String(format: "%llu", neutronsPerAct.count)
-                    }
-                case keyColumnNeutrons_N:
-                    if row == 0 {
-                        field = String(format: "%llu", neutrons_N_SumPerAct)
-                    }
-                case keyColumnNeutronsBackward:
-                    if row == 0 {
-                        field = String(format: "%llu", neutronsBackwardSumPerAct)
-                    }
-                case keyColumnGammaEnergy(true):
-                    if let energy = gammaAt(row: row)?.itemWithMaxEnergy()?.energy {
-                        field = String(format: "%.7f", energy)
-                    }
-                case keyColumnGammaSumEnergy:
-                    if row == 0, let sum = gammaAt(row: row)?.getSumEnergy() {
-                        field = String(format: "%.7f", sum)
-                    }
-                case keyColumnGammaEncoder(true):
-                    if let encoder = gammaAt(row: row)?.itemWithMaxEnergy()?.encoder {
-                        field = String(format: "%hu", encoder)
-                    }
-                case keyColumnGammaDeltaTime(true):
-                    if let deltaTime = gammaAt(row: row)?.itemWithMaxEnergy()?.deltaTime {
-                        field = String(format: "%lld", deltaTime)
-                    }
-                case keyColumnGammaCount:
-                    if let count = gammaAt(row: row)?.count {
-                        field = String(format: "%d", count)
-                    }
-                case _ where column.hasPrefix(keyColumnSpecial):
-                    if row == 0 {
-                        if let eventId = Int(column.replacingOccurrences(of: keyColumnSpecial, with: "")), let v = specialPerAct[eventId] {
-                            field = String(format: "%hu", v)
-                        }
-                    }
-                case keyColumnBeamEnergy:
-                    if row == 0 {
-                        if let e = beamStatePerAct.energy {
-                            field = String(format: "%.1f", e.getFloatValue())
-                        }
-                    }
-                case keyColumnBeamCurrent:
-                    if row == 0 {
-                        if let e = beamStatePerAct.current {
-                            field = String(format: "%.2f", e.getFloatValue())
-                        }
-                    }
-                case keyColumnBeamBackground:
-                    if row == 0 {
-                        if let e = beamStatePerAct.background {
-                            field = String(format: "%.1f", e.getFloatValue())
-                        }
-                    }
-                case keyColumnBeamIntegral:
-                    if row == 0 {
-                        if let e = beamStatePerAct.integral {
-                            field = String(format: "%.1f", e.getFloatValue())
-                        }
-                    }
-                case keyColumnVetoEvent:
-                    if let eventNumber = vetoPerAct.itemAt(index: row)?.eventNumber {
-                        field = currentFileEventNumber(eventNumber)
-                    }
-                case keyColumnVetoEnergy:
-                    if let energy = vetoPerAct.itemAt(index: row)?.energy {
-                        field = String(format: "%.7f", energy)
-                    }
-                case keyColumnVetoStrip:
-                    if let strip0_15 = vetoPerAct.itemAt(index: row)?.strip0_15 {
-                        field = String(format: "%hu", strip0_15 + 1)
-                    }
-                case keyColumnVetoDeltaTime:
-                    if let deltaTime = vetoPerAct.itemAt(index: row)?.deltaTime {
-                        field = String(format: "%lld", deltaTime)
-                    }
-                case keyColumnFissionAlphaFrontEvent(2), keyColumnFissionAlphaFrontEvent(3):
-                    let index = column == keyColumnFissionAlphaFrontEvent(2) ? 2 : 3
-                    field = fissionAlphaEventNumber(index, row: row, side: .front)
-                case keyColumnFissionAlphaFrontSum(2), keyColumnFissionAlphaFrontSum(3):
-                    let index = column == keyColumnFissionAlphaFrontSum(2) ? 2 : 3
-                    field = fissionAlphaSum(index, row: row, side: .front)
-                case keyColumnFissionAlphaFrontEnergy(2), keyColumnFissionAlphaFrontEnergy(3):
-                    let index = column == keyColumnFissionAlphaFrontEnergy(2) ? 2 : 3
-                    field = fissionAlphaEnergy(index, row: row, side: .front)
-                case keyColumnFissionAlphaFrontMarker(2), keyColumnFissionAlphaFrontMarker(3):
-                    let index = column == keyColumnFissionAlphaFrontMarker(2) ? 2 : 3
-                    field = fissionAlphaMarker(index, row: row, side: .front)
-                case keyColumnFissionAlphaFrontDeltaTime(2), keyColumnFissionAlphaFrontDeltaTime(3):
-                    let index = column == keyColumnFissionAlphaFrontDeltaTime(2) ? 2 : 3
-                    field = fissionAlphaDeltaTime(index, row: row, side: .front)
-                case keyColumnFissionAlphaFrontStrip(2), keyColumnFissionAlphaFrontStrip(3):
-                    let index = column == keyColumnFissionAlphaFrontStrip(2) ? 2 : 3
-                    field = fissionAlphaStrip(index, row: row, side: .front)
-                case keyColumnFissionAlphaBackSum(2), keyColumnFissionAlphaBackSum(3):
-                    let index = column == keyColumnFissionAlphaBackSum(2) ? 2 : 3
-                    field = fissionAlphaSum(index, row: row, side: .back)
-                case keyColumnFissionAlphaBackEnergy(2), keyColumnFissionAlphaBackEnergy(3):
-                    let index = column == keyColumnFissionAlphaBackEnergy(2) ? 2 : 3
-                    field = fissionAlphaEnergy(index, row: row, side: .back)
-                case keyColumnFissionAlphaBackMarker(2), keyColumnFissionAlphaBackMarker(3):
-                    let index = column == keyColumnFissionAlphaBackMarker(2) ? 2 : 3
-                    field = fissionAlphaMarker(index, row: row, side: .back)
-                case keyColumnFissionAlphaBackDeltaTime(2), keyColumnFissionAlphaBackDeltaTime(3):
-                    let index = column == keyColumnFissionAlphaBackDeltaTime(2) ? 2 : 3
-                    field = fissionAlphaDeltaTime(index, row: row, side: .back)
-                case keyColumnFissionAlphaBackStrip(2), keyColumnFissionAlphaBackStrip(3):
-                    let index = column == keyColumnFissionAlphaBackStrip(2) ? 2 : 3
-                    field = fissionAlphaStrip(index, row: row, side: .back)
-                default:
-                    break
-                }
-                logger.writeField(field as AnyObject, destination: .results)
-            }
-            logger.finishLine(.results)
-        }
+    func fissionsAlphaWellAt(side: StripsSide, index: Int) -> DetectorMatchItem? {
+        return fissionsAlphaWellPerAct.matchFor(side: side).itemAt(index: index)
     }
     
-    fileprivate func fissionAlphaMatch(_ index: Int, side: StripsSide) -> DetectorMatch? {
+    func beamState() -> BeamState {
+        return beamStatePerAct
+    }
+    
+    func firstParticleAt(side: StripsSide) -> DetectorMatch {
+        return firstParticlePerAct.matchFor(side: side)
+    }
+    
+    func nextParticleAt(side: StripsSide, index: Int) -> DetectorMatch? {
         return fissionsAlphaNextPerAct[index]?.matchFor(side: side)
     }
     
-    fileprivate func fissionAlpha(_ index: Int, row: Int, side: StripsSide) -> DetectorMatchItem? {
-        return fissionAlphaMatch(index, side: side)?.itemAt(index: row)
-    }
-    
-    fileprivate func fissionAlphaSum(_ index: Int, row: Int, side: StripsSide) -> String {
-        if row == 0, let sum = fissionAlphaMatch(index, side: side)?.getSumEnergy() {
-            return String(format: "%.7f", sum)
-        } else {
-            return ""
-        }
-    }
-    
-    fileprivate func fissionAlphaEventNumber(_ index: Int, row: Int, side: StripsSide) -> String {
-        if let eventNumber = fissionAlpha(index, row: row, side: side)?.eventNumber {
-            return currentFileEventNumber(eventNumber)
-        }
-        return ""
-    }
-    
-    fileprivate func fissionAlphaEnergy(_ index: Int, row: Int, side: StripsSide) -> String {
-        if let energy = fissionAlpha(index, row: row, side: side)?.energy {
-            return String(format: "%.7f", energy)
-        }
-        return ""
-    }
-    
-    fileprivate func fissionAlphaMarker(_ index: Int, row: Int, side: StripsSide) -> String {
-        if let marker = fissionAlpha(index, row: row, side: side)?.marker {
-            return String(format: "%hu", marker)
-        }
-        return ""
-    }
-    
-    fileprivate func fissionAlphaDeltaTime(_ index: Int, row: Int, side: StripsSide) -> String {
-        if let deltaTime = fissionAlpha(index, row: row, side: side)?.deltaTime {
-            return String(format: "%lld", deltaTime)
-        }
-        return ""
-    }
-    
-    fileprivate func fissionAlphaStrip(_ index: Int, row: Int, side: StripsSide) -> String {
-        if let strip = fissionAlpha(index, row: row, side: side)?.strip1_N {
-            return String(format: "%d", strip)
-        }
-        return ""
+    func specialWith(eventId: Int) -> CUnsignedShort? {
+        return specialPerAct[eventId]
     }
     
 }

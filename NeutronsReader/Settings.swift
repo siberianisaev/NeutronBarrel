@@ -136,6 +136,11 @@ class Settings {
         return object ?? 0
     }
     
+    class func getUInt64Setting(_ setting: Setting, defaultValue: UInt64 = 0) -> UInt64 {
+        let object = getSetting(setting) as? UInt64
+        return object ?? defaultValue
+    }
+    
     class func getIntSetting(_ setting: Setting, defaultValue: Int = 0) -> Int {
         let object = getSetting(setting) as? Int
         return object ?? defaultValue
