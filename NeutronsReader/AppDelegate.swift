@@ -638,6 +638,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         let s = count == 1 ? "" : "s"
         labelTask.stringValue = "\(count) task\(s) processing"
         progressIndicator?.doubleValue = 0.0
+        progressIndicator?.isHidden = !run
         if run {
             activity?.startAnimation(self)
             startTimer()
@@ -872,10 +873,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             string += "Version " + version
         }
         if let build = infoPlistStringForKey("CFBundleVersion") {
-            string += " (" + build + ")."
+            string += " (" + build + ")"
         }
         if let gitSHA = infoPlistStringForKey("CFBundleVersionGitSHA") {
-            string += " Git SHA " + gitSHA
+            string += "\nGit SHA " + gitSHA
         }
         labelVersion?.stringValue = string
         let branch: String
