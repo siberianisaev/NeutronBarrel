@@ -36,6 +36,7 @@ enum Setting: String {
     MaxTOFTime = "MaxTOFTime",
     MaxVETOTime = "MaxVETOTime",
     MaxGammaTime = "MaxGammaTime",
+    MaxGammaBackwardTime = "MaxGammaBackwardTime",
     MaxNeutronTime = "MaxNeutronTime",
     MaxRecoilFrontDeltaStrips = "MaxRecoilFrontDeltaStrips",
     MaxRecoilBackDeltaStrips = "MaxRecoilBackDeltaStrips",
@@ -221,7 +222,7 @@ class Settings {
             return 4
         case .MaxNeutronTime:
             return 132
-        case .MinFissionBackEnergy, .MaxRecoilFrontDeltaStrips, .MaxRecoilBackDeltaStrips, .SearchFissionAlpha2, .SearchFissionAlpha3, .StartSearchType, .StartBackSearchType, .WellBackSearchType, .SecondFrontSearchType, .SecondBackSearchType, .ThirdFrontSearchType, .ThirdBackSearchType, .TOFUnits, .MinFissionAlpha2Time, .MaxFissionAlpha2FrontDeltaStrips, .MinFissionAlpha3Time, .MaxFissionAlpha3FrontDeltaStrips, .MinRecoilTime, .MinTOFValue, .MaxFissionBackBackwardTime, .MaxFissionWellBackwardTime, .MaxRecoilBackBackwardTime, .MinFissionWellEnergy:
+        case .MinFissionBackEnergy, .MaxRecoilFrontDeltaStrips, .MaxRecoilBackDeltaStrips, .SearchFissionAlpha2, .SearchFissionAlpha3, .StartSearchType, .StartBackSearchType, .WellBackSearchType, .SecondFrontSearchType, .SecondBackSearchType, .ThirdFrontSearchType, .ThirdBackSearchType, .TOFUnits, .MinFissionAlpha2Time, .MaxFissionAlpha2FrontDeltaStrips, .MinFissionAlpha3Time, .MaxFissionAlpha3FrontDeltaStrips, .MinRecoilTime, .MinTOFValue, .MaxFissionBackBackwardTime, .MaxFissionWellBackwardTime, .MaxRecoilBackBackwardTime, .MinFissionWellEnergy, .MaxGammaBackwardTime:
             return 0
         case .RequiredFissionAlphaBack, .SearchFirstRecoilOnly, .RequiredRecoilBack, .SearchNeutrons, .TrackBeamEnergy, .TrackBeamCurrent, .TrackBeamBackground, .TrackBeamIntegral, .SearchWell:
             return true

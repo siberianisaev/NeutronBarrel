@@ -89,6 +89,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         sMaxTOFTime = String(format: "%d", Settings.getIntSetting(.MaxTOFTime)) // mks
         sMaxVETOTime = String(format: "%d", Settings.getIntSetting(.MaxVETOTime)) // mks
         sMaxGammaTime = String(format: "%d", Settings.getIntSetting(.MaxGammaTime)) // mks
+        sMaxGammaBackwardTime = String(format: "%d", Settings.getIntSetting(.MaxGammaBackwardTime)) // mks
         sMaxNeutronTime = String(format: "%d", Settings.getIntSetting(.MaxNeutronTime)) // mks
         sMaxRecoilFrontDeltaStrips = String(format: "%d", Settings.getIntSetting(.MaxRecoilFrontDeltaStrips))
         sMaxRecoilBackDeltaStrips = String(format: "%d", Settings.getIntSetting(.MaxRecoilBackDeltaStrips))
@@ -195,6 +196,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBInspectable dynamic var sMaxTOFTime: String = ""
     @IBInspectable dynamic var sMaxVETOTime: String = ""
     @IBInspectable dynamic var sMaxGammaTime: String = ""
+    @IBInspectable dynamic var sMaxGammaBackwardTime: String = ""
     @IBInspectable dynamic var sMaxNeutronTime: String = ""
     @IBInspectable dynamic var sMaxRecoilFrontDeltaStrips: String = ""
     @IBInspectable dynamic var sMaxRecoilBackDeltaStrips: String = ""
@@ -555,6 +557,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         sc.maxVETOTime = UInt64(sMaxVETOTime) ?? 0
         sc.requiredVETO = requiredVETO
         sc.maxGammaTime = UInt64(sMaxGammaTime) ?? 0
+        sc.maxGammaBackwardTime = UInt64(sMaxGammaBackwardTime) ?? 0
         sc.requiredGamma = requiredGamma
         sc.requiredGammaOrWell = requiredGammaOrWell
         sc.simplifyGamma = simplifyGamma
@@ -794,6 +797,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             .MaxTOFTime: Int(sMaxTOFTime),
             .MaxVETOTime: Int(sMaxVETOTime),
             .MaxGammaTime: Int(sMaxGammaTime),
+            .MaxGammaBackwardTime: Int(sMaxGammaBackwardTime),
             .MaxNeutronTime: Int(sMaxNeutronTime),
             .MaxRecoilFrontDeltaStrips: Int(sMaxRecoilFrontDeltaStrips),
             .MaxRecoilBackDeltaStrips: Int(sMaxRecoilBackDeltaStrips),

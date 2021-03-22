@@ -520,7 +520,7 @@ class Processor {
     fileprivate func findGamma(_ position: Int) -> DetectorMatch? {
         let match = DetectorMatch()
         let directions: Set<SearchDirection> = [.forward, .backward]
-        search(directions: directions, startTime: currentEventTime, minDeltaTime: 0, maxDeltaTime: criteria.maxGammaTime, useCycleTime: false, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>, _) in
+        search(directions: directions, startTime: currentEventTime, minDeltaTime: 0, maxDeltaTime: criteria.maxGammaTime, maxDeltaTimeBackward: criteria.maxGammaBackwardTime, useCycleTime: false, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>, _) in
             if self.isGammaEvent(event), let item = self.gammaMatchItem(event, deltaTime: deltaTime) {
                 match.append(item)
             }
