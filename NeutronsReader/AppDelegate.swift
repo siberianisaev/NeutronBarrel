@@ -890,13 +890,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             string += "\nGit SHA " + gitSHA
         }
         labelVersion?.stringValue = string
-        let branch: String
-        #if NEW_TIME_FORMAT
-            branch = "New time format!"
-        #else
-            branch = "Branch: " + (infoPlistStringForKey("CFBundleVersionGitBranch") ?? "unknown")
-        #endif
-        labelBranch?.stringValue = branch
+        let branch = infoPlistStringForKey("CFBundleVersionGitBranch") ?? "unknown"
+        labelBranch?.stringValue = "Branch: " + branch
+        labelBranch?.textColor = branch == "master" ? NSColor.systemGreen : NSColor.systemRed
     }
     
 }
