@@ -35,19 +35,21 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBOutlet weak var indicatorCalibration: NSTextField!
     @IBOutlet weak var indicatorStripsConfig: NSTextField!
     @IBOutlet weak var buttonRun: NSButton!
-    @IBOutlet weak var recoilFrontView: NSView!
+    @IBOutlet weak var recoilView: NSView!
+    @IBOutlet weak var fissionAlphaView: NSView!
+    @IBOutlet weak var fissionAlpha1View: NSView!
     @IBOutlet weak var fissionAlpha2View: NSView!
     @IBOutlet weak var fissionAlpha2FormView: NSView!
     @IBOutlet weak var fissionAlpha3FormView: NSView!
     @IBOutlet weak var searchExtraView: NSView!
     @IBOutlet weak var vetoView: NSView!
     @IBOutlet weak var wellView: NSView!
-    @IBOutlet weak var fissionAlpha1View: NSView!
     @IBOutlet weak var requiredRecoilButton: NSButton!
     @IBOutlet weak var recoilTypeButton: NSPopUpButton!
     @IBOutlet weak var recoilBackTypeButton: NSPopUpButton!
     @IBOutlet weak var recoilTypeArrayController: NSArrayController!
     @IBOutlet weak var recoilBackTypeArrayController: NSArrayController!
+    @IBOutlet weak var fissionAlpha1Button: NSButton!
     @IBOutlet weak var fissionAlpha2Button: NSButton!
     @IBOutlet weak var fissionAlpha3Button: NSButton!
     @IBOutlet weak var buttonRemoveCalibration: NSButton!
@@ -110,6 +112,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         useTOF2 = Settings.getBoolSetting(.UseTOF2)
         requiredVETO = Settings.getBoolSetting(.RequiredVETO)
         searchNeutrons = Settings.getBoolSetting(.SearchNeutrons)
+        searchFissionAlpha1 = Settings.getBoolSetting(.SearchFissionAlpha1)
         searchFissionAlpha2 = Settings.getBoolSetting(.SearchFissionAlpha2)
         searchFissionAlpha3 = Settings.getBoolSetting(.SearchFissionAlpha3)
         sBeamEnergyMin = String(format: "%.1f", Settings.getDoubleSetting(.BeamEnergyMin)) // MeV
@@ -158,10 +161,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         thirdParticleBackChanged(nil)
         setupVETOView()
         setupWellView()
+        recoilView.setupForm()
+        fissionAlphaView.setupForm()
+        searchExtraView.setupForm()
+        setupAlpha1FormView()
         setupAlpha3FormView()
         setupAlpha2FormView()
-        setupSearchExtraView()
-        setupActionsView()
         setupFissionAlpha1BackEnergyView()
         setupFissionAlpha2BackEnergyView()
         setupFissionAlpha3BackEnergyView()
@@ -219,6 +224,17 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBInspectable dynamic var useTOF2: Bool = false
     @IBInspectable dynamic var requiredVETO: Bool = false
     @IBInspectable dynamic var searchNeutrons: Bool = false
+    @IBInspectable dynamic var searchFissionAlpha1: Bool = false {
+        didSet {
+            startParticleChanged(nil)
+            setupAlpha1FormView()
+            searchExtraFromLastParticle = searchFissionAlpha1
+            searchExtraFromLastParticleButton.state = searchExtraFromLastParticle ? .on : .off
+            if !searchFissionAlpha1 {
+                searchFissionAlpha2 = false
+            }
+        }
+    }
     @IBInspectable dynamic var searchFissionAlpha2: Bool = false {
         didSet {
             setupAlpha2FormView()
@@ -308,34 +324,20 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         return recoilTypes[recoilBackTypeArrayController.selectionIndex]
     }
     
-    fileprivate var formColor: CGColor {
-        return NSColor.lightGray.withAlphaComponent(0.2).cgColor
-    }
-    
     fileprivate func setupGammaEncodersView() {
         gammaEncodersView.isHidden = !gammaEncodersOnly
     }
     
+    fileprivate func setupAlpha1FormView() {
+        fissionAlpha1View.isHidden = !searchFissionAlpha1
+    }
+    
     fileprivate func setupAlpha2FormView() {
         fissionAlpha2FormView.isHidden = !searchFissionAlpha2
-        fissionAlpha2FormView.wantsLayer = true
-        fissionAlpha2FormView.layer?.backgroundColor = formColor
     }
     
     fileprivate func setupAlpha3FormView() {
         fissionAlpha3FormView.isHidden = !searchFissionAlpha3
-        fissionAlpha3FormView.wantsLayer = true
-        fissionAlpha3FormView.layer?.backgroundColor = formColor
-    }
-    
-    fileprivate func setupSearchExtraView() {
-        searchExtraView.wantsLayer = true
-        searchExtraView.layer?.backgroundColor = formColor
-    }
-    
-    fileprivate func setupActionsView() {
-        actionsView.wantsLayer = true
-        actionsView.layer?.backgroundColor = NSColor.blue.withAlphaComponent(0.05).cgColor
     }
     
     fileprivate func setupRecoilTypes() {
@@ -407,20 +409,24 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         didSelectStripsConfiguration(false, filePaths: nil)
     }
     
+    fileprivate func startType() -> SearchType {
+        if searchFissionAlpha1, let type = SearchType(rawValue: startParticleControl.selectedSegment) {
+            return type
+        } else {
+            return .recoil
+        }
+    }
+    
     @IBAction func startParticleChanged(_ sender: Any?) {
-        if let type = SearchType(rawValue: startParticleControl.selectedSegment) {
-            let isRecoil = type == .recoil
-            requiredRecoil = requiredRecoil || isRecoil
-            recoilFrontView.isHidden = isRecoil
-            requiredRecoilButton.state = NSControl.StateValue(rawValue: requiredRecoil ? 1 : 0)
-            requiredRecoilButton.isEnabled = !isRecoil
-            fissionAlpha1View.isHidden = isRecoil
-            fissionAlpha2View.isHidden = isRecoil
-            if sender != nil, !isRecoil {
-                startParticleBackControl.selectedSegment = type.rawValue
-                if !searchExtraFromLastParticle {
-                    wellParticleBackControl.selectedSegment = type.rawValue
-                }
+        let type = startType()
+        let isRecoil = type == .recoil
+        requiredRecoil = requiredRecoil || isRecoil
+        requiredRecoilButton.state = NSControl.StateValue(rawValue: requiredRecoil ? 1 : 0)
+        requiredRecoilButton.isEnabled = !isRecoil
+        if sender != nil, !isRecoil {
+            startParticleBackControl.selectedSegment = type.rawValue
+            if !searchExtraFromLastParticle {
+                wellParticleBackControl.selectedSegment = type.rawValue
             }
         }
     }
@@ -482,7 +488,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBAction func start(_ sender: AnyObject?) {
         let sc = SearchCriteria()
         sc.resultsFolderName = sResultsFolderName
-        let startFrontType = SearchType(rawValue: startParticleControl.selectedSegment) ?? .recoil
+        let startFrontType = startType()
         let startFromRecoil = startFrontType == .recoil
         sc.neutronsDetectorEfficiency = Double(sNeutronsDetectorEfficiency) ?? 0
         sc.neutronsDetectorEfficiencyError = Double(sNeutronsDetectorEfficiencyError) ?? 0
@@ -831,6 +837,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             .ThirdFrontSearchType: thirdParticleFrontControl.selectedSegment,
             .ThirdBackSearchType: thirdParticleBackControl.selectedSegment,
             .WellBackSearchType: wellParticleBackControl.selectedSegment,
+            .SearchFissionAlpha1: searchFissionAlpha1,
             .SearchFissionAlpha2: searchFissionAlpha2,
             .SearchFissionAlpha3: searchFissionAlpha3,
             .MinFissionAlpha2Energy: Double(sMinFissionAlpha2Energy),

@@ -48,6 +48,19 @@ extension NSImage {
     
 }
 
+extension NSView {
+    
+    fileprivate func defaultFormColor() -> NSColor {
+        return NSColor.lightGray.withAlphaComponent(0.15)
+    }
+    
+    func setupForm(_ color: NSColor? = nil) {
+        wantsLayer = true
+        layer?.cornerRadius = 5
+        layer?.backgroundColor = (color ?? defaultFormColor()).cgColor
+    }
+}
+
 extension TimeInterval {
     
     func stringFromSeconds() -> String {
