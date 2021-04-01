@@ -2,7 +2,7 @@ Neutron Barrel
 ==============
 
 Detectors:
-* Neutron detector SPHINX. Preparing, 2021
+* Neutron detector SPHINX. Preparing, 2021 ![SPHINX image](https://github.com/siberianisaev/NeutronBarrel/blob/master/NeutronsReader/screenshot.png)
 * [A detector for studying the characteristics of spontaneous fission of short-lived heavy nuclei](https://doi.org/10.1134/S0020441211040154), 2011
 
 Isotopes:
