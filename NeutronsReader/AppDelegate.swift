@@ -510,7 +510,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         sc.summarizeFissionsAlphaBack = summarizeFissionsBack
         
         var next = [Int: SearchNextCriteria]()
-        if searchFissionAlpha2 {
+        if !startFromRecoil, searchFissionAlpha2 {
             let criteria2 = SearchNextCriteria(summarizeFront: summarizeFissionsFront2,
                                                frontMinEnergy: Double(sMinFissionAlpha2Energy) ?? 0,
                                                frontMaxEnergy: Double(sMaxFissionAlpha2Energy) ?? 0,
