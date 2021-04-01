@@ -27,7 +27,7 @@ class FileManager {
         }
     }
     
-    fileprivate class func filePathWithName(_ fileName: String, folderName: String?) -> String? {
+    class func pathForDesktopFolder(_ folderName: String?) -> NSString? {
         var path: NSString?
         if let fn = folderName, fn.contains("/") { // User select custom path to directory
             path = fn as NSString
@@ -38,7 +38,11 @@ class FileManager {
             }
         }
         createIfNeedsDirectoryAtPath(path as String?)
-        return path?.appendingPathComponent(fileName)
+        return path
+    }
+    
+    fileprivate class func filePathWithName(_ fileName: String, folderName: String?) -> String? {
+        return pathForDesktopFolder(folderName)?.appendingPathComponent(fileName)
     }
     
     fileprivate class func fileName(prefix: String, folderName: String, timeStamp: String, postfix: String? = nil, fileExtension: String) -> String {

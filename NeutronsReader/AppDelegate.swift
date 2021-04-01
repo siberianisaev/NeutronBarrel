@@ -60,6 +60,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBOutlet weak var fissionAlpha3BackEnergyView: NSView!
     @IBOutlet weak var recoilBackEnergyView: NSView!
     @IBOutlet weak var actionsView: NSView!
+    @IBOutlet weak var resultsFolderButton: NSButton!
     
     fileprivate var viewerController: ViewerController?
     fileprivate var startDate: Date?
@@ -176,7 +177,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         setupGammaEncodersView()
     }
     
-    @IBInspectable dynamic var sResultsFolderName = ""
+    @IBInspectable dynamic var sResultsFolderName = "" {
+        didSet {
+            resultsFolderButton.isHidden = sResultsFolderName.isEmpty
+        }
+    }
     @IBInspectable dynamic var sNeutronsDetectorEfficiency: String = ""
     @IBInspectable dynamic var sNeutronsDetectorEfficiencyError: String = ""
     @IBInspectable dynamic var sMinFissionEnergy: String = ""
@@ -721,6 +726,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBAction func selectStripsConfiguration(_ sender: AnyObject?) {
         StripsConfiguration.load { [weak self] (success: Bool, filePaths: [String]?) in
             self?.didSelectStripsConfiguration(success, filePaths: filePaths)
+        }
+    }
+    
+    @IBAction func showResultsFolder(_ sender: AnyObject?) {
+        if !sResultsFolderName.isEmpty, let path = FileManager.pathForDesktopFolder(sResultsFolderName) {
+            NSWorkspace.shared.openFile(path as String)
         }
     }
     

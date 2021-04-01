@@ -53,6 +53,7 @@
                 <outlet property="recoilTypeButton" destination="mc4-AS-H5R" id="aqA-dQ-iP3"/>
                 <outlet property="recoilView" destination="mNC-Yt-Ztv" id="3e3-DD-9vm"/>
                 <outlet property="requiredRecoilButton" destination="9vQ-Df-vN2" id="hBy-6g-kHn"/>
+                <outlet property="resultsFolderButton" destination="0ms-OE-xDN" id="DT6-zf-URx"/>
                 <outlet property="searchExtraFromLastParticleButton" destination="ruR-mq-JqR" id="hiA-0h-f3o"/>
                 <outlet property="searchExtraView" destination="lTh-io-c61" id="a5s-U3-RTr"/>
                 <outlet property="secondParticleBackControl" destination="sNA-6t-fHm" id="sZq-9W-Dta"/>
@@ -2640,7 +2641,7 @@
                                 </textFieldCell>
                             </textField>
                             <textField verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="F2z-kR-DT6">
-                                <rect key="frame" x="16" y="184" width="196" height="25"/>
+                                <rect key="frame" x="16" y="184" width="194" height="25"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="name" drawsBackground="YES" id="HFW-BB-wpM">
                                     <font key="font" metaFont="system"/>
@@ -2689,6 +2690,17 @@
                                     <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                 </textFieldCell>
                             </textField>
+                            <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="0ms-OE-xDN">
+                                <rect key="frame" x="218" y="187" width="20" height="21"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                <buttonCell key="cell" type="bevel" bezelStyle="regularSquare" image="NSFolder" imagePosition="only" alignment="center" imageScaling="proportionallyDown" inset="2" id="7aO-K9-eoS">
+                                    <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                    <font key="font" metaFont="system"/>
+                                </buttonCell>
+                                <connections>
+                                    <action selector="showResultsFolder:" target="Voe-Tx-rLC" id="qTO-xA-hKT"/>
+                                </connections>
+                            </button>
                         </subviews>
                     </customView>
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="qsx-x2-dRa">
@@ -2734,6 +2746,7 @@
         <userDefaultsController representsSharedInstance="YES" id="aAU-rt-5o7"/>
     </objects>
     <resources>
+        <image name="NSFolder" width="32" height="32"/>
         <image name="trash" width="32" height="32"/>
     </resources>
 </document>
