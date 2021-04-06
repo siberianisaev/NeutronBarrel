@@ -28,6 +28,7 @@
 		656A05DE1EAE03BC00677B0F /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 656A05DD1EAE03BC00677B0F /* Extensions.swift */; };
 		65B2A92625FB80A100D97986 /* ResultsTable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65B2A92525FB80A100D97986 /* ResultsTable.swift */; };
 		65B2A92A25FB955000D97986 /* NeutronsMatch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65B2A92925FB955000D97986 /* NeutronsMatch.swift */; };
+		65BBD8EC261C806900D93026 /* CorrelationsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65BBD8EB261C806900D93026 /* CorrelationsView.swift */; };
 		65DA929F20D54F65002643DB /* SearchType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65DA929E20D54F65002643DB /* SearchType.swift */; };
 		65DA92A220D5527D002643DB /* BeamState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65DA92A120D5527D002643DB /* BeamState.swift */; };
 		65DA92A520D57794002643DB /* DetectorMatchItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65DA92A420D57794002643DB /* DetectorMatchItem.swift */; };
@@ -67,6 +68,7 @@
 		656A05DD1EAE03BC00677B0F /* Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
 		65B2A92525FB80A100D97986 /* ResultsTable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResultsTable.swift; sourceTree = "<group>"; };
 		65B2A92925FB955000D97986 /* NeutronsMatch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NeutronsMatch.swift; sourceTree = "<group>"; };
+		65BBD8EB261C806900D93026 /* CorrelationsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CorrelationsView.swift; sourceTree = "<group>"; };
 		65DA929E20D54F65002643DB /* SearchType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchType.swift; sourceTree = "<group>"; };
 		65DA92A120D5527D002643DB /* BeamState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeamState.swift; sourceTree = "<group>"; };
 		65DA92A420D57794002643DB /* DetectorMatchItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetectorMatchItem.swift; sourceTree = "<group>"; };
@@ -133,6 +135,7 @@
 		5A2A993C20570EE300B3D1A0 /* UI */ = {
 			isa = PBXGroup;
 			children = (
+				65BBD8EB261C806900D93026 /* CorrelationsView.swift */,
 				6512B0091EDACBB20087131D /* ViewerController.swift */,
 				6512B00A1EDACBB20087131D /* ViewerController.xib */,
 				78B6A55C193A3B3900C7E36A /* MainMenu.xib */,
@@ -338,6 +341,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				65BBD8EC261C806900D93026 /* CorrelationsView.swift in Sources */,
 				656A05DC1EADEDD500677B0F /* DataProtocol.swift in Sources */,
 				5A2A99382057083A00B3D1A0 /* DetectorMatch.swift in Sources */,
 				5A8997571FB4F9F800DD9956 /* StripsConfiguration.swift in Sources */,

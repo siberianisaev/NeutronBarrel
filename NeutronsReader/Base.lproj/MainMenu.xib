@@ -21,6 +21,7 @@
                 <outlet property="buttonRemoveCalibration" destination="rja-9L-ulo" id="TEl-kG-EKz"/>
                 <outlet property="buttonRemoveStripsConfiguration" destination="foC-YW-3m0" id="Y9M-AJ-qGT"/>
                 <outlet property="buttonRun" destination="qly-NS-Sdp" id="1Eb-jQ-x3Y"/>
+                <outlet property="correlationsView" destination="KYX-If-cM9" id="gch-l4-5Xd"/>
                 <outlet property="fissionAlpha1BackEnergyView" destination="4pt-Cs-JUf" id="Msa-kT-fEU"/>
                 <outlet property="fissionAlpha1Button" destination="mhj-p8-98c" id="U00-GO-SkZ"/>
                 <outlet property="fissionAlpha1View" destination="iam-zF-sjL" id="V1p-kZ-Q3r"/>
@@ -2701,6 +2702,22 @@
                                     <action selector="showResultsFolder:" target="Voe-Tx-rLC" id="qTO-xA-hKT"/>
                                 </connections>
                             </button>
+                            <customView fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="KYX-If-cM9" customClass="CorrelationsView" customModule="NeutronsReader" customModuleProvider="target">
+                                <rect key="frame" x="14" y="472" width="197" height="11"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                <connections>
+                                    <outlet property="label" destination="22A-bO-bEk" id="eW2-ux-coQ"/>
+                                </connections>
+                            </customView>
+                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="22A-bO-bEk">
+                                <rect key="frame" x="214" y="467" width="36" height="17"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="left" title="0" placeholderString="0" id="1ID-yR-1AB">
+                                    <font key="font" metaFont="system" size="8"/>
+                                    <color key="textColor" red="0.55479179460977779" green="0.54227714709887775" blue="0.54929027566812372" alpha="0.5" colorSpace="custom" customColorSpace="displayP3"/>
+                                    <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                </textFieldCell>
+                            </textField>
                         </subviews>
                     </customView>
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="qsx-x2-dRa">

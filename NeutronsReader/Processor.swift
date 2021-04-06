@@ -12,7 +12,7 @@ import Cocoa
 protocol ProcessorDelegate: class {
     
     func startProcessingFile(_ name: String?)
-    func endProcessingFile(_ name: String?)
+    func endProcessingFile(_ name: String?, correlationsFound: CUnsignedLongLong)
     
 }
 
@@ -67,6 +67,7 @@ class Processor {
     fileprivate var currentFileName: String?
     fileprivate var currentCycle: CUnsignedLongLong = 0
     fileprivate var totalEventNumber: CUnsignedLongLong = 0
+    fileprivate var correlationsPerFile: CUnsignedLongLong = 0
     
     fileprivate var criteria = SearchCriteria()
     fileprivate weak var delegate: ProcessorDelegate?
@@ -272,7 +273,8 @@ class Processor {
                 
                 filesFinishedCount += 1
                 DispatchQueue.main.async { [weak self] in
-                    self?.delegate?.endProcessingFile(self?.currentFileName)
+                    self?.delegate?.endProcessingFile(self?.currentFileName, correlationsFound: self?.correlationsPerFile ?? 0)
+                    self?.correlationsPerFile = 0
                 }
             }
         }
@@ -421,6 +423,7 @@ class Processor {
                 neutronsMultiplicity?.update(neutronsPerAct: neutronsPerAct.times)
             }
             
+            correlationsPerFile += 1
             resultsTable.logActResults()
             for b in [false, true] {
                 resultsTable.logGamma(GeOnly: b)

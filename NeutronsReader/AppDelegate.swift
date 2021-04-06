@@ -14,6 +14,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBOutlet weak var window: NSWindow!
     @IBOutlet weak var activity: NSProgressIndicator!
     @IBOutlet weak var progressIndicator: NSProgressIndicator!
+    @IBOutlet weak var correlationsView: CorrelationsView!
     @IBOutlet weak var labelVersion: NSTextField!
     @IBOutlet weak var labelBranch: NSTextField!
     @IBOutlet weak var labelTotalTime: NSTextField!
@@ -745,7 +746,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         }
     }
     
-    func endProcessingFile(_ name: String?) {
+    func endProcessingFile(_ name: String?, correlationsFound: CUnsignedLongLong) {
         let items = operations.values.map { (p: Processor) -> Int in
             return p.filesFinishedCount
         }
@@ -753,6 +754,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         let total = DataLoader.singleton.files.count * items.count
         let progress = 100 * Double(ready)/Double(total)
         progressIndicator?.doubleValue = progress
+        correlationsView.set(correlations: correlationsFound, at: progress)
     }
     
     // MARK: - Timer

@@ -48,6 +48,26 @@ extension NSImage {
     
 }
 
+extension Numeric {
+    
+    var scientific: String {
+        return Formatter.scientific.string(for: self) ?? ""
+    }
+    
+}
+
+extension Formatter {
+    
+    static let scientific: NumberFormatter = {
+        let f = NumberFormatter()
+        f.numberStyle = .scientific
+        f.positiveFormat = "0.###E+0"
+        f.exponentSymbol = "e"
+        return f
+    }()
+    
+}
+
 extension NSView {
     
     fileprivate func defaultFormColor() -> NSColor {
