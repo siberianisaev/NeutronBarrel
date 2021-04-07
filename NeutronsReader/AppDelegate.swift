@@ -64,6 +64,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBOutlet weak var resultsFolderButton: NSButton!
     
     fileprivate var viewerController: ViewerController?
+    fileprivate var calculationsController: CalculationsController?
     fileprivate var startDate: Date?
     fileprivate var timer: Timer?
     
@@ -457,9 +458,16 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         wellView.isHidden = !searchWell
     }
     
+    @IBAction func calculations(_ sender: Any) {
+        if nil == calculationsController {
+            calculationsController = CalculationsController(windowNibName: NSNib.Name("CalculationsController"))
+        }
+        calculationsController?.showWindow(nil)
+    }
+    
     @IBAction func viewer(_ sender: Any) {
         if nil == viewerController {
-            //viewerController = ViewerController(windowNibName: NSNib.Name(rawValue: "ViewerController"))
+            viewerController = ViewerController(windowNibName: NSNib.Name("ViewerController"))
         }
         viewerController?.showWindow(nil)
     }
