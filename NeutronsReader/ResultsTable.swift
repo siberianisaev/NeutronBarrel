@@ -27,6 +27,22 @@ protocol ResultsTableDelegate: class {
 
 class ResultsTable {
     
+    // TODO: position code refactoring
+    enum Position: String {
+        case X = "X", Y = "Y", Z = "Z"
+        
+        func relatedCoordinate(point: (x: CGFloat, y: CGFloat, z: CGFloat)) -> CGFloat {
+            switch self {
+            case .X:
+                return point.x
+            case .Y:
+                return point.y
+            case .Z:
+                return point.z
+            }
+        }
+    }
+    
     fileprivate var criteria = SearchCriteria()
     fileprivate var logger: Logger!
     fileprivate weak var delegate: ResultsTableDelegate!
@@ -81,7 +97,9 @@ class ResultsTable {
     fileprivate var keyColumnStartFrontMarker = "$FronMarker"
     fileprivate var keyColumnStartFrontDeltaTime = "dT($FronFirst-Next)"
     fileprivate var keyColumnStartFrontStrip = "Strip($Fron)"
-    fileprivate var keyColumnStartFocalPositionXYZ = "StartFocalPositionXYZ"
+    fileprivate func keyColumnStartFocal(position: Position) -> String {
+        return "StartFocalPosition\(position.rawValue)"
+    }
     fileprivate var keyColumnStartBackSum = "Sum(@Back)"
     fileprivate var keyColumnStartBackEnergy = "@Back"
     fileprivate var keyColumnStartBackMarker = "@BackMarker"
@@ -92,7 +110,9 @@ class ResultsTable {
     }
     fileprivate var keyColumnWellMarker = "$WellMarker"
     fileprivate var keyColumnWellPosition = "$WellPos"
-    fileprivate var keyColumnWellPositionXYZ = "$WellPosXYZ"
+    fileprivate func keyColumnWell(position: Position) -> String {
+        return "$WellPos\(position.rawValue)"
+    }
     fileprivate var keyColumnWellAngle = "$WellAngle"
     fileprivate var keyColumnWellStrip = "Strip($Well)"
     fileprivate var keyColumnWellBackEnergy = "*WellBack"
@@ -235,19 +255,24 @@ class ResultsTable {
             keyColumnStartFrontEnergy,
             keyColumnStartFrontMarker,
             keyColumnStartFrontDeltaTime,
-            keyColumnStartFrontStrip,
-            keyColumnStartFocalPositionXYZ,
+            keyColumnStartFrontStrip
+        ])
+        columns.append(contentsOf: ([.X, .Y, .Z] as [Position]).map { keyColumnStartFocal(position: $0) })
+        columns.append(contentsOf: [
             keyColumnStartBackSum,
             keyColumnStartBackEnergy,
             keyColumnStartBackMarker,
             keyColumnStartBackDeltaTime,
-            keyColumnStartBackStrip])
+            keyColumnStartBackStrip
+        ])
         if criteria.searchWell {
             columns.append(contentsOf: [
                 keyColumnWellEnergy,
                 keyColumnWellMarker,
-                keyColumnWellPosition,
-                keyColumnWellPositionXYZ,
+                keyColumnWellPosition
+                ])
+            columns.append(contentsOf: ([.X, .Y, .Z] as [Position]).map { keyColumnWell(position: $0) })
+            columns.append(contentsOf: [
                 keyColumnWellAngle,
                 keyColumnWellStrip,
                 keyColumnWellBackEnergy,
@@ -492,10 +517,18 @@ class ResultsTable {
                     if let strip = delegate.firstParticleAt(side: .front).itemAt(index: row)?.strip1_N {
                         field = String(format: "%d", strip)
                     }
-                case keyColumnStartFocalPositionXYZ:
-                    if let itemFront = delegate.firstParticleAt(side: .front).itemAt(index: row), let stripFront1 = itemFront.strip1_N, let itemBack = delegate.firstParticleAt(side: .back).itemAt(index: row), let stripBack1 = itemBack.strip1_N {
-                        let point = DetectorsWellGeometry.coordinatesXYZ(stripDetector: .focal, stripFront0: stripFront1 - 1, stripBack0: stripBack1 - 1)
-                        field = String(format: "%.1f|%.1f|%.1f", point.x, point.y, point.z)
+                case keyColumnStartFocal(position: .X), keyColumnStartFocal(position: .Y), keyColumnStartFocal(position: .Z):
+                    var p: Position
+                    switch column {
+                    case keyColumnStartFocal(position: .X):
+                        p = .X
+                    case keyColumnStartFocal(position: .Y):
+                        p = .Y
+                    default:
+                        p = .Z
+                    }
+                    if let s = firstParticleFocal(position: p, row: row) {
+                        field = s
                     }
                 case keyColumnStartBackSum:
                     if row == 0, !criteria.startFromRecoil(), let sum = delegate.firstParticleAt(side: .back).getSumEnergy() {
@@ -529,10 +562,18 @@ class ResultsTable {
                     if row == 0, let item = delegate.fissionsAlphaWellAt(side: .front, index: 0), let strip0_15 = item.strip0_15, let encoder = item.encoder {
                         field = String(format: "FWell%d.%d", encoder, strip0_15 + 1)
                     }
-                case keyColumnWellPositionXYZ:
-                    if row == 0, let itemFront = delegate.fissionsAlphaWellAt(side: .front, index: 0), let stripFront0 = itemFront.strip0_15, let itemBack = delegate.fissionsAlphaWellAt(side: .back, index: 0), let stripBack0 = itemBack.strip0_15, let encoder = itemFront.encoder {
-                        let point = DetectorsWellGeometry.coordinatesXYZ(stripDetector: .side, stripFront0: Int(stripFront0), stripBack0: Int(stripBack0), encoderSide: Int(encoder))
-                        field = String(format: "%.1f|%.1f|%.1f", point.x, point.y, point.z)
+                case keyColumnWell(position: .X), keyColumnWell(position: .Y), keyColumnWell(position: .Z):
+                    var p: Position
+                    switch column {
+                    case keyColumnWell(position: .X):
+                        p = .X
+                    case keyColumnWell(position: .Y):
+                        p = .Y
+                    default:
+                        p = .Z
+                    }
+                    if let s = well(position: p, row: row) {
+                        field = s
                     }
                 case keyColumnWellAngle:
                     if row == 0, let itemFocalFront = delegate.firstParticleAt(side: .front).itemAt(index: row), let stripFocalFront1 = itemFocalFront.strip1_N, let itemFocalBack = delegate.firstParticleAt(side: .back).itemAt(index: row), let stripFocalBack1 = itemFocalBack.strip1_N, let itemSideFront = delegate.fissionsAlphaWellAt(side: .front, index: 0), let stripSideFront0 = itemSideFront.strip0_15, let itemSideBack = delegate.fissionsAlphaWellAt(side: .back, index: 0), let stripSideBack0 = itemSideBack.strip0_15, let encoderSide = itemSideFront.encoder {
@@ -697,6 +738,24 @@ class ResultsTable {
                 logger.writeField(field as AnyObject, destination: .results)
             }
             logger.finishLine(.results)
+        }
+    }
+    
+    fileprivate func firstParticleFocal(position: Position, row: Int) -> String? {
+        if let itemFront = delegate.firstParticleAt(side: .front).itemAt(index: row), let stripFront1 = itemFront.strip1_N, let itemBack = delegate.firstParticleAt(side: .back).itemAt(index: row), let stripBack1 = itemBack.strip1_N {
+            let point = DetectorsWellGeometry.coordinatesXYZ(stripDetector: .focal, stripFront0: stripFront1 - 1, stripBack0: stripBack1 - 1)
+            return String(format: "%.1f", position.relatedCoordinate(point: point))
+        } else {
+            return nil
+        }
+    }
+    
+    fileprivate func well(position: Position, row: Int) -> String? {
+        if row == 0, let itemFront = delegate.fissionsAlphaWellAt(side: .front, index: 0), let stripFront0 = itemFront.strip0_15, let itemBack = delegate.fissionsAlphaWellAt(side: .back, index: 0), let stripBack0 = itemBack.strip0_15, let encoder = itemFront.encoder {
+            let point = DetectorsWellGeometry.coordinatesXYZ(stripDetector: .side, stripFront0: Int(stripFront0), stripBack0: Int(stripBack0), encoderSide: Int(encoder))
+            return String(format: "%.1f", position.relatedCoordinate(point: point))
+        } else {
+            return nil
         }
     }
     
