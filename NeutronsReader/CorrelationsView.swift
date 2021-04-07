@@ -21,6 +21,11 @@ class CorrelationsView: NSView {
         }
     }
     
+    func reset() {
+        counts.removeAll()
+        setNeedsDisplay(visibleRect)
+    }
+    
     override func draw(_ dirtyRect: NSRect) {
         super.draw(dirtyRect)
         

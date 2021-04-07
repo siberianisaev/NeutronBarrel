@@ -500,6 +500,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     }
     
     @IBAction func start(_ sender: AnyObject?) {
+        correlationsView.reset()
+        
         let sc = SearchCriteria()
         sc.resultsFolderName = sResultsFolderName
         let startFrontType = startType()
