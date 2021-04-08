@@ -83,6 +83,23 @@ class DataProtocol {
     fileprivate var AlphaBack = Set<Int>()
     fileprivate var Gamma = Set<Int>()
     
+    fileprivate var isAlphaCache = [Int: Bool]()
+    func isAlpha(eventId: Int) -> Bool {
+        if let b = isAlphaCache[eventId] {
+            return b
+        } else {
+            var b = false
+            for s in [AlphaFront, AlphaBack, AlphaWell, AlphaWellFront, AlphaWellBack, AlphaMotherFront, AlphaMotherBack, AlphaDaughterFront, AlphaDaughterBack] {
+                if s.contains(eventId) {
+                    b = true
+                    break
+                }
+            }
+            isAlphaCache[eventId] = b
+            return b
+        }
+    }
+    
     class func load(_ path: String?) -> DataProtocol {
         var result = [String: Int]()
         if let path = path {
@@ -141,7 +158,7 @@ class DataProtocol {
         return value
     }
     
-    fileprivate func keyFor(value: Int) -> String? {
+    func keyFor(value: Int) -> String? {
         for (k, v) in dict {
             if v == value {
                 return k

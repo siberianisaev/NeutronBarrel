@@ -9,6 +9,18 @@
 import Foundation
 import Cocoa
 
+extension Event {
+    
+    func getChannelFor(type: SearchType) -> CUnsignedShort {
+        return (type == .fission || type == .heavy) ? (param2 & Mask.heavyOrFission.rawValue) : (param3 & Mask.recoilOrAlpha.rawValue)
+    }
+    
+    func getMarker() -> CUnsignedShort {
+        return param3 >> 13
+    }
+    
+}
+
 protocol ProcessorDelegate: class {
     
     func startProcessingFile(_ name: String?)
@@ -780,7 +792,7 @@ class Processor {
                                      strip0_15: strip0_15,
                                      eventNumber: eventNumber(),
                                      deltaTime: deltaTime,
-                                     marker: getMarker(event),
+                                     marker: event.getMarker(),
                                      side: side)
         return item
     }
@@ -794,7 +806,7 @@ class Processor {
     fileprivate func storeFissionAlphaFront(_ event: Event, deltaTime: CLongLong, subMatches: [SearchType: DetectorMatch?]?) {
         let id = event.eventId
         let type = criteria.startParticleType
-        let channel = getChannel(event, type: type)
+        let channel = event.getChannelFor(type: type)
         let encoder = dataProtocol.encoderForEventId(Int(id))
         let strip0_15 = event.param2 >> 12
         let energy = getEnergy(event, type: type)
@@ -806,7 +818,7 @@ class Processor {
                                      strip0_15: strip0_15,
                                      eventNumber: eventNumber(),
                                      deltaTime: deltaTime,
-                                     marker: getMarker(event),
+                                     marker: event.getMarker(),
                                      channel: channel,
                                      subMatches: subMatches,
                                      side: side)
@@ -834,7 +846,7 @@ class Processor {
                                      energy: energy,
                                      encoder: encoder,
                                      deltaTime: deltaTime,
-                                     marker: getMarker(event),
+                                     marker: event.getMarker(),
                                      side: nil)
         return item
     }
@@ -851,7 +863,7 @@ class Processor {
                                      strip0_15: strip0_15,
                                      eventNumber: eventNumber(),
                                      deltaTime: deltaTime,
-                                     marker: getMarker(event),
+                                     marker: event.getMarker(),
                                      subMatches: subMatches,
                                      side: side)
         recoilsPerAct.append(item, side: side)
@@ -870,7 +882,7 @@ class Processor {
                                      strip0_15: strip0_15,
                                      eventNumber: eventNumber(),
                                      deltaTime: deltaTime,
-                                     marker: getMarker(event),
+                                     marker: event.getMarker(),
                                      subMatches: subMatches,
                                      side: side)
         let match = fissionsAlphaNextPerAct[index] ?? DoubleSidedStripDetectorMatch()
@@ -926,7 +938,7 @@ class Processor {
                                      energy: energy,
                                      encoder: encoder,
                                      strip0_15: strip0_15,
-                                     marker: getMarker(event),
+                                     marker: event.getMarker(),
                                      side: side)
         fissionsAlphaWellPerAct.append(item, side: side)
         // Store only well event with max energy
@@ -994,10 +1006,6 @@ class Processor {
         return (cycle << 16) + CUnsignedLongLong(relativeTime)
     }
     
-    fileprivate func getMarker(_ event: Event) -> CUnsignedShort {
-        return event.param3 >> 13
-    }
-    
     /**
      First bit from param3 used to separate recoil and fission/alpha events:
      0 - fission fragment,
@@ -1051,12 +1059,8 @@ class Processor {
         return event.param3 & Mask.TOF.rawValue
     }
     
-    fileprivate func getChannel(_ event: Event, type: SearchType) -> CUnsignedShort {
-        return (type == .fission || type == .heavy) ? (event.param2 & Mask.heavyOrFission.rawValue) : (event.param3 & Mask.recoilOrAlpha.rawValue)
-    }
-    
     fileprivate func getEnergy(_ event: Event, type: SearchType) -> Double {
-        let channel = Double(getChannel(event, type: type))
+        let channel = Double(event.getChannelFor(type: type))
         if calibration.hasData() {
             let eventId = Int(event.eventId)
             let encoder = dataProtocol.encoderForEventId(eventId)

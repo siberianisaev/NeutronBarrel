@@ -9,10 +9,40 @@
 import Cocoa
 
 class ViewerController: NSWindowController {
+    
+    enum Column: Int, CaseCountable {
+        case number = 0, name, ID, time, strip, alpha, fission, markers
+        
+        static let count = Column.countCases()
+        
+        var name: String {
+            switch self {
+            case .number:
+                return "Number"
+            case .name:
+                return "Name"
+            case .ID:
+                return "ID"
+            case .time:
+                return "Time"
+            case .strip:
+                return "Strip"
+            case .alpha:
+                return "Alpha"
+            case .fission:
+                return "Fission"
+            case .markers:
+                return "Markers"
+            }
+        }
+        
+        var rowId: String {
+            return "Viewer\(name)Cell"
+        }
+    }
 
     @IBOutlet weak var tableView: NSTableView!
     
-    fileprivate var rowIdentifiers = ["ViewerNumberCell", "ViewerEventIDCell", "ViewerParam1Cell", "ViewerParam2Cell", "ViewerParam3Cell"]
     fileprivate var totalEventNumber: CUnsignedLongLong = 0
     fileprivate var index: Int = 0
     fileprivate var file: UnsafeMutablePointer<FILE>?
@@ -21,6 +51,10 @@ class ViewerController: NSWindowController {
     @IBOutlet weak var buttonPrevious: NSButton!
     @IBOutlet weak var labelFile: NSTextField!
     @IBOutlet weak var buttonNext: NSButton!
+    
+    fileprivate var dataProtocol: DataProtocol! {
+        return DataLoader.singleton.dataProtocol
+    }
     
     override func windowDidLoad() {
         super.windowDidLoad()
@@ -91,22 +125,39 @@ extension ViewerController: NSTableViewDelegate {
     
     func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
         if let tableColumn = tableColumn, let index = tableView.tableColumns.firstIndex(of: tableColumn) {
-            if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: rowIdentifiers[index]), owner: self) as? NSTableCellView {
+            if let column = Column(rawValue: index), let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: column.rowId), owner: self) as? NSTableCellView {
                 var string = ""
                 if let event = getEventForRow(row) {
-                    switch index {
-                    case 0:
-                        string += "\(row)"
-                    case 1:
-                        string += "\(event.eventId)"
-                    case 2:
-                        string += "\(event.param1)"
-                    case 3:
-                        string += "\(event.param2)"
-                    case 4:
-                        string += "\(event.param3)"
-                    default:
-                        break
+                    let id = Int(event.eventId)
+                    switch column {
+                    case .number:
+                        string = "\(row)"
+                    case .name:
+                        string = dataProtocol?.keyFor(value: id) ?? ""
+                    case .ID:
+                        string = "\(event.eventId)"
+                    case .time:
+                        if dataProtocol?.isValidEventIdForTimeCheck(id) == true {
+                            string = "\(event.param1)"
+                        }
+                    case .strip:
+                        let isAlpha = dataProtocol?.isAlpha(eventId: id) ?? false
+                        if isAlpha {
+                            if let encoder = dataProtocol?.encoderForEventId(Int(id)) {
+                                string += "enc\(encoder)_"
+                            }
+                            let strip0_15 = event.param2 >> 12
+                            string += "ch\(strip0_15)"
+                        }
+                    case .alpha:
+                        string = "\(event.getChannelFor(type: .alpha))"
+                    case .fission:
+                        let isAlpha = dataProtocol?.isAlpha(eventId: id) ?? false
+                        if isAlpha {
+                            string = "\(event.getChannelFor(type: .fission))"
+                        }
+                    case .markers:
+                        string = String(event.getMarker(), radix: 2)
                     }
                 }
                 cell.textField?.stringValue = string
