@@ -488,11 +488,14 @@ class Processor {
     fileprivate func findNeutrons() {
         let directions: Set<SearchDirection> = [.forward]
         search(directions: directions, startTime: currentEventTime, minDeltaTime: 0, maxDeltaTime: criteria.maxNeutronTime, useCycleTime: false, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>, _) in
-            if self.dataProtocol.isNeutronsEvent(Int(event.eventId)) {
-                let t = Float(event.param3 & Mask.neutrons.rawValue)
+            let id = Int(event.eventId)
+            if self.dataProtocol.isNeutronsNewEvent(id) {
+                self.neutronsPerAct.times.append(Float(deltaTime))
+            } else if self.dataProtocol.isNeutronsOldEvent(id) {
+                let t = Float(event.param3 & Mask.neutronsOld.rawValue)
                 self.neutronsPerAct.times.append(t)
             }
-            if self.dataProtocol.hasNeutrons_N() && self.dataProtocol.isNeutrons_N_Event(Int(event.eventId)) {
+            if self.dataProtocol.hasNeutrons_N() && self.dataProtocol.isNeutrons_N_Event(id) {
                 self.neutronsPerAct.NSum += 1
             }
         }
@@ -501,7 +504,8 @@ class Processor {
     fileprivate func findNeutronsBack() {
         let directions: Set<SearchDirection> = [.backward]
         search(directions: directions, startTime: currentEventTime, minDeltaTime: 0, maxDeltaTime: 10, useCycleTime: false, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>, _) in
-            if self.dataProtocol.isNeutronsEvent(Int(event.eventId)) {
+            let id = Int(event.eventId)
+            if self.dataProtocol.isNeutronsNewEvent(id) || self.dataProtocol.isNeutronsOldEvent(id) {
                 self.neutronsPerAct.backwardSum += 1
             }
         }

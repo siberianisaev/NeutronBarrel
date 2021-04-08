@@ -21,8 +21,9 @@ class DataProtocol {
             AVeto = dict["AVeto"]
             TOF = dict[TOFKind.TOF.rawValue]
             TOF2 = dict[TOFKind.TOF2.rawValue]
-            Neutrons = dict["Neutrons"]
+            NeutronsOld = dict["Neutrons"]
             Neutrons_N = getValues(ofTypes: ["N1", "N2", "N3", "N4"], prefix: false)
+            NeutronsNew = getValues(ofTypes: ["NNeut"])
             CycleTime = dict["THi"]
             BeamEnergy = dict["EnergyHi"]
             BeamCurrent = dict["BeamTokHi"]
@@ -66,8 +67,9 @@ class DataProtocol {
     fileprivate var AVeto: Int?
     fileprivate var TOF: Int?
     fileprivate var TOF2: Int?
-    fileprivate var Neutrons: Int?
+    fileprivate var NeutronsOld: Int?
     fileprivate var Neutrons_N = Set<Int>()
+    fileprivate var NeutronsNew = Set<Int>()
     fileprivate var CycleTime: Int?
     fileprivate var AlphaWell = Set<Int>()
     fileprivate var alphaWellMaxEventId: Int = 0
@@ -153,7 +155,7 @@ class DataProtocol {
             return cached
         }
         
-        let value = eventId <= alphaWellMaxEventId || (alphaWellFrontMaxEventId > 0 && eventId <= alphaWellFrontMaxEventId) || (alphaWellBackMaxEventId > 0 && eventId <= alphaWellBackMaxEventId) || isTOFEvent(eventId) != nil || isGammaEvent(eventId) || isNeutronsEvent(eventId) || isNeutrons_N_Event(eventId) || isVETOEvent(eventId)
+        let value = eventId <= alphaWellMaxEventId || (alphaWellFrontMaxEventId > 0 && eventId <= alphaWellFrontMaxEventId) || (alphaWellBackMaxEventId > 0 && eventId <= alphaWellBackMaxEventId) || isTOFEvent(eventId) != nil || isGammaEvent(eventId) || isNeutronsOldEvent(eventId) || isNeutronsNewEvent(eventId) || isNeutrons_N_Event(eventId) || isVETOEvent(eventId)
         isValidEventIdForTimeCheckCache[eventId] = value
         return value
     }
@@ -226,8 +228,12 @@ class DataProtocol {
         return nil
     }
     
-    func isNeutronsEvent(_ eventId: Int) -> Bool {
-        return Neutrons == eventId
+    func isNeutronsNewEvent(_ eventId: Int) -> Bool {
+        return NeutronsNew.contains(eventId)
+    }
+    
+    func isNeutronsOldEvent(_ eventId: Int) -> Bool {
+        return NeutronsOld == eventId
     }
     
     func isNeutrons_N_Event(_ eventId: Int) -> Bool {

@@ -142,12 +142,20 @@ extension ViewerController: NSTableViewDelegate {
                         }
                     case .strip:
                         let isAlpha = dataProtocol?.isAlpha(eventId: id) ?? false
+                        var encoder: CUnsignedShort?
+                        var strip: UInt16?
                         if isAlpha {
-                            if let encoder = dataProtocol?.encoderForEventId(Int(id)) {
-                                string += "enc\(encoder)_"
-                            }
-                            let strip0_15 = event.param2 >> 12
-                            string += "ch\(strip0_15)"
+                            encoder = dataProtocol?.encoderForEventId(Int(id))
+                            strip = event.param2 >> 12
+                        } else if dataProtocol.isNeutronsNewEvent(id) == true {
+                            encoder = dataProtocol?.encoderForEventId(Int(id))
+                            strip = event.param3 & Mask.neutronsNew.rawValue
+                        }
+                        if let encoder = encoder {
+                            string += "enc\(encoder)_"
+                        }
+                        if let strip = strip {
+                            string += "ch\(strip)"
                         }
                     case .alpha:
                         string = "\(event.getChannelFor(type: .alpha))"
