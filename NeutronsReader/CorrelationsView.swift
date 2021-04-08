@@ -23,6 +23,7 @@ class CorrelationsView: NSView {
     
     func reset() {
         counts.removeAll()
+        label.stringValue = ""
         setNeedsDisplay(visibleRect)
     }
     
