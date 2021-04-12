@@ -627,7 +627,7 @@ class ResultsTable {
                         let index = row - 1
                         let counters = delegate.neutrons().counters
                         if index < counters.count {
-                            field = String(format: "%.1f", counters[index])
+                            field = String(format: "%d", counters[index])
                         }
                     }
                 case keyColumnNeutrons:
