@@ -32,6 +32,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBOutlet weak var wellParticleBackControl: NSSegmentedControl!
     @IBOutlet weak var tofUnitsControl: NSSegmentedControl!
     @IBOutlet weak var focalDetectorControl: NSSegmentedControl!
+    @IBOutlet weak var sfSourceControl: NSSegmentedControl!
     @IBOutlet weak var indicatorData: NSTextField!
     @IBOutlet weak var indicatorCalibration: NSTextField!
     @IBOutlet weak var indicatorStripsConfig: NSTextField!
@@ -115,6 +116,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         useTOF2 = Settings.getBoolSetting(.UseTOF2)
         requiredVETO = Settings.getBoolSetting(.RequiredVETO)
         searchNeutrons = Settings.getBoolSetting(.SearchNeutrons)
+        sfSourcePlaced = Settings.getBoolSetting(.SFSourcePlaced)
         searchFissionAlpha1 = Settings.getBoolSetting(.SearchFissionAlpha1)
         searchFissionAlpha2 = Settings.getBoolSetting(.SearchFissionAlpha2)
         searchFissionAlpha3 = Settings.getBoolSetting(.SearchFissionAlpha3)
@@ -175,6 +177,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         setupFissionAlpha3BackEnergyView()
         setupRecoilBackEnergyView()
         tofUnitsControl.selectedSegment = Settings.getIntSetting(.TOFUnits)
+        sfSourceControl.selectedSegment = Settings.getIntSetting(.SFSource)
         focalDetectorControl.selectedSegment = Settings.getIntSetting(.FocalDetectorType, defaultValue: FocalDetectorType.large.rawValue)
         setupGammaEncodersView()
     }
@@ -231,6 +234,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBInspectable dynamic var useTOF2: Bool = false
     @IBInspectable dynamic var requiredVETO: Bool = false
     @IBInspectable dynamic var searchNeutrons: Bool = false
+    @IBInspectable dynamic var sfSourcePlaced: Bool = false {
+        didSet {
+            sfSourceControl.isHidden = !sfSourcePlaced
+        }
+    }
     @IBInspectable dynamic var searchFissionAlpha1: Bool = false {
         didSet {
             startParticleChanged(nil)
@@ -587,6 +595,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         sc.wellRecoilsAllowed = wellRecoilsAllowed
         sc.searchExtraFromLastParticle = searchExtraFromLastParticle
         sc.searchNeutrons = searchNeutrons
+        sc.placedSFSource = sfSourcePlaced ? (sfSourceControl.selectedSegment == 0 ? .Cm248 : .U238) : nil
         sc.maxNeutronTime = UInt64(sMaxNeutronTime) ?? 0
         sc.searchSpecialEvents = searchSpecialEvents
         sc.gammaEncodersOnly = gammaEncodersOnly
@@ -816,6 +825,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             .MinTOFValue: Int(sMinTOFValue),
             .MaxTOFValue: Int(sMaxTOFValue),
             .TOFUnits: tofUnitsControl.selectedSegment,
+            .SFSource: sfSourceControl.selectedSegment,
             .MinRecoilTime: Int(sMinRecoilTime),
             .MaxRecoilTime: Int(sMaxRecoilTime),
             .MaxRecoilBackTime: Int(sMaxRecoilBackTime),
@@ -848,6 +858,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             .UseTOF2: useTOF2,
             .RequiredVETO: requiredVETO,
             .SearchNeutrons: searchNeutrons,
+            .SFSourcePlaced: sfSourcePlaced,
             .SearchVETO: searchVETO,
             .TrackBeamEnergy: trackBeamEnergy,
             .TrackBeamCurrent: trackBeamCurrent,

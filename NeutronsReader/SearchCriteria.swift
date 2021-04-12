@@ -14,6 +14,7 @@ class SearchCriteria {
     var wellParticleBackType: SearchType = .fission
     var neutronsDetectorEfficiency: Double = 0
     var neutronsDetectorEfficiencyError: Double = 0
+    var placedSFSource: SFSource?
     
     var startParticleType: SearchType = .fission
     var startParticleBackType: SearchType = .fission
