@@ -11,6 +11,8 @@ import Foundation
 enum StripDetector {
     case focal
     case side
+    // TODO: refactoring, extract encoder/channel conversion logic from strips config
+    case neutron
 }
 
 class StripDetectorManager {

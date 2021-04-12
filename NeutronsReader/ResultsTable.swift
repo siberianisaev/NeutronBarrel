@@ -121,6 +121,7 @@ class ResultsTable {
     fileprivate var keyColumnWellBackStrip = "Strip(*WellBack)"
     fileprivate var keyColumnNeutronsAverageTime = "NeutronsAverageTime"
     fileprivate var keyColumnNeutronTime = "NeutronTime"
+    fileprivate var keyColumnNeutronCounter = "NeutronCounter"
     fileprivate var keyColumnNeutrons: String {
         return searchExtraPostfix("Neutrons")
     }
@@ -282,7 +283,7 @@ class ResultsTable {
                 ])
         }
         if criteria.searchNeutrons {
-            columns.append(contentsOf: [keyColumnNeutronsAverageTime, keyColumnNeutronTime, keyColumnNeutrons])
+            columns.append(contentsOf: [keyColumnNeutronsAverageTime, keyColumnNeutronTime, keyColumnNeutronCounter, keyColumnNeutrons])
             if dataProtocol.hasNeutrons_N() {
                 columns.append(keyColumnNeutrons_N)
             }
@@ -619,6 +620,14 @@ class ResultsTable {
                         let times = delegate.neutrons().times
                         if index < times.count {
                             field = String(format: "%.1f", times[index])
+                        }
+                    }
+                case keyColumnNeutronCounter:
+                    if row > 0 {
+                        let index = row - 1
+                        let counters = delegate.neutrons().counters
+                        if index < counters.count {
+                            field = String(format: "%.1f", counters[index])
                         }
                     }
                 case keyColumnNeutrons:

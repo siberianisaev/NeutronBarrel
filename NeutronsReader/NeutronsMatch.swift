@@ -11,6 +11,7 @@ import Foundation
 class NeutronsMatch {
     
     var times = [Float]()
+    var counters = [Int]()
     var NSum: CUnsignedLongLong = 0
     var backwardSum: CUnsignedLongLong = 0
     

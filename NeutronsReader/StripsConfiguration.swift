@@ -150,7 +150,7 @@ class StripsConfiguration {
                 if FileExtension(url: url, length: 3) == .cfg { // 2 CFG files used since Jan 2017
                     detectors = [(path as NSString).lastPathComponent == "128X128.CFG" ? .focal : .side]
                 } else { // New INI file used since 2019
-                    detectors = [.focal, .side]
+                    detectors = [.focal, .side, .neutron]
                 }
                 for detector in detectors {
                     let sc = StripsConfiguration(detector: detector)
@@ -177,7 +177,18 @@ class StripsConfiguration {
                 var fillFront = false
                 var fillBack = false
                 for line in content.components(separatedBy: CharacterSet.newlines) {
-                    if detector == .side {
+                    if detector == .neutron {
+                        if "[Neutrons]".contains(line) {
+                            fillFront = true
+                            fillBack = false
+                            continue
+                        }
+                        if line.contains("[") {
+                            fillFront = false
+                            fillBack = false
+                            continue
+                        }
+                    } else if detector == .side {
                         if ["[Well inside detector strips configuration]", "[Front Strips Configuration]"].contains(line) {
                             fillFront = true
                             fillBack = false
