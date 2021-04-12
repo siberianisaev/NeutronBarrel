@@ -35,6 +35,7 @@ class NeutronTotalEfficiency {
     
     init(sfSource: SFSource) {
         self.sfSource = sfSource
+        // Source file contains probabilities and single neutron efficiencies: F0 F1 F2 ... F12, F1/F2 F1/F3 F2/F3 F3/F4 F2/F4
         if let url = Bundle.main.url(forResource: "SF_sources/\(sfSource)", withExtension: "txt") {
             do {
                 let text = try String(contentsOf: url)
@@ -75,11 +76,12 @@ class NeutronTotalEfficiency {
         }
         
         var result = "Efficiency calculation with \(source) source:"
+        let n1 = Double(info[1] ?? 0)
         let n2 = Double(info[2] ?? 0)
         let n3 = Double(info[3] ?? 0)
         let n4 = max(Double(info[4] ?? 0), 1)
-        let detected = ["2:3": n2/max(n3,1), "3:4": n3/max(n4,1), "2:4": n2/max(n4,1)]
-        let ij = [(2, 3), (3, 4), (2, 4)]
+        let detected = ["1:2": n1/max(n2,1), "1:3": n1/max(n3,1), "2:3": n2/max(n3,1), "3:4": n3/max(n4,1), "2:4": n2/max(n4,1)]
+        let ij = [(1, 2), (1, 3), (2, 3), (3, 4), (2, 4)]
         var dict = [String: NeutronSingleEfficiency]()
         for item in data {
             for t in ij {

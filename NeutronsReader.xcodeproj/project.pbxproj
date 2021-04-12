@@ -156,6 +156,8 @@
 		5A2A993D20570F0C00B3D1A0 /* Model */ = {
 			isa = PBXGroup;
 			children = (
+				65DA92AA20D59540002643DB /* Calibration */,
+				6562B35D26246B970070A491 /* NeutronEfficiency */,
 				5AAE352B22717F8300035B52 /* DetectorsWellGeometry.swift */,
 				65036BF125DFC01200856D7E /* NeutronsMultiplicity.swift */,
 				65B2A92925FB955000D97986 /* NeutronsMatch.swift */,
@@ -171,13 +173,20 @@
 			name = Model;
 			sourceTree = "<group>";
 		};
-		65DA92AA20D59540002643DB /* Calibration */ = {
+		6562B35D26246B970070A491 /* NeutronEfficiency */ = {
 			isa = PBXGroup;
 			children = (
 				6562B3512624599C0070A491 /* SF_sources */,
+				6562B35426245A800070A491 /* NeutronTotalEfficiency.swift */,
+			);
+			name = NeutronEfficiency;
+			sourceTree = "<group>";
+		};
+		65DA92AA20D59540002643DB /* Calibration */ = {
+			isa = PBXGroup;
+			children = (
 				651307111A4E94AB00E33704 /* Calibration.swift */,
 				65DA92A720D594E9002643DB /* CalibrationEquation.swift */,
-				6562B35426245A800070A491 /* NeutronTotalEfficiency.swift */,
 			);
 			name = Calibration;
 			sourceTree = "<group>";
@@ -229,7 +238,6 @@
 		78B6A54D193A3B3900C7E36A /* NeutronsReader */ = {
 			isa = PBXGroup;
 			children = (
-				65DA92AA20D59540002643DB /* Calibration */,
 				5A2A993C20570EE300B3D1A0 /* UI */,
 				5A2A993A20570EC900B3D1A0 /* Helpers */,
 				5A2A993B20570ED800B3D1A0 /* Config */,
