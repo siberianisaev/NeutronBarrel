@@ -98,6 +98,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         sMaxGammaTime = String(format: "%d", Settings.getIntSetting(.MaxGammaTime)) // mks
         sMaxGammaBackwardTime = String(format: "%d", Settings.getIntSetting(.MaxGammaBackwardTime)) // mks
         sMaxNeutronTime = String(format: "%d", Settings.getIntSetting(.MaxNeutronTime)) // mks
+        sMaxNeutronBackwardTime = String(format: "%d", Settings.getIntSetting(.MaxNeutronBackwardTime)) // mks
         sMaxRecoilFrontDeltaStrips = String(format: "%d", Settings.getIntSetting(.MaxRecoilFrontDeltaStrips))
         sMaxRecoilBackDeltaStrips = String(format: "%d", Settings.getIntSetting(.MaxRecoilBackDeltaStrips))
         summarizeFissionsFront = Settings.getBoolSetting(.SummarizeFissionsFront)
@@ -214,6 +215,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBInspectable dynamic var sMaxGammaTime: String = ""
     @IBInspectable dynamic var sMaxGammaBackwardTime: String = ""
     @IBInspectable dynamic var sMaxNeutronTime: String = ""
+    @IBInspectable dynamic var sMaxNeutronBackwardTime: String = ""
     @IBInspectable dynamic var sMaxRecoilFrontDeltaStrips: String = ""
     @IBInspectable dynamic var sMaxRecoilBackDeltaStrips: String = ""
     @IBInspectable dynamic var summarizeFissionsFront: Bool = false
@@ -598,6 +600,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         sc.searchNeutrons = searchNeutrons
         sc.placedSFSource = sfSourcePlaced ? (sfSourceControl.selectedSegment == 0 ? .Cm248 : .U238) : nil
         sc.maxNeutronTime = UInt64(sMaxNeutronTime) ?? 0
+        sc.maxNeutronBackwardTime = UInt64(sMaxNeutronBackwardTime) ?? 0
         sc.searchSpecialEvents = searchSpecialEvents
         sc.gammaEncodersOnly = gammaEncodersOnly
         sc.searchVETO = searchVETO
@@ -839,6 +842,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             .MaxGammaTime: Int(sMaxGammaTime),
             .MaxGammaBackwardTime: Int(sMaxGammaBackwardTime),
             .MaxNeutronTime: Int(sMaxNeutronTime),
+            .MaxNeutronBackwardTime: Int(sMaxNeutronBackwardTime),
             .MaxRecoilFrontDeltaStrips: Int(sMaxRecoilFrontDeltaStrips),
             .MaxRecoilBackDeltaStrips: Int(sMaxRecoilBackDeltaStrips),
             .SummarizeFissionsFront: summarizeFissionsFront,

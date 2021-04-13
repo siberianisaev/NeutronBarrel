@@ -126,7 +126,6 @@ class ResultsTable {
         return searchExtraPostfix("Neutrons")
     }
     fileprivate var keyColumnNeutrons_N = "N1...N4"
-    fileprivate var keyColumnNeutronsBackward = "Neutrons(Backward)"
     fileprivate let keyColumnEvent: String = "Event"
     fileprivate func keyColumnGammaEnergy(_ max: Bool) -> String {
         var s = searchExtraPostfix("Gamma")
@@ -287,7 +286,6 @@ class ResultsTable {
             if dataProtocol.hasNeutrons_N() {
                 columns.append(keyColumnNeutrons_N)
             }
-            columns.append(keyColumnNeutronsBackward)
         }
         columns.append(contentsOf: [
             keyColumnGammaEnergy(true),
@@ -637,10 +635,6 @@ class ResultsTable {
                 case keyColumnNeutrons_N:
                     if row == 0 {
                         field = String(format: "%llu", delegate.neutrons().NSum)
-                    }
-                case keyColumnNeutronsBackward:
-                    if row == 0 {
-                        field = String(format: "%llu", delegate.neutrons().backwardSum)
                     }
                 case keyColumnGammaEnergy(true):
                     if let energy = gammaAt(row: row)?.itemWithMaxEnergy()?.energy {

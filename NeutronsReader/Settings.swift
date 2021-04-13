@@ -40,6 +40,7 @@ enum Setting: String {
     MaxGammaTime = "MaxGammaTime",
     MaxGammaBackwardTime = "MaxGammaBackwardTime",
     MaxNeutronTime = "MaxNeutronTime",
+    MaxNeutronBackwardTime = "MaxNeutronBackwardTime",
     MaxRecoilFrontDeltaStrips = "MaxRecoilFrontDeltaStrips",
     MaxRecoilBackDeltaStrips = "MaxRecoilBackDeltaStrips",
     SummarizeFissionsFront = "SummarizeFissionsFront",
@@ -219,7 +220,7 @@ class Settings {
             return 1
         case .MaxFissionBackEnergy, .MaxTOFValue:
             return 10000
-        case .MaxRecoilBackTime, .MaxFissionTime, .MaxVETOTime, .MaxGammaTime, .MinFissionAlpha2Energy, .MinFissionAlpha2BackEnergy, .MinFissionAlpha3Energy, .MinFissionAlpha3BackEnergy:
+        case .MaxRecoilBackTime, .MaxFissionTime, .MaxVETOTime, .MaxGammaTime, .MinFissionAlpha2Energy, .MinFissionAlpha2BackEnergy, .MinFissionAlpha3Energy, .MinFissionAlpha3BackEnergy, .MaxNeutronBackwardTime:
             return 5
         case .MaxTOFTime:
             return 4

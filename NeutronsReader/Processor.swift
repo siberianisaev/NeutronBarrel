@@ -412,7 +412,7 @@ class Processor {
             }
             
             if !criteria.searchExtraFromLastParticle {
-                findAllNeutrons(position)
+                findNeutrons(position)
             }
             
             if criteria.searchSpecialEvents {
@@ -450,15 +450,6 @@ class Processor {
         return criteria.searchWell && criteria.requiredWell && fissionsAlphaWellPerAct.matchFor(side: .front).count == 0
     }
     
-    fileprivate func findAllNeutrons(_ position: Int) {
-        if criteria.searchNeutrons {
-            findNeutrons()
-            fseek(file, Int(position), SEEK_SET)
-            findNeutronsBack()
-            fseek(file, Int(position), SEEK_SET)
-        }
-    }
-    
     fileprivate func updateFolderStatistics(_ event: Event, folder: FolderStatistics) {
         let id = Int(event.eventId)
         if dataProtocol.isBeamEnergy(id) {
@@ -485,40 +476,33 @@ class Processor {
         }
     }
     
-    fileprivate func findNeutrons() {
-        let directions: Set<SearchDirection> = [.forward]
-        search(directions: directions, startTime: currentEventTime, minDeltaTime: 0, maxDeltaTime: criteria.maxNeutronTime, useCycleTime: false, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>, _) in
-            let id = Int(event.eventId)
-            if self.dataProtocol.isNeutronsNewEvent(id) {
-                self.neutronsPerAct.times.append(Float(deltaTime))
-                var encoder = self.dataProtocol.encoderForEventId(id) // 1-4
-                var channel = event.param3 & Mask.neutronsNew.rawValue // 0-31
-                // Convert to encoder 1-8 and strip 0-15 format
-                encoder *= 2
-                if channel > 15 {
-                    channel -= 16
-                } else {
-                    encoder -= 1
+    fileprivate func findNeutrons(_ position: Int) {
+        if criteria.searchNeutrons {
+            let directions: Set<SearchDirection> = [.forward, .backward]
+            search(directions: directions, startTime: currentEventTime, minDeltaTime: 0, maxDeltaTime: criteria.maxNeutronTime, maxDeltaTimeBackward: criteria.maxNeutronBackwardTime, useCycleTime: false, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>, _) in
+                let id = Int(event.eventId)
+                if self.dataProtocol.isNeutronsNewEvent(id) {
+                    self.neutronsPerAct.times.append(Float(deltaTime))
+                    var encoder = self.dataProtocol.encoderForEventId(id) // 1-4
+                    var channel = event.param3 & Mask.neutronsNew.rawValue // 0-31
+                    // Convert to encoder 1-8 and strip 0-15 format
+                    encoder *= 2
+                    if channel > 15 {
+                        channel -= 16
+                    } else {
+                        encoder -= 1
+                    }
+                    let counterNumber = self.stripsConfiguration(detector: .neutron).strip1_N_For(side: .front, encoder: Int(encoder), strip0_15: channel)
+                    self.neutronsPerAct.counters.append(counterNumber)
+                } else if self.dataProtocol.isNeutronsOldEvent(id) {
+                    let t = Float(event.param3 & Mask.neutronsOld.rawValue)
+                    self.neutronsPerAct.times.append(t)
                 }
-                let counterNumber = self.stripsConfiguration(detector: .neutron).strip1_N_For(side: .front, encoder: Int(encoder), strip0_15: channel)
-                self.neutronsPerAct.counters.append(counterNumber)
-            } else if self.dataProtocol.isNeutronsOldEvent(id) {
-                let t = Float(event.param3 & Mask.neutronsOld.rawValue)
-                self.neutronsPerAct.times.append(t)
+                if self.dataProtocol.hasNeutrons_N() && self.dataProtocol.isNeutrons_N_Event(id) {
+                    self.neutronsPerAct.NSum += 1
+                }
             }
-            if self.dataProtocol.hasNeutrons_N() && self.dataProtocol.isNeutrons_N_Event(id) {
-                self.neutronsPerAct.NSum += 1
-            }
-        }
-    }
-    
-    fileprivate func findNeutronsBack() {
-        let directions: Set<SearchDirection> = [.backward]
-        search(directions: directions, startTime: currentEventTime, minDeltaTime: 0, maxDeltaTime: 10, useCycleTime: false, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>, _) in
-            let id = Int(event.eventId)
-            if self.dataProtocol.isNeutronsNewEvent(id) || self.dataProtocol.isNeutronsOldEvent(id) {
-                self.neutronsPerAct.backwardSum += 1
-            }
+            fseek(file, Int(position), SEEK_SET)
         }
     }
     
@@ -745,7 +729,7 @@ class Processor {
                         // Extra Search
                         if isLastNext, self.criteria.searchExtraFromLastParticle {
                             self.findFissionAlphaWell(position)
-                            self.findAllNeutrons(position)
+                            self.findNeutrons(position)
                             gamma = self.findGamma(position)
                             if nil == gamma, self.criteria.requiredGamma {
                                 store = false
