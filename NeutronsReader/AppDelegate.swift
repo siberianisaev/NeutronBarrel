@@ -17,6 +17,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBOutlet weak var correlationsView: CorrelationsView!
     @IBOutlet weak var labelVersion: NSTextField!
     @IBOutlet weak var labelBranch: NSTextField!
+    @IBOutlet weak var viewBranchStatus: NSView!
     @IBOutlet weak var labelTotalTime: NSTextField!
     @IBOutlet weak var labelProcessingFileName: NSTextField!
     @IBOutlet weak var labelFirstDataFileName: NSTextField!
@@ -926,7 +927,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         labelVersion?.stringValue = string
         let branch = infoPlistStringForKey("CFBundleVersionGitBranch") ?? "unknown"
         labelBranch?.stringValue = "Branch: " + branch
-        labelBranch?.textColor = branch == "master" ? NSColor.systemGreen : NSColor.systemRed
+        viewBranchStatus.wantsLayer = true
+        viewBranchStatus.layer?.cornerRadius = viewBranchStatus.frame.width/2
+        viewBranchStatus.layer?.backgroundColor = (branch == "master" ? NSColor.systemGreen : NSColor.systemRed).cgColor
     }
     
 }

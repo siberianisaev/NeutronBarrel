@@ -66,6 +66,7 @@
                 <outlet property="thirdParticleFrontControl" destination="2Z2-aD-1FI" id="672-rk-kpg"/>
                 <outlet property="tofUnitsControl" destination="2QM-Jn-ZjV" id="EPI-g8-gt3"/>
                 <outlet property="vetoView" destination="tLu-c6-18P" id="Tjw-u4-Ohc"/>
+                <outlet property="viewBranchStatus" destination="40f-Y4-B7N" id="KhI-ll-E5w"/>
                 <outlet property="wellParticleBackControl" destination="3Bh-fw-WY0" id="HSW-4f-y2a"/>
                 <outlet property="wellView" destination="t52-Mm-GFO" id="BPF-U0-9R4"/>
                 <outlet property="window" destination="QvC-M9-y7g" id="gIp-Ho-8D9"/>
@@ -2673,7 +2674,7 @@
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="center" title="Branch" placeholderString="Branch" id="BPN-LJ-xEw">
                                     <font key="font" size="15" name="HelveticaNeue-Light"/>
-                                    <color key="textColor" red="0.15313630403820641" green="0.69786299872644175" blue="0.2918788531513552" alpha="0.5" colorSpace="custom" customColorSpace="displayP3"/>
+                                    <color key="textColor" red="0.72157555819999997" green="0.72155970339999997" blue="0.7215628624" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
                                     <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                 </textFieldCell>
                             </textField>
@@ -2754,6 +2755,10 @@
                                     <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                 </textFieldCell>
                             </textField>
+                            <customView fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="40f-Y4-B7N">
+                                <rect key="frame" x="221" y="10" width="10" height="10"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                            </customView>
                         </subviews>
                     </customView>
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="qsx-x2-dRa">
