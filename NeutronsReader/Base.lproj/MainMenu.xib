@@ -2456,7 +2456,7 @@
                         </subviews>
                     </customView>
                     <customView fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="rXF-Z2-WtT">
-                        <rect key="frame" x="7" y="5" width="248" height="679"/>
+                        <rect key="frame" x="7" y="5" width="255" height="679"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <subviews>
                             <textField hidden="YES" horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="2Ow-sS-sNC">
@@ -2746,10 +2746,10 @@
                                 </connections>
                             </customView>
                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="22A-bO-bEk">
-                                <rect key="frame" x="214" y="467" width="36" height="17"/>
+                                <rect key="frame" x="214" y="467" width="43" height="17"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="left" title="0" placeholderString="0" id="1ID-yR-1AB">
-                                    <font key="font" metaFont="system" size="8"/>
+                                    <font key="font" metaFont="system" size="7"/>
                                     <color key="textColor" red="0.55479179460977779" green="0.54227714709887775" blue="0.54929027566812372" alpha="0.5" colorSpace="custom" customColorSpace="displayP3"/>
                                     <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                 </textFieldCell>
