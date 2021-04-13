@@ -479,21 +479,25 @@ class Processor {
     fileprivate func findNeutrons(_ position: Int) {
         if criteria.searchNeutrons {
             let directions: Set<SearchDirection> = [.forward, .backward]
-            search(directions: directions, startTime: currentEventTime, minDeltaTime: 0, maxDeltaTime: criteria.maxNeutronTime, maxDeltaTimeBackward: criteria.maxNeutronBackwardTime, useCycleTime: false, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>, _) in
+            let startTime = currentEventTime
+            search(directions: directions, startTime: startTime, minDeltaTime: 0, maxDeltaTime: criteria.maxNeutronTime, maxDeltaTimeBackward: criteria.maxNeutronBackwardTime, useCycleTime: false, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>, _) in
                 let id = Int(event.eventId)
                 if self.dataProtocol.isNeutronsNewEvent(id) {
-                    self.neutronsPerAct.times.append(Float(deltaTime))
-                    var encoder = self.dataProtocol.encoderForEventId(id) // 1-4
-                    var channel = event.param3 & Mask.neutronsNew.rawValue // 0-31
-                    // Convert to encoder 1-8 and strip 0-15 format
-                    encoder *= 2
-                    if channel > 15 {
-                        channel -= 16
-                    } else {
-                        encoder -= 1
+                    let neutronTime = CUnsignedLongLong(event.param1)
+                    if neutronTime >= startTime { // Neutron must be after SF (by time)
+                        self.neutronsPerAct.times.append(Float(deltaTime))
+                        var encoder = self.dataProtocol.encoderForEventId(id) // 1-4
+                        var channel = event.param3 & Mask.neutronsNew.rawValue // 0-31
+                        // Convert to encoder 1-8 and strip 0-15 format
+                        encoder *= 2
+                        if channel > 15 {
+                            channel -= 16
+                        } else {
+                            encoder -= 1
+                        }
+                        let counterNumber = self.stripsConfiguration(detector: .neutron).strip1_N_For(side: .front, encoder: Int(encoder), strip0_15: channel)
+                        self.neutronsPerAct.counters.append(counterNumber)
                     }
-                    let counterNumber = self.stripsConfiguration(detector: .neutron).strip1_N_For(side: .front, encoder: Int(encoder), strip0_15: channel)
-                    self.neutronsPerAct.counters.append(counterNumber)
                 } else if self.dataProtocol.isNeutronsOldEvent(id) {
                     let t = Float(event.param3 & Mask.neutronsOld.rawValue)
                     self.neutronsPerAct.times.append(t)
