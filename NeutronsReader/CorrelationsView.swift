@@ -17,7 +17,7 @@ class CorrelationsView: NSView {
         if correlations > 0 {
             counts[progress/100.0] = correlations
             setNeedsDisplay(visibleRect)
-            label.stringValue = "\(counts.values.reduce(0, +).scientific)"
+            label.stringValue = "\(counts.values.sum().scientific)"
         }
     }
     

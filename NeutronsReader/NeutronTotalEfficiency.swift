@@ -107,6 +107,12 @@ class NeutronTotalEfficiency {
                 result += "\n\(key) --- \(detected[key] ?? 0.0) --- \(e * 100)%"
             }
         }
+        let efficiencies = dict.values.map { (e: NeutronSingleEfficiency) -> Double in
+            return e.value
+        }
+        if efficiencies.count > 0 {
+            result += "\nAverage efficiency: \(efficiencies.average() * 100) ± 1 %"
+        }
         return result
     }
     

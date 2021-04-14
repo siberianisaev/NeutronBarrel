@@ -773,7 +773,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         let items = operations.values.map { (p: Processor) -> Int in
             return p.filesFinishedCount
         }
-        let ready = items.reduce(0, +)
+        let ready = items.sum()
         let total = DataLoader.singleton.files.count * items.count
         let progress = 100 * Double(ready)/Double(total)
         progressIndicator?.doubleValue = progress

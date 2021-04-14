@@ -15,8 +15,7 @@ class NeutronsMatch {
     var NSum: CUnsignedLongLong = 0
     
     var averageTime: Float {
-        let c = count
-        return c > 0 ? times.reduce(0, +)/Float(c) : 0
+        return times.average()
     }
     
     var count: Int {
