@@ -30,17 +30,17 @@ class NeutronsMultiplicity {
     }
     
     func stringValue() -> String {
-        var string = "Multiplicity\tCount\n"
+        var string = "Multiplicity\tCount\tProbability\n"
         let sortedKeys = Array(info.keys).sorted(by: { (i1: Int, i2: Int) -> Bool in
             return i1 < i2
         })
         var neutrons: Int = 0
         var neutronsSquares: Int = 0
-        var events: Int = 0
+        let events: Int = info.map { $0.value }.sum()
         for key in sortedKeys {
             let count = info[key]!
-            string += "\(key)\t\(count)\n"
-            events += count
+            let probability = events > 0 ? (Double(count) / Double(events)) : 0
+            string += "\(key)\t\(count)\t\(probability)\n"
             neutrons += count * key
             neutronsSquares += count * Int(pow(Double(key), 2))
         }
