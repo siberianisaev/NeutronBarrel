@@ -81,7 +81,7 @@ class Logger {
     }
     
     func logStatistics(_ folders: [String: FolderStatistics]) {
-        let headers = ["Folder", "First File", "Last File", "First File Created On", "Last File Created On", "~ Folder Last Modified", "Mean Energy", "Integral", "Calculation Time"]
+        let headers = ["Folder", "First File", "Last File", "First File Created On", "Last File Created On", "~ Folder Last Modified", "Mean Energy", "Integral", "Calculation Time", "Last Cycle Time (s)"]
         statisticsCSVWriter.writeLineOfFields(headers as [AnyObject])
         statisticsCSVWriter.finishLine()
         
@@ -100,8 +100,9 @@ class Logger {
             let energy = String(folder.meanEnergy)
             let integral = String(folder.integral)
             let calculationTime = abs(folder.calculationsStart?.timeIntervalSince(folder.calculationsEnd ?? Date()) ?? 0).stringFromSeconds()
-            let lastModified = stringFrom(folder.firstFileCreatedOn?.addingTimeInterval(folder.secondsFromStart))
-            let values = [name, firstFile, lastFile, firstCreatedOn, lastCreatedOn, lastModified, energy, integral, calculationTime] as [AnyObject]
+            let secondsFromStart = folder.secondsFromStart
+            let lastModified = stringFrom(folder.firstFileCreatedOn?.addingTimeInterval(secondsFromStart))
+            let values = [name, firstFile, lastFile, firstCreatedOn, lastCreatedOn, lastModified, energy, integral, calculationTime, secondsFromStart] as [AnyObject]
             statisticsCSVWriter.writeLineOfFields(values)
         }
         statisticsCSVWriter.finishLine()

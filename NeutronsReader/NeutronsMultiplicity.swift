@@ -45,7 +45,7 @@ class NeutronsMultiplicity {
             neutronsSquares += count * Int(pow(Double(key), 2))
         }
         string += "\nSF count: \(events)"
-        string += "\nNeutrons count: \(neutrons)%"
+        string += "\nNeutrons count: \(neutrons)"
         if neutrons > 0 {
             let average = Double(neutrons)/Double(events)
             let averageError = (Double(neutrons)/Double(events))*(1/Double(neutrons) + 1/Double(events)).squareRoot()
