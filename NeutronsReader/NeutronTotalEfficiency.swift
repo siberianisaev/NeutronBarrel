@@ -116,4 +116,56 @@ class NeutronTotalEfficiency {
         return result
     }
     
+    fileprivate func neutronsCalculatedDistributionFor(efficiency: Double, measuredDistribution: [Double], source: SFSource) -> [Double]? {
+        if source != .Cm248 {
+            return nil
+        }
+        
+        let maxMeasured = measuredDistribution.count
+        let maxEmmited = 12
+
+        var K: [[Double]] = Array(repeating: Array(repeating: 0, count: maxEmmited), count: maxMeasured) // Detector response matrix.
+        for i in 0...maxMeasured-1 {
+            for j in 0...maxEmmited-1 {
+                if i <= j {
+                    // Mukhin et al. PEPAN Letters P6-2021-6
+                    K[i][j] = (j.factorial() / (i.factorial() * (j - i).factorial())) * pow(efficiency, Double(i)) * pow(1 - efficiency, Double(j - i))
+                }
+            }
+        }
+        print("K(i,j)\n")
+        for i in 0...maxMeasured-1 {
+            print(K[i].map{ String(format: "%.3f", $0) }.joined(separator: "\t"))
+        }
+        
+        /*
+        248Cm neutrons probabilities from work:
+        Norman E. Holden & Martin S. Zucker (1986) Prompt neutron multiplicities for the transplutonium nuclides, Radiation Effects, 96:1-4, 289-292, DOI:
+        10.1080/00337578608211755
+         */
+        let ideal248Cm = [0.00674,
+                          0.05965,
+                          0.22055,
+                          0.35090,
+                          0.25438,
+                          0.08935,
+                          0.01674,
+                          0.00169,
+                          0.00740]
+
+        var result = [Double]()
+        for i in 0...maxMeasured-1 {
+            var sum = 0.0
+            for j in 0...maxEmmited-1 {
+                sum += ideal248Cm[j] * K[i][j]
+            }
+            result.append(sum)
+        }
+        print("\n\nResult K*Ideal:\n")
+        for v in result {
+            print(v)
+        }
+        return result
+    }
+    
 }

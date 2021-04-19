@@ -81,6 +81,17 @@ extension NSView {
     }
 }
 
+extension Int {
+    
+    func factorial() -> Double {
+        if self <= 1 {
+            return 1
+        }
+      return (1...self).map(Double.init).reduce(1.0, *)
+    }
+    
+}
+
 extension TimeInterval {
     
     func stringFromSeconds() -> String {
