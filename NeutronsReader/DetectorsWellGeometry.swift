@@ -8,9 +8,30 @@
 
 import Foundation
 
+struct PointXYZ {
+    
+    var x: CGFloat
+    var y: CGFloat
+    var z: CGFloat
+    
+    init(x: CGFloat, y: CGFloat, z: CGFloat) {
+        self.x = x
+        self.y = y
+        self.z = z
+    }
+    
+    func angleFrom(point: PointXYZ) -> CGFloat {
+        let hypotenuse = sqrt(pow(self.x - point.x, 2) + pow(self.y - point.y, 2) + pow(self.z - point.z, 2))
+        let sinus = point.z / hypotenuse
+        let arcsinus = asin(sinus) * 180 / CGFloat.pi
+        return arcsinus
+    }
+    
+}
+
 class DetectorsWellGeometry {
     
-    class func coordinatesXYZ(stripDetector: StripDetector, stripFront0: Int, stripBack0: Int, encoderSide: Int? = nil) -> (x: CGFloat, y: CGFloat, z: CGFloat) {
+    class func coordinatesXYZ(stripDetector: StripDetector, stripFront0: Int, stripBack0: Int, encoderSide: Int? = nil) -> PointXYZ {
         var x: CGFloat = 0
         var y: CGFloat = 0
         var z: CGFloat = 0
@@ -44,7 +65,7 @@ class DetectorsWellGeometry {
                 break
             }
         }
-        return (x, y, z)
+        return PointXYZ(x: x, y: y, z: z)
     }
     
 }

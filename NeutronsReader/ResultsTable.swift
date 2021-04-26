@@ -27,11 +27,10 @@ protocol ResultsTableDelegate: class {
 
 class ResultsTable {
     
-    // TODO: position code refactoring
     enum Position: String {
         case X = "X", Y = "Y", Z = "Z"
         
-        func relatedCoordinate(point: (x: CGFloat, y: CGFloat, z: CGFloat)) -> CGFloat {
+        func relatedCoordinate(point: PointXYZ) -> CGFloat {
             switch self {
             case .X:
                 return point.x
@@ -79,8 +78,12 @@ class ResultsTable {
     fileprivate var keyColumnRecoilFrontFrontMarker: String {
         return "\(keyRecoil)FronMarker"
     }
-    fileprivate var keyColumnRecoilFrontDeltaTime: String {
-        return "dT(\(keyRecoil)Fron-$Fron)"
+    fileprivate func keyColumnRecoilFrontDeltaTime(log: Bool) -> String {
+        var s = "dT(\(keyRecoil)Fron-$Fron)"
+        if log {
+            s += "Log"
+        }
+        return s
     }
     fileprivate var keyColumnRecoilBackEvent: String {
         let name = criteria.recoilBackType == .recoil ? "Recoil" : "Heavy Recoil"
@@ -119,6 +122,9 @@ class ResultsTable {
     fileprivate var keyColumnWellBackMarker = "*WellBackMarker"
     fileprivate var keyColumnWellBackPosition = "*WellBackPos"
     fileprivate var keyColumnWellBackStrip = "Strip(*WellBack)"
+    fileprivate var keyColumnWellRangeInDeadLayers = "WellRangeInDeadLayers"
+    fileprivate var keyColumnTKEFront = "TKEFront"
+    fileprivate var keyColumnTKEBack = "TKEBack"
     fileprivate var keyColumnNeutronsAverageTime = "NeutronsAverageTime"
     fileprivate var keyColumnNeutronTime = "NeutronTime"
     fileprivate var keyColumnNeutronCounter = "NeutronCounter"
@@ -234,7 +240,8 @@ class ResultsTable {
                 keyColumnRecoilFrontEvent,
                 keyColumnRecoilFrontEnergy,
                 keyColumnRecoilFrontFrontMarker,
-                keyColumnRecoilFrontDeltaTime,
+                keyColumnRecoilFrontDeltaTime(log: false),
+                keyColumnRecoilFrontDeltaTime(log: true),
                 keyColumnRecoilBackEvent,
                 keyColumnRecoilBackEnergy
             ])
@@ -278,7 +285,10 @@ class ResultsTable {
                 keyColumnWellBackEnergy,
                 keyColumnWellBackMarker,
                 keyColumnWellBackPosition,
-                keyColumnWellBackStrip
+                keyColumnWellBackStrip,
+                keyColumnWellRangeInDeadLayers,
+                keyColumnTKEFront,
+                keyColumnTKEBack
                 ])
         }
         if criteria.searchNeutrons {
@@ -468,9 +478,13 @@ class ResultsTable {
                     if let marker = delegate.recoilAt(side: .front, index: row)?.marker {
                         field = String(format: "%hu", marker)
                     }
-                case keyColumnRecoilFrontDeltaTime:
+                case keyColumnRecoilFrontDeltaTime(log: false), keyColumnRecoilFrontDeltaTime(log: true):
                     if let deltaTime = delegate.recoilAt(side: .front, index: row)?.deltaTime {
-                        field = String(format: "%lld", deltaTime)
+                        if column == keyColumnRecoilFrontDeltaTime(log: false) {
+                            field = String(format: "%lld", deltaTime)
+                        } else {
+                            field = String(format: "%.7f", log10(log2(2) * abs(Float(deltaTime))))
+                        }
                     }
                 case keyColumnRecoilBackEvent:
                     if let eventNumber = delegate.recoilAt(side: .back, index: row)?.eventNumber {
@@ -574,14 +588,17 @@ class ResultsTable {
                     if let s = well(position: p, row: row) {
                         field = s
                     }
-                case keyColumnWellAngle:
+                case keyColumnWellAngle, keyColumnWellRangeInDeadLayers:
                     if row == 0, let itemFocalFront = delegate.firstParticleAt(side: .front).itemAt(index: row), let stripFocalFront1 = itemFocalFront.strip1_N, let itemFocalBack = delegate.firstParticleAt(side: .back).itemAt(index: row), let stripFocalBack1 = itemFocalBack.strip1_N, let itemSideFront = delegate.fissionsAlphaWellAt(side: .front, index: 0), let stripSideFront0 = itemSideFront.strip0_15, let itemSideBack = delegate.fissionsAlphaWellAt(side: .back, index: 0), let stripSideBack0 = itemSideBack.strip0_15, let encoderSide = itemSideFront.encoder {
                         let pointFront = DetectorsWellGeometry.coordinatesXYZ(stripDetector: .focal, stripFront0: stripFocalFront1 - 1, stripBack0: stripFocalBack1 - 1)
                         let pointSide = DetectorsWellGeometry.coordinatesXYZ(stripDetector: .side, stripFront0: Int(stripSideFront0), stripBack0: Int(stripSideBack0), encoderSide: Int(encoderSide))
-                        let hypotenuse = sqrt(pow(pointFront.x - pointSide.x, 2) + pow(pointFront.y - pointSide.y, 2) + pow(pointFront.z - pointSide.z, 2))
-                        let sinus = pointSide.z / hypotenuse
-                        let arcsinus = asin(sinus) * 180 / CGFloat.pi
-                        field = String(format: "%.2f", arcsinus)
+                        let angle = pointFront.angleFrom(point: pointSide)
+                        if column == keyColumnWellAngle {
+                            field = String(format: "%.2f", angle)
+                        } else {
+                            let range = StripDetector.side.deadLayer()/sin(angle * CGFloat.pi / 180) + StripDetector.focal.deadLayer()/sin((90 - angle) * CGFloat.pi / 180)
+                            field = String(format: "%.5f", range)
+                        }
                     }
                 case keyColumnWellStrip:
                     if row == 0, let strip = delegate.fissionsAlphaWellAt(side: .front, index: 0)?.strip1_N {
@@ -602,6 +619,14 @@ class ResultsTable {
                 case keyColumnWellBackStrip:
                     if row == 0, let strip = delegate.fissionsAlphaWellAt(side: .back, index: 0)?.strip1_N {
                         field = String(format: "%d", strip)
+                    }
+                case keyColumnTKEFront:
+                    if let s = TKE(row: row, side: .front) {
+                        field = s
+                    }
+                case keyColumnTKEBack:
+                    if let s = TKE(row: row, side: .back) {
+                        field = s
                     }
                 case keyColumnNeutronsAverageTime:
                     if row == 0 {
@@ -741,6 +766,14 @@ class ResultsTable {
                 logger.writeField(field as AnyObject, destination: .results)
             }
             logger.finishLine(.results)
+        }
+    }
+    
+    fileprivate func TKE(row: Int, side: StripsSide) -> String? {
+        if row == 0, let focal = delegate.firstParticleAt(side: side).itemAt(index: row)?.energy, let side = delegate.fissionsAlphaWellAt(side: side, index: 0)?.energy {
+            return String(format: "%.7f", focal + side)
+        } else {
+            return nil
         }
     }
     
