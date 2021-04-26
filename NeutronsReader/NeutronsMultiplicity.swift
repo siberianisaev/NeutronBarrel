@@ -37,9 +37,11 @@ class NeutronsMultiplicity {
         var neutrons: Int = 0
         var neutronsSquares: Int = 0
         let events: Int = info.map { $0.value }.sum()
+        var probabilities = [Double]()
         for key in sortedKeys {
             let count = info[key]!
             let probability = events > 0 ? (Double(count) / Double(events)) : 0
+            probabilities.append(probability)
             string += "\(key)\t\(count)\t\(probability)\n"
             neutrons += count * key
             neutronsSquares += count * Int(pow(Double(key), 2))
@@ -70,8 +72,13 @@ class NeutronsMultiplicity {
                 string += "\n*Dispersion: \((meanOfSquares - pow(average, 2) - average*(1 - efficiency/100))/pow(efficiency/100, 2))"
             }
             if let sfSource = placedSFSource {
-                let e = NeutronTotalEfficiency(sfSource: sfSource)
-                string += "\n\(e.calculate(info: info))"
+                string += "\n"
+                if sfSource.idealDistribution() == nil {
+                    let e = NeutronTotalEfficiency(sfSource: sfSource)
+                    string += "\(e.calculate(info: info))"
+                } else {
+                    string += "\(NeutronTotalEfficiency.efficiencyFor(measuredDistribution: probabilities, source: sfSource) ?? 0)"
+                }
             }
         }
         return string

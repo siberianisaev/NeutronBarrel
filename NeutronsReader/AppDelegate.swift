@@ -598,7 +598,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         sc.wellRecoilsAllowed = wellRecoilsAllowed
         sc.searchExtraFromLastParticle = searchExtraFromLastParticle
         sc.searchNeutrons = searchNeutrons
-        sc.placedSFSource = sfSourcePlaced ? (sfSourceControl.selectedSegment == 0 ? .Cm248 : .U238) : nil
+        sc.placedSFSource = sfSourcePlaced ? SFSource(rawValue: sfSourceControl.selectedSegment) : nil
         sc.maxNeutronTime = UInt64(sMaxNeutronTime) ?? 0
         sc.maxNeutronBackwardTime = UInt64(sMaxNeutronBackwardTime) ?? 0
         sc.searchSpecialEvents = searchSpecialEvents

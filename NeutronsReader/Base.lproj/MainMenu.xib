@@ -1222,17 +1222,6 @@
                                             <binding destination="Voe-Tx-rLC" name="value" keyPath="self.sfSourcePlaced" id="2Pw-h5-AzK"/>
                                         </connections>
                                     </button>
-                                    <segmentedControl verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="abI-1w-NKm">
-                                        <rect key="frame" x="18" y="13" width="165" height="24"/>
-                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                        <segmentedCell key="cell" borderStyle="border" alignment="left" style="rounded" trackingMode="selectOne" id="g0R-R1-Tb9">
-                                            <font key="font" metaFont="system"/>
-                                            <segments>
-                                                <segment label="248Cm" width="78" selected="YES"/>
-                                                <segment label="238U" width="78" tag="1"/>
-                                            </segments>
-                                        </segmentedCell>
-                                    </segmentedControl>
                                     <textField verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="tTL-rM-G8v">
                                         <rect key="frame" x="129" y="121" width="100" height="22"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
@@ -1258,6 +1247,19 @@
                                             <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                         </textFieldCell>
                                     </textField>
+                                    <segmentedControl verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="abI-1w-NKm">
+                                        <rect key="frame" x="18" y="13" width="213" height="24"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                        <segmentedCell key="cell" borderStyle="border" alignment="left" style="rounded" trackingMode="selectOne" id="g0R-R1-Tb9">
+                                            <font key="font" metaFont="system"/>
+                                            <segments>
+                                                <segment label="248Cm" selected="YES"/>
+                                                <segment label="238U" tag="1"/>
+                                                <segment label="252Cf"/>
+                                                <segment label="252No"/>
+                                            </segments>
+                                        </segmentedCell>
+                                    </segmentedControl>
                                 </subviews>
                             </customView>
                         </subviews>

@@ -8,8 +8,50 @@
 
 import Foundation
 
-enum SFSource: String {
-    case U238 = "U238", Cm248 = "Cm248"
+enum SFSource: Int {
+    case U238 = 0, Cm248, Cf252, No252
+    
+    /*
+    Neutrons probabilities from work:
+    Norman E. Holden & Martin S. Zucker (1986) Prompt neutron multiplicities for the transplutonium nuclides, Radiation Effects, 96:1-4, 289-292, DOI:
+    10.1080/00337578608211755
+     */
+    func idealDistribution() -> [Double]? {
+        switch self {
+        case .Cm248:
+            return [0.00674,
+                    0.05965,
+                    0.22055,
+                    0.35090,
+                    0.25438,
+                    0.08935,
+                    0.01674,
+                    0.00169,
+                    0.00740]
+        case .Cf252:
+            return [0.00217,
+                    0.02556,
+                    0.12541,
+                    0.27433,
+                    0.30517,
+                    0.18523,
+                    0.06607,
+                    0.01414,
+                    0.00186,
+                    0.00006]
+        case .No252:
+            return [0.052,
+                    0.277,
+                    0.366,
+                    0.247,
+                    0.050,
+                    0.008]
+        case .U238:
+            // TODO: Multiplicity of prompt neutrons in spontaneous fission of 238U, Popeko, A.G., Ter-Akop'yan, G.M.
+            return nil
+        }
+    }
+    
 }
 
 fileprivate class NeutronSingleEfficiency {
@@ -116,56 +158,59 @@ class NeutronTotalEfficiency {
         return result
     }
     
-    fileprivate func neutronsCalculatedDistributionFor(efficiency: Double, measuredDistribution: [Double], source: SFSource) -> [Double]? {
-        if source != .Cm248 {
+    class func efficiencyFor(measuredDistribution: [Double], source: SFSource) -> Double? {
+        guard let ideal = source.idealDistribution() else {
             return nil
         }
         
         let maxMeasured = measuredDistribution.count
-        let maxEmmited = 12
-
-        var K: [[Double]] = Array(repeating: Array(repeating: 0, count: maxEmmited), count: maxMeasured) // Detector response matrix.
-        for i in 0...maxMeasured-1 {
-            for j in 0...maxEmmited-1 {
-                if i <= j {
-                    // Mukhin et al. PEPAN Letters P6-2021-6
-                    K[i][j] = (j.factorial() / (i.factorial() * (j - i).factorial())) * pow(efficiency, Double(i)) * pow(1 - efficiency, Double(j - i))
+        let maxEmmited = ideal.count
+        
+        // Determine efficiency of detector
+        var resultEfficiency: Double?
+        var minSigma = Double.greatestFiniteMagnitude
+        for percent in 1...99 {
+            let efficiency = Double(percent)/100.0
+            print("\nEfficiency: \(efficiency)")
+            var K: [[Double]] = Array(repeating: Array(repeating: 0, count: maxEmmited), count: maxMeasured) // Detector response matrix.
+            for i in 0...maxMeasured-1 {
+                for j in 0...maxEmmited-1 {
+                    if i <= j {
+                        // Mukhin et al. PEPAN Letters P6-2021-6
+                        K[i][j] = (j.factorial() / (i.factorial() * (j - i).factorial())) * pow(efficiency, Double(i)) * pow(1 - efficiency, Double(j - i))
+                    }
                 }
             }
-        }
-        print("K(i,j)\n")
-        for i in 0...maxMeasured-1 {
-            print(K[i].map{ String(format: "%.3f", $0) }.joined(separator: "\t"))
+            print("Detector response matrix:")
+            for i in 0...maxMeasured-1 {
+                print(K[i].map{ String(format: "%.3f", $0) }.joined(separator: "\t"))
+            }
+
+            var result = [Double]()
+            for i in 0...maxMeasured-1 {
+                var sum = 0.0
+                for j in 0...maxEmmited-1 {
+                    sum += ideal[j] * K[i][j]
+                }
+                result.append(sum)
+            }
+            print("Expected distribution:")
+            var sigma: Double = 0.0
+            let count = result.count
+            for i in 0...count-1 {
+                print(result[i])
+                sigma += pow(measuredDistribution[i] - result[i], 2)
+            }
+            sigma = sqrt(sigma)/Double(count)
+            print("Sigma: \(sigma)\n")
+            if sigma < minSigma {
+                minSigma = sigma
+                resultEfficiency = efficiency
+            }
         }
         
-        /*
-        248Cm neutrons probabilities from work:
-        Norman E. Holden & Martin S. Zucker (1986) Prompt neutron multiplicities for the transplutonium nuclides, Radiation Effects, 96:1-4, 289-292, DOI:
-        10.1080/00337578608211755
-         */
-        let ideal248Cm = [0.00674,
-                          0.05965,
-                          0.22055,
-                          0.35090,
-                          0.25438,
-                          0.08935,
-                          0.01674,
-                          0.00169,
-                          0.00740]
-
-        var result = [Double]()
-        for i in 0...maxMeasured-1 {
-            var sum = 0.0
-            for j in 0...maxEmmited-1 {
-                sum += ideal248Cm[j] * K[i][j]
-            }
-            result.append(sum)
-        }
-        print("\n\nResult K*Ideal:\n")
-        for v in result {
-            print(v)
-        }
-        return result
+        print("Final efficiency: \(resultEfficiency ?? 0)")
+        return resultEfficiency
     }
     
 }
