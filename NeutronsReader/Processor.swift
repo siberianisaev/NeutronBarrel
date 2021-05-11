@@ -21,7 +21,7 @@ extension Event {
     
 }
 
-protocol ProcessorDelegate: class {
+protocol ProcessorDelegate: AnyObject {
     
     func startProcessingFile(_ name: String?)
     func endProcessingFile(_ name: String?, correlationsFound: CUnsignedLongLong)

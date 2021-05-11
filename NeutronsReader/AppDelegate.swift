@@ -118,6 +118,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         useTOF2 = Settings.getBoolSetting(.UseTOF2)
         requiredVETO = Settings.getBoolSetting(.RequiredVETO)
         searchNeutrons = Settings.getBoolSetting(.SearchNeutrons)
+        neutronsPositions = Settings.getBoolSetting(.NeutronsPositions)
         sfSourcePlaced = Settings.getBoolSetting(.SFSourcePlaced)
         searchFissionAlpha1 = Settings.getBoolSetting(.SearchFissionAlpha1)
         searchFissionAlpha2 = Settings.getBoolSetting(.SearchFissionAlpha2)
@@ -237,6 +238,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBInspectable dynamic var useTOF2: Bool = false
     @IBInspectable dynamic var requiredVETO: Bool = false
     @IBInspectable dynamic var searchNeutrons: Bool = false
+    @IBInspectable dynamic var neutronsPositions: Bool = false
     @IBInspectable dynamic var sfSourcePlaced: Bool = false {
         didSet {
             sfSourceControl.isHidden = !sfSourcePlaced
@@ -598,6 +600,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         sc.wellRecoilsAllowed = wellRecoilsAllowed
         sc.searchExtraFromLastParticle = searchExtraFromLastParticle
         sc.searchNeutrons = searchNeutrons
+        sc.neutronsPositions = neutronsPositions
         sc.placedSFSource = sfSourcePlaced ? SFSource(rawValue: sfSourceControl.selectedSegment) : nil
         sc.maxNeutronTime = UInt64(sMaxNeutronTime) ?? 0
         sc.maxNeutronBackwardTime = UInt64(sMaxNeutronBackwardTime) ?? 0
@@ -863,6 +866,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             .UseTOF2: useTOF2,
             .RequiredVETO: requiredVETO,
             .SearchNeutrons: searchNeutrons,
+            .NeutronsPositions: neutronsPositions,
             .SFSourcePlaced: sfSourcePlaced,
             .SearchVETO: searchVETO,
             .TrackBeamEnergy: trackBeamEnergy,

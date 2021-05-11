@@ -8,7 +8,7 @@
 
 import Foundation
 
-protocol ResultsTableDelegate: class {
+protocol ResultsTableDelegate: AnyObject {
     
     func rowsCountForCurrentResult() -> Int
     func neutronsCountWithNewLine() -> Int
@@ -128,6 +128,8 @@ class ResultsTable {
     fileprivate var keyColumnNeutronsAverageTime = "NeutronsAverageTime"
     fileprivate var keyColumnNeutronTime = "NeutronTime"
     fileprivate var keyColumnNeutronCounter = "NeutronCounter"
+    fileprivate var keyColumnNeutronCounterX = "NeutronCounterX"
+    fileprivate var keyColumnNeutronCounterY = "NeutronCounterY"
     fileprivate var keyColumnNeutrons: String {
         return searchExtraPostfix("Neutrons")
     }
@@ -295,6 +297,9 @@ class ResultsTable {
             columns.append(contentsOf: [keyColumnNeutronsAverageTime, keyColumnNeutronTime, keyColumnNeutronCounter, keyColumnNeutrons])
             if dataProtocol.hasNeutrons_N() {
                 columns.append(keyColumnNeutrons_N)
+            }
+            if criteria.neutronsPositions {
+                columns.append(contentsOf: [keyColumnNeutronCounterX, keyColumnNeutronCounterY])
             }
         }
         columns.append(contentsOf: [
@@ -645,12 +650,17 @@ class ResultsTable {
                             field = String(format: "%.1f", times[index])
                         }
                     }
-                case keyColumnNeutronCounter:
+                case keyColumnNeutronCounter, keyColumnNeutronCounterX, keyColumnNeutronCounterY:
                     if row > 0 {
                         let index = row - 1
                         let counters = delegate.neutrons().counters
                         if index < counters.count {
-                            field = String(format: "%d", counters[index])
+                            let counterIndex = counters[index]
+                            if column == keyColumnNeutronCounter {
+                                field = String(format: "%d", counterIndex)
+                            } else if let point = NeutronDetector.pointFor(counter: counterIndex) {
+                                field = String(format: "%.3f", column == keyColumnNeutronCounterX ? point.x : point.y)
+                            }
                         }
                     }
                 case keyColumnNeutrons:

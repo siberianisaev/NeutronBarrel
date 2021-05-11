@@ -75,6 +75,7 @@ class SearchCriteria {
         return trackBeamEnergy || trackBeamCurrent || trackBeamBackground || trackBeamIntegral
     }
     var searchNeutrons = false
+    var neutronsPositions = false
     
     var next = [Int: SearchNextCriteria]()
     func nextMaxIndex() -> Int? {
