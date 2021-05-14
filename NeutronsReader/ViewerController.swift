@@ -40,17 +40,19 @@ class ViewerController: NSWindowController {
             return "Viewer\(name)Cell"
         }
     }
-
-    @IBOutlet weak var tableView: NSTableView!
     
     fileprivate var totalEventNumber: CUnsignedLongLong = 0
     fileprivate var index: Int = 0
     fileprivate var file: UnsafeMutablePointer<FILE>?
     fileprivate var eventCount: Int = 0
     
-    @IBOutlet weak var buttonPrevious: NSButton!
+    @IBInspectable dynamic var sEventNumberToScroll: String = ""
+    
+    @IBOutlet weak var tableView: NSTableView!
     @IBOutlet weak var labelFile: NSTextField!
+    @IBOutlet weak var buttonPrevious: NSButton!
     @IBOutlet weak var buttonNext: NSButton!
+    @IBOutlet weak var buttonScroll: NSButton!
     
     fileprivate var dataProtocol: DataProtocol! {
         return DataLoader.singleton.dataProtocol
@@ -84,6 +86,13 @@ class ViewerController: NSWindowController {
         buttonPrevious.isHidden = index <= 0
         buttonNext.isHidden = index >= files.count-1
         tableView.reloadData()
+    }
+    
+    @IBAction func scroll(_ sender: Any) {
+        if let row = Int(sEventNumberToScroll), row >= 0,  row < numberOfRows(in: tableView) {
+            tableView.scrollRowToVisible(row)
+            tableView.selectRowIndexes(IndexSet(integer: row), byExtendingSelection: false)
+        }
     }
     
     @IBAction func previous(_ sender: Any) {

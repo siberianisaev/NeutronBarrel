@@ -1051,10 +1051,13 @@ class Processor {
         return sameType && dataProtocol.isAlphaBackEvent(eventId)
     }
     
-    fileprivate func eventNumber() -> CUnsignedLongLong {
+    fileprivate func eventNumber(_ total: Bool = false) -> CUnsignedLongLong {
         var position = fpos_t()
         fgetpos(file, &position)
-        let value = CUnsignedLongLong(position/Int64(Event.size)) + totalEventNumber + 1
+        var value = CUnsignedLongLong(position/Int64(Event.size)) + 1
+        if total {
+            value += totalEventNumber
+        }
         return value
     }
     
