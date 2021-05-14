@@ -1054,7 +1054,7 @@ class Processor {
     fileprivate func eventNumber(_ total: Bool = false) -> CUnsignedLongLong {
         var position = fpos_t()
         fgetpos(file, &position)
-        var value = CUnsignedLongLong(position/Int64(Event.size)) + 1
+        var value = CUnsignedLongLong(position/Int64(Event.size))
         if total {
             value += totalEventNumber
         }

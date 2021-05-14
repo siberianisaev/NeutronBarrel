@@ -89,9 +89,12 @@ class ViewerController: NSWindowController {
     }
     
     @IBAction func scroll(_ sender: Any) {
-        if let row = Int(sEventNumberToScroll), row >= 0,  row < numberOfRows(in: tableView) {
-            tableView.scrollRowToVisible(row)
-            tableView.selectRowIndexes(IndexSet(integer: row), byExtendingSelection: false)
+        if let number = Int(sEventNumberToScroll) {
+            let row = number - 1
+            if row >= 0,  row < numberOfRows(in: tableView) {
+                tableView.scrollRowToVisible(row)
+                tableView.selectRowIndexes(IndexSet(integer: row), byExtendingSelection: false)
+            }
         }
     }
     
@@ -140,7 +143,7 @@ extension ViewerController: NSTableViewDelegate {
                     let id = Int(event.eventId)
                     switch column {
                     case .number:
-                        string = "\(row)"
+                        string = "\(row + 1)"
                     case .name:
                         string = dataProtocol?.keyFor(value: id) ?? ""
                     case .ID:
