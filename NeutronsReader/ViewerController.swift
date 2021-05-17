@@ -170,7 +170,11 @@ extension ViewerController: NSTableViewDelegate {
                             string += "ch\(strip)"
                         }
                     case .alpha:
-                        string = "\(event.getChannelFor(type: .alpha))"
+                        if dataProtocol.isCycleTimeEvent(id) == true {
+                            string = "\(event.param3)"
+                        } else {
+                            string = "\(event.getChannelFor(type: .alpha))"
+                        }
                     case .fission:
                         let isAlpha = dataProtocol?.isAlpha(eventId: id) ?? false
                         if isAlpha {
