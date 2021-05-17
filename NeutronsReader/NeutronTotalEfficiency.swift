@@ -9,7 +9,7 @@
 import Foundation
 
 enum SFSource: Int {
-    case U238 = 0, Cm248, Cf252, No252
+    case Cm248 = 0, U238, Cf252, No252
     
     /*
     Neutrons probabilities from work:
@@ -158,7 +158,7 @@ class NeutronTotalEfficiency {
         return result
     }
     
-    class func efficiencyFor(measuredDistribution: [Double], source: SFSource) -> Double? {
+    class func efficiencyFor(measuredDistribution: [Double], source: SFSource) -> (Double, String)? {
         guard let ideal = source.idealDistribution() else {
             return nil
         }
@@ -167,8 +167,9 @@ class NeutronTotalEfficiency {
         let maxEmmited = ideal.count
         
         // Determine efficiency of detector
-        var resultEfficiency: Double?
+        var resultEfficiency: Double = 0
         var minSigma = Double.greatestFiniteMagnitude
+        var chiSquaredInfo = [(Double, Double)]()
         for percent in 1...99 {
             let efficiency = Double(percent)/100.0
             print("\nEfficiency: \(efficiency)")
@@ -196,21 +197,28 @@ class NeutronTotalEfficiency {
             }
             print("Expected distribution:")
             var sigma: Double = 0.0
+            var chiSquared: Double = 0.0
             let count = result.count
             for i in 0...count-1 {
                 print(result[i])
                 sigma += pow(measuredDistribution[i] - result[i], 2)
+                chiSquared += pow(measuredDistribution[i] - result[i], 2)/result[i]
             }
             sigma = sqrt(sigma)/Double(count)
-            print("Sigma: \(sigma)\n")
+            print("Sigma: \(sigma)")
+            print("Chi^2: \(chiSquared)\n")
+            chiSquaredInfo.append((efficiency, chiSquared))
             if sigma < minSigma {
                 minSigma = sigma
                 resultEfficiency = efficiency
             }
         }
         
-        print("Final efficiency: \(resultEfficiency ?? 0)")
-        return resultEfficiency
+        let chiSquaredString = chiSquaredInfo.map { return "\($0.0),\($0.1)" }.joined(separator: "\n")
+        print("Efficiency | Chi^2:\n\(chiSquaredString)")
+        
+        print("Final efficiency: \(resultEfficiency)")
+        return (resultEfficiency, chiSquaredString)
     }
     
 }

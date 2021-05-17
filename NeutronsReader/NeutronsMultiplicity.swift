@@ -76,8 +76,8 @@ class NeutronsMultiplicity {
                 if sfSource.idealDistribution() == nil {
                     let e = NeutronTotalEfficiency(sfSource: sfSource)
                     string += "\(e.calculate(info: info))"
-                } else {
-                    string += "\(NeutronTotalEfficiency.efficiencyFor(measuredDistribution: probabilities, source: sfSource) ?? 0)"
+                } else if let tuple = NeutronTotalEfficiency.efficiencyFor(measuredDistribution: probabilities, source: sfSource) {
+                    string += "\(tuple.0)\n\(tuple.1)"
                 }
             }
         }
