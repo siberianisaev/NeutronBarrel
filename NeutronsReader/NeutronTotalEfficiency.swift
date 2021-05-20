@@ -158,7 +158,7 @@ class NeutronTotalEfficiency {
         return result
     }
     
-    class func efficiencyFor(measuredDistribution: [Double], source: SFSource) -> (Double, String)? {
+    class func efficiencyFor(measuredDistribution: [Double], sfCount: Int, source: SFSource) -> (Double, String)? {
         guard let ideal = source.idealDistribution() else {
             return nil
         }
@@ -187,22 +187,24 @@ class NeutronTotalEfficiency {
                 print(K[i].map{ String(format: "%.3f", $0) }.joined(separator: "\t"))
             }
 
-            var result = [Double]()
+            var expectedDistribution = [Double]()
             for i in 0...maxMeasured-1 {
                 var sum = 0.0
                 for j in 0...maxEmmited-1 {
                     sum += ideal[j] * K[i][j]
                 }
-                result.append(sum)
+                expectedDistribution.append(sum)
             }
             print("Expected distribution:")
             var sigma: Double = 0.0
             var chiSquared: Double = 0.0
-            let count = result.count
+            let count = expectedDistribution.count
             for i in 0...count-1 {
-                print(result[i])
-                sigma += pow(measuredDistribution[i] - result[i], 2)
-                chiSquared += pow(measuredDistribution[i] - result[i], 2)/result[i]
+                print(expectedDistribution[i])
+                sigma += pow(measuredDistribution[i] - expectedDistribution[i], 2)
+                if measuredDistribution[i]*Double(sfCount) > 5.0 { // chi^2 limits
+                    chiSquared += Double(sfCount)*pow(measuredDistribution[i] - expectedDistribution[i], 2)/expectedDistribution[i]
+                }
             }
             sigma = sqrt(sigma)/Double(count)
             print("Sigma: \(sigma)")
