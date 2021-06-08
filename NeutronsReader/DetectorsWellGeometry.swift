@@ -45,22 +45,44 @@ class DetectorsWellGeometry {
             x = (CGFloat(stripBack0) + 0.5) * sw.back
             y = (CGFloat(stripFront0) + 0.5) * sw.front
         } else if let encoder = encoderSide {
-            let sideFullWidth = SideDetector.activeAreaSize().width * 2
+            let twoCristalsWidth = SideDetector.activeAreaSize().width * 2
+            let sideWidth = twoCristalsWidth + SideDetector.interCristalPadding
             let sripWidth = SideDetector.stripsWidth().front
-            let halfStripAndShift: CGFloat = 0.5 + (encoder % 2 == 0 ? 16.0 : 0.0)
+            let isSecondCristal = encoder % 2 == 0
+            let halfStripAndShift: CGFloat = 0.5 + (isSecondCristal ? 16.0 : 0.0)
+            
+            func position(negative: Bool) -> CGFloat {
+                var p = (CGFloat(stripFront0) + halfStripAndShift) * sripWidth
+                if negative {
+                    p = twoCristalsWidth - p
+                }
+                /*
+                 View on beam (crates on left).
+                 Side Si cristals positions with related encoders:
+                 - from top left to bottom left ## 1 and 2,
+                 - from bottom left to bottom right ## 3 and 4,
+                 - from bottom right to top right ## 5 and 6,
+                 - from top right to top left ## 7 and 8.
+                 */
+                if negative && !isSecondCristal || !negative && isSecondCristal {
+                    p += SideDetector.interCristalPadding
+                }
+                return p
+            }
+            
             switch encoder {
             case 1...2:
                 x = 0
-                y = sideFullWidth - (CGFloat(stripFront0) + halfStripAndShift) * sripWidth
+                y = position(negative: true)
             case 3...4:
-                x = (CGFloat(stripFront0) + halfStripAndShift) * sripWidth
+                x = position(negative: false)
                 y = 0
             case 5...6:
-                x = sideFullWidth
-                y = (CGFloat(stripFront0) + halfStripAndShift) * sripWidth
+                x = sideWidth
+                y = position(negative: false)
             case 7...8:
-                x = sideFullWidth - (CGFloat(stripFront0) + halfStripAndShift) * sripWidth
-                y = sideFullWidth
+                x = position(negative: true)
+                y = sideWidth
             default:
                 break
             }

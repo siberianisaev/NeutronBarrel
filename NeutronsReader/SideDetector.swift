@@ -19,4 +19,8 @@ class SideDetector: DoubleSidedDetector {
         return CGSize(width: 46, height: 60)
     }
     
+    static var interCristalPadding: CGFloat {
+        return 8.0
+    }
+    
 }
