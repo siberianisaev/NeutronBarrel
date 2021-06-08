@@ -130,6 +130,7 @@ class ResultsTable {
     fileprivate var keyColumnNeutronCounter = "NeutronCounter"
     fileprivate var keyColumnNeutronCounterX = "NeutronCounterX"
     fileprivate var keyColumnNeutronCounterY = "NeutronCounterY"
+    fileprivate var keyColumnNeutronAngle = "NeutronAngle"
     fileprivate var keyColumnNeutrons: String {
         return searchExtraPostfix("Neutrons")
     }
@@ -299,7 +300,7 @@ class ResultsTable {
                 columns.append(keyColumnNeutrons_N)
             }
             if criteria.neutronsPositions {
-                columns.append(contentsOf: [keyColumnNeutronCounterX, keyColumnNeutronCounterY])
+                columns.append(contentsOf: [keyColumnNeutronCounterX, keyColumnNeutronCounterY, keyColumnNeutronAngle])
             }
         }
         columns.append(contentsOf: [
@@ -650,7 +651,7 @@ class ResultsTable {
                             field = String(format: "%.1f", times[index])
                         }
                     }
-                case keyColumnNeutronCounter, keyColumnNeutronCounterX, keyColumnNeutronCounterY:
+                case keyColumnNeutronCounter, keyColumnNeutronCounterX, keyColumnNeutronCounterY, keyColumnNeutronAngle:
                     if row > 0 {
                         let index = row - 1
                         let counters = delegate.neutrons().counters
@@ -659,7 +660,20 @@ class ResultsTable {
                             if column == keyColumnNeutronCounter {
                                 field = String(format: "%d", counterIndex)
                             } else if let point = NeutronDetector.pointFor(counter: counterIndex) {
-                                field = String(format: "%.3f", column == keyColumnNeutronCounterX ? point.x : point.y)
+                                if column == keyColumnNeutronAngle {
+                                    if let pointFront = pointForFirstParticleFocal(row: 0), let pointSide = pointForWell(row: 0) {
+                                        let A = pointFront.y - pointSide.y
+                                        let B = pointFront.x - pointSide.x
+                                        let C = pointFront.x * pointSide.y - pointSide.x * pointFront.y
+                                        let perpendicular = abs(A * point.x + B * point.y + C) / sqrt(pow(A, 2) + pow(B, 2))
+                                        let hipotenuse = sqrt(pow(pointFront.x - point.x, 2) + pow(pointFront.y - point.y, 2))
+                                        let sinus = perpendicular / hipotenuse
+                                        let angle = asin(sinus) * 180 / CGFloat.pi
+                                        field = String(format: "%.2f", angle)
+                                    }
+                                } else {
+                                    field = String(format: "%.3f", column == keyColumnNeutronCounterX ? point.x : point.y)
+                                }
                             }
                         }
                     }
@@ -787,18 +801,34 @@ class ResultsTable {
         }
     }
     
-    fileprivate func firstParticleFocal(position: Position, row: Int) -> String? {
+    fileprivate func pointForFirstParticleFocal(row: Int) -> PointXYZ? {
         if let itemFront = delegate.firstParticleAt(side: .front).itemAt(index: row), let stripFront1 = itemFront.strip1_N, let itemBack = delegate.firstParticleAt(side: .back).itemAt(index: row), let stripBack1 = itemBack.strip1_N {
             let point = DetectorsWellGeometry.coordinatesXYZ(stripDetector: .focal, stripFront0: stripFront1 - 1, stripBack0: stripBack1 - 1)
+            return point
+        } else {
+            return nil
+        }
+    }
+    
+    fileprivate func firstParticleFocal(position: Position, row: Int) -> String? {
+        if let point = pointForFirstParticleFocal(row: row) {
             return String(format: "%.1f", position.relatedCoordinate(point: point))
         } else {
             return nil
         }
     }
     
-    fileprivate func well(position: Position, row: Int) -> String? {
+    fileprivate func pointForWell(row: Int) -> PointXYZ? {
         if row == 0, let itemFront = delegate.fissionsAlphaWellAt(side: .front, index: 0), let stripFront0 = itemFront.strip0_15, let itemBack = delegate.fissionsAlphaWellAt(side: .back, index: 0), let stripBack0 = itemBack.strip0_15, let encoder = itemFront.encoder {
             let point = DetectorsWellGeometry.coordinatesXYZ(stripDetector: .side, stripFront0: Int(stripFront0), stripBack0: Int(stripBack0), encoderSide: Int(encoder))
+            return point
+        } else {
+            return nil
+        }
+    }
+    
+    fileprivate func well(position: Position, row: Int) -> String? {
+        if let point = pointForWell(row: row) {
             return String(format: "%.1f", position.relatedCoordinate(point: point))
         } else {
             return nil

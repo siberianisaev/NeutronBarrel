@@ -12,6 +12,9 @@ class NeutronDetector {
     
     fileprivate var locations = [Int: CGPoint]()
     
+    /**
+     Counter coordinates (in mm).
+     */
     class func pointFor(counter: Int) -> CGPoint? {
         return singleton.locations[counter]
     }
@@ -30,7 +33,8 @@ class NeutronDetector {
                 for row in text.components(separatedBy: CharacterSet.newlines).filter({ !$0.isEmpty }) {
                     let values = row.components(separatedBy: ";")
                     if values.count == 3, let counter = Int(values[0]), let x = Double(values[1]), let y = Double(values[2]) {
-                        locations[counter] = CGPoint(x: x, y: y)
+                        // TODO: convert them to mm in csv
+                        locations[counter] = CGPoint(x: x * 10, y: y * 10)
                     }
                 }
             } catch {
