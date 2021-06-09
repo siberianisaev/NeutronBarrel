@@ -43,4 +43,15 @@ class NeutronDetector {
         }
     }
     
+    class func angle(neutronPoint: CGPoint, focalFragmentPoint: PointXYZ, sideFragmentPoint: PointXYZ) -> CGFloat {
+        // y = mx + k
+        let m = (sideFragmentPoint.y - focalFragmentPoint.y)/(sideFragmentPoint.x - focalFragmentPoint.x)
+        let k = focalFragmentPoint.y - focalFragmentPoint.x * m
+        let altitude = abs(k + m * neutronPoint.x - neutronPoint.y) / sqrt(1 + pow(m, 2))
+        let hipotenuse = sqrt(pow(focalFragmentPoint.x - neutronPoint.x, 2) + pow(focalFragmentPoint.y - neutronPoint.y, 2))
+        let sinus = altitude / hipotenuse
+        let angle = asin(sinus) * 180 / CGFloat.pi
+        return angle
+    }
+    
 }

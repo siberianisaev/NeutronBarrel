@@ -662,13 +662,7 @@ class ResultsTable {
                             } else if let point = NeutronDetector.pointFor(counter: counterIndex) {
                                 if column == keyColumnNeutronAngle {
                                     if let pointFront = pointForFirstParticleFocal(row: 0), let pointSide = pointForWell(row: 0) {
-                                        let A = pointFront.y - pointSide.y
-                                        let B = pointFront.x - pointSide.x
-                                        let C = pointFront.x * pointSide.y - pointSide.x * pointFront.y
-                                        let perpendicular = abs(A * point.x + B * point.y + C) / sqrt(pow(A, 2) + pow(B, 2))
-                                        let hipotenuse = sqrt(pow(pointFront.x - point.x, 2) + pow(pointFront.y - point.y, 2))
-                                        let sinus = perpendicular / hipotenuse
-                                        let angle = asin(sinus) * 180 / CGFloat.pi
+                                        let angle = NeutronDetector.angle(neutronPoint: point, focalFragmentPoint: pointFront, sideFragmentPoint: pointSide)
                                         field = String(format: "%.2f", angle)
                                     }
                                 } else {
