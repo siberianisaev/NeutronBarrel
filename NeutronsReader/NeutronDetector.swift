@@ -43,6 +43,9 @@ class NeutronDetector {
         }
     }
     
+    /**
+     If angle is negative, then neutron is related to fragment from side detector.
+     */
     class func angle(neutronPoint: CGPoint, focalFragmentPoint: PointXYZ, sideFragmentPoint: PointXYZ) -> CGFloat {
         // y = mx + k
         let m = (sideFragmentPoint.y - focalFragmentPoint.y)/(sideFragmentPoint.x - focalFragmentPoint.x)
@@ -51,7 +54,17 @@ class NeutronDetector {
         let hipotenuse = sqrt(pow(focalFragmentPoint.x - neutronPoint.x, 2) + pow(focalFragmentPoint.y - neutronPoint.y, 2))
         let sinus = altitude / hipotenuse
         let angle = asin(sinus) * 180 / CGFloat.pi
-        return angle
+        
+        func isAtBottomOfPerpindicularLineToFocalFragment(x: CGFloat, y: CGFloat) -> Bool {
+            let perpendicularY = (-1/m)*(x - focalFragmentPoint.x) + focalFragmentPoint.y
+            return y < perpendicularY
+        }
+        
+        if isAtBottomOfPerpindicularLineToFocalFragment(x: neutronPoint.x, y: neutronPoint.y) == isAtBottomOfPerpindicularLineToFocalFragment(x: sideFragmentPoint.x, y: sideFragmentPoint.y)  {
+            return -angle
+        } else {
+            return angle
+        }
     }
     
 }
