@@ -297,7 +297,7 @@ class Processor {
             logger.log(multiplicity: multiplicity)
             
             let lines = resultsTable.neutronsPerEnergy.map { (key: Double, value: [Float]) in
-                return [key, value.average()] as [AnyObject]
+                return [key, value.average(), value.count] as [AnyObject]
             }
             for line in lines {
                 logger.writeLineOfFields(line, destination: .neutronsPerEnergy)
