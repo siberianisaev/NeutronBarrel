@@ -295,6 +295,14 @@ class Processor {
         logger.logStatistics(folders)
         if criteria.searchNeutrons, let multiplicity = neutronsMultiplicity {
             logger.log(multiplicity: multiplicity)
+            
+            let lines = resultsTable.neutronsPerEnergy.map { (key: Double, value: [Float]) in
+                return [key, value.average()] as [AnyObject]
+            }
+            for line in lines {
+                logger.writeLineOfFields(line, destination: .neutronsPerEnergy)
+                logger.finishLine(.neutronsPerEnergy)
+            }
         }
         
         DispatchQueue.main.async {
