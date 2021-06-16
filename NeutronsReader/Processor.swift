@@ -499,6 +499,7 @@ class Processor {
                         var encoder = self.dataProtocol.encoderForEventId(id) // 1-4
                         var channel = event.param3 & Mask.neutronsNew.rawValue // 0-31
                         // Convert to encoder 1-8 and strip 0-15 format
+                        self.neutronsPerAct.encoders.append(encoder)
                         encoder *= 2
                         if channel > 15 {
                             channel -= 16
@@ -507,6 +508,8 @@ class Processor {
                         }
                         let counterNumber = self.stripsConfiguration(detector: .neutron).strip1_N_For(side: .front, encoder: Int(encoder), strip0_15: channel)
                         self.neutronsPerAct.counters.append(counterNumber)
+                        self.neutronsPerAct.CTR.append((event.param3 & 0xE0) >> 5)
+                        self.neutronsPerAct.CTW.append((event.param3 & 0x700) >> 8)
                     }
                 } else if self.dataProtocol.isNeutronsOldEvent(id) {
                     let t = Float(event.param3 & Mask.neutronsOld.rawValue)
@@ -1136,7 +1139,23 @@ extension Processor: ResultsTableDelegate {
     }
     
     func neutrons() -> NeutronsMatch {
-        return neutronsPerAct
+        let encoders = neutronsPerAct.encoders
+        if encoders.count > 0 {
+            let times = neutronsPerAct.times
+            var encWithTimes = [UInt16: [Float]]()
+            for i in 0...encoders.count-1 {
+                let enc = encoders[i]
+                var values = encWithTimes[enc] ?? []
+                values.append(times[i])
+                encWithTimes[enc] = values
+            }
+            for (_, value) in encWithTimes {
+                if value.isSorted(isOrderedBefore: <) == false { // ascending broken
+                    return neutronsPerAct
+                }
+            }
+        }
+        return NeutronsMatch()
     }
     
     func currentFileEventNumber(_ number: CUnsignedLongLong) -> String {
@@ -1181,6 +1200,21 @@ extension Processor: ResultsTableDelegate {
     
     func specialWith(eventId: Int) -> CUnsignedShort? {
         return specialPerAct[eventId]
+    }
+    
+}
+
+extension Array {
+    
+    func isSorted(isOrderedBefore: (Float, Float) -> Bool) -> Bool {
+        if self.count > 1 {
+            for i in 1..<self.count {
+                if !isOrderedBefore(self[i-1] as! Float, self[i] as! Float) {
+                    return false
+                }
+            }
+        }
+        return true
     }
     
 }

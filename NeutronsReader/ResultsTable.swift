@@ -130,6 +130,9 @@ class ResultsTable {
     fileprivate var keyColumnNeutronsAverageTime = "NeutronsAverageTime"
     fileprivate var keyColumnNeutronTime = "NeutronTime"
     fileprivate var keyColumnNeutronCounter = "NeutronCounter"
+    fileprivate var keyColumnNeutronCTR = "NeutronCTR"
+    fileprivate var keyColumnNeutronCTW = "NeutronCTW"
+    fileprivate var keyColumnNeutronBlock = "NeutronBlock"
     fileprivate var keyColumnNeutronCounterX = "NeutronCounterX"
     fileprivate var keyColumnNeutronCounterY = "NeutronCounterY"
     fileprivate var keyColumnNeutronAngle = "NeutronAngle"
@@ -298,7 +301,7 @@ class ResultsTable {
                 ])
         }
         if criteria.searchNeutrons {
-            columns.append(contentsOf: [keyColumnNeutronsAverageTime, keyColumnNeutronTime, keyColumnNeutronCounter, keyColumnNeutrons])
+            columns.append(contentsOf: [keyColumnNeutronsAverageTime, keyColumnNeutronTime, keyColumnNeutronCounter, keyColumnNeutronCTR, keyColumnNeutronCTW, keyColumnNeutronBlock, keyColumnNeutrons])
             if dataProtocol.hasNeutrons_N() {
                 columns.append(keyColumnNeutrons_N)
             }
@@ -654,35 +657,48 @@ class ResultsTable {
                             field = String(format: "%.1f", times[index])
                         }
                     }
-                case keyColumnNeutronCounter, keyColumnNeutronCounterX, keyColumnNeutronCounterY, keyColumnNeutronAngle, keyColumnNeutronRelatedFissionBack:
+                case keyColumnNeutronCounter, keyColumnNeutronCTR, keyColumnNeutronCTW, keyColumnNeutronBlock, keyColumnNeutronCounterX, keyColumnNeutronCounterY, keyColumnNeutronAngle, keyColumnNeutronRelatedFissionBack:
                     if row > 0 {
                         let index = row - 1
-                        let counters = delegate.neutrons().counters
-                        if index < counters.count {
-                            let counterIndex = counters[index]
-                            if column == keyColumnNeutronCounter {
-                                field = String(format: "%d", counterIndex)
-                            } else if let point = NeutronDetector.pointFor(counter: counterIndex) {
-                                if column == keyColumnNeutronAngle || column == keyColumnNeutronRelatedFissionBack {
-                                    if let pointFront = pointForFirstParticleFocal(row: 0), let pointSide = pointForWell(row: 0) {
-                                        let angle = NeutronDetector.angle(neutronPoint: point, focalFragmentPoint: pointFront, sideFragmentPoint: pointSide)
-                                        if column == keyColumnNeutronAngle {
-                                            field = String(format: "%.2f", angle)
-                                        } else {
-                                            if let energy = (angle < 0 ? delegate.fissionsAlphaWellAt(side: .back, index: 0) : delegate.firstParticleAt(side: .back).itemAt(index: 0))?.energy {
-                                                field = String(format: "%.7f", energy)
-                                                
-                                                // Calculate neutrons count per fission channel (case with more than 1 neutron)
-                                                if row == 1, angle > 0 {
-                                                    var array = neutronsPerEnergy[energy] ?? []
-                                                    array.append(Float(delegate.neutrons().count))
-                                                    neutronsPerEnergy[energy] = array
+                        if column == keyColumnNeutronBlock || column == keyColumnNeutronCTR || column == keyColumnNeutronCTW {
+                            var values = [UInt16]()
+                            switch column {
+                            case keyColumnNeutronBlock:
+                                values = delegate.neutrons().encoders
+                            default:
+                                values = column == keyColumnNeutronCTR ? delegate.neutrons().CTR : delegate.neutrons().CTW
+                            }
+                            if index < values.count {
+                                field = String(format: "%hu", values[index])
+                            }
+                        } else {
+                            let counters = delegate.neutrons().counters
+                            if index < counters.count {
+                                let counterIndex = counters[index]
+                                if column == keyColumnNeutronCounter {
+                                    field = String(format: "%d", counterIndex)
+                                } else if let point = NeutronDetector.pointFor(counter: counterIndex) {
+                                    if column == keyColumnNeutronAngle || column == keyColumnNeutronRelatedFissionBack {
+                                        if let pointFront = pointForFirstParticleFocal(row: 0), let pointSide = pointForWell(row: 0) {
+                                            let angle = NeutronDetector.angle(neutronPoint: point, focalFragmentPoint: pointFront, sideFragmentPoint: pointSide)
+                                            if column == keyColumnNeutronAngle {
+                                                field = String(format: "%.2f", angle)
+                                            } else {
+                                                if let energy = (angle < 0 ? delegate.fissionsAlphaWellAt(side: .back, index: 0) : delegate.firstParticleAt(side: .back).itemAt(index: 0))?.energy {
+                                                    field = String(format: "%.7f", energy)
+                                                    
+                                                    // Calculate neutrons count per fission channel (case with more than 1 neutron)
+                                                    if row == 1, angle > 0 {
+                                                        var array = neutronsPerEnergy[energy] ?? []
+                                                        array.append(Float(delegate.neutrons().count))
+                                                        neutronsPerEnergy[energy] = array
+                                                    }
                                                 }
                                             }
                                         }
+                                    } else {
+                                        field = String(format: "%.3f", column == keyColumnNeutronCounterX ? point.x : point.y)
                                     }
-                                } else {
-                                    field = String(format: "%.3f", column == keyColumnNeutronCounterX ? point.x : point.y)
                                 }
                             }
                         }

@@ -11,7 +11,10 @@ import Foundation
 class NeutronsMatch {
     
     var times = [Float]()
+    var encoders = [UInt16]()
     var counters = [Int]()
+    var CTR = [UInt16]()
+    var CTW = [UInt16]()
     var NSum: CUnsignedLongLong = 0
     
     var averageTime: Float {
