@@ -45,7 +45,7 @@ class NeutronsMatch {
                 encWithTimes[enc] = values
             }
             for (_, value) in encWithTimes {
-                if value.isDescending() { // ascending broken
+                if !value.isAscending() { // ascending broken
                     return false
                 }
             }

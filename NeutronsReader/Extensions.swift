@@ -156,9 +156,5 @@ extension Array where Element: Comparable {
     func isAscending() -> Bool {
         return zip(self, dropFirst()).allSatisfy(<=)
     }
-
-    func isDescending() -> Bool {
-        return zip(self, dropFirst()).allSatisfy(>=)
-    }
     
 }
