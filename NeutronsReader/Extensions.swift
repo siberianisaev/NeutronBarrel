@@ -150,3 +150,11 @@ extension Sequence where Element: AdditiveArithmetic {
 extension Collection where Element: BinaryFloatingPoint {
     func average() -> Element { isEmpty ? .zero : Element(sum()) / Element(count) }
 }
+
+extension Array where Element: Comparable {
+    
+    func isAscending() -> Bool {
+        return zip(self, dropFirst()).allSatisfy(<=)
+    }
+    
+}
