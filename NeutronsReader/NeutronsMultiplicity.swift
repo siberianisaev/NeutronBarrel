@@ -22,11 +22,10 @@ class NeutronsMultiplicity {
         self.info = [:]
     }
     
-    func update(neutronsPerAct: [Float]) {
-        let key = neutronsPerAct.count
-        var sum = info[Int(key)] ?? 0
+    func increment(multiplicity: Int) {
+        var sum = info[multiplicity] ?? 0
         sum += 1 // One event for all neutrons in one act of fission
-        info[Int(key)] = sum
+        info[multiplicity] = sum
     }
     
     func stringValue() -> String {

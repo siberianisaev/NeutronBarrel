@@ -441,8 +441,8 @@ class Processor {
                 findAllFirstFissionsAlphaFront(folder)
             }
             
-            if criteria.searchNeutrons {
-                neutronsMultiplicity?.update(neutronsPerAct: neutronsPerAct.times)
+            if criteria.searchNeutrons, let items = validNeutrons() {
+                neutronsMultiplicity?.increment(multiplicity: items.count)
             }
             
             correlationsPerFile += 1
@@ -508,8 +508,7 @@ class Processor {
                         }
                         let counterNumber = self.stripsConfiguration(detector: .neutron).strip1_N_For(side: .front, encoder: Int(encoder), strip0_15: channel)
                         self.neutronsPerAct.counters.append(counterNumber)
-                        self.neutronsPerAct.CTR.append((event.param3 & 0xE0) >> 5)
-                        self.neutronsPerAct.CTW.append((event.param3 & 0x700) >> 8)
+                        self.neutronsPerAct.CT.append(NeutronCT(event: event))
                     }
                 } else if self.dataProtocol.isNeutronsOldEvent(id) {
                     let t = Float(event.param3 & Mask.neutronsOld.rawValue)
@@ -1130,7 +1129,7 @@ extension Processor: ResultsTableDelegate {
     
     // Need special results block for neutron times, so we skeep one line.
     func neutronsCountWithNewLine() -> Int {
-        let count = neutrons().count
+        let count = validNeutrons()?.count ?? 0
         if count > 0 {
             return count + 1
         } else {
@@ -1138,24 +1137,8 @@ extension Processor: ResultsTableDelegate {
         }
     }
     
-    func neutrons() -> NeutronsMatch {
-        let encoders = neutronsPerAct.encoders
-        if encoders.count > 0 {
-            let times = neutronsPerAct.times
-            var encWithTimes = [UInt16: [Float]]()
-            for i in 0...encoders.count-1 {
-                let enc = encoders[i]
-                var values = encWithTimes[enc] ?? []
-                values.append(times[i])
-                encWithTimes[enc] = values
-            }
-            for (_, value) in encWithTimes {
-                if value.isSorted(isOrderedBefore: <) == false { // ascending broken
-                    return neutronsPerAct
-                }
-            }
-        }
-        return NeutronsMatch()
+    func validNeutrons() -> NeutronsMatch? {
+        return (!criteria.neutronTimesAscendingByEncoder || neutronsPerAct.isValidTimes()) ? neutronsPerAct : nil
     }
     
     func currentFileEventNumber(_ number: CUnsignedLongLong) -> String {
@@ -1203,19 +1186,3 @@ extension Processor: ResultsTableDelegate {
     }
     
 }
-
-extension Array {
-    
-    func isSorted(isOrderedBefore: (Float, Float) -> Bool) -> Bool {
-        if self.count > 1 {
-            for i in 1..<self.count {
-                if !isOrderedBefore(self[i-1] as! Float, self[i] as! Float) {
-                    return false
-                }
-            }
-        }
-        return true
-    }
-    
-}
-
