@@ -1271,6 +1271,17 @@
                                             <binding destination="Voe-Tx-rLC" name="value" keyPath="self.neutronsPositions" id="dgk-N1-D1J"/>
                                         </connections>
                                     </button>
+                                    <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1Of-PW-3ri">
+                                        <rect key="frame" x="127" y="12" width="181" height="18"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                        <buttonCell key="cell" type="check" title="Times ascending" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="Z1Z-eL-GaL">
+                                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                            <font key="font" size="15" name="HelveticaNeue-Bold"/>
+                                        </buttonCell>
+                                        <connections>
+                                            <binding destination="Voe-Tx-rLC" name="value" keyPath="self.neutronTimesAscendingByEncoder" id="qOV-TL-v3R"/>
+                                        </connections>
+                                    </button>
                                 </subviews>
                             </customView>
                         </subviews>

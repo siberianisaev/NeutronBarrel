@@ -12,22 +12,26 @@ enum SFSource: Int {
     case Cm248 = 0, U238, Cf252, No252
     
     /*
-    Neutrons probabilities from work:
+    Neutrons probabilities from works:
+     Cm248
+     A. S. Vorobyev, V. N. Dushin, F.-J. Hambsch, V. A. Jakovlev, V. A. Kalinin, A. B. Laptev, B. F. Petrov, and O. A.
+     Shcherbakov (2005) Distribution of Prompt Neutron Emission Probability for Fission Fragments in Spontaneous Fission of 252Cf and 244,248Cm
+     Cf252 and No252, AIP Conference Proceedings 769, 613, https://doi.org/10.1063/1.1945084
     Norman E. Holden & Martin S. Zucker (1986) Prompt neutron multiplicities for the transplutonium nuclides, Radiation Effects, 96:1-4, 289-292, DOI:
     10.1080/00337578608211755
      */
     func idealDistribution() -> [Double]? {
         switch self {
         case .Cm248:
-            return [0.00674,
-                    0.05965,
-                    0.22055,
-                    0.35090,
-                    0.25438,
-                    0.08935,
-                    0.01674,
-                    0.00169,
-                    0.00740]
+            return [0.0061,
+                    0.0608,
+                    0.2272,
+                    0.3460,
+                    0.2476,
+                    0.0906,
+                    0.0190,
+                    0.0024,
+                    0.0002]
         case .Cf252:
             return [0.00217,
                     0.02556,

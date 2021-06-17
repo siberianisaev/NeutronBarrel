@@ -295,6 +295,16 @@ class Processor {
         logger.logStatistics(folders)
         if criteria.searchNeutrons, let multiplicity = neutronsMultiplicity {
             logger.log(multiplicity: multiplicity)
+            
+            let lines = resultsTable.neutronsPerEnergy.map { (key: Double, value: [Float]) -> [AnyObject] in
+                let neutrons = value.sum()
+                let events = value.count
+                return [key, neutrons, events, neutrons/Float(events)] as [AnyObject]
+            }
+            for line in lines {
+                logger.writeLineOfFields(line, destination: .neutronsPerEnergy)
+                logger.finishLine(.neutronsPerEnergy)
+            }
         }
         
         DispatchQueue.main.async {
@@ -431,8 +441,8 @@ class Processor {
                 findAllFirstFissionsAlphaFront(folder)
             }
             
-            if criteria.searchNeutrons {
-                neutronsMultiplicity?.update(neutronsPerAct: neutronsPerAct.times)
+            if criteria.searchNeutrons, let items = validNeutrons() {
+                neutronsMultiplicity?.increment(multiplicity: items.count)
             }
             
             correlationsPerFile += 1
@@ -489,6 +499,7 @@ class Processor {
                         var encoder = self.dataProtocol.encoderForEventId(id) // 1-4
                         var channel = event.param3 & Mask.neutronsNew.rawValue // 0-31
                         // Convert to encoder 1-8 and strip 0-15 format
+                        self.neutronsPerAct.encoders.append(encoder)
                         encoder *= 2
                         if channel > 15 {
                             channel -= 16
@@ -497,6 +508,7 @@ class Processor {
                         }
                         let counterNumber = self.stripsConfiguration(detector: .neutron).strip1_N_For(side: .front, encoder: Int(encoder), strip0_15: channel)
                         self.neutronsPerAct.counters.append(counterNumber)
+                        self.neutronsPerAct.CT.append(NeutronCT(event: event))
                     }
                 } else if self.dataProtocol.isNeutronsOldEvent(id) {
                     let t = Float(event.param3 & Mask.neutronsOld.rawValue)
@@ -1117,7 +1129,7 @@ extension Processor: ResultsTableDelegate {
     
     // Need special results block for neutron times, so we skeep one line.
     func neutronsCountWithNewLine() -> Int {
-        let count = neutrons().count
+        let count = validNeutrons()?.count ?? 0
         if count > 0 {
             return count + 1
         } else {
@@ -1125,8 +1137,8 @@ extension Processor: ResultsTableDelegate {
         }
     }
     
-    func neutrons() -> NeutronsMatch {
-        return neutronsPerAct
+    func validNeutrons() -> NeutronsMatch? {
+        return (!criteria.neutronTimesAscendingByEncoder || neutronsPerAct.isValidTimes()) ? neutronsPerAct : nil
     }
     
     func currentFileEventNumber(_ number: CUnsignedLongLong) -> String {
@@ -1174,4 +1186,3 @@ extension Processor: ResultsTableDelegate {
     }
     
 }
-
