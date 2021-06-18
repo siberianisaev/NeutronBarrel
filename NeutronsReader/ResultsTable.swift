@@ -130,7 +130,6 @@ class ResultsTable {
     fileprivate var keyColumnNeutronsAverageTime = "NeutronsAverageTime"
     fileprivate var keyColumnNeutronTime = "NeutronTime"
     fileprivate var keyColumnNeutronCounter = "NeutronCounter"
-    fileprivate var keyColumnNeutronCT = "NeutronCT"
     fileprivate var keyColumnNeutronBlock = "NeutronBlock"
     fileprivate var keyColumnNeutronCounterX = "NeutronCounterX"
     fileprivate var keyColumnNeutronCounterY = "NeutronCounterY"
@@ -300,7 +299,7 @@ class ResultsTable {
                 ])
         }
         if criteria.searchNeutrons {
-            columns.append(contentsOf: [keyColumnNeutronsAverageTime, keyColumnNeutronTime, keyColumnNeutronCounter, keyColumnNeutronCT, keyColumnNeutronBlock, keyColumnNeutrons])
+            columns.append(contentsOf: [keyColumnNeutronsAverageTime, keyColumnNeutronTime, keyColumnNeutronCounter, keyColumnNeutronBlock, keyColumnNeutrons])
             if dataProtocol.hasNeutrons_N() {
                 columns.append(keyColumnNeutrons_N)
             }
@@ -656,19 +655,13 @@ class ResultsTable {
                             field = String(format: "%.1f", times[index])
                         }
                     }
-                case keyColumnNeutronCounter, keyColumnNeutronCT, keyColumnNeutronBlock, keyColumnNeutronCounterX, keyColumnNeutronCounterY, keyColumnNeutronAngle, keyColumnNeutronRelatedFissionBack:
+                case keyColumnNeutronCounter, keyColumnNeutronBlock, keyColumnNeutronCounterX, keyColumnNeutronCounterY, keyColumnNeutronAngle, keyColumnNeutronRelatedFissionBack:
                     if row > 0, let neutrons = delegate.validNeutrons() {
                         let index = row - 1
                         if column == keyColumnNeutronBlock {
                             let encoders = neutrons.encoders
                             if index < encoders.count {
                                 field = String(format: "%hu", encoders[index])
-                            }
-                        } else if column == keyColumnNeutronCT {
-                            let CT = neutrons.CT
-                            if index < CT.count {
-                                let item = CT[index]
-                                field = String(format: "R: %hu, W: %hu", item.R, item.W)
                             }
                         } else {
                             let counters = neutrons.counters

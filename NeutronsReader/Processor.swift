@@ -508,7 +508,6 @@ class Processor {
                         }
                         let counterNumber = self.stripsConfiguration(detector: .neutron).strip1_N_For(side: .front, encoder: Int(encoder), strip0_15: channel)
                         self.neutronsPerAct.counters.append(counterNumber)
-                        self.neutronsPerAct.CT.append(NeutronCT(event: event))
                     }
                 } else if self.dataProtocol.isNeutronsOldEvent(id) {
                     let t = Float(event.param3 & Mask.neutronsOld.rawValue)

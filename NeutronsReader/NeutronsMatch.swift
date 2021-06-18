@@ -24,7 +24,6 @@ class NeutronsMatch {
     var times = [Float]()
     var encoders = [UInt16]()
     var counters = [Int]()
-    var CT = [NeutronCT]()
     var NSum: CUnsignedLongLong = 0
     
     var averageTime: Float {

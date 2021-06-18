@@ -170,8 +170,11 @@ extension ViewerController: NSTableViewDelegate {
                             string += "ch\(strip)"
                         }
                     case .alpha:
-                        if dataProtocol.isCycleTimeEvent(id) == true {
+                        if dataProtocol.isCycleTimeEvent(id) {
                             string = "\(event.param3)"
+                        } else if dataProtocol.isNeutronsNewEvent(id) {
+                            let CT = NeutronCT.init(event: event)
+                            string = "R: \(CT.R), W: \(CT.W)"
                         } else {
                             string = "\(event.getChannelFor(type: .alpha))"
                         }
