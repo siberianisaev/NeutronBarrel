@@ -250,8 +250,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         didSet {
             startParticleChanged(nil)
             setupAlpha1FormView()
-            searchExtraFromLastParticle = searchFissionAlpha1
-            searchExtraFromLastParticleButton.state = searchExtraFromLastParticle ? .on : .off
             if !searchFissionAlpha1 {
                 searchFissionAlpha2 = false
             }
@@ -262,6 +260,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             setupAlpha2FormView()
             searchExtraFromLastParticle = searchFissionAlpha2
             searchExtraFromLastParticleButton.state = searchExtraFromLastParticle ? .on : .off
+            searchExtraFromLastParticleButton.isHidden = !searchFissionAlpha2
             if !searchFissionAlpha2 {
                 searchFissionAlpha3 = false
             }
