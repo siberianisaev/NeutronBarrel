@@ -34,22 +34,4 @@ class NeutronsMatch {
         return times.count
     }
     
-    func isValidTimes() -> Bool {
-        if encoders.count > 0 {
-            var encWithTimes = [UInt16: [Float]]()
-            for i in 0...encoders.count-1 {
-                let enc = encoders[i]
-                var values = encWithTimes[enc] ?? []
-                values.append(times[i])
-                encWithTimes[enc] = values
-            }
-            for (_, value) in encWithTimes {
-                if !value.isAscending() { // ascending broken
-                    return false
-                }
-            }
-        }
-        return true
-    }
-    
 }

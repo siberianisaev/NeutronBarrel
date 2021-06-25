@@ -12,7 +12,7 @@ protocol ResultsTableDelegate: AnyObject {
     
     func rowsCountForCurrentResult() -> Int
     func neutronsCountWithNewLine() -> Int
-    func validNeutrons() -> NeutronsMatch?
+    func neutrons() -> NeutronsMatch
     func currentFileEventNumber(_ number: CUnsignedLongLong) -> String
     func focalGammaContainer() -> DetectorMatch?
     func vetoAt(index: Int) -> DetectorMatchItem?
@@ -639,7 +639,8 @@ class ResultsTable {
                         field = s
                     }
                 case keyColumnNeutronsAverageTime:
-                    if row == 0, let neutrons = delegate.validNeutrons() {
+                    if row == 0 {
+                        let neutrons = delegate.neutrons()
                         let average = neutrons.averageTime
                         if average > 0 {
                             field = String(format: "%.1f", average)
@@ -648,7 +649,8 @@ class ResultsTable {
                         }
                     }
                 case keyColumnNeutronTime:
-                    if row > 0, let neutrons = delegate.validNeutrons() { // skip new line
+                    if row > 0 { // skip new line
+                        let neutrons = delegate.neutrons()
                         let index = row - 1
                         let times = neutrons.times
                         if index < times.count {
@@ -656,7 +658,8 @@ class ResultsTable {
                         }
                     }
                 case keyColumnNeutronCounter, keyColumnNeutronBlock, keyColumnNeutronCounterX, keyColumnNeutronCounterY, keyColumnNeutronAngle, keyColumnNeutronRelatedFissionBack:
-                    if row > 0, let neutrons = delegate.validNeutrons() {
+                    if row > 0 {
+                        let neutrons = delegate.neutrons()
                         let index = row - 1
                         if column == keyColumnNeutronBlock {
                             let encoders = neutrons.encoders
@@ -694,17 +697,19 @@ class ResultsTable {
                                 }
                             }
                         }
-                    } else if row == 0, delegate.validNeutrons()?.counters.count == 0, let energy = delegate.firstParticleAt(side: .back).itemAt(index: 0)?.energy { // Calculate neutrons count per fission channel (case with 0 neutrons)
+                    } else if row == 0, delegate.neutrons().counters.count == 0, let energy = delegate.firstParticleAt(side: .back).itemAt(index: 0)?.energy { // Calculate neutrons count per fission channel (case with 0 neutrons)
                         var array = neutronsPerEnergy[energy] ?? []
                         array.append(0.0)
                         neutronsPerEnergy[energy] = array
                     }
                 case keyColumnNeutrons:
-                    if row == 0, let neutrons = delegate.validNeutrons() {
+                    if row == 0 {
+                        let neutrons = delegate.neutrons()
                         field = String(format: "%llu", neutrons.count)
                     }
                 case keyColumnNeutrons_N:
-                    if row == 0, let neutrons = delegate.validNeutrons() {
+                    if row == 0 {
+                        let neutrons = delegate.neutrons()
                         field = String(format: "%llu", neutrons.NSum)
                     }
                 case keyColumnGammaEnergy(true):

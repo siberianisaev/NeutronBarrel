@@ -441,8 +441,8 @@ class Processor {
                 findAllFirstFissionsAlphaFront(folder)
             }
             
-            if criteria.searchNeutrons, let items = validNeutrons() {
-                neutronsMultiplicity?.increment(multiplicity: items.count)
+            if criteria.searchNeutrons {
+                neutronsMultiplicity?.increment(multiplicity: neutronsPerAct.count)
             }
             
             correlationsPerFile += 1
@@ -1128,7 +1128,7 @@ extension Processor: ResultsTableDelegate {
     
     // Need special results block for neutron times, so we skeep one line.
     func neutronsCountWithNewLine() -> Int {
-        let count = validNeutrons()?.count ?? 0
+        let count = neutronsPerAct.count
         if count > 0 {
             return count + 1
         } else {
@@ -1136,8 +1136,8 @@ extension Processor: ResultsTableDelegate {
         }
     }
     
-    func validNeutrons() -> NeutronsMatch? {
-        return (!criteria.neutronTimesAscendingByEncoder || neutronsPerAct.isValidTimes()) ? neutronsPerAct : nil
+    func neutrons() -> NeutronsMatch {
+        return neutronsPerAct
     }
     
     func currentFileEventNumber(_ number: CUnsignedLongLong) -> String {
