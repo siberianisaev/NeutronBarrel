@@ -30,7 +30,7 @@ class DataProtocol {
             BeamBackground = dict["BeamFonHi"]
             BeamIntegral = dict["IntegralHi"]
             AlphaWell = getValues(ofTypes: ["AWel"])
-            alphaWellMaxEventId = AlphaWell.max() ?? 0
+            alphaWellMaxEventId = 100//AlphaWell.max() ?? 0
             AlphaWellFront = getValues(ofTypes: ["AWFr"])
             alphaWellFrontMaxEventId = AlphaWellFront.max() ?? 0
             AlphaWellBack = getValues(ofTypes: ["AWBk"])

@@ -11,7 +11,7 @@ extension Int {
     
 }
 
-var measured = [80021.0, 208053.0, 211602.0, 106890.0, 29842.0, 4811.0, 460.0, 25.0, 2.0]
+var measured = [101656.0, 265134.0, 269843.0, 136380.0, 38094.0, 6138.0, 589.0, 33.0, 2.0]
 let PkExpected = [0.0061, 0.0608, 0.2272, 0.3460, 0.2476, 0.0906, 0.0190, 0.0024, 0.0002]
 
 let minN = 0
@@ -19,8 +19,8 @@ let maxN = measured.count-1
 let Nd = measured.reduce(.zero, +)
 
 print("Efficiency,Chi^2")
-for step in 0...99999 {
-    let e: Double = Double(step) / 100000.0
+for step in 0...9999 {
+    let e: Double = Double(step) / 10000.0
     var expected = [Int]()
     for _ in 0...maxN {
         expected.append(0)

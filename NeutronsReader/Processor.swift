@@ -301,10 +301,28 @@ class Processor {
                 let events = value.count
                 return [key, neutrons, events, neutrons/Float(events)] as [AnyObject]
             }
+            logger.writeLineOfFields(["Channel", "Neutrons", "SF Events", "Average"] as [AnyObject], destination: .neutronsPerEnergy)
             for line in lines {
                 logger.writeLineOfFields(line, destination: .neutronsPerEnergy)
-                logger.finishLine(.neutronsPerEnergy)
             }
+            logger.finishLine(.neutronsPerEnergy)
+            
+            var dict = [Double: Float]()
+            let chunks = Array(resultsTable.neutronsPerEnergy.keys.sorted()).chunked(into: 50)
+            for item in chunks {
+                let averageChannel = item.average()
+                var neutrons = [Float]()
+                for channel in item {
+                    if let value = resultsTable.neutronsPerEnergy[channel] {
+                        neutrons.append(contentsOf: value)
+                    }
+                }
+                dict[averageChannel] = neutrons.average()
+            }
+            for (key, value) in dict {
+                logger.writeLineOfFields([key, value] as [AnyObject], destination: .neutronsPerEnergy)
+            }
+            logger.finishLine(.neutronsPerEnergy)
         }
         
         DispatchQueue.main.async {
