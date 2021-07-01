@@ -296,14 +296,14 @@ class Processor {
         if criteria.searchNeutrons, let multiplicity = neutronsMultiplicity {
             logger.log(multiplicity: multiplicity)
             
+            logger.writeLineOfFields(["FFront channel", "Neutrons", "Events"] as [AnyObject], destination: .neutronsPerEnergy)
             let lines = resultsTable.neutronsPerEnergy.map { (key: Double, value: [Float]) -> [AnyObject] in
                 let neutrons = value.sum()
                 let events = value.count
-                return [key, neutrons, events, neutrons/Float(events)] as [AnyObject]
+                return [key, neutrons, events] as [AnyObject]
             }
             for line in lines {
                 logger.writeLineOfFields(line, destination: .neutronsPerEnergy)
-                logger.finishLine(.neutronsPerEnergy)
             }
         }
         

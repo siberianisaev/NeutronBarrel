@@ -64,6 +64,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBOutlet weak var recoilBackEnergyView: NSView!
     @IBOutlet weak var actionsView: NSView!
     @IBOutlet weak var resultsFolderButton: NSButton!
+    @IBOutlet weak var maxWellAngleView: NSView!
     
     fileprivate var viewerController: ViewerController?
     fileprivate var calculationsController: CalculationsController?
@@ -240,7 +241,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBInspectable dynamic var useTOF2: Bool = false
     @IBInspectable dynamic var requiredVETO: Bool = false
     @IBInspectable dynamic var searchNeutrons: Bool = false
-    @IBInspectable dynamic var neutronsPositions: Bool = false
+    @IBInspectable dynamic var neutronsPositions: Bool = false {
+        didSet {
+            maxWellAngleView.isHidden = !neutronsPositions
+        }
+    }
     @IBInspectable dynamic var sfSourcePlaced: Bool = false {
         didSet {
             sfSourceControl.isHidden = !sfSourcePlaced
