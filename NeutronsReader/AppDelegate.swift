@@ -84,6 +84,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         sMaxRecoilBackEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MaxRecoilBackEnergy)) // MeV
         sMinFissionWellEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MinFissionWellEnergy)) // MeV
         sMaxFissionWellEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MaxFissionWellEnergy)) // MeV
+        sMaxFissionWellAngle = String(format: "%.1f", Settings.getDoubleSetting(.MaxFissionWellAngle)) // degree
         sMinTOFValue = String(format: "%d", Settings.getIntSetting(.MinTOFValue)) // channel or ns
         sMaxTOFValue = String(format: "%d", Settings.getIntSetting(.MaxTOFValue)) // channel or ns
         sMinRecoilTime = String(format: "%d", Settings.getUInt64Setting(.MinRecoilTime)) // mks
@@ -202,6 +203,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBInspectable dynamic var sMaxRecoilBackEnergy: String = ""
     @IBInspectable dynamic var sMinFissionWellEnergy: String = ""
     @IBInspectable dynamic var sMaxFissionWellEnergy: String = ""
+    @IBInspectable dynamic var sMaxFissionWellAngle: String = ""
     @IBInspectable dynamic var sMinTOFValue: String = ""
     @IBInspectable dynamic var sMaxTOFValue: String = ""
     @IBInspectable dynamic var sMinRecoilTime: String = ""
@@ -529,6 +531,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         sc.fissionAlphaBackMaxEnergy = Double(sMaxFissionBackEnergy) ?? 0
         sc.fissionAlphaWellMinEnergy = Double(sMinFissionWellEnergy) ?? 0
         sc.fissionAlphaWellMaxEnergy = Double(sMaxFissionWellEnergy) ?? 0
+        sc.fissionAlphaWellMaxAngle = Double(sMaxFissionWellAngle) ?? 0
         sc.searchFissionAlphaBackByFact = searchFissionBackByFact
         sc.searchRecoilBackByFact = searchRecoilBackByFact
         sc.fissionAlphaMaxTime = UInt64(sMaxFissionTime) ?? 0
@@ -826,6 +829,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             .MaxRecoilBackEnergy: Double(sMaxRecoilBackEnergy),
             .MinFissionWellEnergy: Double(sMinFissionWellEnergy),
             .MaxFissionWellEnergy: Double(sMaxFissionWellEnergy),
+            .MaxFissionWellAngle: Double(sMaxFissionWellAngle),
             .BeamEnergyMin: Float(sBeamEnergyMin),
             .BeamEnergyMax: Float(sBeamEnergyMax),
             .MinTOFValue: Int(sMinTOFValue),

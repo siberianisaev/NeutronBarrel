@@ -25,6 +25,7 @@ enum Setting: String {
     MaxRecoilBackEnergy = "MaxRecoilBackEnergy",
     MinFissionWellEnergy = "MinFissionWellEnergy",
     MaxFissionWellEnergy = "MaxFissionWellEnergy",
+    MaxFissionWellAngle = "MaxFissionWellAngle",
     MinTOFValue = "MinTOFValue",
     MaxTOFValue = "MaxTOFValue",
     TOFUnits = "TOFUnits",
@@ -217,6 +218,8 @@ class Settings {
             return 20
         case .MaxFissionAlpha2Time, .MaxFissionAlpha3Time, .MaxFissionEnergy, .MaxRecoilTime, .MaxFissionWellEnergy:
             return 1000
+        case .MaxFissionWellAngle:
+            return 10
         case .MinRecoilFrontEnergy, .MinRecoilBackEnergy, .NeutronsDetectorEfficiencyError:
             return 1
         case .MaxFissionBackEnergy, .MaxTOFValue:

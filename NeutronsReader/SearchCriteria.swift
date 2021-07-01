@@ -25,6 +25,7 @@ class SearchCriteria {
     var fissionAlphaBackMaxEnergy: Double = 0
     var fissionAlphaWellMinEnergy: Double = 0
     var fissionAlphaWellMaxEnergy: Double = 0
+    var fissionAlphaWellMaxAngle: Double = 0
     var searchFissionAlphaBackByFact: Bool = true
     var summarizeFissionsAlphaBack = false
     

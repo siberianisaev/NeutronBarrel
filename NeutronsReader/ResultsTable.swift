@@ -599,10 +599,7 @@ class ResultsTable {
                         field = s
                     }
                 case keyColumnWellAngle, keyColumnWellRangeInDeadLayers:
-                    if row == 0, let itemFocalFront = delegate.firstParticleAt(side: .front).itemAt(index: row), let stripFocalFront1 = itemFocalFront.strip1_N, let itemFocalBack = delegate.firstParticleAt(side: .back).itemAt(index: row), let stripFocalBack1 = itemFocalBack.strip1_N, let itemSideFront = delegate.fissionsAlphaWellAt(side: .front, index: 0), let stripSideFront0 = itemSideFront.strip0_15, let itemSideBack = delegate.fissionsAlphaWellAt(side: .back, index: 0), let stripSideBack0 = itemSideBack.strip0_15, let encoderSide = itemSideFront.encoder {
-                        let pointFront = DetectorsWellGeometry.coordinatesXYZ(stripDetector: .focal, stripFront0: stripFocalFront1 - 1, stripBack0: stripFocalBack1 - 1)
-                        let pointSide = DetectorsWellGeometry.coordinatesXYZ(stripDetector: .side, stripFront0: Int(stripSideFront0), stripBack0: Int(stripSideBack0), encoderSide: Int(encoderSide))
-                        let angle = pointFront.angleFrom(point: pointSide)
+                    if row == 0, let angle = wellAngle() {
                         if column == keyColumnWellAngle {
                             field = String(format: "%.2f", angle)
                         } else {
@@ -683,7 +680,7 @@ class ResultsTable {
                                                     field = String(format: "%.7f", energy)
                                                     
                                                     // Calculate neutrons count per fission channel (case with more than 1 neutron)
-                                                    if row == 1, angle > 0 {
+                                                    if row == 1, angle > 0, let well = wellAngle(), well < CGFloat(criteria.fissionAlphaWellMaxAngle) {
                                                         var array = neutronsPerEnergy[energy] ?? []
                                                         array.append(Float(neutrons.count))
                                                         neutronsPerEnergy[energy] = array
@@ -697,7 +694,7 @@ class ResultsTable {
                                 }
                             }
                         }
-                    } else if row == 0, delegate.neutrons().counters.count == 0, let energy = delegate.firstParticleAt(side: .back).itemAt(index: 0)?.energy { // Calculate neutrons count per fission channel (case with 0 neutrons)
+                    } else if row == 0, delegate.neutrons().counters.count == 0, let energy = delegate.firstParticleAt(side: .back).itemAt(index: 0)?.energy, let well = wellAngle(), well < CGFloat(criteria.fissionAlphaWellMaxAngle) { // Calculate neutrons count per fission channel (case with 0 neutrons)
                         var array = neutronsPerEnergy[energy] ?? []
                         array.append(0.0)
                         neutronsPerEnergy[energy] = array
@@ -857,6 +854,17 @@ class ResultsTable {
     fileprivate func well(position: Position, row: Int) -> String? {
         if let point = pointForWell(row: row) {
             return String(format: "%.1f", position.relatedCoordinate(point: point))
+        } else {
+            return nil
+        }
+    }
+    
+    func wellAngle() -> CGFloat? {
+        if let itemFocalFront = delegate.firstParticleAt(side: .front).itemAt(index: 0), let stripFocalFront1 = itemFocalFront.strip1_N, let itemFocalBack = delegate.firstParticleAt(side: .back).itemAt(index: 0), let stripFocalBack1 = itemFocalBack.strip1_N, let itemSideFront = delegate.fissionsAlphaWellAt(side: .front, index: 0), let stripSideFront0 = itemSideFront.strip0_15, let itemSideBack = delegate.fissionsAlphaWellAt(side: .back, index: 0), let stripSideBack0 = itemSideBack.strip0_15, let encoderSide = itemSideFront.encoder {
+            let pointFront = DetectorsWellGeometry.coordinatesXYZ(stripDetector: .focal, stripFront0: stripFocalFront1 - 1, stripBack0: stripFocalBack1 - 1)
+            let pointSide = DetectorsWellGeometry.coordinatesXYZ(stripDetector: .side, stripFront0: Int(stripSideFront0), stripBack0: Int(stripSideBack0), encoderSide: Int(encoderSide))
+            let angle = pointFront.angleFrom(point: pointSide)
+            return angle
         } else {
             return nil
         }
