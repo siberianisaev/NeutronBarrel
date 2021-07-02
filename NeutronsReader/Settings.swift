@@ -41,6 +41,8 @@ enum Setting: String {
     MaxVETOTime = "MaxVETOTime",
     MaxGammaTime = "MaxGammaTime",
     MaxGammaBackwardTime = "MaxGammaBackwardTime",
+    MinGammaEnergy = "MinGammaEnergy",
+    MaxGammaEnergy = "MaxGammaEnergy",
     MaxNeutronTime = "MaxNeutronTime",
     MaxNeutronBackwardTime = "MaxNeutronBackwardTime",
     MaxRecoilFrontDeltaStrips = "MaxRecoilFrontDeltaStrips",
@@ -228,8 +230,10 @@ class Settings {
             return 4
         case .MaxNeutronTime:
             return 132
-        case .MinFissionBackEnergy, .MaxRecoilFrontDeltaStrips, .MaxRecoilBackDeltaStrips, .SearchFissionAlpha1, .SearchFissionAlpha2, .SearchFissionAlpha3, .StartSearchType, .StartBackSearchType, .WellBackSearchType, .SecondFrontSearchType, .SecondBackSearchType, .ThirdFrontSearchType, .ThirdBackSearchType, .TOFUnits, .MinFissionAlpha2Time, .MaxFissionAlpha2FrontDeltaStrips, .MinFissionAlpha3Time, .MaxFissionAlpha3FrontDeltaStrips, .MinRecoilTime, .MinTOFValue, .MaxFissionBackBackwardTime, .MaxFissionWellBackwardTime, .MaxRecoilBackBackwardTime, .MinFissionWellEnergy, .MaxGammaBackwardTime, .SFSource:
+        case .MinFissionBackEnergy, .MaxRecoilFrontDeltaStrips, .MaxRecoilBackDeltaStrips, .SearchFissionAlpha1, .SearchFissionAlpha2, .SearchFissionAlpha3, .StartSearchType, .StartBackSearchType, .WellBackSearchType, .SecondFrontSearchType, .SecondBackSearchType, .ThirdFrontSearchType, .ThirdBackSearchType, .TOFUnits, .MinFissionAlpha2Time, .MaxFissionAlpha2FrontDeltaStrips, .MinFissionAlpha3Time, .MaxFissionAlpha3FrontDeltaStrips, .MinRecoilTime, .MinTOFValue, .MaxFissionBackBackwardTime, .MaxFissionWellBackwardTime, .MaxRecoilBackBackwardTime, .MinFissionWellEnergy, .MaxGammaBackwardTime, .SFSource, .MinGammaEnergy:
             return 0
+        case .MaxGammaEnergy:
+            return 10000
         case .RequiredFissionAlphaBack, .SearchFirstRecoilOnly, .RequiredRecoilBack, .TrackBeamEnergy, .TrackBeamCurrent, .TrackBeamBackground, .TrackBeamIntegral, .SearchWell:
             return true
         case .SummarizeFissionsFront, .SummarizeFissionsFront2, .SummarizeFissionsFront3, .SummarizeFissionsBack, .RequiredRecoil, .GammaStart, .RequiredGammaOrWell, .SimplifyGamma, .RequiredWell, .WellRecoilsAllowed, .RequiredTOF, .RequiredVETO, .SearchSpecialEvents, .GammaEncodersOnly, .SearchVETO, .SearchFissionBackByFact, .SearchFissionBack2ByFact, .SearchFissionBack3ByFact, .SearchRecoilBackByFact, .UseTOF2, .SearchExtraFromLastParticle, .SFSourceClosed, .SFSourcePlaced, .NeutronsPositions:

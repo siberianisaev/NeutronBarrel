@@ -989,7 +989,7 @@
                         </subviews>
                     </customView>
                     <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="0iN-ES-PsF">
-                        <rect key="frame" x="330" y="629" width="181" height="18"/>
+                        <rect key="frame" x="313" y="666" width="181" height="18"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <buttonCell key="cell" type="check" title="Gamma start" bezelStyle="regularSquare" imagePosition="left" inset="2" id="qqL-ji-47x">
                             <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
@@ -1082,6 +1082,56 @@
                             </segments>
                         </segmentedCell>
                     </segmentedControl>
+                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="NS9-TR-d5v">
+                        <rect key="frame" x="286" y="644" width="162" height="17"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Min Energy" id="2bF-eq-VkP">
+                            <font key="font" metaFont="system"/>
+                            <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                    </textField>
+                    <textField verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1v6-Mc-fZl">
+                        <rect key="frame" x="288" y="614" width="100" height="22"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" title="0" placeholderString="0" drawsBackground="YES" id="4hI-jY-ysv">
+                            <font key="font" metaFont="system"/>
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                        <connections>
+                            <binding destination="Voe-Tx-rLC" name="value" keyPath="self.sMinGammaEnergy" id="zfJ-Jn-9WI">
+                                <dictionary key="options">
+                                    <bool key="NSContinuouslyUpdatesValue" value="YES"/>
+                                </dictionary>
+                            </binding>
+                        </connections>
+                    </textField>
+                    <textField verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="eKE-EL-MAI">
+                        <rect key="frame" x="397" y="614" width="100" height="22"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" title="10000" placeholderString="10000" drawsBackground="YES" id="Kob-uJ-dgy">
+                            <font key="font" metaFont="system"/>
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                        <connections>
+                            <binding destination="Voe-Tx-rLC" name="value" keyPath="self.sMaxGammaEnergy" id="c1x-FA-t7q">
+                                <dictionary key="options">
+                                    <bool key="NSContinuouslyUpdatesValue" value="YES"/>
+                                </dictionary>
+                            </binding>
+                        </connections>
+                    </textField>
+                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="sim-UO-ETY">
+                        <rect key="frame" x="394" y="644" width="164" height="17"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Max Energy" id="NQ8-pC-nVc">
+                            <font key="font" metaFont="system"/>
+                            <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                    </textField>
                 </subviews>
             </view>
             <point key="canvasLocation" x="-326" y="548"/>

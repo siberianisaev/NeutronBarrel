@@ -47,6 +47,8 @@ class SearchCriteria {
     var maxVETOTime: CUnsignedLongLong = 0
     var maxGammaTime: CUnsignedLongLong = 0
     var maxGammaBackwardTime: CUnsignedLongLong = 0
+    var minGammaEnergy: CUnsignedLongLong = 0
+    var maxGammaEnergy: CUnsignedLongLong = 0
     var maxNeutronTime: CUnsignedLongLong = 0
     var maxNeutronBackwardTime: CUnsignedLongLong = 0
     var recoilFrontMaxDeltaStrips: Int = 0

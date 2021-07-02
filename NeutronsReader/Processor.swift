@@ -314,8 +314,10 @@ class Processor {
                     gammaPerAct = findGamma(position) ?? DetectorMatch()
                     fseek(file, position, SEEK_SET)
                     
-                    findNeutrons(position)
-                    onFinishAct()
+                    if let count = gammaPerAct?.count, count > 0 {
+                        findNeutrons(position)
+                        onFinishAct()
+                    }
                 }
             } else {
                 if isNeutronEvent(event) {
@@ -394,15 +396,19 @@ class Processor {
         } else {
             energy = channel
         }
-        let item = DetectorMatchItem(type: type,
-                                     stripDetector: nil,
-                                     energy: energy,
-                                     encoder: encoder,
-                                     eventNumber: eventNumber(),
-                                     deltaTime: deltaTime,
-                                     marker: event.getMarker(),
-                                     side: nil)
-        return item
+        if energy >= Double(criteria.minGammaEnergy) && energy <= Double(criteria.maxGammaEnergy) {
+            let item = DetectorMatchItem(type: type,
+                                         stripDetector: nil,
+                                         energy: energy,
+                                         encoder: encoder,
+                                         eventNumber: eventNumber(),
+                                         deltaTime: deltaTime,
+                                         marker: event.getMarker(),
+                                         side: nil)
+            return item
+        } else {
+            return nil
+        }
     }
     
     

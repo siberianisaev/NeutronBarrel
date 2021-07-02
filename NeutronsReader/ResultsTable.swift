@@ -127,7 +127,7 @@ class ResultsTable {
     fileprivate var currentStartEventNumber: CUnsignedLongLong?
     
     fileprivate func gammaAt(row: Int) -> DetectorMatch? {
-        return delegate.gammaContainer()?.itemAt(index: row)?.subMatches?[.gamma] ?? nil
+        return delegate.gammaContainer() ?? nil
     }
     
     func logActResults() {

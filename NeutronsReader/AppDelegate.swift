@@ -45,6 +45,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     func readSettings() {
         sResultsFolderName = Settings.getStringSetting(.ResultsFolderName) ?? ""
         gammaStart = Settings.getBoolSetting(.GammaStart)
+        sMinGammaEnergy = String(format: "%d", Settings.getIntSetting(.MinGammaEnergy)) // channel
+        sMaxGammaEnergy = String(format: "%d", Settings.getIntSetting(.MaxGammaEnergy)) // channel
         sMaxNeutronTime = String(format: "%d", Settings.getIntSetting(.MaxNeutronTime)) // mks
         sMaxNeutronBackwardTime = String(format: "%d", Settings.getIntSetting(.MaxNeutronBackwardTime)) // mks
         neutronsPositions = Settings.getBoolSetting(.NeutronsPositions)
@@ -58,6 +60,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     }
     
     @IBInspectable dynamic var gammaStart: Bool = false
+    @IBInspectable dynamic var sMinGammaEnergy: String = ""
+    @IBInspectable dynamic var sMaxGammaEnergy: String = ""
     @IBInspectable dynamic var neutronsPositions: Bool = false
     @IBInspectable dynamic var sMaxNeutronTime: String = ""
     @IBInspectable dynamic var sMaxNeutronBackwardTime: String = ""
@@ -133,7 +137,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         let sc = SearchCriteria()
         sc.resultsFolderName = sResultsFolderName
         sc.neutronsPositions = neutronsPositions
-        sc.placedSFSource = sfSourcePlaced ? SFSource(rawValue: sfSourceControl.selectedSegment) : nil
+        sc.placedSFSource = SFSource(rawValue: sfSourceControl.selectedSegment)
+        sc.minGammaEnergy = UInt64(sMinGammaEnergy) ?? 0
+        sc.maxGammaEnergy = UInt64(sMaxGammaEnergy) ?? 0
         sc.maxNeutronTime = UInt64(sMaxNeutronTime) ?? 0
         sc.maxNeutronBackwardTime = UInt64(sMaxNeutronBackwardTime) ?? 0
         sc.gammaStart = gammaStart
@@ -322,6 +328,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     fileprivate func saveSettings() {
         let dict: [Setting: Any?] = [
             .SFSource: sfSourceControl.selectedSegment,
+            .MinGammaEnergy: Int(sMinGammaEnergy),
+            .MaxGammaEnergy: Int(sMaxGammaEnergy),
             .MaxNeutronTime: Int(sMaxNeutronTime),
             .MaxNeutronBackwardTime: Int(sMaxNeutronBackwardTime),
             .NeutronsPositions: neutronsPositions,
