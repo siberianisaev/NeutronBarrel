@@ -23,6 +23,7 @@
 		6513070C1A4E911300E33704 /* FileManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6513070B1A4E911300E33704 /* FileManager.swift */; };
 		651307121A4E94AB00E33704 /* Calibration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 651307111A4E94AB00E33704 /* Calibration.swift */; };
 		651307141A4E94C500E33704 /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 651307131A4E94C500E33704 /* Logger.swift */; };
+		6536D9A6268F0A2900A10311 /* SearchType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6536D9A5268F0A2900A10311 /* SearchType.swift */; };
 		6551A3DF2566550700B142CC /* FileExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6551A3DE2566550700B142CC /* FileExtension.swift */; };
 		6562B3522624599C0070A491 /* SF_sources in Resources */ = {isa = PBXBuildFile; fileRef = 6562B3512624599C0070A491 /* SF_sources */; };
 		6562B35526245A800070A491 /* NeutronTotalEfficiency.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6562B35426245A800070A491 /* NeutronTotalEfficiency.swift */; };
@@ -36,7 +37,6 @@
 		65C4D73A264A93AF0064A93E /* SFiNx_counters_geometry.csv in Resources */ = {isa = PBXBuildFile; fileRef = 65C4D739264A93AF0064A93E /* SFiNx_counters_geometry.csv */; };
 		65C4D73C264A97B10064A93E /* NeutronDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65C4D73B264A97B10064A93E /* NeutronDetector.swift */; };
 		65C4D740265E6D7E0064A93E /* efficiency_leastsq.ipynb in Resources */ = {isa = PBXBuildFile; fileRef = 65C4D73F265E6D7E0064A93E /* efficiency_leastsq.ipynb */; };
-		65DA929F20D54F65002643DB /* SearchType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65DA929E20D54F65002643DB /* SearchType.swift */; };
 		65DA92A220D5527D002643DB /* BeamState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65DA92A120D5527D002643DB /* BeamState.swift */; };
 		65DA92A520D57794002643DB /* DetectorMatchItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65DA92A420D57794002643DB /* DetectorMatchItem.swift */; };
 		65DA92A820D594E9002643DB /* CalibrationEquation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65DA92A720D594E9002643DB /* CalibrationEquation.swift */; };
@@ -69,6 +69,7 @@
 		651307111A4E94AB00E33704 /* Calibration.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Calibration.swift; sourceTree = "<group>"; };
 		651307131A4E94C500E33704 /* Logger.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
 		651FDD8F1EC1012F0041CDE8 /* Constants.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Constants.h; sourceTree = "<group>"; };
+		6536D9A5268F0A2900A10311 /* SearchType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SearchType.swift; sourceTree = "<group>"; };
 		654FC8041F77091D00E75929 /* NeutronsReader.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = NeutronsReader.entitlements; sourceTree = "<group>"; };
 		6551A3DE2566550700B142CC /* FileExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileExtension.swift; sourceTree = "<group>"; };
 		6562B3512624599C0070A491 /* SF_sources */ = {isa = PBXFileReference; lastKnownFileType = folder; path = SF_sources; sourceTree = "<group>"; };
@@ -84,7 +85,6 @@
 		65C4D73B264A97B10064A93E /* NeutronDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NeutronDetector.swift; sourceTree = "<group>"; };
 		65C4D73E2656834F0064A93E /* chi.playground */ = {isa = PBXFileReference; lastKnownFileType = file.playground; path = chi.playground; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 		65C4D73F265E6D7E0064A93E /* efficiency_leastsq.ipynb */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = efficiency_leastsq.ipynb; sourceTree = "<group>"; };
-		65DA929E20D54F65002643DB /* SearchType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchType.swift; sourceTree = "<group>"; };
 		65DA92A120D5527D002643DB /* BeamState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeamState.swift; sourceTree = "<group>"; };
 		65DA92A420D57794002643DB /* DetectorMatchItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetectorMatchItem.swift; sourceTree = "<group>"; };
 		65DA92A720D594E9002643DB /* CalibrationEquation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalibrationEquation.swift; sourceTree = "<group>"; };
@@ -133,6 +133,7 @@
 		5A2A993B20570ED800B3D1A0 /* Config */ = {
 			isa = PBXGroup;
 			children = (
+				6536D9A5268F0A2900A10311 /* SearchType.swift */,
 				6551A3DE2566550700B142CC /* FileExtension.swift */,
 				784B0B881ABB13F80041FA66 /* Settings.swift */,
 				78FC51301A530D0300FE5737 /* DataLoader.swift */,
@@ -171,7 +172,6 @@
 				65B2A92925FB955000D97986 /* NeutronsMatch.swift */,
 				65DA92A120D5527D002643DB /* BeamState.swift */,
 				5A8423E220D12C100097F7FB /* SearchCriteria.swift */,
-				65DA929E20D54F65002643DB /* SearchType.swift */,
 				5A2A99372057083A00B3D1A0 /* DetectorMatch.swift */,
 				65DA92A420D57794002643DB /* DetectorMatchItem.swift */,
 				5A2A99342056F66800B3D1A0 /* DoubleSidedStripDetectorMatch.swift */,
@@ -407,9 +407,9 @@
 				6551A3DF2566550700B142CC /* FileExtension.swift in Sources */,
 				65DA92A220D5527D002643DB /* BeamState.swift in Sources */,
 				65B2A92A25FB955000D97986 /* NeutronsMatch.swift in Sources */,
+				6536D9A6268F0A2900A10311 /* SearchType.swift in Sources */,
 				65EDDD4420C51BAB009441D8 /* FolderStatistics.swift in Sources */,
 				65BBD8F8261DC07700D93026 /* CalculationsController.swift in Sources */,
-				65DA929F20D54F65002643DB /* SearchType.swift in Sources */,
 				5AAE352F22717FAB00035B52 /* SideDetector.swift in Sources */,
 				5AAE352C22717F8300035B52 /* DetectorsWellGeometry.swift in Sources */,
 				5AAE35352271856500035B52 /* FocalDetector.swift in Sources */,

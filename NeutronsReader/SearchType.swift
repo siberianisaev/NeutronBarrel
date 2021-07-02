@@ -17,6 +17,7 @@ enum SearchType: Int {
     case tof
     case tof2
     case gamma
+    case neutron
     
     func symbol() -> String {
         switch self {
@@ -30,7 +31,7 @@ enum SearchType: Int {
             return "H"
         case .tof, .tof2:
             return "T"
-        case .gamma:
+        case .gamma, .neutron:
             return ""
         }
     }
@@ -64,6 +65,8 @@ enum SearchType: Int {
             return "TOF2"
         case .gamma:
             return "Gamma"
+        case .neutron:
+            return "Neutron"
         }
     }
 }

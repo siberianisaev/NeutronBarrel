@@ -11,13 +11,11 @@ import Foundation
 class SearchCriteria {
     
     var resultsFolderName: String = ""
-    var wellParticleBackType: SearchType = .fission
     var neutronsDetectorEfficiency: Double = 0
     var neutronsDetectorEfficiencyError: Double = 0
+    var closedSFSource: Bool = false
     var placedSFSource: SFSource?
     
-    var startParticleType: SearchType = .fission
-    var startParticleBackType: SearchType = .fission
     var summarizeFissionsAlphaFront = false
     var fissionAlphaFrontMinEnergy: Double = 0
     var fissionAlphaFrontMaxEnergy: Double = 0
@@ -58,7 +56,7 @@ class SearchCriteria {
     var requiredFissionAlphaBack = false
     var requiredRecoilBack = false
     var requiredRecoil = false
-    var requiredGamma = false
+    var gammaStart = false
     var requiredGammaOrWell = false
     var simplifyGamma = false
     var requiredWell = false
@@ -75,13 +73,7 @@ class SearchCriteria {
     var trackBeamState: Bool {
         return trackBeamEnergy || trackBeamCurrent || trackBeamBackground || trackBeamIntegral
     }
-    var searchNeutrons = false
     var neutronsPositions = false
-    
-    var next = [Int: SearchNextCriteria]()
-    func nextMaxIndex() -> Int? {
-        return Array(next.keys).max()
-    }
     
     var searchSpecialEvents = false
     var specialEventIds = Set<Int>()
@@ -89,41 +81,5 @@ class SearchCriteria {
     var gammaEncoderIds = Set<Int>()
     var searchWell = true
     var unitsTOF: TOFUnits = .channels
-    var recoilType: SearchType = .recoil
-    var recoilBackType: SearchType = .recoil
-    
-    func startFromRecoil() -> Bool {
-        return startParticleType == .recoil || startParticleType == .heavy
-    }
-    
-}
-
-class SearchNextCriteria {
-    
-    var summarizeFront = false
-    var frontMinEnergy: Double = 0
-    var frontMaxEnergy: Double = 0
-    var backMinEnergy: Double = 0
-    var backMaxEnergy: Double = 0
-    var minTime: CUnsignedLongLong = 0
-    var maxTime: CUnsignedLongLong = 0
-    var maxDeltaStrips: Int = 0
-    var backByFact: Bool = true
-    var frontType: SearchType = .fission
-    var backType: SearchType = .fission
-    
-    init(summarizeFront: Bool, frontMinEnergy: Double, frontMaxEnergy: Double, backMinEnergy: Double, backMaxEnergy: Double, minTime: CUnsignedLongLong, maxTime: CUnsignedLongLong, maxDeltaStrips: Int, backByFact: Bool, frontType: SearchType, backType: SearchType) {
-        self.summarizeFront = summarizeFront
-        self.frontMinEnergy = frontMinEnergy
-        self.frontMaxEnergy = frontMaxEnergy
-        self.backMinEnergy = backMinEnergy
-        self.backMaxEnergy = backMaxEnergy
-        self.minTime = minTime
-        self.maxTime = maxTime
-        self.maxDeltaStrips = maxDeltaStrips
-        self.backByFact = backByFact
-        self.frontType = frontType
-        self.backType = backType
-    }
     
 }
