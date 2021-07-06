@@ -314,16 +314,25 @@ class Processor {
                     gammaPerAct = findGamma(position) ?? DetectorMatch()
                     fseek(file, position, SEEK_SET)
                     
-                    if let count = gammaPerAct?.count, count > 0 {
+                    if let gamma = gammaPerAct, gamma.encoders.count > 1 {
                         findNeutrons(position)
                         onFinishAct()
+                    } else {
+                        clearActInfo()
                     }
                 }
             } else {
                 if isNeutronEvent(event) {
                     currentEventTime = UInt64(event.param1)
-                    findNeutrons(position)
-                    onFinishAct()
+                    
+                    gammaPerAct = findGamma(position) ?? DetectorMatch()
+                    fseek(file, position, SEEK_SET)
+                    if let gamma = gammaPerAct, gamma.encoders.count > 1 {
+                        findNeutrons(position)
+                        onFinishAct()
+                    } else {
+                        clearActInfo()
+                    }
                 }
             }
         }
@@ -342,10 +351,7 @@ class Processor {
         search(directions: directions, startTime: startTime, minDeltaTime: 0, maxDeltaTime: criteria.maxNeutronTime, maxDeltaTimeBackward: criteria.maxNeutronBackwardTime, useCycleTime: false, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>, _) in
             let id = Int(event.eventId)
             if self.dataProtocol.isNeutronsNewEvent(id) {
-                let neutronTime = CUnsignedLongLong(event.param1)
-                if neutronTime >= startTime { // Neutron must be after SF (by time)
-                    self.addNeutron(event, deltaTime: deltaTime)
-                }
+                self.addNeutron(event, deltaTime: deltaTime)
             }
         }
     }

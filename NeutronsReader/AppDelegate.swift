@@ -47,6 +47,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         gammaStart = Settings.getBoolSetting(.GammaStart)
         sMinGammaEnergy = String(format: "%d", Settings.getIntSetting(.MinGammaEnergy)) // channel
         sMaxGammaEnergy = String(format: "%d", Settings.getIntSetting(.MaxGammaEnergy)) // channel
+        sMaxGammaTime = String(format: "%d", Settings.getIntSetting(.MaxGammaTime)) // mks
+        sMaxGammaBackwardTime = String(format: "%d", Settings.getIntSetting(.MaxGammaBackwardTime)) // mks
         sMaxNeutronTime = String(format: "%d", Settings.getIntSetting(.MaxNeutronTime)) // mks
         sMaxNeutronBackwardTime = String(format: "%d", Settings.getIntSetting(.MaxNeutronBackwardTime)) // mks
         neutronsPositions = Settings.getBoolSetting(.NeutronsPositions)
@@ -63,6 +65,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBInspectable dynamic var sMinGammaEnergy: String = ""
     @IBInspectable dynamic var sMaxGammaEnergy: String = ""
     @IBInspectable dynamic var neutronsPositions: Bool = false
+    @IBInspectable dynamic var sMaxGammaTime: String = ""
+    @IBInspectable dynamic var sMaxGammaBackwardTime: String = ""
     @IBInspectable dynamic var sMaxNeutronTime: String = ""
     @IBInspectable dynamic var sMaxNeutronBackwardTime: String = ""
     @IBInspectable dynamic var sfSourcePlaced: Bool = false
@@ -140,6 +144,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         sc.placedSFSource = SFSource(rawValue: sfSourceControl.selectedSegment)
         sc.minGammaEnergy = UInt64(sMinGammaEnergy) ?? 0
         sc.maxGammaEnergy = UInt64(sMaxGammaEnergy) ?? 0
+        sc.maxGammaTime = UInt64(sMaxGammaTime) ?? 0
+        sc.maxGammaBackwardTime = UInt64(sMaxGammaBackwardTime) ?? 0
         sc.maxNeutronTime = UInt64(sMaxNeutronTime) ?? 0
         sc.maxNeutronBackwardTime = UInt64(sMaxNeutronBackwardTime) ?? 0
         sc.gammaStart = gammaStart
@@ -330,6 +336,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             .SFSource: sfSourceControl.selectedSegment,
             .MinGammaEnergy: Int(sMinGammaEnergy),
             .MaxGammaEnergy: Int(sMaxGammaEnergy),
+            .MaxGammaTime: Int(sMaxGammaTime),
+            .MaxGammaBackwardTime: Int(sMaxGammaBackwardTime),
             .MaxNeutronTime: Int(sMaxNeutronTime),
             .MaxNeutronBackwardTime: Int(sMaxNeutronBackwardTime),
             .NeutronsPositions: neutronsPositions,

@@ -12,6 +12,17 @@ class DetectorMatch {
     
     fileprivate var items: [DetectorMatchItem]
     
+    var encoders: Set<CUnsignedShort> {
+        let ids = items.map { return $0.encoder }
+        var set = Set<CUnsignedShort>()
+        for id in ids {
+            if let id = id {
+                set.insert(id)
+            }
+        }
+        return set
+    }
+    
     init() {
         self.items = []
     }
