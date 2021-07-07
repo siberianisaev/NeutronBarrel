@@ -56,7 +56,7 @@ enum Setting: String {
     RequiredRecoilBack = "RequiredRecoilBack",
     RequiredRecoil = "RequiredRecoil",
     GammaStart = "GammaStart",
-    RequiredGammaOrWell = "RequiredGammaOrWell",
+    RequiredGamma = "RequiredGamma",
     SimplifyGamma = "SimplifyGamma",
     RequiredWell = "RequiredWell",
     WellRecoilsAllowed = "WellRecoilsAllowed",
@@ -236,7 +236,7 @@ class Settings {
             return 10000
         case .RequiredFissionAlphaBack, .SearchFirstRecoilOnly, .RequiredRecoilBack, .TrackBeamEnergy, .TrackBeamCurrent, .TrackBeamBackground, .TrackBeamIntegral, .SearchWell:
             return true
-        case .SummarizeFissionsFront, .SummarizeFissionsFront2, .SummarizeFissionsFront3, .SummarizeFissionsBack, .RequiredRecoil, .GammaStart, .RequiredGammaOrWell, .SimplifyGamma, .RequiredWell, .WellRecoilsAllowed, .RequiredTOF, .RequiredVETO, .SearchSpecialEvents, .GammaEncodersOnly, .SearchVETO, .SearchFissionBackByFact, .SearchFissionBack2ByFact, .SearchFissionBack3ByFact, .SearchRecoilBackByFact, .UseTOF2, .SearchExtraFromLastParticle, .SFSourceClosed, .SFSourcePlaced, .NeutronsPositions:
+        case .SummarizeFissionsFront, .SummarizeFissionsFront2, .SummarizeFissionsFront3, .SummarizeFissionsBack, .RequiredRecoil, .GammaStart, .RequiredGamma, .SimplifyGamma, .RequiredWell, .WellRecoilsAllowed, .RequiredTOF, .RequiredVETO, .SearchSpecialEvents, .GammaEncodersOnly, .SearchVETO, .SearchFissionBackByFact, .SearchFissionBack2ByFact, .SearchFissionBack3ByFact, .SearchRecoilBackByFact, .UseTOF2, .SearchExtraFromLastParticle, .SFSourceClosed, .SFSourcePlaced, .NeutronsPositions:
             return false
         case .SpecialEventIds, .GammaEncoderIds:
             return nil

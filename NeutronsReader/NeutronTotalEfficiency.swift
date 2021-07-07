@@ -162,13 +162,15 @@ class NeutronTotalEfficiency {
         return result
     }
     
-    class func efficiencyFor(measured: [Double], sfCount: Int, source: SFSource) -> (Double, String)? {
+    class func efficiencyFor(measured: [Double], sfCount: Int, source: SFSource, gammaStart: Bool) -> (Double, String)? {
         guard let ideal = source.idealDistribution() else {
             return nil
         }
         
         var measuredDistribution = measured
-        measuredDistribution.insert(0, at: 0)
+        if !gammaStart {
+            measuredDistribution.insert(0, at: 0)
+        }
         
         let maxMeasured = measuredDistribution.count
         let maxEmmited = ideal.count

@@ -45,6 +45,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     func readSettings() {
         sResultsFolderName = Settings.getStringSetting(.ResultsFolderName) ?? ""
         gammaStart = Settings.getBoolSetting(.GammaStart)
+        gammaRequired = Settings.getBoolSetting(.RequiredGamma)
         sMinGammaEnergy = String(format: "%d", Settings.getIntSetting(.MinGammaEnergy)) // channel
         sMaxGammaEnergy = String(format: "%d", Settings.getIntSetting(.MaxGammaEnergy)) // channel
         sMaxGammaTime = String(format: "%d", Settings.getIntSetting(.MaxGammaTime)) // mks
@@ -62,6 +63,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     }
     
     @IBInspectable dynamic var gammaStart: Bool = false
+    @IBInspectable dynamic var gammaRequired: Bool = false
     @IBInspectable dynamic var sMinGammaEnergy: String = ""
     @IBInspectable dynamic var sMaxGammaEnergy: String = ""
     @IBInspectable dynamic var neutronsPositions: Bool = false
@@ -149,6 +151,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         sc.maxNeutronTime = UInt64(sMaxNeutronTime) ?? 0
         sc.maxNeutronBackwardTime = UInt64(sMaxNeutronBackwardTime) ?? 0
         sc.gammaStart = gammaStart
+        sc.requiredGamma = gammaRequired
         
         let id = UUID().uuidString
         let processor = Processor(criteria: sc, delegate: self)
@@ -343,6 +346,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             .NeutronsPositions: neutronsPositions,
             .SFSourcePlaced: sfSourcePlaced,
             .GammaStart: gammaStart,
+            .RequiredGamma: gammaRequired,
             .ResultsFolderName: sResultsFolderName
         ]
         Settings.change(dict)

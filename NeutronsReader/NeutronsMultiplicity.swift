@@ -14,11 +14,13 @@ class NeutronsMultiplicity {
     fileprivate var efficiency: Double
     fileprivate var efficiencyError: Double
     fileprivate var placedSFSource: SFSource?
+    fileprivate var gammaStart: Bool = false
     
-    init(efficiency: Double, efficiencyError: Double, placedSFSource: SFSource?) {
+    init(efficiency: Double, efficiencyError: Double, placedSFSource: SFSource?, gammaStart: Bool) {
         self.efficiency = efficiency
         self.efficiencyError = efficiencyError
         self.placedSFSource = placedSFSource
+        self.gammaStart = gammaStart
         self.info = [:]
     }
     
@@ -75,7 +77,7 @@ class NeutronsMultiplicity {
                 if sfSource.idealDistribution() == nil {
                     let e = NeutronTotalEfficiency(sfSource: sfSource)
                     string += "\(e.calculate(info: info))"
-                } else if let tuple = NeutronTotalEfficiency.efficiencyFor(measured: probabilities, sfCount: events, source: sfSource) {
+                } else if let tuple = NeutronTotalEfficiency.efficiencyFor(measured: probabilities, sfCount: events, source: sfSource, gammaStart: gammaStart) {
                     string += "\(tuple.0)\n\(tuple.1)"
                 }
             }

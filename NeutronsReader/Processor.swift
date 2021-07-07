@@ -215,7 +215,7 @@ class Processor {
             return
         }
         
-        neutronsMultiplicity = NeutronsMultiplicity(efficiency: criteria.neutronsDetectorEfficiency, efficiencyError: criteria.neutronsDetectorEfficiencyError, placedSFSource: criteria.placedSFSource)
+        neutronsMultiplicity = NeutronsMultiplicity(efficiency: criteria.neutronsDetectorEfficiency, efficiencyError: criteria.neutronsDetectorEfficiencyError, placedSFSource: criteria.placedSFSource, gammaStart: criteria.gammaStart)
         totalEventNumber = 0
         clearActInfo()
         
@@ -327,7 +327,7 @@ class Processor {
                     
                     gammaPerAct = findGamma(position) ?? DetectorMatch()
                     fseek(file, position, SEEK_SET)
-                    if let gamma = gammaPerAct, gamma.encoders.count > 1 {
+                    if !criteria.requiredGamma || (gammaPerAct?.encoders.count ?? 0) > 1 {
                         findNeutrons(position)
                         onFinishAct()
                     } else {
