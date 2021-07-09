@@ -315,8 +315,12 @@ class Processor {
                     fseek(file, position, SEEK_SET)
                     
                     if let gamma = gammaPerAct, gamma.encoders.count > 1 {
-                        findNeutrons(position)
-                        onFinishAct()
+                        if let newGammaPosition = findNeutrons(position, breakIfGamma: true) {
+                            fseek(file, newGammaPosition + Int(Event.size), SEEK_SET)
+                            clearActInfo()
+                        } else {
+                            onFinishAct()
+                        }
                     } else {
                         clearActInfo()
                     }
@@ -328,7 +332,7 @@ class Processor {
                     gammaPerAct = findGamma(position) ?? DetectorMatch()
                     fseek(file, position, SEEK_SET)
                     if !criteria.requiredGamma || (gammaPerAct?.encoders.count ?? 0) > 1 {
-                        findNeutrons(position)
+                        let _ = findNeutrons(position, breakIfGamma: false)
                         onFinishAct()
                     } else {
                         clearActInfo()
@@ -345,15 +349,21 @@ class Processor {
         clearActInfo()
     }
     
-    fileprivate func findNeutrons(_ position: Int) {
+    fileprivate func findNeutrons(_ position: Int, breakIfGamma: Bool) -> Int? {
         let directions: Set<SearchDirection> = [.forward, .backward]
         let startTime = currentEventTime
+        var gammaPosition: Int?
         search(directions: directions, startTime: startTime, minDeltaTime: 0, maxDeltaTime: criteria.maxNeutronTime, maxDeltaTimeBackward: criteria.maxNeutronBackwardTime, useCycleTime: false, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>, _) in
             let id = Int(event.eventId)
+            if self.dataProtocol.isGammaEvent(id), breakIfGamma {
+                gammaPosition = self.currentPosition
+                stop.initialize(to: true)
+            }
             if self.dataProtocol.isNeutronsNewEvent(id) {
                 self.addNeutron(event, deltaTime: deltaTime)
             }
         }
+        return gammaPosition
     }
     
     func addNeutron(_ event: Event, deltaTime: CLongLong) {
