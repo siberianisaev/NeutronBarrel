@@ -315,11 +315,21 @@ class Processor {
                     fseek(file, position, SEEK_SET)
                     
                     if let gamma = gammaPerAct, gamma.encoders.count > 1 {
-                        if let newGammaPosition = findNeutrons(position, breakIfGamma: true) {
-                            fseek(file, newGammaPosition + Int(Event.size), SEEK_SET)
+                        let neutronsBack = findNeutrons(position, breakIfGamma: false, directions: [.backward]).1
+                        fseek(file, position, SEEK_SET)
+                        if neutronsBack.count > 0 {
                             clearActInfo()
                         } else {
-                            onFinishAct()
+                            let tuple = findNeutrons(position, breakIfGamma: true, directions: [.forward])
+                            if let newGammaPosition = tuple.0 {
+                                fseek(file, newGammaPosition + Int(Event.size), SEEK_SET)
+                                clearActInfo()
+                            } else {
+                                for item in tuple.1 {
+                                    addNeutron(item.0, deltaTime: item.1)
+                                }
+                                onFinishAct()
+                            }
                         }
                     } else {
                         clearActInfo()
@@ -332,7 +342,10 @@ class Processor {
                     gammaPerAct = findGamma(position) ?? DetectorMatch()
                     fseek(file, position, SEEK_SET)
                     if !criteria.requiredGamma || (gammaPerAct?.encoders.count ?? 0) > 1 {
-                        let _ = findNeutrons(position, breakIfGamma: false)
+                        let tuple = findNeutrons(position, breakIfGamma: false)
+                        for item in tuple.1 {
+                            addNeutron(item.0, deltaTime: item.1)
+                        }
                         onFinishAct()
                     } else {
                         clearActInfo()
@@ -349,21 +362,21 @@ class Processor {
         clearActInfo()
     }
     
-    fileprivate func findNeutrons(_ position: Int, breakIfGamma: Bool) -> Int? {
-        let directions: Set<SearchDirection> = [.forward, .backward]
+    fileprivate func findNeutrons(_ position: Int, breakIfGamma: Bool, directions: Set<SearchDirection> = [.forward, .backward]) -> (Int?, [(Event, CLongLong)]) {
         let startTime = currentEventTime
         var gammaPosition: Int?
+        var array = [(Event, CLongLong)]()
         search(directions: directions, startTime: startTime, minDeltaTime: 0, maxDeltaTime: criteria.maxNeutronTime, maxDeltaTimeBackward: criteria.maxNeutronBackwardTime, useCycleTime: false, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>, _) in
             let id = Int(event.eventId)
-            if self.dataProtocol.isGammaEvent(id), breakIfGamma {
+            if deltaTime > 0, self.dataProtocol.isGammaEvent(id), breakIfGamma {
                 gammaPosition = self.currentPosition
                 stop.initialize(to: true)
             }
             if self.dataProtocol.isNeutronsNewEvent(id) {
-                self.addNeutron(event, deltaTime: deltaTime)
+                array.append((event, deltaTime))
             }
         }
-        return gammaPosition
+        return (gammaPosition, array)
     }
     
     func addNeutron(_ event: Event, deltaTime: CLongLong) {
