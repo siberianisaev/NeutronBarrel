@@ -28,7 +28,8 @@ class ExpProcessing:
             counts_measured = np.pad(counts_measured, (0, 10 - counts_measured.size))
         self._data["bin"] = [i for i in range(counts_measured.size)]
         self._data["count"] = counts_measured
-        self._data["count_error"] = self.count_error_calculation()
+        # self._data["count_error"] = self.count_error_calculation()
+        self._data["count_error"] = self.estimate_count_errors()
         self._data["relative_error"] = self._data["count_error"] / self._data["count"]
         self._data["probability"], self._data["probability_error"] = self.normalization()
         self._data["mean"] = self.mean_calculation()
@@ -118,6 +119,12 @@ class ExpProcessing:
         delta_mean_sq = (delta_neutrons / total_events)**2 + \
                         (total_neutrons * delta_events / total_events**2)**2
         return delta_mean_sq ** 0.5
+
+    def estimate_count_errors(self):
+        counts, bins = self._data["count"].copy(), self._data["bin"]
+        counts[counts == np.zeros_like(counts)] = 1
+        return [(N / k) ** 0.5 if k > 1 else N ** 0.5 for N, k in zip(counts, bins)]
+
 
 
 if __name__ == "__main__":
