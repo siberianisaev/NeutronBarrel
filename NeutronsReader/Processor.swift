@@ -422,7 +422,10 @@ class Processor {
             }
             
             if !criteria.searchExtraFromLastParticle {
-                findNeutrons(position)
+                if findNeutrons(position) {
+                    clearActInfo()
+                    return
+                }
             }
             
             if criteria.searchSpecialEvents {
@@ -486,12 +489,18 @@ class Processor {
         }
     }
     
-    fileprivate func findNeutrons(_ position: Int) {
+    fileprivate func findNeutrons(_ position: Int) -> Bool {
+        var stopped: Bool = false
         if criteria.searchNeutrons {
             let directions: Set<SearchDirection> = [.forward, .backward]
             let startTime = currentEventTime
             search(directions: directions, startTime: startTime, minDeltaTime: 0, maxDeltaTime: criteria.maxNeutronTime, maxDeltaTimeBackward: criteria.maxNeutronBackwardTime, useCycleTime: false, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>, _) in
                 let id = Int(event.eventId)
+                if self.dataProtocol.isAlphaFronEvent(id) && abs(deltaTime) > self.criteria.fissionAlphaMaxTime {
+                    stopped = true
+                    self.neutronsMultiplicity?.incrementBroken()
+                    stop.initialize(to: true)
+                }
                 if self.dataProtocol.isNeutronsNewEvent(id) {
                     let neutronTime = CUnsignedLongLong(event.param1)
                     let isNeutronsBkg = self.criteria.neutronsBackground
@@ -520,6 +529,7 @@ class Processor {
             }
             fseek(file, Int(position), SEEK_SET)
         }
+        return stopped
     }
     
     fileprivate func findAllFirstFissionsAlphaFront(_ folder: FolderStatistics) {
@@ -745,7 +755,9 @@ class Processor {
                         // Extra Search
                         if isLastNext, self.criteria.searchExtraFromLastParticle {
                             self.findFissionAlphaWell(position)
-                            self.findNeutrons(position)
+                            if self.findNeutrons(position) {
+                                store = false
+                            }
                             gamma = self.findGamma(position)
                             if nil == gamma, self.criteria.requiredGamma {
                                 store = false

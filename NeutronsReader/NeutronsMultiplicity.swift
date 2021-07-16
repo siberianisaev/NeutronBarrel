@@ -14,12 +14,17 @@ class NeutronsMultiplicity {
     fileprivate var efficiency: Double
     fileprivate var efficiencyError: Double
     fileprivate var placedSFSource: SFSource?
+    fileprivate var broken: Int = 0
     
     init(efficiency: Double, efficiencyError: Double, placedSFSource: SFSource?) {
         self.efficiency = efficiency
         self.efficiencyError = efficiencyError
         self.placedSFSource = placedSFSource
         self.info = [:]
+    }
+    
+    func incrementBroken() {
+        broken += 1
     }
     
     func increment(multiplicity: Int) {
@@ -80,6 +85,7 @@ class NeutronsMultiplicity {
                 }
             }
         }
+        string += "\nBroken count: \(broken)"
         return string
     }
     
