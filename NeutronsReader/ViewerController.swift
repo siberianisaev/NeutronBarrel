@@ -46,6 +46,7 @@ class ViewerController: NSWindowController {
     fileprivate var file: UnsafeMutablePointer<FILE>?
     fileprivate var eventCount: Int = 0
     
+    @IBInspectable dynamic var sFileToScroll: String = ""
     @IBInspectable dynamic var sEventNumberToScroll: String = ""
     
     @IBOutlet weak var tableView: NSTableView!
@@ -68,11 +69,11 @@ class ViewerController: NSWindowController {
         var name: String = ""
         let files = DataLoader.singleton.files
         
-        closeFile()
-        
         if index >= 0 && index < files.count {
             self.index = index
             let path = files[index] as NSString
+            
+            closeFile()
             file = fopen(path.utf8String, "rb")
             if let f = file {
                 eventCount = Int(Processor.calculateTotalEventNumberForFile(f))
@@ -88,7 +89,22 @@ class ViewerController: NSWindowController {
         tableView.reloadData()
     }
     
+    fileprivate func loadFile(_ name: String) {
+        let files = DataLoader.singleton.files
+        for file in files {
+            let path = file as NSString
+            if name.caseInsensitiveCompare(path.lastPathComponent) == .orderedSame {
+                let index = files.firstIndex(of: file)!
+                loadFile(index)
+                break
+            }
+        }
+    }
+    
     @IBAction func scroll(_ sender: Any) {
+        if !sFileToScroll.isEmpty {
+            loadFile(sFileToScroll)
+        }
         if let number = Int(sEventNumberToScroll) {
             let row = number - 1
             if row >= 0,  row < numberOfRows(in: tableView) {
