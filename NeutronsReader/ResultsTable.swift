@@ -136,7 +136,11 @@ class ResultsTable {
     fileprivate var keyColumnNeutronAngle = "NeutronAngle"
     fileprivate var keyColumnNeutronRelatedFissionBack = "NeutronRelatedFissionBack"
     fileprivate var keyColumnNeutrons: String {
-        return searchExtraPostfix("Neutrons")
+        var s = searchExtraPostfix("Neutrons")
+        if criteria.neutronsBackground {
+            s += "(BKG)"
+        }
+        return s
     }
     fileprivate var keyColumnNeutrons_N = "N1...N4"
     fileprivate let keyColumnEvent: String = "Event"

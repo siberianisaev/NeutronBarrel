@@ -494,7 +494,8 @@ class Processor {
                 let id = Int(event.eventId)
                 if self.dataProtocol.isNeutronsNewEvent(id) {
                     let neutronTime = CUnsignedLongLong(event.param1)
-                    if neutronTime >= startTime { // Neutron must be after SF (by time)
+                    let isNeutronsBkg = self.criteria.neutronsBackground
+                    if (!isNeutronsBkg && neutronTime >= startTime) || (isNeutronsBkg && neutronTime < startTime) { // Effect neutrons must be after SF by time
                         self.neutronsPerAct.times.append(Float(deltaTime))
                         var encoder = self.dataProtocol.encoderForEventId(id) // 1-4
                         var channel = event.param3 & Mask.neutronsNew.rawValue // 0-31

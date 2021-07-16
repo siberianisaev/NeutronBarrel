@@ -1303,6 +1303,17 @@
                                             </segments>
                                         </segmentedCell>
                                     </segmentedControl>
+                                    <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="fmc-Fi-amX">
+                                        <rect key="frame" x="126" y="245" width="124" height="26"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                        <buttonCell key="cell" type="check" title="Background" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="A7x-dP-SAN">
+                                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                            <font key="font" size="15" name="HelveticaNeue-Bold"/>
+                                        </buttonCell>
+                                        <connections>
+                                            <binding destination="Voe-Tx-rLC" name="value" keyPath="self.neutronsBackground" id="fJ7-Bz-zVF"/>
+                                        </connections>
+                                    </button>
                                 </subviews>
                             </customView>
                         </subviews>
