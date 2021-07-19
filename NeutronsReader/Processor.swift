@@ -496,7 +496,7 @@ class Processor {
             let startTime = currentEventTime
             search(directions: directions, startTime: startTime, minDeltaTime: 0, maxDeltaTime: criteria.maxNeutronTime, maxDeltaTimeBackward: criteria.maxNeutronBackwardTime, useCycleTime: false, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>, _) in
                 let id = Int(event.eventId)
-                if self.dataProtocol.isAlphaFronEvent(id) && abs(deltaTime) > self.criteria.fissionAlphaMaxTime {
+                if self.criteria.neutronsBrokenFiltration && self.dataProtocol.isAlphaFronEvent(id) && abs(deltaTime) > self.criteria.fissionAlphaMaxTime {
                     stopped = true
                     self.neutronsMultiplicity?.incrementBroken()
                     stop.initialize(to: true)

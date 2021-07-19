@@ -121,6 +121,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         requiredVETO = Settings.getBoolSetting(.RequiredVETO)
         searchNeutrons = Settings.getBoolSetting(.SearchNeutrons)
         neutronsBackground = Settings.getBoolSetting(.NeutronsBackground)
+        neutronsBrokenFiltration = Settings.getBoolSetting(.NeutronsBrokenFiltration)
         neutronsPositions = Settings.getBoolSetting(.NeutronsPositions)
         sfSourcePlaced = Settings.getBoolSetting(.SFSourcePlaced)
         searchFissionAlpha1 = Settings.getBoolSetting(.SearchFissionAlpha1)
@@ -243,6 +244,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBInspectable dynamic var requiredVETO: Bool = false
     @IBInspectable dynamic var searchNeutrons: Bool = false
     @IBInspectable dynamic var neutronsBackground: Bool = false
+    @IBInspectable dynamic var neutronsBrokenFiltration: Bool = false
     @IBInspectable dynamic var neutronsPositions: Bool = false {
         didSet {
             maxWellAngleView.isHidden = !neutronsPositions
@@ -610,6 +612,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         sc.searchExtraFromLastParticle = searchExtraFromLastParticle
         sc.searchNeutrons = searchNeutrons
         sc.neutronsBackground = neutronsBackground
+        sc.neutronsBrokenFiltration = neutronsBrokenFiltration
         sc.neutronsPositions = neutronsPositions
         sc.placedSFSource = sfSourcePlaced ? SFSource(rawValue: sfSourceControl.selectedSegment) : nil
         sc.maxNeutronTime = UInt64(sMaxNeutronTime) ?? 0
@@ -878,6 +881,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             .RequiredVETO: requiredVETO,
             .SearchNeutrons: searchNeutrons,
             .NeutronsBackground: neutronsBackground,
+            .NeutronsBrokenFiltration: neutronsBrokenFiltration,
             .NeutronsPositions: neutronsPositions,
             .SFSourcePlaced: sfSourcePlaced,
             .SearchVETO: searchVETO,

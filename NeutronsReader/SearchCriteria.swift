@@ -77,6 +77,7 @@ class SearchCriteria {
     }
     var searchNeutrons = false
     var neutronsBackground = false
+    var neutronsBrokenFiltration = false
     var neutronsPositions = false
     
     var next = [Int: SearchNextCriteria]()

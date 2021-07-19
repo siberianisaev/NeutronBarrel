@@ -1114,7 +1114,7 @@
                                 </subviews>
                             </customView>
                             <customView fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="saS-yX-rhk">
-                                <rect key="frame" x="4" y="0.0" width="294" height="297"/>
+                                <rect key="frame" x="4" y="0.0" width="406" height="297"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <subviews>
                                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="xfP-VJ-G8R">
@@ -1312,6 +1312,17 @@
                                         </buttonCell>
                                         <connections>
                                             <binding destination="Voe-Tx-rLC" name="value" keyPath="self.neutronsBackground" id="fJ7-Bz-zVF"/>
+                                        </connections>
+                                    </button>
+                                    <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="D7S-jZ-Umx">
+                                        <rect key="frame" x="256" y="245" width="142" height="26"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                        <buttonCell key="cell" type="check" title="Broken filtration" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="oau-Zu-DP1">
+                                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                            <font key="font" size="15" name="HelveticaNeue-Bold"/>
+                                        </buttonCell>
+                                        <connections>
+                                            <binding destination="Voe-Tx-rLC" name="value" keyPath="self.neutronsBrokenFiltration" id="bI8-sJ-2Zz"/>
                                         </connections>
                                     </button>
                                 </subviews>
