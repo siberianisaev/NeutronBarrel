@@ -706,7 +706,11 @@ class ResultsTable {
                 case keyColumnNeutrons:
                     if row == 0 {
                         let neutrons = delegate.neutrons()
-                        field = String(format: "%llu", neutrons.count)
+                        if neutrons.isBroken {
+                            field = "-"
+                        } else {
+                            field = String(format: "%llu", neutrons.count)
+                        }
                     }
                 case keyColumnNeutrons_N:
                     if row == 0 {

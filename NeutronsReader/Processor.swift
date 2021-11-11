@@ -151,7 +151,7 @@ class Processor {
                     let relativeTime = event.param1
                     let time = useCycleTime ? absTime(relativeTime, cycle: cycle) : CUnsignedLongLong(relativeTime)
                     let deltaTime = (time < startTime) ? (startTime - time) : (time - startTime)
-                    if deltaTime <= maxBackward {
+                    if deltaTime <= maxBackward || dataProtocol.isNeutronsNewEvent(id)  {
                         if deltaTime < minDeltaTime {
                             continue
                         }
@@ -189,7 +189,7 @@ class Processor {
                     let relativeTime = event.param1
                     let time = useCycleTime ? absTime(relativeTime, cycle: cycle) : CUnsignedLongLong(relativeTime)
                     let deltaTime = (time < startTime) ? (startTime - time) : (time - startTime)
-                    if deltaTime <= maxDeltaTime {
+                    if deltaTime <= maxDeltaTime || dataProtocol.isNeutronsNewEvent(id) {
                         if deltaTime < minDeltaTime {
                             continue
                         }
@@ -423,8 +423,8 @@ class Processor {
             
             if !criteria.searchExtraFromLastParticle {
                 if findNeutrons(position) {
-                    clearActInfo()
-                    return
+//                    clearActInfo()
+//                    return
                 }
             }
             
@@ -494,14 +494,16 @@ class Processor {
         if criteria.searchNeutrons {
             let directions: Set<SearchDirection> = [.forward, .backward]
             let startTime = currentEventTime
-            search(directions: directions, startTime: startTime, minDeltaTime: 0, maxDeltaTime: criteria.maxNeutronTime, maxDeltaTimeBackward: criteria.maxNeutronBackwardTime, useCycleTime: false, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>, _) in
+            let maxDeltaTime = criteria.maxNeutronTime
+            search(directions: directions, startTime: startTime, minDeltaTime: 0, maxDeltaTime: maxDeltaTime, maxDeltaTimeBackward: criteria.maxNeutronBackwardTime, useCycleTime: false, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>, _) in
                 let id = Int(event.eventId)
                 if self.criteria.neutronsBrokenFiltration && self.dataProtocol.isAlphaFronEvent(id) && abs(deltaTime) > self.criteria.fissionAlphaMaxTime {
                     stopped = true
                     self.neutronsMultiplicity?.incrementBroken()
+                    self.neutronsPerAct.isBroken = true
                     stop.initialize(to: true)
                 }
-                if self.dataProtocol.isNeutronsNewEvent(id) {
+                if self.dataProtocol.isNeutronsNewEvent(id) && (deltaTime < maxDeltaTime) {
                     let neutronTime = CUnsignedLongLong(event.param1)
                     let isNeutronsBkg = self.criteria.neutronsBackground
                     if (!isNeutronsBkg && neutronTime >= startTime) || (isNeutronsBkg && neutronTime < startTime) { // Effect neutrons must be after SF by time
@@ -756,7 +758,7 @@ class Processor {
                         if isLastNext, self.criteria.searchExtraFromLastParticle {
                             self.findFissionAlphaWell(position)
                             if self.findNeutrons(position) {
-                                store = false
+//                                store = false
                             }
                             gamma = self.findGamma(position)
                             if nil == gamma, self.criteria.requiredGamma {
@@ -1141,12 +1143,13 @@ extension Processor: ResultsTableDelegate {
     
     // Need special results block for neutron times, so we skeep one line.
     func neutronsCountWithNewLine() -> Int {
-        let count = neutronsPerAct.count
-        if count > 0 {
-            return count + 1
-        } else {
-            return 0
-        }
+        return 2
+//        let count = neutronsPerAct.count
+//        if count > 0 {
+//            return 2 // todo: temp change
+//        } else {
+//            return 0
+//        }
     }
     
     func neutrons() -> NeutronsMatch {

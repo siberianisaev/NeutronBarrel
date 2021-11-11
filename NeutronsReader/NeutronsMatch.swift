@@ -21,6 +21,7 @@ struct NeutronCT {
 
 class NeutronsMatch {
     
+    var isBroken: Bool = false
     var times = [Float]()
     var encoders = [UInt16]()
     var counters = [Int]()
