@@ -489,6 +489,16 @@ class Processor {
         }
     }
     
+    fileprivate func checkIsSimultaneousDecay(_ event: Event, deltaTime: CLongLong) -> Bool {
+        if criteria.simultaneousDecaysFilterForNeutrons && isBack(event, type: criteria.startParticleBackType) && abs(deltaTime) > criteria.fissionAlphaMaxTime {
+            let energy = getEnergy(event, type: criteria.startParticleBackType)
+            if energy >= criteria.fissionAlphaBackMinEnergy && energy <= criteria.fissionAlphaBackMaxEnergy {
+                return true
+            }
+        }
+        return false
+    }
+    
     fileprivate func findNeutrons(_ position: Int) -> Bool {
         var excludeSFEvent: Bool = false
         if criteria.searchNeutrons {
@@ -499,14 +509,11 @@ class Processor {
             search(directions: directions, startTime: startTime, minDeltaTime: criteria.minNeutronTime, maxDeltaTime: maxDeltaTime, maxDeltaTimeBackward: criteria.maxNeutronBackwardTime, checkMaxDeltaTimeExceeded:checkMaxDeltaTimeExceeded, useCycleTime: false, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>, _) in
                 let id = Int(event.eventId)
                 // 1) Simultaneous Decays Filter - search the events with fragment energy at the same time with current decay.
-                if self.criteria.simultaneousDecaysFilterForNeutrons && self.isBack(event, type: self.criteria.startParticleBackType) && abs(deltaTime) > self.criteria.fissionAlphaMaxTime {
-                    let energy = self.getEnergy(event, type: self.criteria.startParticleBackType)
-                    if energy >= self.criteria.fissionAlphaBackMinEnergy && energy <= self.criteria.fissionAlphaBackMaxEnergy {
-                        excludeSFEvent = true
-                        self.neutronsMultiplicity?.incrementBroken()
-                        stop.initialize(to: true)
-                    }
-                } else if deltaTime < maxDeltaTime {
+                if self.checkIsSimultaneousDecay(event, deltaTime: deltaTime) {
+                    excludeSFEvent = true
+                    self.neutronsMultiplicity?.incrementBroken()
+                    stop.initialize(to: true)
+                } else if abs(deltaTime) < maxDeltaTime {
                     // 3) Store neutron info.
                     if self.dataProtocol.isNeutronsNewEvent(id) {
                         let neutronTime = CUnsignedLongLong(event.param1)
