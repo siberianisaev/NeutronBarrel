@@ -42,6 +42,7 @@ class NeutronsMultiplicity {
         var neutronsSquares: Int = 0
         let events: Int = info.map { $0.value }.sum()
         var probabilities = [Double]()
+        var counts = [Int]()
         for key in sortedKeys {
             let count = info[key]!
             let probability = events > 0 ? (Double(count) / Double(events)) : 0
@@ -49,7 +50,10 @@ class NeutronsMultiplicity {
             string += "\(key)\t\(count)\t\(probability)\n"
             neutrons += count * key
             neutronsSquares += count * Int(pow(Double(key), 2))
+            counts.append(count)
         }
+        string += "\n[" + counts.map { String($0) }.joined(separator: ", ") + "]"
+        string += "\n[" + probabilities.map { String($0) }.joined(separator: ", ") + "]"
         string += "\nSF count: \(events)"
         string += "\nNeutrons count: \(neutrons)"
         if neutrons > 0 {

@@ -120,7 +120,7 @@ class Processor {
         }
     }
     
-    fileprivate func search(directions: Set<SearchDirection>, startTime: CUnsignedLongLong, minDeltaTime: CUnsignedLongLong, maxDeltaTime: CUnsignedLongLong, maxDeltaTimeBackward: CUnsignedLongLong? = nil, useCycleTime: Bool, updateCycle: Bool, checker: @escaping ((Event, CUnsignedLongLong, CLongLong, UnsafeMutablePointer<Bool>, Int)->())) {
+    fileprivate func search(directions: Set<SearchDirection>, startTime: CUnsignedLongLong, minDeltaTime: CUnsignedLongLong, maxDeltaTime: CUnsignedLongLong, maxDeltaTimeBackward: CUnsignedLongLong? = nil, checkMaxDeltaTimeExceeded: Bool = true, useCycleTime: Bool, updateCycle: Bool, checker: @escaping ((Event, CUnsignedLongLong, CLongLong, UnsafeMutablePointer<Bool>, Int)->())) {
         //TODO: search over many files
         let maxBackward = maxDeltaTimeBackward ?? maxDeltaTime
         if directions.contains(.backward) {
@@ -189,7 +189,7 @@ class Processor {
                     let relativeTime = event.param1
                     let time = useCycleTime ? absTime(relativeTime, cycle: cycle) : CUnsignedLongLong(relativeTime)
                     let deltaTime = (time < startTime) ? (startTime - time) : (time - startTime)
-                    if deltaTime <= maxDeltaTime {
+                    if !checkMaxDeltaTimeExceeded || deltaTime <= maxDeltaTime {
                         if deltaTime < minDeltaTime {
                             continue
                         }
@@ -490,46 +490,57 @@ class Processor {
     }
     
     fileprivate func findNeutrons(_ position: Int) -> Bool {
-        var stopped: Bool = false
+        var excludeSFEvent: Bool = false
         if criteria.searchNeutrons {
             let directions: Set<SearchDirection> = [.forward, .backward]
             let startTime = currentEventTime
-            search(directions: directions, startTime: startTime, minDeltaTime: 0, maxDeltaTime: criteria.maxNeutronTime, maxDeltaTimeBackward: criteria.maxNeutronBackwardTime, useCycleTime: false, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>, _) in
+            let maxDeltaTime = criteria.maxNeutronTime
+            let checkMaxDeltaTimeExceeded = !criteria.mixingTimesFilterForNeutrons
+            search(directions: directions, startTime: startTime, minDeltaTime: criteria.minNeutronTime, maxDeltaTime: maxDeltaTime, maxDeltaTimeBackward: criteria.maxNeutronBackwardTime, checkMaxDeltaTimeExceeded:checkMaxDeltaTimeExceeded, useCycleTime: false, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>, _) in
                 let id = Int(event.eventId)
-                if self.criteria.neutronsBrokenFiltration && self.dataProtocol.isAlphaFronEvent(id) && abs(deltaTime) > self.criteria.fissionAlphaMaxTime {
-                    stopped = true
-                    self.neutronsMultiplicity?.incrementBroken()
-                    stop.initialize(to: true)
-                }
-                if self.dataProtocol.isNeutronsNewEvent(id) {
-                    let neutronTime = CUnsignedLongLong(event.param1)
-                    let isNeutronsBkg = self.criteria.neutronsBackground
-                    if (!isNeutronsBkg && neutronTime >= startTime) || (isNeutronsBkg && neutronTime < startTime) { // Effect neutrons must be after SF by time
-                        self.neutronsPerAct.times.append(Float(deltaTime))
-                        var encoder = self.dataProtocol.encoderForEventId(id) // 1-4
-                        var channel = event.param3 & Mask.neutronsNew.rawValue // 0-31
-                        // Convert to encoder 1-8 and strip 0-15 format
-                        self.neutronsPerAct.encoders.append(encoder)
-                        encoder *= 2
-                        if channel > 15 {
-                            channel -= 16
-                        } else {
-                            encoder -= 1
-                        }
-                        let counterNumber = self.stripsConfiguration(detector: .neutron).strip1_N_For(side: .front, encoder: Int(encoder), strip0_15: channel)
-                        self.neutronsPerAct.counters.append(counterNumber)
+                // 1) Simultaneous Decays Filter - search the events with fragment energy at the same time with current decay.
+                if self.criteria.simultaneousDecaysFilterForNeutrons && self.isBack(event, type: self.criteria.startParticleBackType) && abs(deltaTime) > self.criteria.fissionAlphaMaxTime {
+                    let energy = self.getEnergy(event, type: self.criteria.startParticleBackType)
+                    if energy >= self.criteria.fissionAlphaBackMinEnergy && energy <= self.criteria.fissionAlphaBackMaxEnergy {
+                        excludeSFEvent = true
+                        self.neutronsMultiplicity?.incrementBroken()
+                        stop.initialize(to: true)
                     }
-                } else if self.dataProtocol.isNeutronsOldEvent(id) {
-                    let t = Float(event.param3 & Mask.neutronsOld.rawValue)
-                    self.neutronsPerAct.times.append(t)
-                }
-                if self.dataProtocol.hasNeutrons_N() && self.dataProtocol.isNeutrons_N_Event(id) {
-                    self.neutronsPerAct.NSum += 1
+                } else if deltaTime < maxDeltaTime {
+                    // 3) Store neutron info.
+                    if self.dataProtocol.isNeutronsNewEvent(id) {
+                        let neutronTime = CUnsignedLongLong(event.param1)
+                        let isNeutronsBkg = self.criteria.neutronsBackground
+                        if (!isNeutronsBkg && neutronTime >= startTime) || (isNeutronsBkg && neutronTime < startTime) { // Effect neutrons must be after SF by time
+                            self.neutronsPerAct.times.append(Float(deltaTime))
+                            var encoder = self.dataProtocol.encoderForEventId(id) // 1-4
+                            var channel = event.param3 & Mask.neutronsNew.rawValue // 0-31
+                            // Convert to encoder 1-8 and strip 0-15 format
+                            self.neutronsPerAct.encoders.append(encoder)
+                            encoder *= 2
+                            if channel > 15 {
+                                channel -= 16
+                            } else {
+                                encoder -= 1
+                            }
+                            let counterNumber = self.stripsConfiguration(detector: .neutron).strip1_N_For(side: .front, encoder: Int(encoder), strip0_15: channel)
+                            self.neutronsPerAct.counters.append(counterNumber)
+                        }
+                    } else if self.dataProtocol.isNeutronsOldEvent(id) {
+                        let t = Float(event.param3 & Mask.neutronsOld.rawValue)
+                        self.neutronsPerAct.times.append(t)
+                    }
+                    if self.dataProtocol.hasNeutrons_N() && self.dataProtocol.isNeutrons_N_Event(id) {
+                        self.neutronsPerAct.NSum += 1
+                    }
+                } else if !checkMaxDeltaTimeExceeded && !self.dataProtocol.isNeutronsNewEvent(id) {
+                    // 2) The Mixing Neutrons Times Filter. We don't check time for neutrons only. It's necessary to stop the search from this checker if delta-time is exceeded for other events.
+                    stop.initialize(to: true)
                 }
             }
             fseek(file, Int(position), SEEK_SET)
         }
-        return stopped
+        return excludeSFEvent
     }
     
     fileprivate func findAllFirstFissionsAlphaFront(_ folder: FolderStatistics) {

@@ -49,8 +49,10 @@ class SearchCriteria {
     var maxVETOTime: CUnsignedLongLong = 0
     var maxGammaTime: CUnsignedLongLong = 0
     var maxGammaBackwardTime: CUnsignedLongLong = 0
+    var minNeutronTime: CUnsignedLongLong = 0
     var maxNeutronTime: CUnsignedLongLong = 0
     var maxNeutronBackwardTime: CUnsignedLongLong = 0
+    var checkNeutronMaxDeltaTimeExceeded: Bool = true
     var recoilFrontMaxDeltaStrips: Int = 0
     var recoilBackMaxDeltaStrips: Int = 0
     
@@ -77,7 +79,8 @@ class SearchCriteria {
     }
     var searchNeutrons = false
     var neutronsBackground = false
-    var neutronsBrokenFiltration = false
+    var simultaneousDecaysFilterForNeutrons = false
+    var mixingTimesFilterForNeutrons = false
     var neutronsPositions = false
     
     var next = [Int: SearchNextCriteria]()

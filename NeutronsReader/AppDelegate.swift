@@ -99,6 +99,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         sMaxVETOTime = String(format: "%d", Settings.getIntSetting(.MaxVETOTime)) // mks
         sMaxGammaTime = String(format: "%d", Settings.getIntSetting(.MaxGammaTime)) // mks
         sMaxGammaBackwardTime = String(format: "%d", Settings.getIntSetting(.MaxGammaBackwardTime)) // mks
+        sMinNeutronTime = String(format: "%d", Settings.getIntSetting(.MinNeutronTime)) // mks
         sMaxNeutronTime = String(format: "%d", Settings.getIntSetting(.MaxNeutronTime)) // mks
         sMaxNeutronBackwardTime = String(format: "%d", Settings.getIntSetting(.MaxNeutronBackwardTime)) // mks
         sMaxRecoilFrontDeltaStrips = String(format: "%d", Settings.getIntSetting(.MaxRecoilFrontDeltaStrips))
@@ -121,7 +122,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         requiredVETO = Settings.getBoolSetting(.RequiredVETO)
         searchNeutrons = Settings.getBoolSetting(.SearchNeutrons)
         neutronsBackground = Settings.getBoolSetting(.NeutronsBackground)
-        neutronsBrokenFiltration = Settings.getBoolSetting(.NeutronsBrokenFiltration)
+        simultaneousDecaysFilterForNeutrons = Settings.getBoolSetting(.SimultaneousDecaysFilterForNeutrons)
+        mixingTimesFilterForNeutrons = Settings.getBoolSetting(.MixingTimesFilterForNeutrons)
         neutronsPositions = Settings.getBoolSetting(.NeutronsPositions)
         sfSourcePlaced = Settings.getBoolSetting(.SFSourcePlaced)
         searchFissionAlpha1 = Settings.getBoolSetting(.SearchFissionAlpha1)
@@ -220,6 +222,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBInspectable dynamic var sMaxVETOTime: String = ""
     @IBInspectable dynamic var sMaxGammaTime: String = ""
     @IBInspectable dynamic var sMaxGammaBackwardTime: String = ""
+    @IBInspectable dynamic var sMinNeutronTime: String = ""
     @IBInspectable dynamic var sMaxNeutronTime: String = ""
     @IBInspectable dynamic var sMaxNeutronBackwardTime: String = ""
     @IBInspectable dynamic var sMaxRecoilFrontDeltaStrips: String = ""
@@ -244,7 +247,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBInspectable dynamic var requiredVETO: Bool = false
     @IBInspectable dynamic var searchNeutrons: Bool = false
     @IBInspectable dynamic var neutronsBackground: Bool = false
-    @IBInspectable dynamic var neutronsBrokenFiltration: Bool = false
+    @IBInspectable dynamic var simultaneousDecaysFilterForNeutrons: Bool = false
+    @IBInspectable dynamic var mixingTimesFilterForNeutrons: Bool = false
     @IBInspectable dynamic var neutronsPositions: Bool = false {
         didSet {
             maxWellAngleView.isHidden = !neutronsPositions
@@ -612,9 +616,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         sc.searchExtraFromLastParticle = searchExtraFromLastParticle
         sc.searchNeutrons = searchNeutrons
         sc.neutronsBackground = neutronsBackground
-        sc.neutronsBrokenFiltration = neutronsBrokenFiltration
+        sc.simultaneousDecaysFilterForNeutrons = simultaneousDecaysFilterForNeutrons
+        sc.mixingTimesFilterForNeutrons = mixingTimesFilterForNeutrons
         sc.neutronsPositions = neutronsPositions
         sc.placedSFSource = sfSourcePlaced ? SFSource(rawValue: sfSourceControl.selectedSegment) : nil
+        sc.minNeutronTime = UInt64(sMinNeutronTime) ?? 0
         sc.maxNeutronTime = UInt64(sMaxNeutronTime) ?? 0
         sc.maxNeutronBackwardTime = UInt64(sMaxNeutronBackwardTime) ?? 0
         sc.searchSpecialEvents = searchSpecialEvents
@@ -858,6 +864,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             .MaxVETOTime: Int(sMaxVETOTime),
             .MaxGammaTime: Int(sMaxGammaTime),
             .MaxGammaBackwardTime: Int(sMaxGammaBackwardTime),
+            .MinNeutronTime: Int(sMinNeutronTime),
             .MaxNeutronTime: Int(sMaxNeutronTime),
             .MaxNeutronBackwardTime: Int(sMaxNeutronBackwardTime),
             .MaxRecoilFrontDeltaStrips: Int(sMaxRecoilFrontDeltaStrips),
@@ -881,7 +888,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             .RequiredVETO: requiredVETO,
             .SearchNeutrons: searchNeutrons,
             .NeutronsBackground: neutronsBackground,
-            .NeutronsBrokenFiltration: neutronsBrokenFiltration,
+            .SimultaneousDecaysFilterForNeutrons: simultaneousDecaysFilterForNeutrons,
+            .MixingTimesFilterForNeutrons: mixingTimesFilterForNeutrons,
             .NeutronsPositions: neutronsPositions,
             .SFSourcePlaced: sfSourcePlaced,
             .SearchVETO: searchVETO,
