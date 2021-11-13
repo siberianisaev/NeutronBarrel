@@ -11,18 +11,25 @@ extension Int {
     
 }
 
-//0        0.12465589189158728
-//1        0.3234771191001485
-//2        0.32895889862863936
-//3        0.16693927636565484
-//4        0.047338991217318535
-//5        0.007757753527020059
-//6        0.0008220556039255797
-//7        4.790041222531227e-05
-//8    3    2.1132534805284825e-06
+//let a1 = [
+//"AR208PB002.001_303889", "AR208PB23.138_375743"]
+//let a2 = ["AR208PB002.001_303889", "AR208PB002.001_303889", "AR208PB002.001_303889"]
+//let set1 = Set(a1)
+//let set2 = Set(a2)
+//let sub = set1.symmetricDifference(set2)
+//print(sub)
 
-var measured = [78849, 205178, 208655, 105368, 29409, 4705, 444, 23]
-let PkExpected = [0.0061, 0.0608, 0.2272, 0.3460, 0.2476, 0.0906, 0.0190, 0.0024]//, 0.0002
+
+//let events = 1419612
+//let neutrons = 2435546
+//let average = 1.715642020495741 //± 0.001811610238618803
+//let efficiency = 54.7
+//let efficiencyError = 0.1
+//let averageErrorWithEfficiency = (Double(neutrons)/(Double(events) * (efficiency/100)))*(1/Double(neutrons) + 1/Double(events) + pow(efficiencyError/efficiency, 2)).squareRoot()
+//print("\n*Average: \(average * 100.0/efficiency) ± \(averageErrorWithEfficiency)")
+
+var measured = [96135, 257551, 269196, 141210, 40847, 7083, 801, 58, 3, 1]
+let PkExpected = [0.0061, 0.0608, 0.2272, 0.3460, 0.2476, 0.0906, 0.0190, 0.0024, 0.0002, 0.0001]
 
 let minN = 0
 let maxN = measured.count-1
