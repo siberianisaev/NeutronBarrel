@@ -68,6 +68,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     
     fileprivate var viewerController: ViewerController?
     fileprivate var calculationsController: CalculationsController?
+    fileprivate var sorterController: EventSorterController?
     fileprivate var startDate: Date?
     fileprivate var timer: Timer?
     
@@ -497,6 +498,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             viewerController = ViewerController(windowNibName: NSNib.Name("ViewerController"))
         }
         viewerController?.showWindow(nil)
+    }
+    
+    @IBAction func sorter(_ sender: Any) {
+        if nil == sorterController {
+            sorterController = EventSorterController(windowNibName: NSNib.Name("EventSorterController"))
+        }
+        sorterController?.showWindow(nil)
     }
     
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {

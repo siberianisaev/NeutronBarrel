@@ -17,11 +17,16 @@ class EventSorter {
         return Static.sharedInstance
     }
     
-    
     fileprivate var fileRead: UnsafeMutablePointer<FILE>!
     fileprivate var fileWrite: UnsafeMutablePointer<FILE>!
     
-    func processData() {
+    /*
+     Call it from bkg thread.
+     */
+    func processData(_ progressHandler: @escaping ((Double)->())) {
+        DispatchQueue.main.async {
+            progressHandler(0.0)
+        }
         var firstCycleEventFound = false
         for fp in files {
             let pathRead = fp as NSString
@@ -63,6 +68,11 @@ class EventSorter {
                 }
                 fclose(fileRead)
                 fclose(fileWrite)
+                DispatchQueue.main.async { [weak self] in
+                    if let files = self?.files {
+                        progressHandler(100 * Double(files.firstIndex(of: fp)! + 1)/Double(files.count))
+                    }
+                }
             }
         }
     }

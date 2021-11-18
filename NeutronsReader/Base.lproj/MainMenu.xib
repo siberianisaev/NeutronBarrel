@@ -146,6 +146,19 @@
                         </items>
                     </menu>
                 </menuItem>
+                <menuItem title="Sorter" id="Uk4-vs-Mtg">
+                    <modifierMask key="keyEquivalentModifierMask"/>
+                    <menu key="submenu" title="Sorter" id="TCE-FW-7zB">
+                        <items>
+                            <menuItem title="Show" id="4jg-ww-yh3">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="sorter:" target="Voe-Tx-rLC" id="iU0-xP-Lqp"/>
+                                </connections>
+                            </menuItem>
+                        </items>
+                    </menu>
+                </menuItem>
                 <menuItem title="File" id="dMs-cI-mzQ">
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <menu key="submenu" title="File" id="bib-Uj-vzu">
