@@ -30,6 +30,7 @@
 		656A05DE1EAE03BC00677B0F /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 656A05DD1EAE03BC00677B0F /* Extensions.swift */; };
 		65B2A92625FB80A100D97986 /* ResultsTable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65B2A92525FB80A100D97986 /* ResultsTable.swift */; };
 		65B2A92A25FB955000D97986 /* NeutronsMatch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65B2A92925FB955000D97986 /* NeutronsMatch.swift */; };
+		65B84170274670BB000DA3F2 /* EventSorter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65B8416F274670BA000DA3F2 /* EventSorter.swift */; };
 		65BBD8EC261C806900D93026 /* CorrelationsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65BBD8EB261C806900D93026 /* CorrelationsView.swift */; };
 		65BBD8F8261DC07700D93026 /* CalculationsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65BBD8F6261DC07700D93026 /* CalculationsController.swift */; };
 		65BBD8F9261DC07700D93026 /* CalculationsController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 65BBD8F7261DC07700D93026 /* CalculationsController.xib */; };
@@ -77,6 +78,7 @@
 		656A05DD1EAE03BC00677B0F /* Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
 		65B2A92525FB80A100D97986 /* ResultsTable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResultsTable.swift; sourceTree = "<group>"; };
 		65B2A92925FB955000D97986 /* NeutronsMatch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NeutronsMatch.swift; sourceTree = "<group>"; };
+		65B8416F274670BA000DA3F2 /* EventSorter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventSorter.swift; sourceTree = "<group>"; };
 		65BBD8EB261C806900D93026 /* CorrelationsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CorrelationsView.swift; sourceTree = "<group>"; };
 		65BBD8F6261DC07700D93026 /* CalculationsController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalculationsController.swift; sourceTree = "<group>"; };
 		65BBD8F7261DC07700D93026 /* CalculationsController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = CalculationsController.xib; sourceTree = "<group>"; };
@@ -262,6 +264,7 @@
 				5A2A993B20570ED800B3D1A0 /* Config */,
 				5A2A993D20570F0C00B3D1A0 /* Model */,
 				5A036F701EB0F5C80092D3C4 /* Processor.swift */,
+				65B8416F274670BA000DA3F2 /* EventSorter.swift */,
 				780BC3A51A5EF99700EDEECE /* AppDelegate.swift */,
 				780BC43E1A604AE000EDEECE /* Resources */,
 				78B6A54E193A3B3900C7E36A /* Supporting Files */,
@@ -413,6 +416,7 @@
 				5AAE352F22717FAB00035B52 /* SideDetector.swift in Sources */,
 				5AAE352C22717F8300035B52 /* DetectorsWellGeometry.swift in Sources */,
 				5AAE35352271856500035B52 /* FocalDetector.swift in Sources */,
+				65B84170274670BB000DA3F2 /* EventSorter.swift in Sources */,
 				780BC3A61A5EF99700EDEECE /* AppDelegate.swift in Sources */,
 				78FC51311A530D0300FE5737 /* DataLoader.swift in Sources */,
 				65B2A92625FB80A100D97986 /* ResultsTable.swift in Sources */,
