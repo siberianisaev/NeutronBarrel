@@ -79,7 +79,7 @@ class EventSorter {
     
     fileprivate func sort(_ events: [Event]) -> [Event] {
         //TODO: пока сортируем просто по event.param1
-        return events.sorted { $0.param1 <= $1.param1 }
+        return events.sorted { $0.param1 < $1.param1 }
 //        var time: CUnsignedShort = 0
 //        for event in events {
 //            if dataProtocol.isValidEventIdForTimeCheck(Int(event.eventId)) {
