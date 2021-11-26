@@ -64,21 +64,18 @@ class NeutronsMultiplicity {
         }
         // Neutron counts with errors
         string += "\n[" + counts.map { String($0) }.joined(separator: ", ") + "]"
-        string += "\n["
+        var countErrors = [Double]()
         for i in 0...counts.count-1 {
-            let countError = NeutronsMultiplicity.errorFor(neutronsCount: counts[i], multiplicity: i)
-            string += String(countError)
+            countErrors.append(NeutronsMultiplicity.errorFor(neutronsCount: counts[i], multiplicity: i))
         }
-        string += "]"
+        string += "\n[" + countErrors.map { String($0) }.joined(separator: ", ") + "]"
         // Neutron probabilities with errors
         string += "\n[" + probabilities.map { String($0) }.joined(separator: ", ") + "]"
-        string += "\n["
+        var probErrors = [Double]()
         for i in 0...counts.count-1 {
-            let countError = NeutronsMultiplicity.errorFor(neutronsCount: counts[i], multiplicity: i)
-            let probabilityError = countError/Double(neutrons)
-            string += String(probabilityError)
+            probErrors.append(NeutronsMultiplicity.errorFor(neutronsCount: counts[i], multiplicity: i)/Double(counts.sum()))
         }
-        string += "]"
+        string += "\n[" + probErrors.map { String($0) }.joined(separator: ", ") + "]"
         string += "\nSF count: \(events)"
         string += "\nNeutrons count: \(neutrons)"
         if neutrons > 0 {
