@@ -33,6 +33,16 @@ class NeutronsMultiplicity {
         info[multiplicity] = sum
     }
     
+    class func errorForAverageNumberOf(neutrons: Int, events: Int) -> (Double, Double) {
+        let average = Double(neutrons)/Double(events)
+        let error = average*(1/Double(neutrons) + 1/Double(events)).squareRoot()
+        return (average, error)
+    }
+    
+    class func errorFor(neutronsCount: Int, multiplicity: Int) -> Double {
+        return (Double(neutronsCount)/max(1, Double(multiplicity))).squareRoot()
+    }
+    
     func stringValue() -> String {
         var string = "Multiplicity\tCount\tProbability\n"
         let sortedKeys = Array(info.keys).sorted(by: { (i1: Int, i2: Int) -> Bool in
@@ -52,13 +62,29 @@ class NeutronsMultiplicity {
             neutronsSquares += count * Int(pow(Double(key), 2))
             counts.append(count)
         }
+        // Neutron counts with errors
         string += "\n[" + counts.map { String($0) }.joined(separator: ", ") + "]"
+        string += "\n["
+        for i in 0...counts.count-1 {
+            let countError = NeutronsMultiplicity.errorFor(neutronsCount: counts[i], multiplicity: i)
+            string += String(countError)
+        }
+        string += "]"
+        // Neutron probabilities with errors
         string += "\n[" + probabilities.map { String($0) }.joined(separator: ", ") + "]"
+        string += "\n["
+        for i in 0...counts.count-1 {
+            let countError = NeutronsMultiplicity.errorFor(neutronsCount: counts[i], multiplicity: i)
+            let probabilityError = countError/Double(neutrons)
+            string += String(probabilityError)
+        }
+        string += "]"
         string += "\nSF count: \(events)"
         string += "\nNeutrons count: \(neutrons)"
         if neutrons > 0 {
-            let average = Double(neutrons)/Double(events)
-            let averageError = (Double(neutrons)/Double(events))*(1/Double(neutrons) + 1/Double(events)).squareRoot()
+            let tuple = NeutronsMultiplicity.errorForAverageNumberOf(neutrons: neutrons, events: events)
+            let average = tuple.0
+            let averageError = tuple.1
             string += "\nAverage: \(average) ± \(averageError)\n---------------"
             if efficiency > 0, efficiencyError > 0 {
                 string += "\nDetector efficiency: \(efficiency)%"
