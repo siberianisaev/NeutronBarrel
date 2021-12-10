@@ -8,7 +8,7 @@
 
 import Foundation
 
-enum SFSource: Int {
+public enum SFSource: Int {
     case Cm248 = 0, U238, Cf252, No252
     
     /*
