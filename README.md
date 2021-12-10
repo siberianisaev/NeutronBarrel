@@ -2,7 +2,7 @@ Neutron Barrel
 ==============
 
 Methods:
-* Detector system SFiNx. PEPAN Letters, accepted, 2022 [SFiNx](https://github.com/siberianisaev/NeutronBarrel/blob/master/NeutronsReader/SFiNx.pdf)
+* Detector system SFiNx. PEPAN Letters, 2022 [SFiNx](https://github.com/siberianisaev/NeutronBarrel/blob/master/NeutronsReader/SFiNx.pdf)
 * [Reconstruction of spontaneous fission neutron multiplicity distribution spectra by the statistical regularization method](https://doi.org/10.1134/S1547477121040130), 2021
 * [A detector for studying the characteristics of spontaneous fission of short-lived heavy nuclei](https://doi.org/10.1134/S0020441211040154), 2011
 
