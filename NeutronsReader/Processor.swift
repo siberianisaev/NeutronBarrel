@@ -460,6 +460,9 @@ class Processor {
             folder.handleEnergy(e)
         } else if dataProtocol.isBeamIntegral(id) {
             folder.handleIntergal(event)
+        } else if dataProtocol.isBeamCurrent(id) {
+            let c = event.getFloatValue()
+            folder.handleCurrent(c)
         }
     }
     

@@ -24,6 +24,11 @@ class FolderStatistics {
     }
     fileprivate var energies = [Double]()
     
+    var medianCurrent: Double {
+        return Sigma.median(currents) ?? 0.0
+    }
+    fileprivate var currents = [Double]()
+    
     var integral: Float {
         return integralEvent?.getFloatValue() ?? 0
     }
@@ -56,6 +61,10 @@ class FolderStatistics {
     
     func handleEnergy(_ value: Float) {
         energies.append(Double(value))
+    }
+    
+    func handleCurrent(_ value: Float) {
+        currents.append(Double(value))
     }
     
     func handleIntergal(_ event: Event) {
