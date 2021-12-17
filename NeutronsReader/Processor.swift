@@ -236,9 +236,11 @@ class Processor {
         logger.logSettings()
         logInput(onEnd: false)
         logCalibration()
-        resultsTable = ResultsTable(criteria: criteria, logger: logger, delegate: self)
-        resultsTable.logResultsHeader()
-        resultsTable.logGammaHeader()
+        if !criteria.expressAnalysis {
+            resultsTable = ResultsTable(criteria: criteria, logger: logger, delegate: self)
+            resultsTable.logResultsHeader()
+            resultsTable.logGammaHeader()
+        }
         
         var folders = [String: FolderStatistics]()
         
@@ -439,9 +441,11 @@ class Processor {
             }
             
             correlationsPerFile += 1
-            resultsTable.logActResults()
-            for b in [false, true] {
-                resultsTable.logGamma(GeOnly: b)
+            if !criteria.expressAnalysis {
+                resultsTable.logActResults()
+                for b in [false, true] {
+                    resultsTable.logGamma(GeOnly: b)
+                }
             }
             clearActInfo()
         } else {
