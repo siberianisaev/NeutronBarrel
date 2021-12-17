@@ -295,16 +295,6 @@ class Processor {
         logger.logStatistics(folders)
         if criteria.searchNeutrons, let multiplicity = neutronsMultiplicity {
             logger.log(multiplicity: multiplicity)
-            
-            logger.writeLineOfFields(["FFront channel", "Neutrons", "Events"] as [AnyObject], destination: .neutronsPerEnergy)
-            let lines = resultsTable.neutronsPerEnergy.map { (key: Double, value: [Float]) -> [AnyObject] in
-                let neutrons = value.sum()
-                let events = value.count
-                return [key, neutrons, events] as [AnyObject]
-            }
-            for line in lines {
-                logger.writeLineOfFields(line, destination: .neutronsPerEnergy)
-            }
         }
         
         DispatchQueue.main.async {
@@ -467,9 +457,7 @@ class Processor {
         let id = Int(event.eventId)
         if dataProtocol.isBeamEnergy(id) {
             let e = event.getFloatValue()
-            if e >= criteria.beamEnergyMin && e <= criteria.beamEnergyMax {
-                folder.handleEnergy(e)
-            }
+            folder.handleEnergy(e)
         } else if dataProtocol.isBeamIntegral(id) {
             folder.handleIntergal(event)
         }

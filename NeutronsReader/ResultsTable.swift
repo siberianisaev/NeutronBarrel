@@ -42,8 +42,6 @@ class ResultsTable {
         }
     }
     
-    var neutronsPerEnergy = [Double: [Float]]()
-    
     fileprivate var criteria = SearchCriteria()
     fileprivate var logger: Logger!
     fileprivate weak var delegate: ResultsTableDelegate!
@@ -682,13 +680,6 @@ class ResultsTable {
                                             } else {
                                                 if let energy = (angle < 0 ? delegate.fissionsAlphaWellAt(side: .back, index: 0) : delegate.firstParticleAt(side: .back).itemAt(index: 0))?.energy {
                                                     field = String(format: "%.7f", energy)
-                                                    
-                                                    // Calculate neutrons count per fission channel (case with more than 1 neutron)
-                                                    if row == 1, angle > 0, let well = wellAngle(), well < CGFloat(criteria.fissionAlphaWellMaxAngle) {
-                                                        var array = neutronsPerEnergy[energy] ?? []
-                                                        array.append(Float(neutrons.count))
-                                                        neutronsPerEnergy[energy] = array
-                                                    }
                                                 }
                                             }
                                         }
@@ -698,10 +689,6 @@ class ResultsTable {
                                 }
                             }
                         }
-                    } else if row == 0, delegate.neutrons().counters.count == 0, let energy = delegate.firstParticleAt(side: .back).itemAt(index: 0)?.energy, let well = wellAngle(), well < CGFloat(criteria.fissionAlphaWellMaxAngle) { // Calculate neutrons count per fission channel (case with 0 neutrons)
-                        var array = neutronsPerEnergy[energy] ?? []
-                        array.append(0.0)
-                        neutronsPerEnergy[energy] = array
                     }
                 case keyColumnNeutrons:
                     if row == 0 {

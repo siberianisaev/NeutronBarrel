@@ -9,7 +9,7 @@
 import Cocoa
 
 enum LoggerDestination {
-    case results, gammaAll, gammaGeOnly, neutronsPerEnergy
+    case results, gammaAll, gammaGeOnly
 }
 
 class Logger {
@@ -18,7 +18,6 @@ class Logger {
     fileprivate var gammaAllCSVWriter: CSVWriter
     fileprivate var gammaGeOnlyCSVWriter: CSVWriter
     fileprivate var statisticsCSVWriter: CSVWriter
-    fileprivate var neutronsPerEnergyCSVWriter: CSVWriter
     fileprivate var folderName: String
     fileprivate var timeStamp: String
     fileprivate var dateFormatter: DateFormatter?
@@ -32,7 +31,6 @@ class Logger {
         gammaAllCSVWriter = CSVWriter(path: FileManager.filePath("gamma_all", timeStamp: stamp, folderName: name))
         gammaGeOnlyCSVWriter = CSVWriter(path: FileManager.filePath("gamma_Ge_only", timeStamp: stamp, folderName: name))
         statisticsCSVWriter = CSVWriter(path: FileManager.statisticsFilePath(stamp, folderName: name))
-        neutronsPerEnergyCSVWriter = CSVWriter(path: FileManager.filePath("neutrons_per_energy", timeStamp: stamp, folderName: name))
         let f = DateFormatter()
         f.calendar = Calendar(identifier: .gregorian)
         f.locale = Locale(identifier: "en_US_POSIX")
@@ -49,8 +47,6 @@ class Logger {
             return gammaAllCSVWriter
         case .gammaGeOnly:
             return gammaGeOnlyCSVWriter
-        case .neutronsPerEnergy:
-            return neutronsPerEnergyCSVWriter
         }
     }
     
@@ -101,7 +97,7 @@ class Logger {
             let lastCreatedOn = stringFrom(folder.lastFileCreatedOn)
             let firstFile = folder.files.first ?? ""
             let lastFile = folder.files.last ?? ""
-            let energy = String(folder.meanEnergy)
+            let energy = String(folder.medianEnergy)
             let integral = String(folder.integral)
             let calculationTime = abs(folder.calculationsStart?.timeIntervalSince(folder.calculationsEnd ?? Date()) ?? 0).stringFromSeconds()
             let secondsFromStart = folder.secondsFromStart

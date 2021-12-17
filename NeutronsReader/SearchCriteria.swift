@@ -36,8 +36,6 @@ class SearchCriteria {
     var searchRecoilBackByFact: Bool = false
     var minTOFValue: Double = 0
     var maxTOFValue: Double = 0
-    var beamEnergyMin: Float = 0
-    var beamEnergyMax: Float = 0
     var recoilMinTime: CUnsignedLongLong = 0
     var recoilMaxTime: CUnsignedLongLong = 0
     var recoilBackMaxTime: CUnsignedLongLong = 0

@@ -1,0 +1,6 @@
+framework module SigmaSwiftStatistics {
+  umbrella header "SigmaSwiftStatistics-umbrella.h"
+
+  export *
+  module * { export * }
+}

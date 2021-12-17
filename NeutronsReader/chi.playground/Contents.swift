@@ -12,9 +12,11 @@ extension Int {
 }
 
 
-let m = NeutronsMultiplicity.init(info: [0: 30, 1: 56, 2: 55, 3: 31, 4: 6, 5: 2, 6: 1], efficiency: 43.6, efficiencyError: 1.0)
-print(m.stringValue())
+//let m = NeutronsMultiplicity.init(info: [0:3, 1:15, 2:20, 3:15, 4:4, 5:5, 6:1], efficiency: 43.0, efficiencyError: 1.0)
+//print(m.stringValue())
 
+let t = NeutronsMultiplicity.averageNumberOf(neutrons: 76, events: 41, efficiency: 43.6, efficiencyError: 1.0)
+print(t)
 //let a1 = [
 //"AR208PB002.001_303889", "AR208PB23.138_375743"]
 //let a2 = ["AR208PB002.001_303889", "AR208PB002.001_303889", "AR208PB002.001_303889"]

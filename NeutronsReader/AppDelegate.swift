@@ -130,8 +130,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         searchFissionAlpha1 = Settings.getBoolSetting(.SearchFissionAlpha1)
         searchFissionAlpha2 = Settings.getBoolSetting(.SearchFissionAlpha2)
         searchFissionAlpha3 = Settings.getBoolSetting(.SearchFissionAlpha3)
-        sBeamEnergyMin = String(format: "%.1f", Settings.getDoubleSetting(.BeamEnergyMin)) // MeV
-        sBeamEnergyMax = String(format: "%.1f", Settings.getDoubleSetting(.BeamEnergyMax)) // MeV
         sMinFissionAlpha2Energy = String(format: "%.1f", Settings.getDoubleSetting(.MinFissionAlpha2Energy)) // MeV
         sMaxFissionAlpha2Energy = String(format: "%.1f", Settings.getDoubleSetting(.MaxFissionAlpha2Energy)) // MeV
         sMinFissionAlpha2BackEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MinFissionAlpha2BackEnergy)) // MeV
@@ -285,8 +283,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             setupAlpha3FormView()
         }
     }
-    @IBInspectable dynamic var sBeamEnergyMin: String = ""
-    @IBInspectable dynamic var sBeamEnergyMax: String = ""
     @IBInspectable dynamic var sMinFissionAlpha2Energy: String = ""
     @IBInspectable dynamic var sMaxFissionAlpha2Energy: String = ""
     @IBInspectable dynamic var sMinFissionAlpha2BackEnergy: String = ""
@@ -641,8 +637,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         sc.recoilType = selectedRecoilType
         sc.recoilBackType = selectedRecoilBackType
         sc.searchWell = searchWell
-        sc.beamEnergyMin = Float(sBeamEnergyMin) ?? 0
-        sc.beamEnergyMax = Float(sBeamEnergyMax) ?? 0
         
         func idsFrom(string: String) -> Set<Int> {
             let ids = string.components(separatedBy: ",").map({ (s: String) -> Int in
@@ -855,8 +849,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             .MinFissionWellEnergy: Double(sMinFissionWellEnergy),
             .MaxFissionWellEnergy: Double(sMaxFissionWellEnergy),
             .MaxFissionWellAngle: Double(sMaxFissionWellAngle),
-            .BeamEnergyMin: Float(sBeamEnergyMin),
-            .BeamEnergyMax: Float(sBeamEnergyMax),
             .MinTOFValue: Int(sMinTOFValue),
             .MaxTOFValue: Int(sMaxTOFValue),
             .TOFUnits: tofUnitsControl.selectedSegment,

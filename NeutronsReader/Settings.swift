@@ -108,8 +108,6 @@ enum Setting: String {
     SearchFissionBack3ByFact = "SearchFissionBack3ByFact",
     SearchRecoilBackByFact = "SearchRecoilBackByFact",
     SearchWell = "SearchWell",
-    BeamEnergyMin = "BeamEnergyMin",
-    BeamEnergyMax = "BeamEnergyMax",
     ResultsFolderName = "ResultsFolderName",
     FocalDetectorType = "FocalDetectorType"
 }
@@ -214,10 +212,6 @@ class Settings {
             return 43
         case .MaxConcurrentOperations:
             return 8
-        case .BeamEnergyMin:
-            return 200
-        case .BeamEnergyMax:
-            return 300
         case .MinFissionEnergy, .MaxFissionAlpha2Energy, .MaxFissionAlpha2BackEnergy, .MaxFissionAlpha3Energy, .MaxFissionAlpha3BackEnergy, .MaxRecoilFrontEnergy, .MaxRecoilBackEnergy:
             return 20
         case .MaxFissionAlpha2Time, .MaxFissionAlpha3Time, .MaxFissionEnergy, .MaxRecoilTime, .MaxFissionWellEnergy:

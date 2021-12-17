@@ -44,6 +44,7 @@
 		65DA92A520D57794002643DB /* DetectorMatchItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65DA92A420D57794002643DB /* DetectorMatchItem.swift */; };
 		65DA92A820D594E9002643DB /* CalibrationEquation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65DA92A720D594E9002643DB /* CalibrationEquation.swift */; };
 		65EDDD4420C51BAB009441D8 /* FolderStatistics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65EDDD4320C51BAB009441D8 /* FolderStatistics.swift */; };
+		68ADF1DDBD1BA5FE81E16A21 /* Pods_NeutronsReader.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 88A691B6158CAEA87EE2852E /* Pods_NeutronsReader.framework */; };
 		780BC3A61A5EF99700EDEECE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 780BC3A51A5EF99700EDEECE /* AppDelegate.swift */; };
 		784150DA1AC184C400831384 /* CSVWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 784150D91AC184C400831384 /* CSVWriter.swift */; };
 		784B0B891ABB13F80041FA66 /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 784B0B881ABB13F80041FA66 /* Settings.swift */; };
@@ -110,6 +111,9 @@
 		78B6A55D193A3B3900C7E36A /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/MainMenu.xib; sourceTree = "<group>"; };
 		78B6A55F193A3B3900C7E36A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		78FC51301A530D0300FE5737 /* DataLoader.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DataLoader.swift; sourceTree = "<group>"; };
+		88A691B6158CAEA87EE2852E /* Pods_NeutronsReader.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_NeutronsReader.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		AB8579886283AC5E0C0E3AA3 /* Pods-NeutronsReader.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-NeutronsReader.release.xcconfig"; path = "Target Support Files/Pods-NeutronsReader/Pods-NeutronsReader.release.xcconfig"; sourceTree = "<group>"; };
+		FB0C4DFAB51214D65074DA56 /* Pods-NeutronsReader.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-NeutronsReader.debug.xcconfig"; path = "Target Support Files/Pods-NeutronsReader/Pods-NeutronsReader.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -118,6 +122,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				78B6A548193A3B3900C7E36A /* Cocoa.framework in Frameworks */,
+				68ADF1DDBD1BA5FE81E16A21 /* Pods_NeutronsReader.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -189,6 +194,15 @@
 			name = Model;
 			sourceTree = "<group>";
 		};
+		5BEA756E879CBE150C72695F /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				FB0C4DFAB51214D65074DA56 /* Pods-NeutronsReader.debug.xcconfig */,
+				AB8579886283AC5E0C0E3AA3 /* Pods-NeutronsReader.release.xcconfig */,
+			);
+			path = Pods;
+			sourceTree = "<group>";
+		};
 		6562B35D26246B970070A491 /* NeutronEfficiency */ = {
 			isa = PBXGroup;
 			children = (
@@ -232,6 +246,7 @@
 				78B6A54D193A3B3900C7E36A /* NeutronsReader */,
 				78B6A546193A3B3900C7E36A /* Frameworks */,
 				78B6A545193A3B3900C7E36A /* Products */,
+				5BEA756E879CBE150C72695F /* Pods */,
 			);
 			sourceTree = "<group>";
 		};
@@ -248,6 +263,7 @@
 			children = (
 				78B6A547193A3B3900C7E36A /* Cocoa.framework */,
 				78B6A549193A3B3900C7E36A /* Other Frameworks */,
+				88A691B6158CAEA87EE2852E /* Pods_NeutronsReader.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -297,10 +313,12 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 78B6A575193A3B3900C7E36A /* Build configuration list for PBXNativeTarget "NeutronsReader" */;
 			buildPhases = (
+				B8AF9E10B25B8B722EB04F17 /* [CP] Check Pods Manifest.lock */,
 				78B6A540193A3B3900C7E36A /* Sources */,
 				78B6A541193A3B3900C7E36A /* Frameworks */,
 				78B6A542193A3B3900C7E36A /* Resources */,
 				789E3F801ABC786F0093DBD8 /* Git SHA */,
+				FC9B11080AD16AB040E96948 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -387,6 +405,46 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "# write git version SHA into Info.plist\ncd \"$PROJECT_DIR\"\n# say hello\n/usr/libexec/PlistBuddy -c \"Set :CFBundleVersionGitSHA $(git rev-parse --short HEAD)\" \"$TARGET_BUILD_DIR/$INFOPLIST_PATH\"\n/usr/libexec/PlistBuddy -c \"Set :CFBundleVersionGitBranch $(git rev-parse --short HEAD --symbolic --abbrev-ref $1)\" \"$TARGET_BUILD_DIR/$INFOPLIST_PATH\"\n";
+		};
+		B8AF9E10B25B8B722EB04F17 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-NeutronsReader-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		FC9B11080AD16AB040E96948 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-NeutronsReader/Pods-NeutronsReader-frameworks.sh",
+				"${BUILT_PRODUCTS_DIR}/SigmaSwiftStatistics/SigmaSwiftStatistics.framework",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/SigmaSwiftStatistics.framework",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-NeutronsReader/Pods-NeutronsReader-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -557,20 +615,21 @@
 		};
 		78B6A576193A3B3900C7E36A /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = FB0C4DFAB51214D65074DA56 /* Pods-NeutronsReader.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 40;
+				CURRENT_PROJECT_VERSION = 41;
 				DEVELOPMENT_TEAM = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "NeutronsReader/NeutronsReader-Prefix.pch";
 				INFOPLIST_FILE = "NeutronsReader/NeutronsReader-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.13;
-				MARKETING_VERSION = 20.0;
+				MARKETING_VERSION = 21.0;
 				PRODUCT_BUNDLE_IDENTIFIER = ru.jinr.flerovlab.NeutronsReader;
 				PRODUCT_MODULE_NAME = NeutronsReader;
 				PRODUCT_NAME = NeutronsReader;
@@ -584,20 +643,21 @@
 		};
 		78B6A577193A3B3900C7E36A /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = AB8579886283AC5E0C0E3AA3 /* Pods-NeutronsReader.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 40;
+				CURRENT_PROJECT_VERSION = 41;
 				DEVELOPMENT_TEAM = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "NeutronsReader/NeutronsReader-Prefix.pch";
 				INFOPLIST_FILE = "NeutronsReader/NeutronsReader-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.13;
-				MARKETING_VERSION = 20.0;
+				MARKETING_VERSION = 21.0;
 				PRODUCT_BUNDLE_IDENTIFIER = ru.jinr.flerovlab.NeutronsReader;
 				PRODUCT_MODULE_NAME = NeutronsReader;
 				PRODUCT_NAME = NeutronsReader;

@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import SigmaSwiftStatistics
 
 class FolderStatistics {
     
@@ -18,15 +19,10 @@ class FolderStatistics {
     var calculationsEnd: Date?
     var secondsFromStart: TimeInterval = 0
     
-    var meanEnergy: Float {
-        if energyCount == 0 {
-            return 0
-        } else {
-            return Float(energySum/Double(energyCount))
-        }
+    var medianEnergy: Double {
+        return Sigma.median(energies) ?? 0.0
     }
-    fileprivate var energySum: Double = 0
-    fileprivate var energyCount: CUnsignedLong = 0
+    fileprivate var energies = [Double]()
     
     var integral: Float {
         return integralEvent?.getFloatValue() ?? 0
@@ -59,8 +55,7 @@ class FolderStatistics {
     }
     
     func handleEnergy(_ value: Float) {
-        energySum += Double(value)
-        energyCount += 1
+        energies.append(Double(value))
     }
     
     func handleIntergal(_ event: Event) {
