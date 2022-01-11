@@ -64,6 +64,7 @@ class SearchCriteria {
     var requiredWell = false
     var wellRecoilsAllowed = false
     var searchExtraFromLastParticle = false
+    var inBeamOnly = false
     var requiredTOF = false
     var useTOF2 = false
     var requiredVETO = false

@@ -118,6 +118,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         requiredWell = Settings.getBoolSetting(.RequiredWell)
         wellRecoilsAllowed = Settings.getBoolSetting(.WellRecoilsAllowed)
         searchExtraFromLastParticle = Settings.getBoolSetting(.SearchExtraFromLastParticle)
+        inBeamOnly = Settings.getBoolSetting(.InBeamOnly)
         requiredTOF = Settings.getBoolSetting(.RequiredTOF)
         useTOF2 = Settings.getBoolSetting(.UseTOF2)
         requiredVETO = Settings.getBoolSetting(.RequiredVETO)
@@ -241,6 +242,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBInspectable dynamic var wellRecoilsAllowed: Bool = false
     @IBOutlet weak var searchExtraFromLastParticleButton: NSButton!
     @IBInspectable dynamic var searchExtraFromLastParticle: Bool = false
+    @IBInspectable dynamic var inBeamOnly: Bool = false
     @IBInspectable dynamic var requiredTOF: Bool = false
     @IBInspectable dynamic var useTOF2: Bool = false
     @IBInspectable dynamic var requiredVETO: Bool = false
@@ -606,6 +608,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         sc.maxTOFValue = Double(sMaxTOFValue) ?? 0
         sc.unitsTOF = tofUnitsControl.selectedSegment == 0 ? .channels : .nanoseconds
         sc.maxTOFTime = UInt64(sMaxTOFTime) ?? 0
+        sc.inBeamOnly = inBeamOnly
         sc.requiredTOF = requiredTOF
         sc.useTOF2 = useTOF2
         sc.maxVETOTime = UInt64(sMaxVETOTime) ?? 0
@@ -883,6 +886,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             .RequiredWell: requiredWell,
             .WellRecoilsAllowed: wellRecoilsAllowed,
             .SearchExtraFromLastParticle: searchExtraFromLastParticle,
+            .InBeamOnly: inBeamOnly,
             .RequiredTOF: requiredTOF,
             .UseTOF2: useTOF2,
             .RequiredVETO: requiredVETO,
