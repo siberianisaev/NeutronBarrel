@@ -30,11 +30,8 @@ class DataProtocol {
             BeamBackground = dict["BeamFonHi"]
             BeamIntegral = dict["IntegralHi"]
             AlphaWell = getValues(ofTypes: ["AWel"])
-            alphaWellMaxEventId = AlphaWell.max() ?? 0
             AlphaWellFront = getValues(ofTypes: ["AWFr"])
-            alphaWellFrontMaxEventId = AlphaWellFront.max() ?? 0
             AlphaWellBack = getValues(ofTypes: ["AWBk"])
-            alphaWellBackMaxEventId = AlphaWellBack.max() ?? 0
             AlphaMotherFront = getValues(ofTypes: ["AFr"])
             AlphaDaughterFront = getValues(ofTypes: ["AdFr"])
             AlphaFront = AlphaMotherFront.union(AlphaDaughterFront)
@@ -72,11 +69,8 @@ class DataProtocol {
     fileprivate var NeutronsNew = Set<Int>()
     fileprivate var CycleTime: Int?
     fileprivate var AlphaWell = Set<Int>()
-    fileprivate var alphaWellMaxEventId: Int = 0
     fileprivate var AlphaWellFront = Set<Int>()
-    fileprivate var alphaWellFrontMaxEventId: Int = 0
     fileprivate var AlphaWellBack = Set<Int>()
-    fileprivate var alphaWellBackMaxEventId: Int = 0
     fileprivate var AlphaMotherFront = Set<Int>()
     fileprivate var AlphaDaughterFront = Set<Int>()
     fileprivate var AlphaFront = Set<Int>()
@@ -155,7 +149,7 @@ class DataProtocol {
             return cached
         }
         
-        let value = eventId <= alphaWellMaxEventId || (alphaWellFrontMaxEventId > 0 && eventId <= alphaWellFrontMaxEventId) || (alphaWellBackMaxEventId > 0 && eventId <= alphaWellBackMaxEventId) || isTOFEvent(eventId) != nil || isGammaEvent(eventId) || isNeutronsOldEvent(eventId) || isNeutronsNewEvent(eventId) || isNeutrons_N_Event(eventId) || isVETOEvent(eventId)
+        let value = isAlpha(eventId: eventId) || isTOFEvent(eventId) != nil || isGammaEvent(eventId) || isNeutronsOldEvent(eventId) || isNeutronsNewEvent(eventId) || isNeutrons_N_Event(eventId) || isVETOEvent(eventId)
         isValidEventIdForTimeCheckCache[eventId] = value
         return value
     }

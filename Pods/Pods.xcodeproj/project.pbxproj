@@ -58,18 +58,18 @@
 		490853A49719ACD6F8A04C112079525A /* SigmaSwiftStatistics.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = SigmaSwiftStatistics.release.xcconfig; sourceTree = "<group>"; };
 		50B55C76E9E0E4B5FFE3D2D92233E4D0 /* Normal.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Normal.swift; path = SigmaSwiftStatistics/Normal.swift; sourceTree = "<group>"; };
 		5481C6B9C8992FDF50EB2B5127F34C89 /* Pods-NeutronsReader-dummy.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = "Pods-NeutronsReader-dummy.m"; sourceTree = "<group>"; };
-		5C94D4532C22DB29F50B5DE601F379E2 /* Pods_NeutronsReader.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_NeutronsReader.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		5C94D4532C22DB29F50B5DE601F379E2 /* Pods_NeutronsReader.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = Pods_NeutronsReader.framework; path = "Pods-NeutronsReader.framework"; sourceTree = BUILT_PRODUCTS_DIR; };
 		66F0BC41E56BB385A365EDBD9D207F84 /* Skewness.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Skewness.swift; path = SigmaSwiftStatistics/Skewness.swift; sourceTree = "<group>"; };
 		6B67FA9E4FDEF321218ADF004C2268A0 /* Kurtosis.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Kurtosis.swift; path = SigmaSwiftStatistics/Kurtosis.swift; sourceTree = "<group>"; };
 		76C08ED2A0544B9E81635959F8F56BF0 /* SigmaSwiftStatistics-prefix.pch */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "SigmaSwiftStatistics-prefix.pch"; sourceTree = "<group>"; };
 		8111F385671614A627EEBE2FEA949C47 /* SigmaSwiftStatistics-umbrella.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "SigmaSwiftStatistics-umbrella.h"; sourceTree = "<group>"; };
-		833D42D148A8212A3664D1E71A056A08 /* SigmaSwiftStatistics.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = SigmaSwiftStatistics.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		833D42D148A8212A3664D1E71A056A08 /* SigmaSwiftStatistics.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = SigmaSwiftStatistics.framework; path = SigmaSwiftStatistics.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		8BE0FE3D7A329B7F21EBE46BA15DFADA /* StandardErrorOfTheMean.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = StandardErrorOfTheMean.swift; path = SigmaSwiftStatistics/StandardErrorOfTheMean.swift; sourceTree = "<group>"; };
 		91F3F5A721A4A500FB6B1D9CB67B8106 /* Pods-NeutronsReader-Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "Pods-NeutronsReader-Info.plist"; sourceTree = "<group>"; };
 		94D03F1A6BFA42683752409F53C7C267 /* Pods-NeutronsReader-umbrella.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "Pods-NeutronsReader-umbrella.h"; sourceTree = "<group>"; };
 		9AD71CA30BCC16F2C60A98BA24D64021 /* Percentile.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Percentile.swift; path = SigmaSwiftStatistics/Percentile.swift; sourceTree = "<group>"; };
 		9C1155DCDE37356BD043B38B1C4CA3F0 /* Quantiles.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Quantiles.swift; path = SigmaSwiftStatistics/Quantiles.swift; sourceTree = "<group>"; };
-		9D940727FF8FB9C785EB98E56350EF41 /* Podfile */ = {isa = PBXFileReference; explicitFileType = text.script.ruby; includeInIndex = 1; indentWidth = 2; name = Podfile; path = ../Podfile; sourceTree = SOURCE_ROOT; tabWidth = 2; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
+		9D940727FF8FB9C785EB98E56350EF41 /* Podfile */ = {isa = PBXFileReference; explicitFileType = text.script.ruby; includeInIndex = 1; indentWidth = 2; lastKnownFileType = text; name = Podfile; path = ../Podfile; sourceTree = SOURCE_ROOT; tabWidth = 2; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
 		A25C9D494D05A427A485E23720630697 /* Frequencies.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Frequencies.swift; path = SigmaSwiftStatistics/Frequencies.swift; sourceTree = "<group>"; };
 		ABC492C0A4FB7B943767E4AF9D8AA202 /* Pods-NeutronsReader-acknowledgements.markdown */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; path = "Pods-NeutronsReader-acknowledgements.markdown"; sourceTree = "<group>"; };
 		AE066DFC2F5C4609CB7AA12BD1B3DC6A /* Covariance.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Covariance.swift; path = SigmaSwiftStatistics/Covariance.swift; sourceTree = "<group>"; };
@@ -164,6 +164,7 @@
 				0785BEC90BEAD3FAE11EA21BD0F9CF70 /* Variance.swift */,
 				395E13EEA0525DBCBC443487D2ADCA70 /* Support Files */,
 			);
+			name = SigmaSwiftStatistics;
 			path = SigmaSwiftStatistics;
 			sourceTree = "<group>";
 		};
@@ -277,7 +278,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 1100;
-				LastUpgradeCheck = 1310;
+				LastUpgradeCheck = 1100;
 			};
 			buildConfigurationList = 4821239608C13582E20E6DA73FD5F1F9 /* Build configuration list for PBXProject "Pods" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -365,6 +366,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 490853A49719ACD6F8A04C112079525A /* SigmaSwiftStatistics.release.xcconfig */;
 			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
 				CODE_SIGN_IDENTITY = "";
 				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
@@ -419,7 +421,6 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -462,6 +463,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = D68EA2E6551A2FD4C60B6BE31793E9E6 /* SigmaSwiftStatistics.debug.xcconfig */;
 			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
 				CODE_SIGN_IDENTITY = "";
 				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
@@ -516,7 +518,6 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -544,7 +545,8 @@
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRIP_INSTALLED_PRODUCT = NO;
-				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 5.0;
 				SYMROOT = "${SRCROOT}/../build";
 			};
@@ -555,6 +557,7 @@
 			baseConfigurationReference = 33CB2E731591DAF038B71E23DBAF9FF6 /* Pods-NeutronsReader.debug.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = NO;
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
 				CLANG_ENABLE_OBJC_WEAK = NO;
 				CODE_SIGN_IDENTITY = "";
 				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "";
@@ -590,6 +593,7 @@
 			baseConfigurationReference = E8561A774D3B8C2AD876C0809EEE32EE /* Pods-NeutronsReader.release.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = NO;
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
 				CLANG_ENABLE_OBJC_WEAK = NO;
 				CODE_SIGN_IDENTITY = "";
 				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "";

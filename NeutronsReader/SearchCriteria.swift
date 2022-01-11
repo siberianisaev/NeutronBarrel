@@ -34,7 +34,6 @@ class SearchCriteria {
     var recoilBackMinEnergy: Double = 0
     var recoilBackMaxEnergy: Double = 0
     var searchRecoilBackByFact: Bool = false
-    var expressAnalysis: Bool = false
     var minTOFValue: Double = 0
     var maxTOFValue: Double = 0
     var recoilMinTime: CUnsignedLongLong = 0

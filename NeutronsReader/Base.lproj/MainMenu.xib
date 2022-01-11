@@ -2904,17 +2904,6 @@
                             </binding>
                         </connections>
                     </textField>
-                    <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="s6U-Sb-FzW">
-                        <rect key="frame" x="68" y="26" width="130" height="18"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                        <buttonCell key="cell" type="check" title="Express analysis" bezelStyle="regularSquare" imagePosition="left" inset="2" id="l7I-jJ-KpC">
-                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                            <font key="font" metaFont="system"/>
-                        </buttonCell>
-                        <connections>
-                            <binding destination="Voe-Tx-rLC" name="value" keyPath="self.expressAnalysis" id="HBq-Bl-3vJ"/>
-                        </connections>
-                    </button>
                 </subviews>
             </view>
             <point key="canvasLocation" x="308" y="548"/>

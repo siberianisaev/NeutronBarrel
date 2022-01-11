@@ -159,7 +159,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         searchFissionBack2ByFact = Settings.getBoolSetting(.SearchFissionBack2ByFact)
         searchFissionBack3ByFact = Settings.getBoolSetting(.SearchFissionBack3ByFact)
         searchRecoilBackByFact = Settings.getBoolSetting(.SearchRecoilBackByFact)
-        expressAnalysis = Settings.getBoolSetting(.ExpressAnalysis)
         
         setupRecoilTypes()
         setupRecoilBackTypes()
@@ -346,7 +345,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             setupRecoilBackEnergyView()
         }
     }
-    @IBInspectable dynamic var expressAnalysis: Bool = false
     
     fileprivate let recoilTypes: [SearchType] = [.recoil, .heavy]
     fileprivate var selectedRecoilType: SearchType {
@@ -553,7 +551,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         sc.fissionAlphaWellMaxAngle = Double(sMaxFissionWellAngle) ?? 0
         sc.searchFissionAlphaBackByFact = searchFissionBackByFact
         sc.searchRecoilBackByFact = searchRecoilBackByFact
-        sc.expressAnalysis = expressAnalysis
         sc.fissionAlphaMaxTime = UInt64(sMaxFissionTime) ?? 0
         sc.fissionAlphaBackBackwardMaxTime = UInt64(sMaxFissionBackBackwardTime) ?? 0
         sc.fissionAlphaWellBackwardMaxTime = UInt64(sMaxFissionWellBackwardTime) ?? 0
@@ -936,7 +933,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             .SearchFissionBack3ByFact: searchFissionBack3ByFact,
             .SearchRecoilBackByFact: searchRecoilBackByFact,
             .SearchWell: searchWell,
-            .ExpressAnalysis: expressAnalysis,
             .ResultsFolderName: sResultsFolderName,
             .FocalDetectorType: focalDetectorControl.selectedSegment
         ]
