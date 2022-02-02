@@ -2310,17 +2310,6 @@
                                             </textField>
                                         </subviews>
                                     </customView>
-                                    <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="9nc-rd-YF2">
-                                        <rect key="frame" x="12" y="19" width="106" height="18"/>
-                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                        <buttonCell key="cell" type="check" title="In-beam only" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="KHt-LX-Ljz">
-                                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                                            <font key="font" metaFont="system"/>
-                                        </buttonCell>
-                                        <connections>
-                                            <binding destination="Voe-Tx-rLC" name="value" keyPath="self.inBeamOnly" id="gXT-Um-bE6"/>
-                                        </connections>
-                                    </button>
                                 </subviews>
                             </customView>
                         </subviews>
@@ -2915,6 +2904,28 @@
                             </binding>
                         </connections>
                     </textField>
+                    <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="9nc-rd-YF2">
+                        <rect key="frame" x="268" y="40" width="106" height="18"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="check" title="In-beam only" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="KHt-LX-Ljz">
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                            <font key="font" metaFont="system"/>
+                        </buttonCell>
+                        <connections>
+                            <binding destination="Voe-Tx-rLC" name="value" keyPath="self.inBeamOnly" id="gXT-Um-bE6"/>
+                        </connections>
+                    </button>
+                    <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="7Pd-vs-la7">
+                        <rect key="frame" x="401" y="40" width="110" height="18"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="check" title="Overflow only" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="ZoC-OE-TXD">
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                            <font key="font" metaFont="system"/>
+                        </buttonCell>
+                        <connections>
+                            <binding destination="Voe-Tx-rLC" name="value" keyPath="self.overflowOnly" id="KFW-Yg-3Ql"/>
+                        </connections>
+                    </button>
                 </subviews>
             </view>
             <point key="canvasLocation" x="308" y="548"/>

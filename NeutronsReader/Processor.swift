@@ -322,6 +322,11 @@ class Processor {
         } else if isFront(event, type: criteria.startParticleType) {
             firstParticlePerAct.currentEventTime = UInt64(event.param1)
             
+            if (criteria.inBeamOnly && !isInBeam(event)) || (criteria.overflowOnly && !isOverflow(event)) {
+                clearActInfo()
+                return
+            }
+            
             var gamma: DetectorMatch?
             let isRecoilSearch = criteria.startFromRecoil()
             if isRecoilSearch {
@@ -330,11 +335,6 @@ class Processor {
                     return
                 }
             } else { // FFron or AFron
-                if criteria.inBeamOnly && !isInBeam(event) {
-                    clearActInfo()
-                    return
-                }
-                
                 let energy = getEnergy(event, type: criteria.startParticleType)
                 if energy < criteria.fissionAlphaFrontMinEnergy || energy > criteria.fissionAlphaFrontMaxEnergy {
                     clearActInfo()
@@ -1058,6 +1058,10 @@ class Processor {
     
     fileprivate func isInBeam(_ event: Event) -> Bool {
         return ((event.param3 >> 14) & 0x0F) == 1
+    }
+    
+    fileprivate func isOverflow(_ event: Event) -> Bool {
+        return ((event.param3 >> 13) & 0x00F) == 1
     }
     
     fileprivate func isGammaEvent(_ event: Event) -> Bool {
