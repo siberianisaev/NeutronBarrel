@@ -69,3 +69,11 @@ for step in 0...99999 {
     }
     print(String(format: "%f,%.5f", e, chi2))
 }
+
+let recoil: CUnsignedShort = 0b1000_0000_0000_0000
+let beam: CUnsignedShort = 0b1100_0000_0000_0000
+let overflow: CUnsignedShort = 0b1010_0000_0000_0000
+print(String(recoil >> 15, radix: 2)) // 1st bit
+print(String((beam << 1) >> 15, radix: 2)) // 2nd bit
+print(String((overflow << 2) >> 15, radix: 2)) // 3rd bit
+

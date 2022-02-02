@@ -1056,12 +1056,25 @@ class Processor {
         return (event.param3 >> 15) == 1
     }
     
+    /**
+     Second bit from param3 related to beam state:
+     0 - on,
+     1 - off (!)
+     */
     fileprivate func isInBeam(_ event: Event) -> Bool {
-        return ((event.param3 >> 14) & 0x0F) == 1
+        // TODO: this is for SHELS separator. Handle reverse logic for GRAND separator.
+        let outBeam = (event.param3 << 1) >> 15
+        return outBeam != 1
     }
     
+    /**
+     Third bit from param3 is overflow with different signal:
+     0 - no,
+     1 - yes
+     */
     fileprivate func isOverflow(_ event: Event) -> Bool {
-        return ((event.param3 >> 13) & 0x00F) == 1
+        let overflow = (event.param3 << 2) >> 15
+        return overflow == 1
     }
     
     fileprivate func isGammaEvent(_ event: Event) -> Bool {
