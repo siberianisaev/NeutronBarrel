@@ -89,7 +89,6 @@
 		65C4D739264A93AF0064A93E /* SFiNx_counters_geometry.csv */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = SFiNx_counters_geometry.csv; sourceTree = "<group>"; };
 		65C4D73B264A97B10064A93E /* NeutronDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NeutronDetector.swift; sourceTree = "<group>"; };
 		65C4D73E2656834F0064A93E /* chi.playground */ = {isa = PBXFileReference; lastKnownFileType = file.playground; path = chi.playground; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
-		65C4D73F265E6D7E0064A93E /* efficiency_leastsq.ipynb */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = efficiency_leastsq.ipynb; sourceTree = "<group>"; };
 		65DA929E20D54F65002643DB /* SearchType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchType.swift; sourceTree = "<group>"; };
 		65DA92A120D5527D002643DB /* BeamState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeamState.swift; sourceTree = "<group>"; };
 		65DA92A420D57794002643DB /* DetectorMatchItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetectorMatchItem.swift; sourceTree = "<group>"; };
@@ -207,7 +206,6 @@
 			children = (
 				6562B3512624599C0070A491 /* SF_sources */,
 				6562B35426245A800070A491 /* NeutronTotalEfficiency.swift */,
-				65C4D73F265E6D7E0064A93E /* efficiency_leastsq.ipynb */,
 				65C4D73E2656834F0064A93E /* chi.playground */,
 			);
 			name = NeutronEfficiency;
