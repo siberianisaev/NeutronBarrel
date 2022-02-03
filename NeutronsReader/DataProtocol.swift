@@ -105,7 +105,7 @@ class DataProtocol {
                 
                 let words = Event.words
                 for line in content.components(separatedBy: CharacterSet.newlines) {
-                    if false == line.contains(":") {
+                    if false == line.contains(":") || line.starts(with: "#") {
                         continue
                     }
                     
