@@ -79,10 +79,11 @@ class ResultsTable {
         return "\(keyRecoil)FronMarker"
     }
     fileprivate func keyColumnRecoilFrontDeltaTime(log: Bool) -> String {
-        var s = "dT(\(keyRecoil)Fron-$Fron)"
+        var s = ""
         if log {
-            s += "Log"
+            s += "Log2"
         }
+        s += "dT(\(keyRecoil)Fron-$Fron)"
         return s
     }
     fileprivate var keyColumnRecoilBackEvent: String {
@@ -495,7 +496,7 @@ class ResultsTable {
                         if column == keyColumnRecoilFrontDeltaTime(log: false) {
                             field = String(format: "%lld", deltaTime)
                         } else {
-                            field = String(format: "%.7f", log10(log2(2) * abs(Float(deltaTime))))
+                            field = String(format: "%.7f", log2(abs(Float(deltaTime))))
                         }
                     }
                 case keyColumnRecoilBackEvent:
