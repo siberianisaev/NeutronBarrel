@@ -6,7 +6,7 @@ def shared_pods
     pod 'SigmaSwiftStatistics'
 end
 
-target 'NeutronsReader' do
+target 'NeutronBarrel' do
     shared_pods
 end
 

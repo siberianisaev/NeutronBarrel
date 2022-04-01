@@ -10,30 +10,30 @@
 		100D804EDF818A95E8D8C91ECD6344B3 /* CentralMoment.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDD01E0B502CF56ED899716DE21D546D /* CentralMoment.swift */; };
 		110CCCE7C42C5B022E56FB87C40E689E /* Skewness.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66F0BC41E56BB385A365EDBD9D207F84 /* Skewness.swift */; };
 		28C1787587C26428A0CF470D8201D3A8 /* CoefficientVariation.swift in Sources */ = {isa = PBXBuildFile; fileRef = F70523BA014A5D7C09BFF75B7FB5BBC0 /* CoefficientVariation.swift */; };
+		36905458AD6025FADE75E4C8659D43EC /* Pods-NeutronBarrel-umbrella.h in Headers */ = {isa = PBXBuildFile; fileRef = 087FD1CC0F9588AE1E4A4E26977BDB43 /* Pods-NeutronBarrel-umbrella.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3EA6186B7D26288950801EE947235740 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F940C819049CFF8741C0F5E3E075E607 /* Cocoa.framework */; };
 		41D93B270A46912F6761A69E419C2414 /* SigmaSwiftStatistics-dummy.m in Sources */ = {isa = PBXBuildFile; fileRef = 152ECFB9DBA36419A5489E6D518677C3 /* SigmaSwiftStatistics-dummy.m */; };
 		45A11904B7C5F2A5700D4B908F517622 /* Sigma.swift in Sources */ = {isa = PBXBuildFile; fileRef = 210921AEB3DD9F6CB2E56547D7D57BF7 /* Sigma.swift */; };
-		46C0A813868CD66BC7A4FD27DD24583F /* Pods-NeutronsReader-dummy.m in Sources */ = {isa = PBXBuildFile; fileRef = 5481C6B9C8992FDF50EB2B5127F34C89 /* Pods-NeutronsReader-dummy.m */; };
 		4F039FC34928E6E81317C1527A3D3BC5 /* StandardErrorOfTheMean.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BE0FE3D7A329B7F21EBE46BA15DFADA /* StandardErrorOfTheMean.swift */; };
 		4F4F3EF92011EDC3BBE1F115AFF3F80E /* Covariance.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE066DFC2F5C4609CB7AA12BD1B3DC6A /* Covariance.swift */; };
 		55271174EEFD8A761866CB70DF51437B /* Kurtosis.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B67FA9E4FDEF321218ADF004C2268A0 /* Kurtosis.swift */; };
 		5E688BB4EA41A2B7093446D4DFE70DED /* UniqueValues.swift in Sources */ = {isa = PBXBuildFile; fileRef = F953D6D5467FE9089BD74A8ADA0A968A /* UniqueValues.swift */; };
-		665F2B8A0E53C1E7967B7760107CB89E /* Pods-NeutronsReader-umbrella.h in Headers */ = {isa = PBXBuildFile; fileRef = 94D03F1A6BFA42683752409F53C7C267 /* Pods-NeutronsReader-umbrella.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		6D4A47371A5DBA19CEC1FEF2006B4BA1 /* StandardDeviation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34C7BA2E0360EB6F57D98C2A701A338D /* StandardDeviation.swift */; };
 		7D3BCAA2C73654D7F8BE8A4939DFAB47 /* SigmaSwiftStatistics-umbrella.h in Headers */ = {isa = PBXBuildFile; fileRef = 8111F385671614A627EEBE2FEA949C47 /* SigmaSwiftStatistics-umbrella.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		8D9040EA80EE2EC2557784A0E0E3F807 /* Median.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EC63E5C88AB13DC61F75FBF8580FD8A /* Median.swift */; };
 		915159A243429A39F4EE81DBD0EF1B2B /* Rank.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AC28CCA90A2DDB31E355EB3DBE71B34 /* Rank.swift */; };
 		97EB12C3248E0D254D3F2933A46FC062 /* Frequencies.swift in Sources */ = {isa = PBXBuildFile; fileRef = A25C9D494D05A427A485E23720630697 /* Frequencies.swift */; };
 		9ECCC3DCFC01ED8C97BB4084B4CE59B2 /* Variance.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0785BEC90BEAD3FAE11EA21BD0F9CF70 /* Variance.swift */; };
+		B139715F108D27B5C02EFB8DC13AA2D8 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F940C819049CFF8741C0F5E3E075E607 /* Cocoa.framework */; };
 		BA949F09E6210F6C3AA8370F5FEB3EA5 /* Quantiles.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C1155DCDE37356BD043B38B1C4CA3F0 /* Quantiles.swift */; };
 		BB5D09D83B2A0C4033A6F13216D58E58 /* Normal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50B55C76E9E0E4B5FFE3D2D92233E4D0 /* Normal.swift */; };
 		CFACFEE8FCE909CF6057BA04E0812BA9 /* Pearson.swift in Sources */ = {isa = PBXBuildFile; fileRef = 060054EAAA1577075E1DF7AA043B9482 /* Pearson.swift */; };
-		F7A429C6757C30EE08B4809D5429B83F /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F940C819049CFF8741C0F5E3E075E607 /* Cocoa.framework */; };
+		F74944EA39E6E6F08E80A56B02CBB042 /* Pods-NeutronBarrel-dummy.m in Sources */ = {isa = PBXBuildFile; fileRef = 47EFCA394627A7CC65E6691C3D5477CD /* Pods-NeutronBarrel-dummy.m */; };
 		F957AC3082FDF5A99765C915986097B7 /* Percentile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9AD71CA30BCC16F2C60A98BA24D64021 /* Percentile.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		C0E1499AE7C5A8322380F5BEDFFA0E99 /* PBXContainerItemProxy */ = {
+		07B6FCD9AA1337AEB9E4BBFA64668948 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = BFDFE7DC352907FC980B868725387E98 /* Project object */;
 			proxyType = 1;
@@ -43,39 +43,39 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		0187881828894B46684FA2A994C90D03 /* Pods-NeutronsReader.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.module; path = "Pods-NeutronsReader.modulemap"; sourceTree = "<group>"; };
+		041970531F73221F7130FBA0C04DCFDB /* Pods_NeutronBarrel.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = Pods_NeutronBarrel.framework; path = "Pods-NeutronBarrel.framework"; sourceTree = BUILT_PRODUCTS_DIR; };
 		060054EAAA1577075E1DF7AA043B9482 /* Pearson.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Pearson.swift; path = SigmaSwiftStatistics/Pearson.swift; sourceTree = "<group>"; };
+		060D13CBF2DE8CDC07D25974D959B238 /* Pods-NeutronBarrel-acknowledgements.markdown */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; path = "Pods-NeutronBarrel-acknowledgements.markdown"; sourceTree = "<group>"; };
 		0785BEC90BEAD3FAE11EA21BD0F9CF70 /* Variance.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Variance.swift; path = SigmaSwiftStatistics/Variance.swift; sourceTree = "<group>"; };
+		087FD1CC0F9588AE1E4A4E26977BDB43 /* Pods-NeutronBarrel-umbrella.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "Pods-NeutronBarrel-umbrella.h"; sourceTree = "<group>"; };
 		0AC28CCA90A2DDB31E355EB3DBE71B34 /* Rank.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Rank.swift; path = SigmaSwiftStatistics/Rank.swift; sourceTree = "<group>"; };
-		0FCC6633944D65A05D6EFA5AF16AF6D3 /* Pods-NeutronsReader-acknowledgements.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "Pods-NeutronsReader-acknowledgements.plist"; sourceTree = "<group>"; };
 		152ECFB9DBA36419A5489E6D518677C3 /* SigmaSwiftStatistics-dummy.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = "SigmaSwiftStatistics-dummy.m"; sourceTree = "<group>"; };
 		210921AEB3DD9F6CB2E56547D7D57BF7 /* Sigma.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Sigma.swift; path = SigmaSwiftStatistics/Sigma.swift; sourceTree = "<group>"; };
-		33CB2E731591DAF038B71E23DBAF9FF6 /* Pods-NeutronsReader.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = "Pods-NeutronsReader.debug.xcconfig"; sourceTree = "<group>"; };
 		34C7BA2E0360EB6F57D98C2A701A338D /* StandardDeviation.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = StandardDeviation.swift; path = SigmaSwiftStatistics/StandardDeviation.swift; sourceTree = "<group>"; };
-		3E9CC9BA5186ECC9C5D92938ADE2E3D2 /* Pods-NeutronsReader-frameworks.sh */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.script.sh; path = "Pods-NeutronsReader-frameworks.sh"; sourceTree = "<group>"; };
+		3A1DC7A47BCB999246F34C9FC8700C0E /* Pods-NeutronBarrel-acknowledgements.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "Pods-NeutronBarrel-acknowledgements.plist"; sourceTree = "<group>"; };
 		3EC63E5C88AB13DC61F75FBF8580FD8A /* Median.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Median.swift; path = SigmaSwiftStatistics/Median.swift; sourceTree = "<group>"; };
 		43876884F2DEEEB65AD9F342D1B062F7 /* SigmaSwiftStatistics-Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "SigmaSwiftStatistics-Info.plist"; sourceTree = "<group>"; };
+		47EFCA394627A7CC65E6691C3D5477CD /* Pods-NeutronBarrel-dummy.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = "Pods-NeutronBarrel-dummy.m"; sourceTree = "<group>"; };
 		490853A49719ACD6F8A04C112079525A /* SigmaSwiftStatistics.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = SigmaSwiftStatistics.release.xcconfig; sourceTree = "<group>"; };
 		50B55C76E9E0E4B5FFE3D2D92233E4D0 /* Normal.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Normal.swift; path = SigmaSwiftStatistics/Normal.swift; sourceTree = "<group>"; };
-		5481C6B9C8992FDF50EB2B5127F34C89 /* Pods-NeutronsReader-dummy.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = "Pods-NeutronsReader-dummy.m"; sourceTree = "<group>"; };
-		5C94D4532C22DB29F50B5DE601F379E2 /* Pods_NeutronsReader.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = Pods_NeutronsReader.framework; path = "Pods-NeutronsReader.framework"; sourceTree = BUILT_PRODUCTS_DIR; };
+		637CB2B74E7494D361E2C8B2133763A6 /* Pods-NeutronBarrel.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = "Pods-NeutronBarrel.release.xcconfig"; sourceTree = "<group>"; };
 		66F0BC41E56BB385A365EDBD9D207F84 /* Skewness.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Skewness.swift; path = SigmaSwiftStatistics/Skewness.swift; sourceTree = "<group>"; };
 		6B67FA9E4FDEF321218ADF004C2268A0 /* Kurtosis.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Kurtosis.swift; path = SigmaSwiftStatistics/Kurtosis.swift; sourceTree = "<group>"; };
 		76C08ED2A0544B9E81635959F8F56BF0 /* SigmaSwiftStatistics-prefix.pch */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "SigmaSwiftStatistics-prefix.pch"; sourceTree = "<group>"; };
 		8111F385671614A627EEBE2FEA949C47 /* SigmaSwiftStatistics-umbrella.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "SigmaSwiftStatistics-umbrella.h"; sourceTree = "<group>"; };
+		82653EC5E1069D8F1A4FFD2A9AF05E8F /* Pods-NeutronBarrel-frameworks.sh */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.script.sh; path = "Pods-NeutronBarrel-frameworks.sh"; sourceTree = "<group>"; };
 		833D42D148A8212A3664D1E71A056A08 /* SigmaSwiftStatistics.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = SigmaSwiftStatistics.framework; path = SigmaSwiftStatistics.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		8BE0FE3D7A329B7F21EBE46BA15DFADA /* StandardErrorOfTheMean.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = StandardErrorOfTheMean.swift; path = SigmaSwiftStatistics/StandardErrorOfTheMean.swift; sourceTree = "<group>"; };
-		91F3F5A721A4A500FB6B1D9CB67B8106 /* Pods-NeutronsReader-Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "Pods-NeutronsReader-Info.plist"; sourceTree = "<group>"; };
-		94D03F1A6BFA42683752409F53C7C267 /* Pods-NeutronsReader-umbrella.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "Pods-NeutronsReader-umbrella.h"; sourceTree = "<group>"; };
 		9AD71CA30BCC16F2C60A98BA24D64021 /* Percentile.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Percentile.swift; path = SigmaSwiftStatistics/Percentile.swift; sourceTree = "<group>"; };
 		9C1155DCDE37356BD043B38B1C4CA3F0 /* Quantiles.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Quantiles.swift; path = SigmaSwiftStatistics/Quantiles.swift; sourceTree = "<group>"; };
 		9D940727FF8FB9C785EB98E56350EF41 /* Podfile */ = {isa = PBXFileReference; explicitFileType = text.script.ruby; includeInIndex = 1; indentWidth = 2; lastKnownFileType = text; name = Podfile; path = ../Podfile; sourceTree = SOURCE_ROOT; tabWidth = 2; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
 		A25C9D494D05A427A485E23720630697 /* Frequencies.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Frequencies.swift; path = SigmaSwiftStatistics/Frequencies.swift; sourceTree = "<group>"; };
-		ABC492C0A4FB7B943767E4AF9D8AA202 /* Pods-NeutronsReader-acknowledgements.markdown */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; path = "Pods-NeutronsReader-acknowledgements.markdown"; sourceTree = "<group>"; };
 		AE066DFC2F5C4609CB7AA12BD1B3DC6A /* Covariance.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Covariance.swift; path = SigmaSwiftStatistics/Covariance.swift; sourceTree = "<group>"; };
 		B7A765900343EB6EB95253523FA9793E /* SigmaSwiftStatistics.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.module; path = SigmaSwiftStatistics.modulemap; sourceTree = "<group>"; };
+		C1F09F20BB9133C339FEFAA491F3FEB1 /* Pods-NeutronBarrel-Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "Pods-NeutronBarrel-Info.plist"; sourceTree = "<group>"; };
 		D68EA2E6551A2FD4C60B6BE31793E9E6 /* SigmaSwiftStatistics.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = SigmaSwiftStatistics.debug.xcconfig; sourceTree = "<group>"; };
-		E8561A774D3B8C2AD876C0809EEE32EE /* Pods-NeutronsReader.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = "Pods-NeutronsReader.release.xcconfig"; sourceTree = "<group>"; };
+		DE77EDA95CA5460079BAB7138C193E17 /* Pods-NeutronBarrel.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = "Pods-NeutronBarrel.debug.xcconfig"; sourceTree = "<group>"; };
+		F53566E5F9E9E504D558CDBC778E7F15 /* Pods-NeutronBarrel.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.module; path = "Pods-NeutronBarrel.modulemap"; sourceTree = "<group>"; };
 		F70523BA014A5D7C09BFF75B7FB5BBC0 /* CoefficientVariation.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CoefficientVariation.swift; path = SigmaSwiftStatistics/CoefficientVariation.swift; sourceTree = "<group>"; };
 		F940C819049CFF8741C0F5E3E075E607 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.14.sdk/System/Library/Frameworks/Cocoa.framework; sourceTree = DEVELOPER_DIR; };
 		F953D6D5467FE9089BD74A8ADA0A968A /* UniqueValues.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = UniqueValues.swift; path = SigmaSwiftStatistics/UniqueValues.swift; sourceTree = "<group>"; };
@@ -91,11 +91,11 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		DF1FAA507FE8BEFF915C7540AF675683 /* Frameworks */ = {
+		7946AA9DE231CE8B8C72480B370B3887 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F7A429C6757C30EE08B4809D5429B83F /* Cocoa.framework in Frameworks */,
+				B139715F108D27B5C02EFB8DC13AA2D8 /* Cocoa.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -108,23 +108,6 @@
 				40E55BA16140DDB446A95EBC0E2289B8 /* SigmaSwiftStatistics */,
 			);
 			name = Pods;
-			sourceTree = "<group>";
-		};
-		22AB271EEEAD95FDD63F550885F01186 /* Pods-NeutronsReader */ = {
-			isa = PBXGroup;
-			children = (
-				0187881828894B46684FA2A994C90D03 /* Pods-NeutronsReader.modulemap */,
-				ABC492C0A4FB7B943767E4AF9D8AA202 /* Pods-NeutronsReader-acknowledgements.markdown */,
-				0FCC6633944D65A05D6EFA5AF16AF6D3 /* Pods-NeutronsReader-acknowledgements.plist */,
-				5481C6B9C8992FDF50EB2B5127F34C89 /* Pods-NeutronsReader-dummy.m */,
-				3E9CC9BA5186ECC9C5D92938ADE2E3D2 /* Pods-NeutronsReader-frameworks.sh */,
-				91F3F5A721A4A500FB6B1D9CB67B8106 /* Pods-NeutronsReader-Info.plist */,
-				94D03F1A6BFA42683752409F53C7C267 /* Pods-NeutronsReader-umbrella.h */,
-				33CB2E731591DAF038B71E23DBAF9FF6 /* Pods-NeutronsReader.debug.xcconfig */,
-				E8561A774D3B8C2AD876C0809EEE32EE /* Pods-NeutronsReader.release.xcconfig */,
-			);
-			name = "Pods-NeutronsReader";
-			path = "Target Support Files/Pods-NeutronsReader";
 			sourceTree = "<group>";
 		};
 		395E13EEA0525DBCBC443487D2ADCA70 /* Support Files */ = {
@@ -168,10 +151,35 @@
 			path = SigmaSwiftStatistics;
 			sourceTree = "<group>";
 		};
-		99157FD104F0115A1C06299505D973F5 /* Products */ = {
+		4A76C38CA7AF2110A45D95ECCECF9A1A /* Pods-NeutronBarrel */ = {
 			isa = PBXGroup;
 			children = (
-				5C94D4532C22DB29F50B5DE601F379E2 /* Pods_NeutronsReader.framework */,
+				F53566E5F9E9E504D558CDBC778E7F15 /* Pods-NeutronBarrel.modulemap */,
+				060D13CBF2DE8CDC07D25974D959B238 /* Pods-NeutronBarrel-acknowledgements.markdown */,
+				3A1DC7A47BCB999246F34C9FC8700C0E /* Pods-NeutronBarrel-acknowledgements.plist */,
+				47EFCA394627A7CC65E6691C3D5477CD /* Pods-NeutronBarrel-dummy.m */,
+				82653EC5E1069D8F1A4FFD2A9AF05E8F /* Pods-NeutronBarrel-frameworks.sh */,
+				C1F09F20BB9133C339FEFAA491F3FEB1 /* Pods-NeutronBarrel-Info.plist */,
+				087FD1CC0F9588AE1E4A4E26977BDB43 /* Pods-NeutronBarrel-umbrella.h */,
+				DE77EDA95CA5460079BAB7138C193E17 /* Pods-NeutronBarrel.debug.xcconfig */,
+				637CB2B74E7494D361E2C8B2133763A6 /* Pods-NeutronBarrel.release.xcconfig */,
+			);
+			name = "Pods-NeutronBarrel";
+			path = "Target Support Files/Pods-NeutronBarrel";
+			sourceTree = "<group>";
+		};
+		9C5D8F947D5E72479C7F65F19CCE3C31 /* Targets Support Files */ = {
+			isa = PBXGroup;
+			children = (
+				4A76C38CA7AF2110A45D95ECCECF9A1A /* Pods-NeutronBarrel */,
+			);
+			name = "Targets Support Files";
+			sourceTree = "<group>";
+		};
+		A52E5FAA18EE7DC2CDD0B44CCEC07B48 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				041970531F73221F7130FBA0C04DCFDB /* Pods_NeutronBarrel.framework */,
 				833D42D148A8212A3664D1E71A056A08 /* SigmaSwiftStatistics.framework */,
 			);
 			name = Products;
@@ -191,8 +199,8 @@
 				9D940727FF8FB9C785EB98E56350EF41 /* Podfile */,
 				E0A1E60606E0BF6E2E10F1F01350DFE8 /* Frameworks */,
 				1ED9F2509C9B54076ECC88E5F4CE5DE7 /* Pods */,
-				99157FD104F0115A1C06299505D973F5 /* Products */,
-				FE7BD943C40087632A5C31F782484B5D /* Targets Support Files */,
+				A52E5FAA18EE7DC2CDD0B44CCEC07B48 /* Products */,
+				9C5D8F947D5E72479C7F65F19CCE3C31 /* Targets Support Files */,
 			);
 			sourceTree = "<group>";
 		};
@@ -204,22 +212,14 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		FE7BD943C40087632A5C31F782484B5D /* Targets Support Files */ = {
-			isa = PBXGroup;
-			children = (
-				22AB271EEEAD95FDD63F550885F01186 /* Pods-NeutronsReader */,
-			);
-			name = "Targets Support Files";
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
-		519035CFD8807A2AF703C70DB6789861 /* Headers */ = {
+		22F8D02E9C43DDC03FC0C490DD75C698 /* Headers */ = {
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				665F2B8A0E53C1E7967B7760107CB89E /* Pods-NeutronsReader-umbrella.h in Headers */,
+				36905458AD6025FADE75E4C8659D43EC /* Pods-NeutronBarrel-umbrella.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -234,25 +234,6 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
-		3D430E55E531C82DFAB4B350D8D8C6AF /* Pods-NeutronsReader */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 4D6B003FAA68C297C9C89A09BDA64DFA /* Build configuration list for PBXNativeTarget "Pods-NeutronsReader" */;
-			buildPhases = (
-				519035CFD8807A2AF703C70DB6789861 /* Headers */,
-				A6D2B20D8D9988D33A9AC13EFB9789DC /* Sources */,
-				DF1FAA507FE8BEFF915C7540AF675683 /* Frameworks */,
-				C8C4FDE1596211584713AFB3C5817EA2 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				75760B4F7D5A44AB73C537659A064CA6 /* PBXTargetDependency */,
-			);
-			name = "Pods-NeutronsReader";
-			productName = "Pods-NeutronsReader";
-			productReference = 5C94D4532C22DB29F50B5DE601F379E2 /* Pods_NeutronsReader.framework */;
-			productType = "com.apple.product-type.framework";
-		};
 		92728B5A26D593E85BE984F4353EBE28 /* SigmaSwiftStatistics */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 547DAF5BEF7C59359B2E9C81066593A5 /* Build configuration list for PBXNativeTarget "SigmaSwiftStatistics" */;
@@ -269,6 +250,25 @@
 			name = SigmaSwiftStatistics;
 			productName = SigmaSwiftStatistics;
 			productReference = 833D42D148A8212A3664D1E71A056A08 /* SigmaSwiftStatistics.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+		9AFC24F04C9630CFABB2509786A50F3A /* Pods-NeutronBarrel */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A538ABDA4086CE2D7B4AB2054D573D61 /* Build configuration list for PBXNativeTarget "Pods-NeutronBarrel" */;
+			buildPhases = (
+				22F8D02E9C43DDC03FC0C490DD75C698 /* Headers */,
+				108B2E31EACD9088B377AC4E086CEEBD /* Sources */,
+				7946AA9DE231CE8B8C72480B370B3887 /* Frameworks */,
+				ECF2931B9FCF1299B9E02F2EF28F5F95 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				4FFC226CB2AFAD992B4299E08B659A64 /* PBXTargetDependency */,
+			);
+			name = "Pods-NeutronBarrel";
+			productName = "Pods-NeutronBarrel";
+			productReference = 041970531F73221F7130FBA0C04DCFDB /* Pods_NeutronBarrel.framework */;
 			productType = "com.apple.product-type.framework";
 		};
 /* End PBXNativeTarget section */
@@ -289,11 +289,11 @@
 				Base,
 			);
 			mainGroup = CF1408CF629C7361332E53B88F7BD30C;
-			productRefGroup = 99157FD104F0115A1C06299505D973F5 /* Products */;
+			productRefGroup = A52E5FAA18EE7DC2CDD0B44CCEC07B48 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				3D430E55E531C82DFAB4B350D8D8C6AF /* Pods-NeutronsReader */,
+				9AFC24F04C9630CFABB2509786A50F3A /* Pods-NeutronBarrel */,
 				92728B5A26D593E85BE984F4353EBE28 /* SigmaSwiftStatistics */,
 			);
 		};
@@ -307,7 +307,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		C8C4FDE1596211584713AFB3C5817EA2 /* Resources */ = {
+		ECF2931B9FCF1299B9E02F2EF28F5F95 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -317,6 +317,14 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		108B2E31EACD9088B377AC4E086CEEBD /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F74944EA39E6E6F08E80A56B02CBB042 /* Pods-NeutronBarrel-dummy.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		2B50AE2B7C6D594F954FCBE4F6DED513 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -342,22 +350,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		A6D2B20D8D9988D33A9AC13EFB9789DC /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				46C0A813868CD66BC7A4FD27DD24583F /* Pods-NeutronsReader-dummy.m in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		75760B4F7D5A44AB73C537659A064CA6 /* PBXTargetDependency */ = {
+		4FFC226CB2AFAD992B4299E08B659A64 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			name = SigmaSwiftStatistics;
 			target = 92728B5A26D593E85BE984F4353EBE28 /* SigmaSwiftStatistics */;
-			targetProxy = C0E1499AE7C5A8322380F5BEDFFA0E99 /* PBXContainerItemProxy */;
+			targetProxy = 07B6FCD9AA1337AEB9E4BBFA64668948 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -394,6 +394,42 @@
 				VERSION_INFO_PREFIX = "";
 			};
 			name = Release;
+		};
+		8939288CD9ABDF3CBC770C9A2EA92110 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = DE77EDA95CA5460079BAB7138C193E17 /* Pods-NeutronBarrel.debug.xcconfig */;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = NO;
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_IDENTITY = "";
+				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
+				"CODE_SIGN_IDENTITY[sdk=watchos*]" = "";
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				FRAMEWORK_VERSION = A;
+				INFOPLIST_FILE = "Target Support Files/Pods-NeutronBarrel/Pods-NeutronBarrel-Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
+				MACH_O_TYPE = staticlib;
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
+				MODULEMAP_FILE = "Target Support Files/Pods-NeutronBarrel/Pods-NeutronBarrel.modulemap";
+				OTHER_LDFLAGS = "";
+				OTHER_LIBTOOLFLAGS = "";
+				PODS_ROOT = "$(SRCROOT)";
+				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.${PRODUCT_NAME:rfc1034identifier}";
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Debug;
 		};
 		9382317ED75CFC741F429FC224405042 /* Debug */ = {
 			isa = XCBuildConfiguration;
@@ -552,9 +588,9 @@
 			};
 			name = Release;
 		};
-		E66B43933609F3B6BED7ABEAFA72A1C7 /* Debug */ = {
+		E829DA757BA6EAFEB09EC07EDD92435A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 33CB2E731591DAF038B71E23DBAF9FF6 /* Pods-NeutronsReader.debug.xcconfig */;
+			baseConfigurationReference = 637CB2B74E7494D361E2C8B2133763A6 /* Pods-NeutronBarrel.release.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = NO;
 				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
@@ -570,48 +606,12 @@
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				FRAMEWORK_VERSION = A;
-				INFOPLIST_FILE = "Target Support Files/Pods-NeutronsReader/Pods-NeutronsReader-Info.plist";
+				INFOPLIST_FILE = "Target Support Files/Pods-NeutronBarrel/Pods-NeutronBarrel-Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
 				MACH_O_TYPE = staticlib;
 				MACOSX_DEPLOYMENT_TARGET = 10.13;
-				MODULEMAP_FILE = "Target Support Files/Pods-NeutronsReader/Pods-NeutronsReader.modulemap";
-				OTHER_LDFLAGS = "";
-				OTHER_LIBTOOLFLAGS = "";
-				PODS_ROOT = "$(SRCROOT)";
-				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.${PRODUCT_NAME:rfc1034identifier}";
-				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
-				SDKROOT = macosx;
-				SKIP_INSTALL = YES;
-				VERSIONING_SYSTEM = "apple-generic";
-				VERSION_INFO_PREFIX = "";
-			};
-			name = Debug;
-		};
-		FB725CF93479A19A73913CA18F5F062D /* Release */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = E8561A774D3B8C2AD876C0809EEE32EE /* Pods-NeutronsReader.release.xcconfig */;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = NO;
-				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
-				CLANG_ENABLE_OBJC_WEAK = NO;
-				CODE_SIGN_IDENTITY = "";
-				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
-				"CODE_SIGN_IDENTITY[sdk=watchos*]" = "";
-				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1;
-				DEFINES_MODULE = YES;
-				DYLIB_COMPATIBILITY_VERSION = 1;
-				DYLIB_CURRENT_VERSION = 1;
-				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				FRAMEWORK_VERSION = A;
-				INFOPLIST_FILE = "Target Support Files/Pods-NeutronsReader/Pods-NeutronsReader-Info.plist";
-				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
-				MACH_O_TYPE = staticlib;
-				MACOSX_DEPLOYMENT_TARGET = 10.13;
-				MODULEMAP_FILE = "Target Support Files/Pods-NeutronsReader/Pods-NeutronsReader.modulemap";
+				MODULEMAP_FILE = "Target Support Files/Pods-NeutronBarrel/Pods-NeutronBarrel.modulemap";
 				OTHER_LDFLAGS = "";
 				OTHER_LIBTOOLFLAGS = "";
 				PODS_ROOT = "$(SRCROOT)";
@@ -636,20 +636,20 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		4D6B003FAA68C297C9C89A09BDA64DFA /* Build configuration list for PBXNativeTarget "Pods-NeutronsReader" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				E66B43933609F3B6BED7ABEAFA72A1C7 /* Debug */,
-				FB725CF93479A19A73913CA18F5F062D /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
 		547DAF5BEF7C59359B2E9C81066593A5 /* Build configuration list for PBXNativeTarget "SigmaSwiftStatistics" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				E2193AA739053944E2678E7E24A10BB3 /* Debug */,
 				7ADF7BEF4EC5697D221085E103FE2B5E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A538ABDA4086CE2D7B4AB2054D573D61 /* Build configuration list for PBXNativeTarget "Pods-NeutronBarrel" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8939288CD9ABDF3CBC770C9A2EA92110 /* Debug */,
+				E829DA757BA6EAFEB09EC07EDD92435A /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

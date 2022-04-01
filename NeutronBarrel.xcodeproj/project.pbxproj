@@ -1,0 +1,693 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		196929E76DA98B0EFAD8AEB4 /* Pods_NeutronBarrel.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E13D29EC7741329349E6A15A /* Pods_NeutronBarrel.framework */; };
+		5A036F711EB0F5C80092D3C4 /* Processor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A036F701EB0F5C80092D3C4 /* Processor.swift */; };
+		5A2A99352056F66800B3D1A0 /* DoubleSidedStripDetectorMatch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A2A99342056F66800B3D1A0 /* DoubleSidedStripDetectorMatch.swift */; };
+		5A2A99382057083A00B3D1A0 /* DetectorMatch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A2A99372057083A00B3D1A0 /* DetectorMatch.swift */; };
+		5A8423E320D12C100097F7FB /* SearchCriteria.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A8423E220D12C100097F7FB /* SearchCriteria.swift */; };
+		5A8997571FB4F9F800DD9956 /* StripsConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A8997561FB4F9F800DD9956 /* StripsConfiguration.swift */; };
+		5A9B179D2206137800E80805 /* StripDetectorManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A9B179C2206137800E80805 /* StripDetectorManager.swift */; };
+		5AAE352C22717F8300035B52 /* DetectorsWellGeometry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AAE352B22717F8300035B52 /* DetectorsWellGeometry.swift */; };
+		5AAE352F22717FAB00035B52 /* SideDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AAE352E22717FAB00035B52 /* SideDetector.swift */; };
+		5AAE35322271801A00035B52 /* DoubleSidedDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AAE35312271801A00035B52 /* DoubleSidedDetector.swift */; };
+		5AAE35352271856500035B52 /* FocalDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AAE35342271856500035B52 /* FocalDetector.swift */; };
+		65036BF225DFC01200856D7E /* NeutronsMultiplicity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65036BF125DFC01200856D7E /* NeutronsMultiplicity.swift */; };
+		6512B00B1EDACBB20087131D /* ViewerController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6512B0091EDACBB20087131D /* ViewerController.swift */; };
+		6512B00C1EDACBB20087131D /* ViewerController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 6512B00A1EDACBB20087131D /* ViewerController.xib */; };
+		6513070C1A4E911300E33704 /* FileManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6513070B1A4E911300E33704 /* FileManager.swift */; };
+		651307121A4E94AB00E33704 /* Calibration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 651307111A4E94AB00E33704 /* Calibration.swift */; };
+		651307141A4E94C500E33704 /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 651307131A4E94C500E33704 /* Logger.swift */; };
+		6551A3DF2566550700B142CC /* FileExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6551A3DE2566550700B142CC /* FileExtension.swift */; };
+		6562B3522624599C0070A491 /* SF_sources in Resources */ = {isa = PBXBuildFile; fileRef = 6562B3512624599C0070A491 /* SF_sources */; };
+		6562B35526245A800070A491 /* NeutronTotalEfficiency.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6562B35426245A800070A491 /* NeutronTotalEfficiency.swift */; };
+		656A05DC1EADEDD500677B0F /* DataProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 656A05DB1EADEDD500677B0F /* DataProtocol.swift */; };
+		656A05DE1EAE03BC00677B0F /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 656A05DD1EAE03BC00677B0F /* Extensions.swift */; };
+		65B2A92625FB80A100D97986 /* ResultsTable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65B2A92525FB80A100D97986 /* ResultsTable.swift */; };
+		65B2A92A25FB955000D97986 /* NeutronsMatch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65B2A92925FB955000D97986 /* NeutronsMatch.swift */; };
+		65B84170274670BB000DA3F2 /* EventSorter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65B8416F274670BA000DA3F2 /* EventSorter.swift */; };
+		65B84173274693A3000DA3F2 /* EventSorterController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65B84171274693A3000DA3F2 /* EventSorterController.swift */; };
+		65B84174274693A3000DA3F2 /* EventSorterController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 65B84172274693A3000DA3F2 /* EventSorterController.xib */; };
+		65BBD8EC261C806900D93026 /* CorrelationsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65BBD8EB261C806900D93026 /* CorrelationsView.swift */; };
+		65BBD8F8261DC07700D93026 /* CalculationsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65BBD8F6261DC07700D93026 /* CalculationsController.swift */; };
+		65BBD8F9261DC07700D93026 /* CalculationsController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 65BBD8F7261DC07700D93026 /* CalculationsController.xib */; };
+		65C4D73A264A93AF0064A93E /* SFiNx_counters_geometry.csv in Resources */ = {isa = PBXBuildFile; fileRef = 65C4D739264A93AF0064A93E /* SFiNx_counters_geometry.csv */; };
+		65C4D73C264A97B10064A93E /* NeutronDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65C4D73B264A97B10064A93E /* NeutronDetector.swift */; };
+		65DA929F20D54F65002643DB /* SearchType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65DA929E20D54F65002643DB /* SearchType.swift */; };
+		65DA92A220D5527D002643DB /* BeamState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65DA92A120D5527D002643DB /* BeamState.swift */; };
+		65DA92A520D57794002643DB /* DetectorMatchItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65DA92A420D57794002643DB /* DetectorMatchItem.swift */; };
+		65DA92A820D594E9002643DB /* CalibrationEquation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65DA92A720D594E9002643DB /* CalibrationEquation.swift */; };
+		65EDDD4420C51BAB009441D8 /* FolderStatistics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65EDDD4320C51BAB009441D8 /* FolderStatistics.swift */; };
+		780BC3A61A5EF99700EDEECE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 780BC3A51A5EF99700EDEECE /* AppDelegate.swift */; };
+		784150DA1AC184C400831384 /* CSVWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 784150D91AC184C400831384 /* CSVWriter.swift */; };
+		784B0B891ABB13F80041FA66 /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 784B0B881ABB13F80041FA66 /* Settings.swift */; };
+		78B6A548193A3B3900C7E36A /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 78B6A547193A3B3900C7E36A /* Cocoa.framework */; };
+		78B6A55E193A3B3900C7E36A /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 78B6A55C193A3B3900C7E36A /* MainMenu.xib */; };
+		78B6A560193A3B3900C7E36A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 78B6A55F193A3B3900C7E36A /* Images.xcassets */; };
+		78FC51311A530D0300FE5737 /* DataLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78FC51301A530D0300FE5737 /* DataLoader.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		5A036F701EB0F5C80092D3C4 /* Processor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Processor.swift; sourceTree = "<group>"; };
+		5A2A99342056F66800B3D1A0 /* DoubleSidedStripDetectorMatch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DoubleSidedStripDetectorMatch.swift; sourceTree = "<group>"; };
+		5A2A99372057083A00B3D1A0 /* DetectorMatch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetectorMatch.swift; sourceTree = "<group>"; };
+		5A8423E220D12C100097F7FB /* SearchCriteria.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchCriteria.swift; sourceTree = "<group>"; };
+		5A8997561FB4F9F800DD9956 /* StripsConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StripsConfiguration.swift; sourceTree = "<group>"; };
+		5A9B179C2206137800E80805 /* StripDetectorManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StripDetectorManager.swift; sourceTree = "<group>"; };
+		5AAE352B22717F8300035B52 /* DetectorsWellGeometry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetectorsWellGeometry.swift; sourceTree = "<group>"; };
+		5AAE352E22717FAB00035B52 /* SideDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SideDetector.swift; sourceTree = "<group>"; };
+		5AAE35312271801A00035B52 /* DoubleSidedDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DoubleSidedDetector.swift; sourceTree = "<group>"; };
+		5AAE35342271856500035B52 /* FocalDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FocalDetector.swift; sourceTree = "<group>"; };
+		65036BF125DFC01200856D7E /* NeutronsMultiplicity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NeutronsMultiplicity.swift; sourceTree = "<group>"; };
+		6512B0091EDACBB20087131D /* ViewerController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ViewerController.swift; sourceTree = "<group>"; };
+		6512B00A1EDACBB20087131D /* ViewerController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = ViewerController.xib; sourceTree = "<group>"; };
+		6513070B1A4E911300E33704 /* FileManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FileManager.swift; sourceTree = "<group>"; };
+		6513070D1A4E92CD00E33704 /* NeutronBarrel-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NeutronBarrel-Bridging-Header.h"; sourceTree = "<group>"; };
+		651307111A4E94AB00E33704 /* Calibration.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Calibration.swift; sourceTree = "<group>"; };
+		651307131A4E94C500E33704 /* Logger.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
+		651FDD8F1EC1012F0041CDE8 /* Constants.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Constants.h; sourceTree = "<group>"; };
+		654FC8041F77091D00E75929 /* NeutronBarrel.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = NeutronBarrel.entitlements; sourceTree = "<group>"; };
+		6551A3DE2566550700B142CC /* FileExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileExtension.swift; sourceTree = "<group>"; };
+		6562B3512624599C0070A491 /* SF_sources */ = {isa = PBXFileReference; lastKnownFileType = folder; path = SF_sources; sourceTree = "<group>"; };
+		6562B35426245A800070A491 /* NeutronTotalEfficiency.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NeutronTotalEfficiency.swift; sourceTree = "<group>"; };
+		656A05DB1EADEDD500677B0F /* DataProtocol.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DataProtocol.swift; sourceTree = "<group>"; };
+		656A05DD1EAE03BC00677B0F /* Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
+		65B2A92525FB80A100D97986 /* ResultsTable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResultsTable.swift; sourceTree = "<group>"; };
+		65B2A92925FB955000D97986 /* NeutronsMatch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NeutronsMatch.swift; sourceTree = "<group>"; };
+		65B8416F274670BA000DA3F2 /* EventSorter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventSorter.swift; sourceTree = "<group>"; };
+		65B84171274693A3000DA3F2 /* EventSorterController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventSorterController.swift; sourceTree = "<group>"; };
+		65B84172274693A3000DA3F2 /* EventSorterController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = EventSorterController.xib; sourceTree = "<group>"; };
+		65BBD8EB261C806900D93026 /* CorrelationsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CorrelationsView.swift; sourceTree = "<group>"; };
+		65BBD8F6261DC07700D93026 /* CalculationsController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalculationsController.swift; sourceTree = "<group>"; };
+		65BBD8F7261DC07700D93026 /* CalculationsController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = CalculationsController.xib; sourceTree = "<group>"; };
+		65C4D739264A93AF0064A93E /* SFiNx_counters_geometry.csv */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = SFiNx_counters_geometry.csv; sourceTree = "<group>"; };
+		65C4D73B264A97B10064A93E /* NeutronDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NeutronDetector.swift; sourceTree = "<group>"; };
+		65C4D73E2656834F0064A93E /* chi.playground */ = {isa = PBXFileReference; lastKnownFileType = file.playground; path = chi.playground; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
+		65DA929E20D54F65002643DB /* SearchType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchType.swift; sourceTree = "<group>"; };
+		65DA92A120D5527D002643DB /* BeamState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeamState.swift; sourceTree = "<group>"; };
+		65DA92A420D57794002643DB /* DetectorMatchItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetectorMatchItem.swift; sourceTree = "<group>"; };
+		65DA92A720D594E9002643DB /* CalibrationEquation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalibrationEquation.swift; sourceTree = "<group>"; };
+		65E78380203AD7F700091FA4 /* Event.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Event.h; sourceTree = "<group>"; };
+		65EDDD4320C51BAB009441D8 /* FolderStatistics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderStatistics.swift; sourceTree = "<group>"; };
+		780BC3A51A5EF99700EDEECE /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		784150D91AC184C400831384 /* CSVWriter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CSVWriter.swift; sourceTree = "<group>"; };
+		784B0B881ABB13F80041FA66 /* Settings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
+		78B6A544193A3B3900C7E36A /* NeutronBarrel.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NeutronBarrel.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		78B6A547193A3B3900C7E36A /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
+		78B6A54A193A3B3900C7E36A /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
+		78B6A54B193A3B3900C7E36A /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = System/Library/Frameworks/CoreData.framework; sourceTree = SDKROOT; };
+		78B6A54C193A3B3900C7E36A /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		78B6A54F193A3B3900C7E36A /* NeutronBarrel-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "NeutronBarrel-Info.plist"; sourceTree = "<group>"; };
+		78B6A555193A3B3900C7E36A /* NeutronBarrel-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NeutronBarrel-Prefix.pch"; sourceTree = "<group>"; };
+		78B6A55D193A3B3900C7E36A /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/MainMenu.xib; sourceTree = "<group>"; };
+		78B6A55F193A3B3900C7E36A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
+		78FC51301A530D0300FE5737 /* DataLoader.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DataLoader.swift; sourceTree = "<group>"; };
+		9AC874740EC76B0E2A66EA21 /* Pods-NeutronBarrel.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-NeutronBarrel.debug.xcconfig"; path = "Target Support Files/Pods-NeutronBarrel/Pods-NeutronBarrel.debug.xcconfig"; sourceTree = "<group>"; };
+		A1C577C37319983D7DADA162 /* Pods-NeutronBarrel.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-NeutronBarrel.release.xcconfig"; path = "Target Support Files/Pods-NeutronBarrel/Pods-NeutronBarrel.release.xcconfig"; sourceTree = "<group>"; };
+		AB8579886283AC5E0C0E3AA3 /* Pods-NeutronsReader.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-NeutronsReader.release.xcconfig"; path = "Target Support Files/Pods-NeutronsReader/Pods-NeutronsReader.release.xcconfig"; sourceTree = "<group>"; };
+		E13D29EC7741329349E6A15A /* Pods_NeutronBarrel.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_NeutronBarrel.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		FB0C4DFAB51214D65074DA56 /* Pods-NeutronsReader.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-NeutronsReader.debug.xcconfig"; path = "Target Support Files/Pods-NeutronsReader/Pods-NeutronsReader.debug.xcconfig"; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		78B6A541193A3B3900C7E36A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				78B6A548193A3B3900C7E36A /* Cocoa.framework in Frameworks */,
+				196929E76DA98B0EFAD8AEB4 /* Pods_NeutronBarrel.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		5A2A993A20570EC900B3D1A0 /* Helpers */ = {
+			isa = PBXGroup;
+			children = (
+				656A05DD1EAE03BC00677B0F /* Extensions.swift */,
+				784150D91AC184C400831384 /* CSVWriter.swift */,
+				65B2A92525FB80A100D97986 /* ResultsTable.swift */,
+				651307131A4E94C500E33704 /* Logger.swift */,
+				6513070B1A4E911300E33704 /* FileManager.swift */,
+			);
+			name = Helpers;
+			sourceTree = "<group>";
+		};
+		5A2A993B20570ED800B3D1A0 /* Config */ = {
+			isa = PBXGroup;
+			children = (
+				6551A3DE2566550700B142CC /* FileExtension.swift */,
+				784B0B881ABB13F80041FA66 /* Settings.swift */,
+				78FC51301A530D0300FE5737 /* DataLoader.swift */,
+				656A05DB1EADEDD500677B0F /* DataProtocol.swift */,
+				65EDDD4320C51BAB009441D8 /* FolderStatistics.swift */,
+				5A8997561FB4F9F800DD9956 /* StripsConfiguration.swift */,
+				5A9B179C2206137800E80805 /* StripDetectorManager.swift */,
+				5AAE352E22717FAB00035B52 /* SideDetector.swift */,
+				5AAE35342271856500035B52 /* FocalDetector.swift */,
+				5AAE35312271801A00035B52 /* DoubleSidedDetector.swift */,
+				65C4D73D264A97F50064A93E /* NeutronDetector */,
+			);
+			name = Config;
+			sourceTree = "<group>";
+		};
+		5A2A993C20570EE300B3D1A0 /* UI */ = {
+			isa = PBXGroup;
+			children = (
+				65BBD8EB261C806900D93026 /* CorrelationsView.swift */,
+				65BBD8F6261DC07700D93026 /* CalculationsController.swift */,
+				65BBD8F7261DC07700D93026 /* CalculationsController.xib */,
+				6512B0091EDACBB20087131D /* ViewerController.swift */,
+				6512B00A1EDACBB20087131D /* ViewerController.xib */,
+				65B84171274693A3000DA3F2 /* EventSorterController.swift */,
+				65B84172274693A3000DA3F2 /* EventSorterController.xib */,
+				78B6A55C193A3B3900C7E36A /* MainMenu.xib */,
+			);
+			name = UI;
+			sourceTree = "<group>";
+		};
+		5A2A993D20570F0C00B3D1A0 /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				65DA92AA20D59540002643DB /* Calibration */,
+				6562B35D26246B970070A491 /* NeutronEfficiency */,
+				5AAE352B22717F8300035B52 /* DetectorsWellGeometry.swift */,
+				65036BF125DFC01200856D7E /* NeutronsMultiplicity.swift */,
+				65B2A92925FB955000D97986 /* NeutronsMatch.swift */,
+				65DA92A120D5527D002643DB /* BeamState.swift */,
+				5A8423E220D12C100097F7FB /* SearchCriteria.swift */,
+				65DA929E20D54F65002643DB /* SearchType.swift */,
+				5A2A99372057083A00B3D1A0 /* DetectorMatch.swift */,
+				65DA92A420D57794002643DB /* DetectorMatchItem.swift */,
+				5A2A99342056F66800B3D1A0 /* DoubleSidedStripDetectorMatch.swift */,
+				651FDD8F1EC1012F0041CDE8 /* Constants.h */,
+				65E78380203AD7F700091FA4 /* Event.h */,
+			);
+			name = Model;
+			sourceTree = "<group>";
+		};
+		5BEA756E879CBE150C72695F /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				FB0C4DFAB51214D65074DA56 /* Pods-NeutronsReader.debug.xcconfig */,
+				AB8579886283AC5E0C0E3AA3 /* Pods-NeutronsReader.release.xcconfig */,
+				9AC874740EC76B0E2A66EA21 /* Pods-NeutronBarrel.debug.xcconfig */,
+				A1C577C37319983D7DADA162 /* Pods-NeutronBarrel.release.xcconfig */,
+			);
+			path = Pods;
+			sourceTree = "<group>";
+		};
+		6562B35D26246B970070A491 /* NeutronEfficiency */ = {
+			isa = PBXGroup;
+			children = (
+				6562B3512624599C0070A491 /* SF_sources */,
+				6562B35426245A800070A491 /* NeutronTotalEfficiency.swift */,
+				65C4D73E2656834F0064A93E /* chi.playground */,
+			);
+			name = NeutronEfficiency;
+			sourceTree = "<group>";
+		};
+		65C4D73D264A97F50064A93E /* NeutronDetector */ = {
+			isa = PBXGroup;
+			children = (
+				65C4D73B264A97B10064A93E /* NeutronDetector.swift */,
+				65C4D739264A93AF0064A93E /* SFiNx_counters_geometry.csv */,
+			);
+			name = NeutronDetector;
+			sourceTree = "<group>";
+		};
+		65DA92AA20D59540002643DB /* Calibration */ = {
+			isa = PBXGroup;
+			children = (
+				651307111A4E94AB00E33704 /* Calibration.swift */,
+				65DA92A720D594E9002643DB /* CalibrationEquation.swift */,
+			);
+			name = Calibration;
+			sourceTree = "<group>";
+		};
+		780BC43E1A604AE000EDEECE /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				78B6A55F193A3B3900C7E36A /* Images.xcassets */,
+			);
+			name = Resources;
+			sourceTree = "<group>";
+		};
+		78B6A53B193A3B3800C7E36A = {
+			isa = PBXGroup;
+			children = (
+				78B6A54D193A3B3900C7E36A /* NeutronBarrel */,
+				78B6A546193A3B3900C7E36A /* Frameworks */,
+				78B6A545193A3B3900C7E36A /* Products */,
+				5BEA756E879CBE150C72695F /* Pods */,
+			);
+			sourceTree = "<group>";
+		};
+		78B6A545193A3B3900C7E36A /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				78B6A544193A3B3900C7E36A /* NeutronBarrel.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		78B6A546193A3B3900C7E36A /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				78B6A547193A3B3900C7E36A /* Cocoa.framework */,
+				78B6A549193A3B3900C7E36A /* Other Frameworks */,
+				E13D29EC7741329349E6A15A /* Pods_NeutronBarrel.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		78B6A549193A3B3900C7E36A /* Other Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				78B6A54A193A3B3900C7E36A /* AppKit.framework */,
+				78B6A54B193A3B3900C7E36A /* CoreData.framework */,
+				78B6A54C193A3B3900C7E36A /* Foundation.framework */,
+			);
+			name = "Other Frameworks";
+			sourceTree = "<group>";
+		};
+		78B6A54D193A3B3900C7E36A /* NeutronBarrel */ = {
+			isa = PBXGroup;
+			children = (
+				5A2A993C20570EE300B3D1A0 /* UI */,
+				5A2A993A20570EC900B3D1A0 /* Helpers */,
+				5A2A993B20570ED800B3D1A0 /* Config */,
+				5A2A993D20570F0C00B3D1A0 /* Model */,
+				5A036F701EB0F5C80092D3C4 /* Processor.swift */,
+				65B8416F274670BA000DA3F2 /* EventSorter.swift */,
+				780BC3A51A5EF99700EDEECE /* AppDelegate.swift */,
+				780BC43E1A604AE000EDEECE /* Resources */,
+				78B6A54E193A3B3900C7E36A /* Supporting Files */,
+			);
+			path = NeutronBarrel;
+			sourceTree = "<group>";
+		};
+		78B6A54E193A3B3900C7E36A /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				654FC8041F77091D00E75929 /* NeutronBarrel.entitlements */,
+				78B6A54F193A3B3900C7E36A /* NeutronBarrel-Info.plist */,
+				78B6A555193A3B3900C7E36A /* NeutronBarrel-Prefix.pch */,
+				6513070D1A4E92CD00E33704 /* NeutronBarrel-Bridging-Header.h */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		78B6A543193A3B3900C7E36A /* NeutronBarrel */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 78B6A575193A3B3900C7E36A /* Build configuration list for PBXNativeTarget "NeutronBarrel" */;
+			buildPhases = (
+				B8AF9E10B25B8B722EB04F17 /* [CP] Check Pods Manifest.lock */,
+				78B6A540193A3B3900C7E36A /* Sources */,
+				78B6A541193A3B3900C7E36A /* Frameworks */,
+				78B6A542193A3B3900C7E36A /* Resources */,
+				789E3F801ABC786F0093DBD8 /* Git SHA */,
+				FC9B11080AD16AB040E96948 /* [CP] Embed Pods Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = NeutronBarrel;
+			productName = NeutronsReader;
+			productReference = 78B6A544193A3B3900C7E36A /* NeutronBarrel.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		78B6A53C193A3B3800C7E36A /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				CLASSPREFIX = ISA;
+				LastSwiftMigration = 0730;
+				LastSwiftUpdateCheck = 0730;
+				LastUpgradeCheck = 1230;
+				ORGANIZATIONNAME = "Flerov Laboratory";
+				TargetAttributes = {
+					78B6A543193A3B3900C7E36A = {
+						LastSwiftMigration = 1010;
+						ProvisioningStyle = Automatic;
+						SystemCapabilities = {
+							com.apple.Sandbox = {
+								enabled = 0;
+							};
+							com.apple.iCloud = {
+								enabled = 0;
+							};
+						};
+					};
+				};
+			};
+			buildConfigurationList = 78B6A53F193A3B3800C7E36A /* Build configuration list for PBXProject "NeutronBarrel" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 78B6A53B193A3B3800C7E36A;
+			productRefGroup = 78B6A545193A3B3900C7E36A /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				78B6A543193A3B3900C7E36A /* NeutronBarrel */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		78B6A542193A3B3900C7E36A /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				78B6A560193A3B3900C7E36A /* Images.xcassets in Resources */,
+				65BBD8F9261DC07700D93026 /* CalculationsController.xib in Resources */,
+				65C4D73A264A93AF0064A93E /* SFiNx_counters_geometry.csv in Resources */,
+				6562B3522624599C0070A491 /* SF_sources in Resources */,
+				6512B00C1EDACBB20087131D /* ViewerController.xib in Resources */,
+				78B6A55E193A3B3900C7E36A /* MainMenu.xib in Resources */,
+				65B84174274693A3000DA3F2 /* EventSorterController.xib in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		789E3F801ABC786F0093DBD8 /* Git SHA */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Git SHA";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# write git version SHA into Info.plist\ncd \"$PROJECT_DIR\"\n# say hello\n/usr/libexec/PlistBuddy -c \"Set :CFBundleVersionGitSHA $(git rev-parse --short HEAD)\" \"$TARGET_BUILD_DIR/$INFOPLIST_PATH\"\n/usr/libexec/PlistBuddy -c \"Set :CFBundleVersionGitBranch $(git rev-parse --short HEAD --symbolic --abbrev-ref $1)\" \"$TARGET_BUILD_DIR/$INFOPLIST_PATH\"\n";
+		};
+		B8AF9E10B25B8B722EB04F17 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-NeutronBarrel-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		FC9B11080AD16AB040E96948 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-NeutronBarrel/Pods-NeutronBarrel-frameworks.sh",
+				"${BUILT_PRODUCTS_DIR}/SigmaSwiftStatistics/SigmaSwiftStatistics.framework",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/SigmaSwiftStatistics.framework",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-NeutronBarrel/Pods-NeutronBarrel-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		78B6A540193A3B3900C7E36A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				65BBD8EC261C806900D93026 /* CorrelationsView.swift in Sources */,
+				656A05DC1EADEDD500677B0F /* DataProtocol.swift in Sources */,
+				5A2A99382057083A00B3D1A0 /* DetectorMatch.swift in Sources */,
+				5A8997571FB4F9F800DD9956 /* StripsConfiguration.swift in Sources */,
+				784B0B891ABB13F80041FA66 /* Settings.swift in Sources */,
+				5A036F711EB0F5C80092D3C4 /* Processor.swift in Sources */,
+				5A2A99352056F66800B3D1A0 /* DoubleSidedStripDetectorMatch.swift in Sources */,
+				65DA92A820D594E9002643DB /* CalibrationEquation.swift in Sources */,
+				5A9B179D2206137800E80805 /* StripDetectorManager.swift in Sources */,
+				65036BF225DFC01200856D7E /* NeutronsMultiplicity.swift in Sources */,
+				651307121A4E94AB00E33704 /* Calibration.swift in Sources */,
+				784150DA1AC184C400831384 /* CSVWriter.swift in Sources */,
+				5A8423E320D12C100097F7FB /* SearchCriteria.swift in Sources */,
+				651307141A4E94C500E33704 /* Logger.swift in Sources */,
+				65DA92A520D57794002643DB /* DetectorMatchItem.swift in Sources */,
+				656A05DE1EAE03BC00677B0F /* Extensions.swift in Sources */,
+				6562B35526245A800070A491 /* NeutronTotalEfficiency.swift in Sources */,
+				5AAE35322271801A00035B52 /* DoubleSidedDetector.swift in Sources */,
+				6512B00B1EDACBB20087131D /* ViewerController.swift in Sources */,
+				6513070C1A4E911300E33704 /* FileManager.swift in Sources */,
+				6551A3DF2566550700B142CC /* FileExtension.swift in Sources */,
+				65DA92A220D5527D002643DB /* BeamState.swift in Sources */,
+				65B84173274693A3000DA3F2 /* EventSorterController.swift in Sources */,
+				65B2A92A25FB955000D97986 /* NeutronsMatch.swift in Sources */,
+				65EDDD4420C51BAB009441D8 /* FolderStatistics.swift in Sources */,
+				65BBD8F8261DC07700D93026 /* CalculationsController.swift in Sources */,
+				65DA929F20D54F65002643DB /* SearchType.swift in Sources */,
+				5AAE352F22717FAB00035B52 /* SideDetector.swift in Sources */,
+				5AAE352C22717F8300035B52 /* DetectorsWellGeometry.swift in Sources */,
+				5AAE35352271856500035B52 /* FocalDetector.swift in Sources */,
+				65B84170274670BB000DA3F2 /* EventSorter.swift in Sources */,
+				780BC3A61A5EF99700EDEECE /* AppDelegate.swift in Sources */,
+				78FC51311A530D0300FE5737 /* DataLoader.swift in Sources */,
+				65B2A92625FB80A100D97986 /* ResultsTable.swift in Sources */,
+				65C4D73C264A97B10064A93E /* NeutronDetector.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		78B6A55C193A3B3900C7E36A /* MainMenu.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				78B6A55D193A3B3900C7E36A /* Base */,
+			);
+			name = MainMenu.xib;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		78B6A573193A3B3900C7E36A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEFINES_MODULE = YES;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_OBJC_BRIDGING_HEADER = " $(SRCROOT)/NeutronBarrel/NeutronBarrel-Bridging-Header.h";
+			};
+			name = Debug;
+		};
+		78B6A574193A3B3900C7E36A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEFINES_MODULE = YES;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
+				SDKROOT = macosx;
+				SWIFT_OBJC_BRIDGING_HEADER = " $(SRCROOT)/NeutronBarrel/NeutronBarrel-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
+			};
+			name = Release;
+		};
+		78B6A576193A3B3900C7E36A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 9AC874740EC76B0E2A66EA21 /* Pods-NeutronBarrel.debug.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 44;
+				DEVELOPMENT_TEAM = "";
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "NeutronBarrel/NeutronBarrel-Prefix.pch";
+				INFOPLIST_FILE = "NeutronBarrel/NeutronBarrel-Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
+				MARKETING_VERSION = 22.0;
+				PRODUCT_BUNDLE_IDENTIFIER = ru.jinr.flerovlab.NeutronBarrel;
+				PRODUCT_MODULE_NAME = NeutronBarrel;
+				PRODUCT_NAME = NeutronBarrel;
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_OBJC_BRIDGING_HEADER = "NeutronBarrel/NeutronBarrel-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				WRAPPER_EXTENSION = app;
+			};
+			name = Debug;
+		};
+		78B6A577193A3B3900C7E36A /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = A1C577C37319983D7DADA162 /* Pods-NeutronBarrel.release.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 44;
+				DEVELOPMENT_TEAM = "";
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "NeutronBarrel/NeutronBarrel-Prefix.pch";
+				INFOPLIST_FILE = "NeutronBarrel/NeutronBarrel-Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
+				MARKETING_VERSION = 22.0;
+				PRODUCT_BUNDLE_IDENTIFIER = ru.jinr.flerovlab.NeutronBarrel;
+				PRODUCT_MODULE_NAME = NeutronBarrel;
+				PRODUCT_NAME = NeutronBarrel;
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_OBJC_BRIDGING_HEADER = "NeutronBarrel/NeutronBarrel-Bridging-Header.h";
+				SWIFT_VERSION = 5.0;
+				WRAPPER_EXTENSION = app;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		78B6A53F193A3B3800C7E36A /* Build configuration list for PBXProject "NeutronBarrel" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				78B6A573193A3B3900C7E36A /* Debug */,
+				78B6A574193A3B3900C7E36A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		78B6A575193A3B3900C7E36A /* Build configuration list for PBXNativeTarget "NeutronBarrel" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				78B6A576193A3B3900C7E36A /* Debug */,
+				78B6A577193A3B3900C7E36A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 78B6A53C193A3B3800C7E36A /* Project object */;
+}
