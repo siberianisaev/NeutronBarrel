@@ -3,7 +3,7 @@ Neutron Barrel
 
 References:
 * Prompt neutron yields in spontaneous fission of 250No / February 2022 experiment / data analysis in progress
-* [Spontaneous fission of 246Fm](https://doi.org/10.48550/arXiv.2203.11802), EPJ A - under review, 2022
+* [Spontaneous fission of 246Fm](https://doi.org/10.48550/arXiv.2203.11802), EPJ A - accepted, 2022
 * [The SFiNx detector system](https://doi.org/10.1134/S154747712201006X), 2022
 * [The new 249No isotope](https://doi.org/10.1134/S1547477121040154), 2021
 * [Comparative study of spontaneous-fission characteristics of 252No and 254No nobelium isotopes](https://doi.org/10.1134/S1547477121040087), 2021
