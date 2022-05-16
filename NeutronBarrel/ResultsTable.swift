@@ -160,6 +160,13 @@ class ResultsTable {
         }
         return s + "Encoder"
     }
+    fileprivate func keyColumnGammaStrip(_ max: Bool) -> String {
+        var s = "Gamma"
+        if max {
+            s += "Max"
+        }
+        return s + "Strip"
+    }
     fileprivate func keyColumnGammaDeltaTime(_ max: Bool) -> String {
         var s = "dT($Fron-Gamma"
         if max {
@@ -231,6 +238,7 @@ class ResultsTable {
                 keyColumnGammaEnergy(false),
                 keyColumnGammaSumEnergy,
                 keyColumnGammaEncoder(false),
+                keyColumnGammaStrip(false),
                 keyColumnGammaDeltaTime(false),
                 keyColumnGammaMarker(false),
                 keyColumnGammaCount
@@ -314,6 +322,7 @@ class ResultsTable {
             keyColumnGammaEnergy(true),
             keyColumnGammaSumEnergy,
             keyColumnGammaEncoder(true),
+            keyColumnGammaStrip(true),
             keyColumnGammaDeltaTime(true),
             keyColumnGammaCount
             ])
@@ -437,6 +446,10 @@ class ResultsTable {
                                     case keyColumnGammaEncoder(false):
                                         if let encoder = g.itemAt(index: row)?.encoder {
                                             field = String(format: "%hu", encoder)
+                                        }
+                                    case keyColumnGammaStrip(false):
+                                        if let strip = g.itemAt(index: row)?.strip0_15 {
+                                            field = String(format: "%hu", strip)
                                         }
                                     case keyColumnGammaDeltaTime(false):
                                         if let deltaTime = g.itemAt(index: row)?.deltaTime {
@@ -703,6 +716,10 @@ class ResultsTable {
                 case keyColumnGammaEncoder(true):
                     if let encoder = gammaAt(row: row)?.itemWithMaxEnergy()?.encoder {
                         field = String(format: "%hu", encoder)
+                    }
+                case keyColumnGammaStrip(true):
+                    if let strip = gammaAt(row: row)?.itemWithMaxEnergy()?.strip0_15 {
+                        field = String(format: "%hu", strip)
                     }
                 case keyColumnGammaDeltaTime(true):
                     if let deltaTime = gammaAt(row: row)?.itemWithMaxEnergy()?.deltaTime {

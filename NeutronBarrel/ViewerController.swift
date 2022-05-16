@@ -170,16 +170,19 @@ extension ViewerController: NSTableViewDelegate {
                         }
                     case .strip:
                         let isAlpha = dataProtocol?.isAlpha(eventId: id) ?? false
-                        var encoder: CUnsignedShort?
+                        var showEncoder = false
                         var strip: UInt16?
                         if isAlpha {
-                            encoder = dataProtocol?.encoderForEventId(Int(id))
+                            showEncoder = true
                             strip = event.param2 >> 12
-                        } else if dataProtocol.isNeutronsNewEvent(id) == true {
-                            encoder = dataProtocol?.encoderForEventId(Int(id))
+                        } else if dataProtocol.isNeutronsNewEvent(id) {
+                            showEncoder = true
                             strip = event.param3 & Mask.neutronsNew.rawValue
+                        } else if dataProtocol.isGammaEvent(id) {
+                            showEncoder = true
+                            strip = (event.param3 << 1) >> 12
                         }
-                        if let encoder = encoder {
+                        if showEncoder, let encoder = dataProtocol?.encoderForEventId(Int(id)) {
                             string += "enc\(encoder)_"
                         }
                         if let strip = strip {
@@ -200,7 +203,11 @@ extension ViewerController: NSTableViewDelegate {
                             string = "\(event.getChannelFor(type: .fission))"
                         }
                     case .markers:
-                        string = String(event.getMarker(), radix: 2)
+                        if dataProtocol.isGammaEvent(id) {
+                            string = String(event.param3 >> 15)
+                        } else {
+                            string = String(event.getMarker(), radix: 2)
+                        }
                     }
                 }
                 cell.textField?.stringValue = string

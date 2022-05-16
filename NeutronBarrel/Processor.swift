@@ -882,10 +882,14 @@ class Processor {
         } else {
             energy = channel
         }
+        // TODO: use marker info
+        // let coincidenceWithBGO = (event.param3 >> 15) == 1
+        let strip = (event.param3 << 1) >> 12
         let item = DetectorMatchItem(type: type,
                                      stripDetector: nil,
                                      energy: energy,
                                      encoder: encoder,
+                                     strip0_15: strip,
                                      deltaTime: deltaTime,
                                      marker: event.getMarker(),
                                      side: nil)
