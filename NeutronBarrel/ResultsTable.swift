@@ -343,40 +343,31 @@ class ResultsTable {
                 keyColumnVetoDeltaTime
                 ])
         }
-        if let c2 = criteria.next[2] {
-            columns.append(keyColumnFissionAlphaFrontEvent(2))
-            if c2.summarizeFront {
-                columns.append(keyColumnFissionAlphaFrontSum(2))
-            }
-            columns.append(contentsOf: [
-                keyColumnFissionAlphaFrontEnergy(2),
-                keyColumnFissionAlphaFrontMarker(2),
-                keyColumnFissionAlphaFrontDeltaTime(2),
-                keyColumnFissionAlphaFrontStrip(2),
-                keyColumnFissionAlphaBackSum(2),
-                keyColumnFissionAlphaBackEnergy(2),
-                keyColumnFissionAlphaBackMarker(2),
-                keyColumnFissionAlphaBackDeltaTime(2),
-                keyColumnFissionAlphaBackStrip(2)
-                ])
-            if let c3 = criteria.next[3]  {
-                columns.append(keyColumnFissionAlphaFrontEvent(3))
-                if c3.summarizeFront {
-                    columns.append(keyColumnFissionAlphaFrontSum(3))
+        
+        func columnsForNextEvent(_ index: Int) -> [String] {
+            var result = [String]()
+            if let c = criteria.next[index] {
+                result.append(keyColumnFissionAlphaFrontEvent(index))
+                if c.summarizeFront {
+                    result.append(keyColumnFissionAlphaFrontSum(index))
                 }
-                columns.append(contentsOf: [
-                    keyColumnFissionAlphaFrontEnergy(3),
-                    keyColumnFissionAlphaFrontMarker(3),
-                    keyColumnFissionAlphaFrontDeltaTime(3),
-                    keyColumnFissionAlphaFrontStrip(3),
-                    keyColumnFissionAlphaBackSum(3),
-                    keyColumnFissionAlphaBackEnergy(3),
-                    keyColumnFissionAlphaBackMarker(3),
-                    keyColumnFissionAlphaBackDeltaTime(3),
-                    keyColumnFissionAlphaBackStrip(3)
+                result.append(contentsOf: [
+                    keyColumnFissionAlphaFrontEnergy(index),
+                    keyColumnFissionAlphaFrontDeltaTime(index),
+                    keyColumnFissionAlphaFrontStrip(index),
+                    keyColumnFissionAlphaBackSum(index),
+                    keyColumnFissionAlphaBackEnergy(index),
+                    keyColumnFissionAlphaBackDeltaTime(index),
+                    keyColumnFissionAlphaBackStrip(index)
                     ])
+                return result
             }
+            return result
         }
+        for i in [2, 3] {
+            columns.append(contentsOf: columnsForNextEvent(i))
+        }
+        
         let headers = setupHeaders(columns)
         logger.writeLineOfFields(headers, destination: .results)
         logger.finishLine(.results) // +1 line padding
