@@ -18,6 +18,7 @@ class FolderStatistics {
     var calculationsStart: Date?
     var calculationsEnd: Date?
     var secondsFromStart: TimeInterval = 0
+    var correlationsTotal: CUnsignedLongLong = 0
     
     var medianEnergy: Double {
         return Sigma.median(energies) ?? 0.0
@@ -53,10 +54,11 @@ class FolderStatistics {
         }
     }
     
-    func endFile(_ path: String, secondsFromFirstFileStart: TimeInterval) {
+    func endFile(_ path: String, secondsFromFirstFileStart: TimeInterval, correlationsPerFile: CUnsignedLongLong) {
         calculationsEnd = Date()
         lastFileCreatedOn = creationDate(for: path)
         secondsFromStart = secondsFromFirstFileStart
+        correlationsTotal += correlationsPerFile
     }
     
     func handleEnergy(_ value: Float) {

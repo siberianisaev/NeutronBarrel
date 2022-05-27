@@ -281,7 +281,7 @@ class Processor {
                 
                 totalEventNumber += Processor.calculateTotalEventNumberForFile(file)
                 fclose(file)
-                folder!.endFile(fp, secondsFromFirstFileStart: TimeInterval(absTime(0, cycle: currentCycle)) * 1e-6)
+                folder!.endFile(fp, secondsFromFirstFileStart: TimeInterval(absTime(0, cycle: currentCycle)) * 1e-6, correlationsPerFile: correlationsPerFile)
                 
                 filesFinishedCount += 1
                 DispatchQueue.main.async { [weak self] in
