@@ -2347,7 +2347,7 @@
                                                                             <font key="font" metaFont="system"/>
                                                                         </buttonCell>
                                                                         <connections>
-                                                                            <binding destination="Voe-Tx-rLC" name="value" keyPath="self.searchFissionBack3ByFact" id="yCg-Me-UCz"/>
+                                                                            <binding destination="Voe-Tx-rLC" name="value" keyPath="self.searchFissionBack4ByFact" id="nqY-xg-RCK"/>
                                                                         </connections>
                                                                     </button>
                                                                     <segmentedControl verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="0Sq-bO-dMN">
