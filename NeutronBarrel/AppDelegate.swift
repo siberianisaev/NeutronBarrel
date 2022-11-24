@@ -30,6 +30,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBOutlet weak var secondParticleBackControl: NSSegmentedControl!
     @IBOutlet weak var thirdParticleFrontControl: NSSegmentedControl!
     @IBOutlet weak var thirdParticleBackControl: NSSegmentedControl!
+    @IBOutlet weak var fourthParticleFrontControl: NSSegmentedControl!
+    @IBOutlet weak var fourthParticleBackControl: NSSegmentedControl!
     @IBOutlet weak var wellParticleBackControl: NSSegmentedControl!
     @IBOutlet weak var tofUnitsControl: NSSegmentedControl!
     @IBOutlet weak var focalDetectorControl: NSSegmentedControl!
@@ -44,6 +46,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBOutlet weak var fissionAlpha2View: NSView!
     @IBOutlet weak var fissionAlpha2FormView: NSView!
     @IBOutlet weak var fissionAlpha3FormView: NSView!
+    @IBOutlet weak var fissionAlpha4FormView: NSView!
     @IBOutlet weak var searchExtraView: NSView!
     @IBOutlet weak var vetoView: NSView!
     @IBOutlet weak var wellView: NSView!
@@ -55,12 +58,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBOutlet weak var fissionAlpha1Button: NSButton!
     @IBOutlet weak var fissionAlpha2Button: NSButton!
     @IBOutlet weak var fissionAlpha3Button: NSButton!
+    @IBOutlet weak var fissionAlpha4Button: NSButton!
     @IBOutlet weak var buttonRemoveCalibration: NSButton!
     @IBOutlet weak var buttonRemoveStripsConfiguration: NSButton!
     @IBOutlet weak var buttonCancel: NSButton!
     @IBOutlet weak var fissionAlpha1BackEnergyView: NSView!
     @IBOutlet weak var fissionAlpha2BackEnergyView: NSView!
     @IBOutlet weak var fissionAlpha3BackEnergyView: NSView!
+    @IBOutlet weak var fissionAlpha4BackEnergyView: NSView!
     @IBOutlet weak var recoilBackEnergyView: NSView!
     @IBOutlet weak var actionsView: NSView!
     @IBOutlet weak var resultsFolderButton: NSButton!
@@ -108,6 +113,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         summarizeFissionsFront = Settings.getBoolSetting(.SummarizeFissionsFront)
         summarizeFissionsFront2 = Settings.getBoolSetting(.SummarizeFissionsFront2)
         summarizeFissionsFront3 = Settings.getBoolSetting(.SummarizeFissionsFront3)
+        summarizeFissionsFront4 = Settings.getBoolSetting(.SummarizeFissionsFront4)
         requiredFissionAlphaBack = Settings.getBoolSetting(.RequiredFissionAlphaBack)
         searchFirstRecoilOnly = Settings.getBoolSetting(.SearchFirstRecoilOnly)
         requiredRecoilBack = Settings.getBoolSetting(.RequiredRecoilBack)
@@ -132,6 +138,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         searchFissionAlpha1 = Settings.getBoolSetting(.SearchFissionAlpha1)
         searchFissionAlpha2 = Settings.getBoolSetting(.SearchFissionAlpha2)
         searchFissionAlpha3 = Settings.getBoolSetting(.SearchFissionAlpha3)
+        searchFissionAlpha4 = Settings.getBoolSetting(.SearchFissionAlpha4)
         sMinFissionAlpha2Energy = String(format: "%.1f", Settings.getDoubleSetting(.MinFissionAlpha2Energy)) // MeV
         sMaxFissionAlpha2Energy = String(format: "%.1f", Settings.getDoubleSetting(.MaxFissionAlpha2Energy)) // MeV
         sMinFissionAlpha2BackEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MinFissionAlpha2BackEnergy)) // MeV
@@ -146,6 +153,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         sMinFissionAlpha3Time = String(format: "%d", Settings.getUInt64Setting(.MinFissionAlpha3Time)) // mks
         sMaxFissionAlpha3Time = String(format: "%d", Settings.getUInt64Setting(.MaxFissionAlpha3Time)) // mks
         sMaxFissionAlpha3FrontDeltaStrips = String(format: "%d", Settings.getIntSetting(.MaxFissionAlpha3FrontDeltaStrips))
+        sMinFissionAlpha4Energy = String(format: "%.1f", Settings.getDoubleSetting(.MinFissionAlpha4Energy)) // MeV
+        sMaxFissionAlpha4Energy = String(format: "%.1f", Settings.getDoubleSetting(.MaxFissionAlpha4Energy)) // MeV
+        sMinFissionAlpha4BackEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MinFissionAlpha4BackEnergy)) // MeV
+        sMaxFissionAlpha4BackEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MaxFissionAlpha4BackEnergy)) // MeV
+        sMinFissionAlpha4Time = String(format: "%d", Settings.getUInt64Setting(.MinFissionAlpha4Time)) // mks
+        sMaxFissionAlpha4Time = String(format: "%d", Settings.getUInt64Setting(.MaxFissionAlpha4Time)) // mks
+        sMaxFissionAlpha4FrontDeltaStrips = String(format: "%d", Settings.getIntSetting(.MaxFissionAlpha4FrontDeltaStrips))
         sMaxConcurrentOperations = String(format: "%d", Settings.getIntSetting(.MaxConcurrentOperations))
         searchSpecialEvents = Settings.getBoolSetting(.SearchSpecialEvents)
         specialEventIds = Settings.getStringSetting(.SpecialEventIds) ?? ""
@@ -160,6 +174,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         searchFissionBackByFact = Settings.getBoolSetting(.SearchFissionBackByFact)
         searchFissionBack2ByFact = Settings.getBoolSetting(.SearchFissionBack2ByFact)
         searchFissionBack3ByFact = Settings.getBoolSetting(.SearchFissionBack3ByFact)
+        searchFissionBack4ByFact = Settings.getBoolSetting(.SearchFissionBack4ByFact)
         searchRecoilBackByFact = Settings.getBoolSetting(.SearchRecoilBackByFact)
         
         setupRecoilTypes()
@@ -170,21 +185,26 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         secondParticleBackControl.selectedSegment = Settings.getIntSetting(.SecondBackSearchType)
         thirdParticleFrontControl.selectedSegment = Settings.getIntSetting(.ThirdFrontSearchType)
         thirdParticleBackControl.selectedSegment = Settings.getIntSetting(.ThirdBackSearchType)
+        fourthParticleFrontControl.selectedSegment = Settings.getIntSetting(.FourthFrontSearchType)
+        fourthParticleBackControl.selectedSegment = Settings.getIntSetting(.FourthBackSearchType)
         wellParticleBackControl.selectedSegment = Settings.getIntSetting(.WellBackSearchType)
         startParticleChanged(nil)
         secondParticleBackChanged(nil)
         thirdParticleBackChanged(nil)
+        fourthParticleBackChanged(nil)
         setupVETOView()
         setupWellView()
         recoilView.setupForm()
         fissionAlphaView.setupForm()
         searchExtraView.setupForm()
         setupAlpha1FormView()
-        setupAlpha3FormView()
         setupAlpha2FormView()
+        setupAlpha3FormView()
+        setupAlpha4FormView()
         setupFissionAlpha1BackEnergyView()
         setupFissionAlpha2BackEnergyView()
         setupFissionAlpha3BackEnergyView()
+        setupFissionAlpha4BackEnergyView()
         setupRecoilBackEnergyView()
         tofUnitsControl.selectedSegment = Settings.getIntSetting(.TOFUnits)
         sfSourceControl.selectedSegment = Settings.getIntSetting(.SFSource)
@@ -231,6 +251,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBInspectable dynamic var summarizeFissionsFront: Bool = false
     @IBInspectable dynamic var summarizeFissionsFront2: Bool = false
     @IBInspectable dynamic var summarizeFissionsFront3: Bool = false
+    @IBInspectable dynamic var summarizeFissionsFront4: Bool = false
     @IBInspectable dynamic var summarizeFissionsBack: Bool = false
     @IBInspectable dynamic var requiredFissionAlphaBack: Bool = false
     @IBInspectable dynamic var searchFirstRecoilOnly: Bool = false
@@ -274,9 +295,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBInspectable dynamic var searchFissionAlpha2: Bool = false {
         didSet {
             setupAlpha2FormView()
-            searchExtraFromLastParticle = searchFissionAlpha2
-            searchExtraFromLastParticleButton.state = searchExtraFromLastParticle ? .on : .off
-            searchExtraFromLastParticleButton.isHidden = !searchFissionAlpha2
             if !searchFissionAlpha2 {
                 searchFissionAlpha3 = false
             }
@@ -285,6 +303,17 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBInspectable dynamic var searchFissionAlpha3: Bool = false {
         didSet {
             setupAlpha3FormView()
+            searchExtraFromLastParticle = searchFissionAlpha3
+            searchExtraFromLastParticleButton.state = searchExtraFromLastParticle ? .on : .off
+            searchExtraFromLastParticleButton.isHidden = !searchFissionAlpha3
+            if !searchFissionAlpha3 {
+                searchFissionAlpha4 = false
+            }
+        }
+    }
+    @IBInspectable dynamic var searchFissionAlpha4: Bool = false {
+        didSet {
+            setupAlpha4FormView()
         }
     }
     @IBInspectable dynamic var sMinFissionAlpha2Energy: String = ""
@@ -301,6 +330,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBInspectable dynamic var sMinFissionAlpha3Time: String = ""
     @IBInspectable dynamic var sMaxFissionAlpha3Time: String = ""
     @IBInspectable dynamic var sMaxFissionAlpha3FrontDeltaStrips: String = ""
+    @IBInspectable dynamic var sMinFissionAlpha4Energy: String = ""
+    @IBInspectable dynamic var sMaxFissionAlpha4Energy: String = ""
+    @IBInspectable dynamic var sMinFissionAlpha4BackEnergy: String = ""
+    @IBInspectable dynamic var sMaxFissionAlpha4BackEnergy: String = ""
+    @IBInspectable dynamic var sMinFissionAlpha4Time: String = ""
+    @IBInspectable dynamic var sMaxFissionAlpha4Time: String = ""
+    @IBInspectable dynamic var sMaxFissionAlpha4FrontDeltaStrips: String = ""
     @IBInspectable dynamic var sMaxConcurrentOperations: String = "" {
         didSet {
             operationQueue.maxConcurrentOperationCount = maxConcurrentOperationCount
@@ -344,6 +380,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             setupFissionAlpha3BackEnergyView()
         }
     }
+    @IBInspectable dynamic var searchFissionBack4ByFact: Bool = false {
+        didSet {
+            setupFissionAlpha4BackEnergyView()
+        }
+    }
     @IBInspectable dynamic var searchRecoilBackByFact: Bool = false {
         didSet {
             setupRecoilBackEnergyView()
@@ -373,6 +414,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     
     fileprivate func setupAlpha3FormView() {
         fissionAlpha3FormView.isHidden = !searchFissionAlpha3
+    }
+    
+    fileprivate func setupAlpha4FormView() {
+        fissionAlpha4FormView.isHidden = !searchFissionAlpha4
     }
     
     fileprivate func setupRecoilTypes() {
@@ -409,6 +454,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     
     fileprivate func setupFissionAlpha3BackEnergyView() {
         fissionAlpha3BackEnergyView.isHidden = searchFissionBack3ByFact
+    }
+    
+    fileprivate func setupFissionAlpha4BackEnergyView() {
+        fissionAlpha4BackEnergyView.isHidden = searchFissionBack4ByFact
     }
     
     fileprivate func setupRecoilBackEnergyView() {
@@ -473,7 +522,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     }
     
     @IBAction func thirdParticleBackChanged(_ sender: Any?) {
-        if let type = SearchType(rawValue: thirdParticleBackControl.selectedSegment), searchFissionAlpha3, searchExtraFromLastParticle {
+        if let type = SearchType(rawValue: thirdParticleBackControl.selectedSegment), searchFissionAlpha3, !searchFissionAlpha4, searchExtraFromLastParticle {
+            wellParticleBackControl.selectedSegment = type.rawValue
+        }
+    }
+    
+    @IBAction func fourthParticleBackChanged(_ sender: Any?) {
+        if let type = SearchType(rawValue: fourthParticleBackControl.selectedSegment), searchFissionAlpha4, searchExtraFromLastParticle {
             wellParticleBackControl.selectedSegment = type.rawValue
         }
     }
@@ -588,6 +643,21 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
                                                    frontType: SearchType(rawValue: thirdParticleFrontControl.selectedSegment) ?? .recoil,
                                                    backType: SearchType(rawValue: thirdParticleBackControl.selectedSegment) ?? .recoil)
                 next[3] = criteria3
+                
+                if searchFissionAlpha4 {
+                    let criteria4 = SearchNextCriteria(summarizeFront: summarizeFissionsFront4,
+                                                       frontMinEnergy: Double(sMinFissionAlpha4Energy) ?? 0,
+                                                       frontMaxEnergy: Double(sMaxFissionAlpha4Energy) ?? 0,
+                                                       backMinEnergy: Double(sMinFissionAlpha4BackEnergy) ?? 0,
+                                                       backMaxEnergy: Double(sMaxFissionAlpha4BackEnergy) ?? 0,
+                                                       minTime: UInt64(sMinFissionAlpha4Time) ?? 0,
+                                                       maxTime: UInt64(sMaxFissionAlpha4Time) ?? 0,
+                                                       maxDeltaStrips: Int(sMaxFissionAlpha4FrontDeltaStrips) ?? 0,
+                                                       backByFact: searchFissionBack4ByFact,
+                                                       frontType: SearchType(rawValue: fourthParticleFrontControl.selectedSegment) ?? .recoil,
+                                                       backType: SearchType(rawValue: fourthParticleBackControl.selectedSegment) ?? .recoil)
+                    next[4] = criteria4
+                }
             }
         }
         sc.next = next
@@ -878,6 +948,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             .SummarizeFissionsFront: summarizeFissionsFront,
             .SummarizeFissionsFront2: summarizeFissionsFront2,
             .SummarizeFissionsFront3: summarizeFissionsFront3,
+            .SummarizeFissionsFront4: summarizeFissionsFront4,
             .SummarizeFissionsBack: summarizeFissionsBack,
             .RequiredFissionAlphaBack: requiredFissionAlphaBack,
             .SearchFirstRecoilOnly: searchFirstRecoilOnly,
@@ -915,6 +986,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             .SearchFissionAlpha1: searchFissionAlpha1,
             .SearchFissionAlpha2: searchFissionAlpha2,
             .SearchFissionAlpha3: searchFissionAlpha3,
+            .SearchFissionAlpha4: searchFissionAlpha4,
             .MinFissionAlpha2Energy: Double(sMinFissionAlpha2Energy),
             .MaxFissionAlpha2Energy: Double(sMaxFissionAlpha2Energy),
             .MinFissionAlpha2BackEnergy: Double(sMinFissionAlpha2BackEnergy),
@@ -929,6 +1001,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             .MinFissionAlpha3Time: Int(sMinFissionAlpha3Time),
             .MaxFissionAlpha3Time: Int(sMaxFissionAlpha3Time),
             .MaxFissionAlpha3FrontDeltaStrips: Int(sMaxFissionAlpha3FrontDeltaStrips),
+            .MinFissionAlpha4Energy: Double(sMinFissionAlpha4Energy),
+            .MaxFissionAlpha4Energy: Double(sMaxFissionAlpha4Energy),
+            .MinFissionAlpha4BackEnergy: Double(sMinFissionAlpha4BackEnergy),
+            .MaxFissionAlpha4BackEnergy: Double(sMaxFissionAlpha4BackEnergy),
+            .MinFissionAlpha4Time: Int(sMinFissionAlpha4Time),
+            .MaxFissionAlpha4Time: Int(sMaxFissionAlpha4Time),
+            .MaxFissionAlpha4FrontDeltaStrips: Int(sMaxFissionAlpha4FrontDeltaStrips),
             .MaxConcurrentOperations: maxConcurrentOperationCount,
             .SearchSpecialEvents: searchSpecialEvents,
             .SpecialEventIds: specialEventIds,
@@ -939,6 +1018,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             .SearchFissionBackByFact: searchFissionBackByFact,
             .SearchFissionBack2ByFact: searchFissionBack2ByFact,
             .SearchFissionBack3ByFact: searchFissionBack3ByFact,
+            .SearchFissionBack4ByFact: searchFissionBack4ByFact,
             .SearchRecoilBackByFact: searchRecoilBackByFact,
             .SearchWell: searchWell,
             .ResultsFolderName: sResultsFolderName,

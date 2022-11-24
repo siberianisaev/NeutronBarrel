@@ -403,6 +403,15 @@ class Processor {
                         clearActInfo()
                         return
                     }
+                    
+                    if criteria.next[4] != nil {
+                        findFissionAlpha(4)
+                        fseek(file, position, SEEK_SET)
+                        guard let match = fissionsAlphaNextPerAct[4], match.matchFor(side: .front).count > 0 else {
+                            clearActInfo()
+                            return
+                        }
+                    }
                 }
                 
                 if criteria.searchExtraFromLastParticle && wellSearchFailed() {
