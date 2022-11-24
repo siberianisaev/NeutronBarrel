@@ -59,6 +59,10 @@ class ViewerController: NSWindowController {
         return DataLoader.singleton.dataProtocol
     }
     
+    fileprivate func stripsConfiguration(detector: StripDetector) -> StripsConfiguration {
+        return StripDetectorManager.singleton.getStripConfigurations(detector)
+    }
+    
     override func windowDidLoad() {
         super.windowDidLoad()
 
@@ -162,6 +166,9 @@ extension ViewerController: NSTableViewDelegate {
                         string = "\(row + 1)"
                     case .name:
                         string = dataProtocol?.keyFor(value: id) ?? ""
+                        if let encoder = dataProtocol?.encoderForEventId(Int(id)) {
+                            string += "\(encoder)"
+                        }
                     case .ID:
                         string = "\(event.eventId)"
                     case .time:
@@ -169,24 +176,20 @@ extension ViewerController: NSTableViewDelegate {
                             string = "\(event.param1)"
                         }
                     case .strip:
-                        let isAlpha = dataProtocol?.isAlpha(eventId: id) ?? false
-                        var showEncoder = false
-                        var strip: UInt16?
-                        if isAlpha {
-                            showEncoder = true
-                            strip = event.param2 >> 12
-                        } else if dataProtocol.isNeutronsNewEvent(id) {
-                            showEncoder = true
-                            strip = event.param3 & Mask.neutronsNew.rawValue
-                        } else if dataProtocol.isGammaEvent(id) {
-                            showEncoder = true
-                            strip = (event.param3 << 1) >> 12
-                        }
-                        if showEncoder, let encoder = dataProtocol?.encoderForEventId(Int(id)) {
-                            string += "enc\(encoder)_"
-                        }
-                        if let strip = strip {
-                            string += "ch\(strip)"
+                        if let encoder = dataProtocol?.encoderForEventId(Int(id)) {
+                            if dataProtocol?.isAlpha(eventId: id) ?? false {
+                                let strip0_15 = event.param2 >> 12
+                                let side: StripsSide = (dataProtocol?.isAlphaFronEvent(id) ?? false) ? .front : .back
+                                let strip1_N = stripsConfiguration(detector: .focal).strip1_N_For(side: side, encoder: Int(encoder), strip0_15: strip0_15)
+                                string = "\(strip1_N)"
+                            } else if dataProtocol.isNeutronsNewEvent(id) {
+                                let strip = event.param3 & Mask.neutronsNew.rawValue
+                                let counterNumber = self.stripsConfiguration(detector: .neutron).strip1_N_For(side: .front, encoder: Int(encoder), strip0_15: strip)
+                                string = "\(counterNumber)"
+                            } else if dataProtocol.isGammaEvent(id) {
+                                let strip = (event.param3 << 1) >> 12
+                                string = "\(strip)"
+                            }
                         }
                     case .alpha:
                         if dataProtocol.isCycleTimeEvent(id) {
