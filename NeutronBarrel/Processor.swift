@@ -757,7 +757,8 @@ class Processor {
         guard let c = criteria.next[index] else {
             return
         }
-        let startTime = absTime(CUnsignedShort(index == 1 ? firstParticlePerAct.currentEventTime : (fissionsAlphaNextPerAct[index-1]?.currentEventTime ?? 0)), cycle: currentCycle)
+        // TODO: did more clear logic in case of recoil search disabled, and implement findFissionAlpha(1)
+        let startTime = absTime(CUnsignedShort(index <= 2 ? firstParticlePerAct.currentEventTime : (fissionsAlphaNextPerAct[index-1]?.currentEventTime ?? 0)), cycle: currentCycle)
         let directions: Set<SearchDirection> = [.forward]
         let isLastNext = criteria.nextMaxIndex() == index
         search(directions: directions, startTime: startTime, minDeltaTime: c.minTime, maxDeltaTime: c.maxTime, useCycleTime: true, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>, position: Int) in
