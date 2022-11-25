@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import AppKit
 
 class EventSorter {
     
@@ -28,51 +29,67 @@ class EventSorter {
             progressHandler(0.0)
         }
         var firstCycleEventFound = false
-        for fp in files {
-            let pathRead = fp as NSString
-            autoreleasepool {
-                fileRead = fopen(pathRead.utf8String, "rb")
-                
-                let pathWrite = (pathRead.components(separatedBy: "/").dropLast().joined(separator: "/") as NSString).appendingPathComponent("sorted_\(pathRead.lastPathComponent)") as NSString
-                fileWrite = fopen(pathWrite.utf8String, "wb")
-                
-                var intercycleEvents = [Event]()
-                func storeIntercycleEvents() {
-                    let sorted = sort(intercycleEvents)
-                    for event in sorted {
-                        writeToFile(event)
+        if let sortedDataFolder = FileManager.pathForDesktopFolder("SORTED_DATA") {
+            for fp in protocols {
+                // TODO: copy protocols
+            }
+            
+            for fp in files {
+                let pathRead = fp as NSString
+                autoreleasepool {
+                    fileRead = fopen(pathRead.utf8String, "rb")
+                    
+                    let components = pathRead.components(separatedBy: "/")
+                    _ = components.dropLast()
+                    let folder = components.last!
+                    let writeFolder = sortedDataFolder.appendingPathComponent(folder)
+                    FileManager.createIfNeedsDirectoryAtPath(writeFolder)
+                    
+                    let writeFilePath = (writeFolder as NSString).appendingPathComponent("sorted_\(pathRead.lastPathComponent)") as NSString
+                    fileWrite = fopen(writeFilePath.utf8String, "wb")
+                    
+                    var intercycleEvents = [Event]()
+                    func storeIntercycleEvents() {
+                        let sorted = sort(intercycleEvents)
+                        for event in sorted {
+                            writeToFile(event)
+                        }
+                        intercycleEvents.removeAll()
                     }
-                    intercycleEvents.removeAll()
-                }
-                
-                if let fileRead = fileRead {
-                    setvbuf(fileRead, nil, _IONBF, 0)
-                    while feof(fileRead) != 1 {
-                        var event = Event()
-                        fread(&event, Event.size, 1, fileRead)
-                        if dataProtocol.isCycleTimeEvent(Int(event.eventId)) {
-                            writeToFile(event) // store cycle event
-                            if firstCycleEventFound {
-                                storeIntercycleEvents()
-                            } else {
-                                firstCycleEventFound = true
+                    
+                    if let fileRead = fileRead {
+                        setvbuf(fileRead, nil, _IONBF, 0)
+                        while feof(fileRead) != 1 {
+                            var event = Event()
+                            fread(&event, Event.size, 1, fileRead)
+                            if dataProtocol.isCycleTimeEvent(Int(event.eventId)) {
+                                writeToFile(event) // store cycle event
+                                if firstCycleEventFound {
+                                    storeIntercycleEvents()
+                                } else {
+                                    firstCycleEventFound = true
+                                }
+                            } else if firstCycleEventFound { // Skip data before first cycle time (first file only, when turn on the electronics).
+                                intercycleEvents.append(event)
                             }
-                        } else if firstCycleEventFound { // Skip data before first cycle time (first file only, when turn on the electronics).
-                            intercycleEvents.append(event)
+                        }
+                        // Last events in file (no cycle time at the end of it)
+                        storeIntercycleEvents()
+                    } else {
+                        exit(-1)
+                    }
+                    fclose(fileRead)
+                    fclose(fileWrite)
+                    DispatchQueue.main.async { [weak self] in
+                        if let files = self?.files {
+                            progressHandler(100 * Double(files.firstIndex(of: fp)! + 1)/Double(files.count))
                         }
                     }
-                    // Last events in file (no cycle time at the end of it)
-                    storeIntercycleEvents()
-                } else {
-                    exit(-1)
                 }
-                fclose(fileRead)
-                fclose(fileWrite)
-                DispatchQueue.main.async { [weak self] in
-                    if let files = self?.files {
-                        progressHandler(100 * Double(files.firstIndex(of: fp)! + 1)/Double(files.count))
-                    }
-                }
+            }
+            
+            DispatchQueue.main.async {
+                NSWorkspace.shared.openFile(sortedDataFolder as String)
             }
         }
     }
@@ -106,6 +123,10 @@ class EventSorter {
 
     fileprivate var files: [String] {
         return DataLoader.singleton.files
+    }
+    
+    fileprivate var protocols: [String] {
+        return DataLoader.singleton.protocols
     }
     
 }

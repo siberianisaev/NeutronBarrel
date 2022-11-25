@@ -12,6 +12,7 @@ import AppKit
 class DataLoader {
     
     var files = [String]()
+    var protocols = [String]()
     var dataProtocol: DataProtocol!
     
     class var singleton : DataLoader {
@@ -42,8 +43,10 @@ class DataLoader {
                     }
                 }
                 
+                let protocols = selected.filter() { $0.hasSuffix(".PRO") }
+                dl.protocols = protocols
                 //TODO: show alert for data with many different protocols
-                let protocolURLString = selected.filter() { $0.hasSuffix(".PRO") }.first
+                let protocolURLString = protocols.first
                 let protocolObject = DataProtocol.load(protocolURLString)
                 // Every data file has numeric extension like ".001"
                 let decimalSet = CharacterSet.decimalDigits

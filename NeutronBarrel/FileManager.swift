@@ -14,7 +14,7 @@ class FileManager {
         return NSSearchPathForDirectoriesInDomains(.desktopDirectory, .userDomainMask, true).first as NSString?
     }
     
-    fileprivate class func createIfNeedsDirectoryAtPath(_ path: String?) {
+    class func createIfNeedsDirectoryAtPath(_ path: String?) {
         if let path = path {
             let fm = Foundation.FileManager.default
             if false == fm.fileExists(atPath: path) {
