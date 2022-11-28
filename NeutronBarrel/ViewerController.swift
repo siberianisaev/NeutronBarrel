@@ -162,10 +162,10 @@ extension ViewerController: NSTableViewDelegate {
     
     func colorFor(name: String) -> NSColor {
         // text color
-        if name.contains("AFr") || name.contains("ABk") {
+        if name.contains("AFr") || name.contains("FFr") {
             return NSColor.blue
-        } else if name.contains("FFr") || name.contains("FBk") {
-            return NSColor.green
+        } else if name.contains("ABk") || name.contains("FBk") {
+            return NSColor.systemGreen
         } else if name.contains("THi") {
             return NSColor.orange
         }
