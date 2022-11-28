@@ -10,7 +10,7 @@
 		</data>
 		<key>Resources/Assets.car</key>
 		<data>
-		zKI82yvL2x/ZVo28xyZXf0W4ihw=
+		aHqRNNQGV4NoUW4YZaWNMjfuyDs=
 		</data>
 		<key>Resources/Base.lproj/MainMenu.nib</key>
 		<data>
@@ -34,11 +34,11 @@
 		</data>
 		<key>Resources/ViewerController.nib/keyedobjects-101300.nib</key>
 		<data>
-		UW3cBlkiPrCF1HmmD8ITjSi+8aI=
+		o+8JqXm3xEmFzlywj/fxxeNZPT0=
 		</data>
 		<key>Resources/ViewerController.nib/keyedobjects-110000.nib</key>
 		<data>
-		dbF5LnV0dJZ5oYW+f9KMrcMclUE=
+		RxxwTmV7+BMYv941yiM51UG9jPk=
 		</data>
 	</dict>
 	<key>files2</key>
@@ -47,10 +47,10 @@
 		<dict>
 			<key>cdhash</key>
 			<data>
-			YHZIKCbihsCwtfFQho0zrbuDVYA=
+			lvGshjCo5jRQjRXSbVf1LKX+v6w=
 			</data>
 			<key>requirement</key>
-			<string>cdhash H"12b1f758263dc2bfb923f4fc19fb8502bb4c4409" or cdhash H"6076482826e286c0b0b5f150868d33adbb835580" or cdhash H"16b7c467bf027b8c29fd4057ad8b0939ea7a8e1d" or cdhash H"2820ed9a451ddd58dde93f6755ae6eac397a9bab"</string>
+			<string>cdhash H"fd7aa565730ffdfb1011247a97d20486afb28e19" or cdhash H"96f1ac8630a8e634508d15d26d57f52ca5febfac" or cdhash H"36706cc5dc5c7f91aff370bdf174f70cc36d83c7" or cdhash H"ee87bbf27d6b456df667c9e696f5645757529c14"</string>
 		</dict>
 		<key>Frameworks/libswiftAppKit.dylib</key>
 		<dict>
@@ -198,7 +198,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			MIYfT6vhg+h4SEbG8CwXgx/PvXyACITklguY+++rNjU=
+			9gaOUrX6wzaYsMa/qvmntWYClfJV739FSM+RypuNYUA=
 			</data>
 		</dict>
 		<key>Resources/Base.lproj/MainMenu.nib</key>
@@ -240,14 +240,14 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			/P3y3SIs45eQrZYwys3py7fNO+eja52hrbgLkyG/280=
+			fjn6tEAUnRR14p7BTPJDzFf5aClxyEo9JnTTTGm8evk=
 			</data>
 		</dict>
 		<key>Resources/ViewerController.nib/keyedobjects-110000.nib</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			0CAcON2cO/Fh716VB6kHjPLlmBMn0hvaa05Ke+JOpzU=
+			FYJEgSvFaWl6W4Vax9ZG258JmaA5EUe5Thf6AulJQ14=
 			</data>
 		</dict>
 	</dict>
