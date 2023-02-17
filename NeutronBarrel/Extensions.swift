@@ -11,11 +11,12 @@ import Cocoa
 extension Event {
     
     func getFloatValue() -> Float {
-        let hi = param3
-        let lo = param2
-        let word = (UInt32(hi) << 16) + UInt32(lo)
-        let value = Float(bitPattern: word)
-        return value
+        return Float(time)
+//        let hi = param3
+//        let lo = param2
+//        let word = (UInt32(hi) << 16) + UInt32(lo)
+//        let value = Float(bitPattern: word)
+//        return value
     }
     
     static let size: Int = MemoryLayout<Event>.size

@@ -28,7 +28,7 @@ class EventSorter {
         DispatchQueue.main.async {
             progressHandler(0.0)
         }
-        var firstCycleEventFound = false
+//        var firstCycleEventFound = false
         if let sortedDataFolder = FileManager.pathForDesktopFolder("SORTED_DATA") {
             for fp in protocols {
                 // TODO: copy protocols
@@ -62,16 +62,16 @@ class EventSorter {
                         while feof(fileRead) != 1 {
                             var event = Event()
                             fread(&event, Event.size, 1, fileRead)
-                            if dataProtocol.isCycleTimeEvent(Int(event.eventId)) {
-                                writeToFile(event) // store cycle event
-                                if firstCycleEventFound {
-                                    storeIntercycleEvents()
-                                } else {
-                                    firstCycleEventFound = true
-                                }
-                            } else if firstCycleEventFound { // Skip data before first cycle time (first file only, when turn on the electronics).
-                                intercycleEvents.append(event)
-                            }
+//                            if dataProtocol.isCycleTimeEvent(Int(event.eventId)) {
+//                                writeToFile(event) // store cycle event
+//                                if firstCycleEventFound {
+//                                    storeIntercycleEvents()
+//                                } else {
+//                                    firstCycleEventFound = true
+//                                }
+//                            } else if firstCycleEventFound { // Skip data before first cycle time (first file only, when turn on the electronics).
+                            intercycleEvents.append(event)
+//                            }
                         }
                         // Last events in file (no cycle time at the end of it)
                         storeIntercycleEvents()
@@ -96,7 +96,7 @@ class EventSorter {
     
     fileprivate func sort(_ events: [Event]) -> [Event] {
         //TODO: пока сортируем просто по event.param1
-        return events.sorted { $0.param1 < $1.param1 }
+        return events.sorted { $0.time < $1.time }
 //        var time: CUnsignedShort = 0
 //        for event in events {
 //            if dataProtocol.isValidEventIdForTimeCheck(Int(event.eventId)) {

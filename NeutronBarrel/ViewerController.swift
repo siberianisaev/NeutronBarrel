@@ -173,86 +173,86 @@ extension ViewerController: NSTableViewDelegate {
     }
     
     func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
-        if let tableColumn = tableColumn, let index = tableView.tableColumns.firstIndex(of: tableColumn) {
-            if let column = Column(rawValue: index), let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: column.rowId), owner: self) as? NSTableCellView {
-                var string = ""
-                var textColor = NSColor.black
-                var highlight = false
-                if let event = getEventForRow(row) {
-                    let id = Int(event.eventId)
-                    let isAlpha = dataProtocol?.isAlpha(eventId: id) ?? false
-                    switch column {
-                    case .number:
-                        string = "\(row + 1)"
-                    case .name:
-                        string = dataProtocol?.keyFor(value: id) ?? ""
-                        textColor = colorFor(name: string)
-                        // channel number
-                        var strip: UInt16?
-                        if isAlpha {
-                            strip = event.param2 >> 12
-                        } else if dataProtocol.isNeutronsNewEvent(id) {
-                            strip = event.param3 & Mask.neutronsNew.rawValue
-                        } else if dataProtocol.isGammaEvent(id) {
-                            strip = (event.param3 << 1) >> 12
-                        }
-                        if let strip = strip {
-                            string += ".\(strip+1)"
-                        }
-                    case .ID:
-                        string = "\(event.eventId)"
-                    case .time:
-                        if dataProtocol?.isValidEventIdForTimeCheck(id) == true {
-                            string = "\(event.param1)"
-                        }
-                    case .strip:
-                        if let encoder = dataProtocol?.encoderForEventId(Int(id)) {
-                            if dataProtocol?.isAlpha(eventId: id) ?? false {
-                                let strip0_15 = event.param2 >> 12
-                                let side: StripsSide = (dataProtocol?.isAlphaFronEvent(id) ?? false) ? .front : .back
-                                let strip1_N = stripsConfiguration(detector: .focal).strip1_N_For(side: side, encoder: Int(encoder), strip0_15: strip0_15)
-                                string = "\(strip1_N)"
-                                if let number = Int(sHighlightedStrip), strip1_N == number {
-                                    highlight = true
-                                }
-                            } else if dataProtocol.isNeutronsNewEvent(id) {
-                                let strip = event.param3 & Mask.neutronsNew.rawValue
-                                let counterNumber = self.stripsConfiguration(detector: .neutron).strip1_N_For(side: .front, encoder: Int(encoder), strip0_15: strip)
-                                string = "\(counterNumber)"
-                            } else if dataProtocol.isGammaEvent(id) {
-                                let strip = (event.param3 << 1) >> 12
-                                string = "\(strip)"
-                            }
-                        }
-                    case .alpha:
-                        if dataProtocol.isCycleTimeEvent(id) {
-                            string = "\(event.param3)"
-                        } else if dataProtocol.isNeutronsNewEvent(id) {
-                            let CT = NeutronCT.init(event: event)
-                            string = "R: \(CT.R), W: \(CT.W)"
-                        } else {
-                            string = "\(event.getChannelFor(type: .alpha))"
-                        }
-                    case .fission:
-                        let isAlpha = dataProtocol?.isAlpha(eventId: id) ?? false
-                        if isAlpha {
-                            string = "\(event.getChannelFor(type: .fission))"
-                        }
-                    case .markers:
-                        if dataProtocol.isGammaEvent(id) {
-                            string = String(event.param3 >> 15)
-                        } else {
-                            string = String(event.getMarker(), radix: 2)
-                        }
-                    }
-                }
-                cell.textField?.stringValue = string
-                cell.textField?.textColor = textColor
-                cell.textField?.layer?.borderColor = NSColor.red.cgColor
-                cell.textField?.layer?.borderWidth = highlight ? 2.0 : 0.0
-                return cell
-            }
-        }
+//        if let tableColumn = tableColumn, let index = tableView.tableColumns.firstIndex(of: tableColumn) {
+//            if let column = Column(rawValue: index), let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: column.rowId), owner: self) as? NSTableCellView {
+//                var string = ""
+//                var textColor = NSColor.black
+//                var highlight = false
+//                if let event = getEventForRow(row) {
+//                    let id = Int(event.channel)
+//                    let isAlpha = dataProtocol?.isAlpha(eventId: id) ?? false
+//                    switch column {
+//                    case .number:
+//                        string = "\(row + 1)"
+//                    case .name:
+//                        string = dataProtocol?.keyFor(value: id) ?? ""
+//                        textColor = colorFor(name: string)
+//                        // channel number
+//                        var strip: UInt16?
+//                        if isAlpha {
+//                            strip = event.param2 >> 12
+//                        } else if dataProtocol.isNeutronsNewEvent(id) {
+//                            strip = event.param3 & Mask.neutronsNew.rawValue
+//                        } else if dataProtocol.isGammaEvent(id) {
+//                            strip = (event.param3 << 1) >> 12
+//                        }
+//                        if let strip = strip {
+//                            string += ".\(strip+1)"
+//                        }
+//                    case .ID:
+//                        string = "\(event.eventId)"
+//                    case .time:
+//                        if dataProtocol?.isValidEventIdForTimeCheck(id) == true {
+//                            string = "\(event.param1)"
+//                        }
+//                    case .strip:
+//                        if let encoder = dataProtocol?.encoderForEventId(Int(id)) {
+//                            if dataProtocol?.isAlpha(eventId: id) ?? false {
+//                                let strip0_15 = event.param2 >> 12
+//                                let side: StripsSide = (dataProtocol?.isAlphaFronEvent(id) ?? false) ? .front : .back
+//                                let strip1_N = stripsConfiguration(detector: .focal).strip1_N_For(side: side, encoder: Int(encoder), strip0_15: strip0_15)
+//                                string = "\(strip1_N)"
+//                                if let number = Int(sHighlightedStrip), strip1_N == number {
+//                                    highlight = true
+//                                }
+//                            } else if dataProtocol.isNeutronsNewEvent(id) {
+//                                let strip = event.param3 & Mask.neutronsNew.rawValue
+//                                let counterNumber = self.stripsConfiguration(detector: .neutron).strip1_N_For(side: .front, encoder: Int(encoder), strip0_15: strip)
+//                                string = "\(counterNumber)"
+//                            } else if dataProtocol.isGammaEvent(id) {
+//                                let strip = (event.param3 << 1) >> 12
+//                                string = "\(strip)"
+//                            }
+//                        }
+//                    case .alpha:
+//                        if dataProtocol.isCycleTimeEvent(id) {
+//                            string = "\(event.param3)"
+//                        } else if dataProtocol.isNeutronsNewEvent(id) {
+//                            let CT = NeutronCT.init(event: event)
+//                            string = "R: \(CT.R), W: \(CT.W)"
+//                        } else {
+//                            string = "\(event.getChannelFor(type: .alpha))"
+//                        }
+//                    case .fission:
+//                        let isAlpha = dataProtocol?.isAlpha(eventId: id) ?? false
+//                        if isAlpha {
+//                            string = "\(event.getChannelFor(type: .fission))"
+//                        }
+//                    case .markers:
+//                        if dataProtocol.isGammaEvent(id) {
+//                            string = String(event.param3 >> 15)
+//                        } else {
+//                            string = String(event.getMarker(), radix: 2)
+//                        }
+//                    }
+//                }
+//                cell.textField?.stringValue = string
+//                cell.textField?.textColor = textColor
+//                cell.textField?.layer?.borderColor = NSColor.red.cgColor
+//                cell.textField?.layer?.borderWidth = highlight ? 2.0 : 0.0
+//                return cell
+//            }
+//        }
         return nil
     }
     
