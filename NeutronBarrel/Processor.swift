@@ -301,8 +301,9 @@ class Processor {
     }
 
     fileprivate func mainCycleEventCheck(_ event: Event, folder: FolderStatistics) {
+        print(event)
         if isFront(event, type: criteria.startParticleType) {
-            firstParticlePerAct.currentEventTime = event.time // TODO: logic is redudant as of abs time now
+            firstParticlePerAct.currentEventTime = event.time
 
             if (criteria.inBeamOnly && !isInBeam(event)) || (criteria.overflowOnly && !isOverflow(event)) {
                 clearActInfo()
@@ -578,31 +579,30 @@ class Processor {
 //        fseek(file, position, SEEK_SET)
         return match.count > 0 ? match : nil
     }
-//
+
     fileprivate func findFissionAlphaBack() {
-        // TODO: restore logic
-//        let match = fissionsAlphaPerAct
-//        let type = criteria.startParticleBackType
-//        let directions: Set<SearchDirection> = [.backward, .forward]
-//        let byFact = self.criteria.searchFissionAlphaBackByFact
-//        search(directions: directions, startTime: firstParticlePerAct.currentEventTime, minDeltaTime: 0, maxDeltaTime: criteria.fissionAlphaMaxTime, maxDeltaTimeBackward: criteria.fissionAlphaBackBackwardMaxTime, useCycleTime: false, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>, _) in
-//            if self.isBack(event, type: type) {
-//                var store = byFact
-//                if !store {
-//                    let energy = self.getEnergy(event, type: type)
-//                    store = energy >= self.criteria.fissionAlphaBackMinEnergy && energy <= self.criteria.fissionAlphaBackMaxEnergy
-//                }
-//                if store {
-//                    self.storeFissionAlphaBack(event, match: match, type: type, deltaTime: deltaTime)
-//                    if byFact { // just stop on first one
-//                        stop.initialize(to: true)
-//                    }
-//                }
-//            }
-//        }
-//        if !criteria.summarizeFissionsAlphaBack {
-//            match.matchFor(side: .back).filterItemsByMaxEnergy(maxStripsDelta: criteria.recoilBackMaxDeltaStrips)
-//        }
+        let match = fissionsAlphaPerAct
+        let type = criteria.startParticleBackType
+        let directions: Set<SearchDirection> = [.backward, .forward]
+        let byFact = self.criteria.searchFissionAlphaBackByFact
+        search(directions: directions, startTime: firstParticlePerAct.currentEventTime, minDeltaTime: 0, maxDeltaTime: criteria.fissionAlphaMaxTime, maxDeltaTimeBackward: criteria.fissionAlphaBackBackwardMaxTime, useCycleTime: false, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>, _) in
+            if self.isBack(event, type: type) {
+                var store = byFact
+                if !store {
+                    let energy = self.getEnergy(event, type: type)
+                    store = energy >= self.criteria.fissionAlphaBackMinEnergy && energy <= self.criteria.fissionAlphaBackMaxEnergy
+                }
+                if store {
+                    self.storeFissionAlphaBack(event, match: match, type: type, deltaTime: deltaTime)
+                    if byFact { // just stop on first one
+                        stop.initialize(to: true)
+                    }
+                }
+            }
+        }
+        if !criteria.summarizeFissionsAlphaBack {
+            match.matchFor(side: .back).filterItemsByMaxEnergy(maxStripsDelta: criteria.recoilBackMaxDeltaStrips)
+        }
     }
 
     fileprivate func findRecoil() {
