@@ -36,20 +36,76 @@ class SearchCriteria {
     var searchRecoilBackByFact: Bool = false
     var minTOFValue: Double = 0
     var maxTOFValue: Double = 0
-    var recoilMinTime: CUnsignedLongLong = 0
-    var recoilMaxTime: CUnsignedLongLong = 0
-    var recoilBackMaxTime: CUnsignedLongLong = 0
-    var fissionAlphaMaxTime: CUnsignedLongLong = 0
-    var recoilBackBackwardMaxTime: CUnsignedLongLong = 0
-    var fissionAlphaBackBackwardMaxTime: CUnsignedLongLong = 0
-    var fissionAlphaWellBackwardMaxTime: CUnsignedLongLong = 0
-    var maxTOFTime: CUnsignedLongLong = 0
-    var maxVETOTime: CUnsignedLongLong = 0
-    var maxGammaTime: CUnsignedLongLong = 0
-    var maxGammaBackwardTime: CUnsignedLongLong = 0
-    var minNeutronTime: CUnsignedLongLong = 0
-    var maxNeutronTime: CUnsignedLongLong = 0
-    var maxNeutronBackwardTime: CUnsignedLongLong = 0
+    var recoilMinTime: CUnsignedLongLong = 0 {
+        didSet {
+            recoilMinTime.mksToCycles()
+        }
+    }
+    var recoilMaxTime: CUnsignedLongLong = 0 {
+        didSet {
+            recoilMaxTime.mksToCycles()
+        }
+    }
+    var recoilBackMaxTime: CUnsignedLongLong = 0 {
+        didSet {
+            recoilBackMaxTime.mksToCycles()
+        }
+    }
+    var fissionAlphaMaxTime: CUnsignedLongLong = 0 {
+        didSet {
+            fissionAlphaMaxTime.mksToCycles()
+        }
+    }
+    var recoilBackBackwardMaxTime: CUnsignedLongLong = 0 {
+        didSet {
+            recoilBackBackwardMaxTime.mksToCycles()
+        }
+    }
+    var fissionAlphaBackBackwardMaxTime: CUnsignedLongLong = 0 {
+        didSet {
+            fissionAlphaBackBackwardMaxTime.mksToCycles()
+        }
+    }
+    var fissionAlphaWellBackwardMaxTime: CUnsignedLongLong = 0 {
+        didSet {
+            fissionAlphaWellBackwardMaxTime.mksToCycles()
+        }
+    }
+    var maxTOFTime: CUnsignedLongLong = 0 {
+        didSet {
+            maxTOFTime.mksToCycles()
+        }
+    }
+    var maxVETOTime: CUnsignedLongLong = 0 {
+        didSet {
+            maxVETOTime.mksToCycles()
+        }
+    }
+    var maxGammaTime: CUnsignedLongLong = 0 {
+        didSet {
+            maxGammaTime.mksToCycles()
+        }
+    }
+    var maxGammaBackwardTime: CUnsignedLongLong = 0 {
+        didSet {
+            maxGammaBackwardTime.mksToCycles()
+        }
+    }
+    var minNeutronTime: CUnsignedLongLong = 0 {
+        didSet {
+            minNeutronTime.mksToCycles()
+        }
+    }
+    var maxNeutronTime: CUnsignedLongLong = 0 {
+        didSet {
+            maxNeutronTime.mksToCycles()
+        }
+    }
+    var maxNeutronBackwardTime: CUnsignedLongLong = 0 {
+        didSet {
+            maxNeutronBackwardTime.mksToCycles()
+        }
+    }
     var checkNeutronMaxDeltaTimeExceeded: Bool = true
     var recoilFrontMaxDeltaStrips: Int = 0
     var recoilBackMaxDeltaStrips: Int = 0
@@ -110,8 +166,16 @@ class SearchNextCriteria {
     var frontMaxEnergy: Double = 0
     var backMinEnergy: Double = 0
     var backMaxEnergy: Double = 0
-    var minTime: CUnsignedLongLong = 0
-    var maxTime: CUnsignedLongLong = 0
+    var minTime: CUnsignedLongLong = 0 {
+        didSet {
+            minTime.mksToCycles()
+        }
+    }
+    var maxTime: CUnsignedLongLong = 0 {
+        didSet {
+            maxTime.mksToCycles()
+        }
+    }
     var maxDeltaStrips: Int = 0
     var backByFact: Bool = true
     var frontType: SearchType = .fission

@@ -204,7 +204,7 @@ extension ViewerController: NSTableViewDelegate {
                     case .ID:
                         string = "\(event.eventId)"
                     case .time:
-                        string = "\(Double(event.time)/125.0)" // in mks
+                        string = String(format: "Angle: %.3f", event.time.toMks())
                     case .strip:
                         if let encoder = dataProtocol?.encoderForEventId(Int(id)) {
                             string = ""
