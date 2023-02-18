@@ -146,6 +146,7 @@ class ViewerController: NSWindowController {
             fseek(file, row * size, SEEK_SET)
             var event = Event()
             fread(&event, size, 1, file)
+            event.bigEndian()
             return event
         } else {
             return nil

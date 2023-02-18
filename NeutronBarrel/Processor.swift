@@ -11,6 +11,7 @@ import Cocoa
 
 extension Event {
     
+    // TODO: need custom fread with it to call in all places
     mutating func bigEndian() {
         self.eventId = self.eventId.bigEndian
         self.energy = self.energy.bigEndian
@@ -145,6 +146,7 @@ class Processor {
 
                 var event = Event()
                 fread(&event, size, 1, file)
+                event.bigEndian()
 
                 let time = event.time
                 let deltaTime = (time < startTime) ? (startTime - time) : (time - startTime)
@@ -170,6 +172,7 @@ class Processor {
             while feof(file) != 1 {
                 var event = Event()
                 fread(&event, Event.size, 1, file)
+                event.bigEndian()
 
                 let time = event.time
                 let deltaTime = (time < startTime) ? (startTime - time) : (time - startTime)

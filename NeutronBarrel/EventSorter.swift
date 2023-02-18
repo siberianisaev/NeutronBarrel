@@ -62,6 +62,7 @@ class EventSorter {
                         while feof(fileRead) != 1 {
                             var event = Event()
                             fread(&event, Event.size, 1, fileRead)
+                            event.bigEndian()
 //                            if dataProtocol.isCycleTimeEvent(Int(event.eventId)) {
 //                                writeToFile(event) // store cycle event
 //                                if firstCycleEventFound {
