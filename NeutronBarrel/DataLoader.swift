@@ -47,6 +47,7 @@ class DataLoader {
 //                dl.protocols = protocols
                 //TODO: show alert for data with many different protocols
 //                let protocolURLString = protocols.first
+                let protocolObject = DataProtocol()
 //                let protocolObject = DataProtocol.load(protocolURLString)
 //                // Every data file has numeric extension like ".001"
 //                let decimalSet = CharacterSet.decimalDigits
@@ -72,7 +73,7 @@ class DataLoader {
                     }
                 })
                 dl.files = selected
-//                dl.dataProtocol = protocolObject
+                dl.dataProtocol = protocolObject
                 completion(selected.count > 0, urls)
             }
         }
