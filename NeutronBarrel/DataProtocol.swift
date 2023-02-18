@@ -185,25 +185,55 @@ class DataProtocol {
         }
     }
     
+    
+    
+    
+    
+    
+    
+    
+    let eventIdsFocalFront = Set(0...127)
+    let eventIdsFocalBack = Set(128...255)
+    let eventIdsWellFront = Set(256...383)
+    let eventIdsWellBack = Set(384...511)
+    let eventIdsNeutrons = Set(512...640)
+    
     func isAlphaFronEvent(_ eventId: Int) -> Bool {
-        return AlphaFront.contains(eventId)
+        return eventIdsFocalFront.contains(eventId)
     }
     
     func isAlphaBackEvent(_ eventId: Int) -> Bool {
-        return AlphaBack.contains(eventId)
+        return eventIdsFocalBack.contains(eventId)
     }
     
     func isAlphaWellEvent(_ eventId: Int) -> Bool {
-        return AlphaWell.contains(eventId)
+        return eventIdsWellFront.contains(eventId) || eventIdsWellBack.contains(eventId)
     }
     
     func isAlphaWellFrontEvent(_ eventId: Int) -> Bool {
-        return AlphaWellFront.contains(eventId)
+        return eventIdsWellFront.contains(eventId)
     }
     
     func isAlphaWellBackEvent(_ eventId: Int) -> Bool {
-        return AlphaWellBack.contains(eventId)
+        return eventIdsWellBack.contains(eventId)
     }
+    
+    func isNeutronsNewEvent(_ eventId: Int) -> Bool {
+        return eventIdsNeutrons.contains(eventId)
+    }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     
     func isGammaEvent(_ eventId: Int) -> Bool {
         return Gamma.contains(eventId)
@@ -220,10 +250,6 @@ class DataProtocol {
             return .TOF2
         }
         return nil
-    }
-    
-    func isNeutronsNewEvent(_ eventId: Int) -> Bool {
-        return NeutronsNew.contains(eventId)
     }
     
     func isNeutronsOldEvent(_ eventId: Int) -> Bool {
