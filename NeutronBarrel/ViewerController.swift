@@ -174,22 +174,23 @@ extension ViewerController: NSTableViewDelegate {
     }
     
     func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
-//        if let tableColumn = tableColumn, let index = tableView.tableColumns.firstIndex(of: tableColumn) {
-//            if let column = Column(rawValue: index), let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: column.rowId), owner: self) as? NSTableCellView {
-//                var string = ""
-//                var textColor = NSColor.black
-//                var highlight = false
-//                if let event = getEventForRow(row) {
-//                    let id = Int(event.channel)
-//                    let isAlpha = dataProtocol?.isAlpha(eventId: id) ?? false
-//                    switch column {
-//                    case .number:
-//                        string = "\(row + 1)"
-//                    case .name:
-//                        string = dataProtocol?.keyFor(value: id) ?? ""
-//                        textColor = colorFor(name: string)
-//                        // channel number
-//                        var strip: UInt16?
+        if let tableColumn = tableColumn, let index = tableView.tableColumns.firstIndex(of: tableColumn) {
+            if let column = Column(rawValue: index), let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: column.rowId), owner: self) as? NSTableCellView {
+                var string = ""
+                var textColor = NSColor.black
+                var highlight = false
+                if let event = getEventForRow(row) {
+                    let id = Int(event.eventId)
+                    let isAlpha = dataProtocol?.isAlpha(eventId: id) ?? false
+                    switch column {
+                    case .number:
+                        string = "\(row + 1)"
+                    case .name:
+                        string = dataProtocol?.keyFor(value: id) ?? ""
+                        textColor = colorFor(name: string)
+                        // channel number
+                        var strip: UInt16?
+                        // TODO: strip
 //                        if isAlpha {
 //                            strip = event.param2 >> 12
 //                        } else if dataProtocol.isNeutronsNewEvent(id) {
@@ -197,17 +198,17 @@ extension ViewerController: NSTableViewDelegate {
 //                        } else if dataProtocol.isGammaEvent(id) {
 //                            strip = (event.param3 << 1) >> 12
 //                        }
-//                        if let strip = strip {
-//                            string += ".\(strip+1)"
-//                        }
-//                    case .ID:
-//                        string = "\(event.eventId)"
-//                    case .time:
-//                        if dataProtocol?.isValidEventIdForTimeCheck(id) == true {
-//                            string = "\(event.param1)"
-//                        }
-//                    case .strip:
-//                        if let encoder = dataProtocol?.encoderForEventId(Int(id)) {
+                        if let strip = strip {
+                            string += ".\(strip+1)"
+                        }
+                    case .ID:
+                        string = "\(event.eventId)"
+                    case .time:
+                        string = "\(Double(event.time)/125.0)" // in mks
+                    case .strip:
+                        if let encoder = dataProtocol?.encoderForEventId(Int(id)) {
+                            string = ""
+                            // TODO: !!!
 //                            if dataProtocol?.isAlpha(eventId: id) ?? false {
 //                                let strip0_15 = event.param2 >> 12
 //                                let side: StripsSide = (dataProtocol?.isAlphaFronEvent(id) ?? false) ? .front : .back
@@ -224,36 +225,37 @@ extension ViewerController: NSTableViewDelegate {
 //                                let strip = (event.param3 << 1) >> 12
 //                                string = "\(strip)"
 //                            }
-//                        }
-//                    case .alpha:
-//                        if dataProtocol.isCycleTimeEvent(id) {
-//                            string = "\(event.param3)"
-//                        } else if dataProtocol.isNeutronsNewEvent(id) {
+                        }
+                    case .alpha:
+                        // TODO: !!!
+                        string = "\(event.energy)"
+//                        if dataProtocol.isNeutronsNewEvent(id) {
 //                            let CT = NeutronCT.init(event: event)
 //                            string = "R: \(CT.R), W: \(CT.W)"
 //                        } else {
 //                            string = "\(event.getChannelFor(type: .alpha))"
 //                        }
-//                    case .fission:
-//                        let isAlpha = dataProtocol?.isAlpha(eventId: id) ?? false
-//                        if isAlpha {
-//                            string = "\(event.getChannelFor(type: .fission))"
-//                        }
-//                    case .markers:
+                    case .fission:
+                        let isAlpha = dataProtocol?.isAlpha(eventId: id) ?? false
+                        if isAlpha {
+                            string = "\(event.getChannelFor(type: .fission))"
+                        }
+                    case .markers:
+                        string = ""
 //                        if dataProtocol.isGammaEvent(id) {
 //                            string = String(event.param3 >> 15)
 //                        } else {
 //                            string = String(event.getMarker(), radix: 2)
 //                        }
-//                    }
-//                }
-//                cell.textField?.stringValue = string
-//                cell.textField?.textColor = textColor
-//                cell.textField?.layer?.borderColor = NSColor.red.cgColor
-//                cell.textField?.layer?.borderWidth = highlight ? 2.0 : 0.0
-//                return cell
-//            }
-//        }
+                    }
+                }
+                cell.textField?.stringValue = string
+                cell.textField?.textColor = textColor
+                cell.textField?.layer?.borderColor = NSColor.red.cgColor
+                cell.textField?.layer?.borderWidth = highlight ? 2.0 : 0.0
+                return cell
+            }
+        }
         return nil
     }
     

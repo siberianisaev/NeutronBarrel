@@ -155,12 +155,26 @@ class DataProtocol {
     }
     
     func keyFor(value: Int) -> String? {
-        for (k, v) in dict {
-            if v == value {
-                return k
-            }
+        if isAlphaFronEvent(value) {
+            return "FocalFront"
+        } else if isAlphaBackEvent(value) {
+            return "FocalBack"
+        } else if isAlphaWellFrontEvent(value) {
+            return "WellFront"
+        } else if isAlphaWellBackEvent(value) {
+            return "WellBack"
+        } else if isNeutronsNewEvent(value) {
+            return "Neutrons"
+        } else {
+            // TODO: !!!
+            return nil
         }
-        return nil
+//        for (k, v) in dict {
+//            if v == value {
+//                return k
+//            }
+//        }
+//        return nil
     }
     
     func position(_ eventId: Int) -> String {

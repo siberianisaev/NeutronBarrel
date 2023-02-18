@@ -304,7 +304,7 @@ class Processor {
     }
 
     fileprivate func mainCycleEventCheck(_ event: Event, folder: FolderStatistics) {
-        print(event)
+//        print(event)
         if isFront(event, type: criteria.startParticleType) {
             firstParticlePerAct.currentEventTime = event.time
 
