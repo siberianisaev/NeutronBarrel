@@ -205,22 +205,9 @@ extension ViewerController: NSTableViewDelegate {
                         string = String(format: "%.3f", event.time.toMks())
                     case .strip:
                         string = "enc\(id)"
-                        if dataProtocol?.isAlpha(Int(id)) ?? false {
-                            let strip1_N = stripsConfiguration.strip1_N_For(channel: Int(id))
+                        let strip1_N = stripsConfiguration.strip1_N_For(channel: CUnsignedShort(id))
+                        if strip1_N != -1 {
                             string += "_str\(strip1_N)"
-                            if let number = Int(sHighlightedStrip), strip1_N == number {
-                                highlight = true
-                            }
-                        } else if dataProtocol.isNeutronsNewEvent(id) {
-//                                let strip = event.param3 & Mask.neutronsNew.rawValue
-//                                let counterNumber = self.stripsConfiguration(detector: .neutron).strip1_N_For(side: .front, encoder: Int(encoder))
-//                                string = "\(counterNumber)"
-                            // TODO: !!!
-//                                string += ""
-                        } else if dataProtocol.isGammaEvent(id) {
-                            // TODO: !!!
-//                                let strip = (event.param3 << 1) >> 12
-//                                string = "\(strip)"
                         }
                     case .alpha:
                         // TODO: !!!

@@ -117,7 +117,6 @@ class DataProtocol {
             alert.runModal()
         }
         
-        p.encoderForEventIdCache.removeAll()
         return p
     }
     
@@ -267,25 +266,6 @@ class DataProtocol {
     
     func isBeamIntegral(_ eventId: Int) -> Bool {
         return BeamIntegral == eventId
-    }
-    
-    fileprivate var encoderForEventIdCache = [Int: CUnsignedShort]()
-    
-    func encoderForEventId(_ eventId: Int) -> CUnsignedShort {
-        if let cached = encoderForEventIdCache[eventId] {
-            return cached
-        }
-        
-        var value: CUnsignedShort
-        if let key = keyFor(value: eventId), let rangeDigits = key.rangeOfCharacter(from: .decimalDigits), let substring = String(key[rangeDigits.lowerBound...]).components(separatedBy: CharacterSet.init(charactersIn: "., ")).first, let encoder = Int(substring) {
-            value = CUnsignedShort(encoder)
-        } else if (AlphaWell.contains(eventId) && AlphaWell.count == 1) || (Gamma.contains(eventId) && Gamma.count == 1) {
-            value = 1
-        } else {
-            value = 0
-        }
-        encoderForEventIdCache[eventId] = value
-        return value
     }
     
 }

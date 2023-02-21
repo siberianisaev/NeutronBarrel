@@ -18,28 +18,34 @@ class StripsConfiguration {
 //    fileprivate var config = [StripsSide: [[Int]]]()
 //    fileprivate var detector: StripDetector
     
-    var strips: [Int] = []
+    var strips: [CUnsignedShort: Int] = [:]
     
-    func strip1_N_For(channel: Int) -> Int {
-        if channel < self.strips.count {
-            return strips[channel]
+    func strip1_N_For(channel: CUnsignedShort) -> Int {
+        if let strip = self.strips[channel] {
+            return strip
         } else {
             return -1
         }
     }
     
     init() {
-        if let url = Bundle.main.url(forResource: "chan_decode", withExtension: "txt") {
-            do {
-                let text = try String(contentsOf: url, encoding: .utf8)
-                let lines: [String] = text.components(separatedBy: "\r\n").filter {
-                    return !$0.isEmpty
+        for tuple in [("chan_decode_dssd", 0), ("chan_decode_neutrons", 512)] {
+            if let url = Bundle.main.url(forResource: tuple.0, withExtension: "txt") {
+                do {
+                    let text = try String(contentsOf: url, encoding: .utf8)
+                    let lines: [String] = text.components(separatedBy: "\r\n").filter {
+                        return !$0.isEmpty
+                    }
+                    for index in 0...lines.count-1 {
+                        let channel = CUnsignedShort(index + tuple.1)
+                        self.strips[channel] = Int(lines[index])
+                    }
+                } catch {
+                    print("Error read file \(url): \(error)")
                 }
-                self.strips = lines.map { Int($0)!}
-            } catch {
-                print("Error read file \(url): \(error)")
             }
         }
+        print("Strips configuration (channel : strip) \(self.strips)")
     }
     
 //    init(detector: StripDetector) {

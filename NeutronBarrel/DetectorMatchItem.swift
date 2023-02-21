@@ -25,7 +25,7 @@ class DetectorMatchItem {
     fileprivate var _strip1_N: Int?
     var strip1_N: Int? {
         if nil == _strip1_N, let encoder = encoder {
-            _strip1_N = StripDetectorManager.singleton.stripConfiguration.strip1_N_For(channel: Int(encoder))
+            _strip1_N = StripDetectorManager.singleton.stripConfiguration.strip1_N_For(channel: encoder)
         }
         return _strip1_N
     }

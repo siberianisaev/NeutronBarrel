@@ -520,19 +520,7 @@ class Processor {
                         let isNeutronsBkg = self.criteria.neutronsBackground
                         if (!isNeutronsBkg && neutronTime >= startTime) || (isNeutronsBkg && neutronTime < startTime) { // Effect neutrons must be after SF by time
                             self.neutronsPerAct.times.append(Float(deltaTime))
-//                            var encoder = self.dataProtocol.encoderForEventId(id) // 1-4
-//                            var channel = event.param3 & Mask.neutronsNew.rawValue // 0-31
-//                            // Convert to encoder 1-8 and strip 0-15 format
-//                            self.neutronsPerAct.encoders.append(encoder)
-//                            encoder *= 2
-//                            if channel > 15 {
-//                                channel -= 16
-//                            } else {
-//                                encoder -= 1
-//                            }
-//                            let counterNumber = self.stripsConfiguration().strip1_N_For(channel: Int(encoder))
-                            // TODO: counter number!
-                            let counterNumber = Int(event.eventId)
+                            let counterNumber = self.stripsConfiguration().strip1_N_For(channel: CUnsignedShort(id))
                             self.neutronsPerAct.counters.append(counterNumber)
                         }
                     }
@@ -830,8 +818,7 @@ class Processor {
     // MARK: - Storage
 
     fileprivate func focalDetectorMatchItemFrom(_ event: Event, type: SearchType, deltaTime: CLongLong, side: StripsSide) -> DetectorMatchItem {
-        let id = event.eventId
-        let encoder = dataProtocol.encoderForEventId(Int(id))
+        let encoder = event.eventId
         let energy = getEnergy(event, type: type)
         let item = DetectorMatchItem(type: type,
                                      stripDetector: .focal,
@@ -851,10 +838,9 @@ class Processor {
     }
 
     fileprivate func storeFissionAlphaFront(_ event: Event, deltaTime: CLongLong, subMatches: [SearchType: DetectorMatch?]?) {
-        let id = event.eventId
+        let encoder = event.eventId
         let type = criteria.startParticleType
         let channel = event.getChannelFor(type: type)
-        let encoder = dataProtocol.encoderForEventId(Int(id))
         let energy = getEnergy(event, type: type)
         let side: StripsSide = .front
         let item = DetectorMatchItem(type: type,
@@ -872,8 +858,7 @@ class Processor {
 
     fileprivate func gammaMatchItem(_ event: Event, deltaTime: CLongLong) -> DetectorMatchItem? {
         let channel = event.energy
-        let eventId = Int(event.eventId)
-        let encoder = dataProtocol.encoderForEventId(eventId)
+        let encoder = event.eventId
 
         if criteria.gammaEncodersOnly, !criteria.gammaEncoderIds.contains(Int(encoder)) {
             return nil
@@ -900,8 +885,7 @@ class Processor {
     }
 
     fileprivate func storeRecoil(_ event: Event, energy: Double, deltaTime: CLongLong, subMatches: [SearchType: DetectorMatch?]?) {
-        let id = event.eventId
-        let encoder = dataProtocol.encoderForEventId(Int(id))
+        let encoder = event.eventId
         let side: StripsSide = .front
         let item = DetectorMatchItem(type: .recoil,
                                      stripDetector: .focal,
@@ -916,8 +900,7 @@ class Processor {
     }
 
     fileprivate func storeFissionAlpha(_ index: Int, event: Event, type: SearchType, deltaTime: CLongLong, subMatches: [SearchType: DetectorMatch?]?, back: DetectorMatchItem?) {
-        let id = event.eventId
-        let encoder = dataProtocol.encoderForEventId(Int(id))
+        let encoder = event.eventId
         let energy = getEnergy(event, type: type)
         let side: StripsSide = .front
         let item = DetectorMatchItem(type: type,
@@ -973,7 +956,7 @@ class Processor {
         if energy < criteria.fissionAlphaWellMinEnergy || energy > criteria.fissionAlphaWellMaxEnergy {
             return
         }
-        let encoder = dataProtocol.encoderForEventId(Int(event.eventId))
+        let encoder = event.eventId
         let item = DetectorMatchItem(type: type,
                                      stripDetector: .side,
                                      energy: energy,
@@ -999,8 +982,8 @@ class Processor {
     // MARK: - Helpers
 
     fileprivate func isEventStripNearToFirstParticle(_ event: Event, maxDelta: Int, side: StripsSide) -> Bool {
-        let encoder = dataProtocol.encoderForEventId(Int(event.eventId))
-        let strip1_N = stripsConfiguration().strip1_N_For(channel: Int(encoder))
+        let encoder = event.eventId
+        let strip1_N = stripsConfiguration().strip1_N_For(channel: encoder)
         if let s = firstParticlePerAct.firstItemsFor(side: side)?.strip1_N {
             return abs(Int32(strip1_N) - Int32(s)) <= Int32(maxDelta)
         }
@@ -1010,8 +993,8 @@ class Processor {
     fileprivate func isRecoilBackStripNearToFissionAlphaBack(_ event: Event) -> Bool {
         let side: StripsSide = .back
         if let s = fissionsAlphaPerAct.matchFor(side: side).itemWithMaxEnergy()?.strip1_N {
-            let encoder = dataProtocol.encoderForEventId(Int(event.eventId))
-            let strip1_N = stripsConfiguration().strip1_N_For(channel: Int(encoder))
+            let encoder = event.eventId
+            let strip1_N = stripsConfiguration().strip1_N_For(channel: encoder)
             return abs(Int32(strip1_N) - Int32(s)) <= Int32(criteria.recoilBackMaxDeltaStrips)
         }
         return false
@@ -1023,8 +1006,8 @@ class Processor {
     fileprivate func isFissionStripNearToFirstFissionFront(_ event: Event) -> Bool {
         let side: StripsSide = .front
         if let s = fissionsAlphaPerAct.firstItemsFor(side: side)?.strip1_N {
-            let encoder = dataProtocol.encoderForEventId(Int(event.eventId))
-            let strip1_N = stripsConfiguration().strip1_N_For(channel: Int(encoder))
+            let encoder = event.eventId
+            let strip1_N = stripsConfiguration().strip1_N_For(channel: encoder)
             return Int(abs(Int32(strip1_N) - Int32(s))) <= 1
         }
         return false
@@ -1093,8 +1076,7 @@ class Processor {
         // TODO: calibration
         let channel = Double(event.getChannelFor(type: type))
 //        if calibration.hasData() {
-//            let eventId = Int(event.eventId)
-//            let encoder = dataProtocol.encoderForEventId(eventId)
+//            let encoder = event.eventId
 //            return calibration.calibratedValueForAmplitude(channel, type: type, eventId: eventId, encoder: encoder, dataProtocol: dataProtocol)
 //        } else {
             return channel
@@ -1110,9 +1092,8 @@ class Processor {
 //            if let value = calibration.calibratedTOFValueForAmplitude(channel) {
 //                return value
 //            } else {
-//                let eventId = Int(eventRecoil.eventId)
-//                let encoder = dataProtocol.encoderForEventId(eventId)
-//                return calibration.calibratedValueForAmplitude(channel, type: SearchType.tof, eventId: eventId, encoder: encoder, dataProtocol: dataProtocol)
+//                let encoder = eventRecoil.eventId
+//                return calibration.calibratedValueForAmplitude(channel, type: SearchType.tof, eventId: encoder, encoder: encoder, dataProtocol: dataProtocol)
 //            }
 //        }
     }
