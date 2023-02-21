@@ -482,14 +482,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     
     @IBAction func removeStripsConfiguration(_ sender: Any) {
         setSelected(false, indicator: indicatorStripsConfig)
-        StripDetectorManager.cleanStripConfigs()
+//        StripDetectorManager.cleanStripConfigs()
         buttonRemoveStripsConfiguration.isHidden = true
         showFilePaths(nil, label: labelStripsConfigurationFileName)
     }
     
     @IBAction func focalDetectorChanged(_ sender: Any?) {
         Settings.changeSingle(.FocalDetectorType, value: focalDetectorControl.selectedSegment)
-        StripDetectorManager.singleton.reset()
+//        StripDetectorManager.singleton.reset()
         didSelectStripsConfiguration(false, filePaths: nil)
     }
     
@@ -821,11 +821,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
                     self?.didSelectCalibration(s, filePaths: filePaths)
                 }
             }
-            StripsConfiguration.handle(urls: urls) { (s: Bool, filePaths: [String]?) in
-                if s {
-                    self?.didSelectStripsConfiguration(s, filePaths: filePaths)
-                }
-            }
+//            StripsConfiguration.handle(urls: urls) { (s: Bool, filePaths: [String]?) in
+//                if s {
+//                    self?.didSelectStripsConfiguration(s, filePaths: filePaths)
+//                }
+//            }
         }
     }
     

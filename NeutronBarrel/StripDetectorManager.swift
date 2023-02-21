@@ -31,25 +31,25 @@ enum StripDetector {
 
 class StripDetectorManager {
     
-    fileprivate var stripsConfigurations = [StripDetector: StripsConfiguration]()
+    var stripConfiguration = StripsConfiguration()
     
-    func setStripConfiguration(_ config: StripsConfiguration, detector: StripDetector) {
-        stripsConfigurations[detector] = config
-    }
-    
-    func getStripConfigurations(_ detector: StripDetector) -> StripsConfiguration {
-        if let sc = stripsConfigurations[detector] {
-            return sc
-        }
-        // Default Config
-        let sc = StripsConfiguration(detector: detector)
-        setStripConfiguration(sc, detector: detector)
-        return sc
-    }
-    
-    func reset() {
-        stripsConfigurations.removeAll()
-    }
+//    func setStripConfiguration(_ config: StripsConfiguration, detector: StripDetector) {
+//        stripsConfigurations[detector] = config
+//    }
+//
+//    func getStripConfigurations(_ detector: StripDetector) -> StripsConfiguration {
+//        if let sc = stripsConfigurations[detector] {
+//            return sc
+//        }
+//        // Default Config
+//        let sc = StripsConfiguration()
+//        setStripConfiguration(sc, detector: detector)
+//        return sc
+//    }
+//
+//    func reset() {
+//        stripsConfigurations.removeAll()
+//    }
     
     class var singleton : StripDetectorManager {
         struct Static {
@@ -58,8 +58,8 @@ class StripDetectorManager {
         return Static.sharedInstance
     }
     
-    class func cleanStripConfigs() {
-        StripDetectorManager.singleton.stripsConfigurations.removeAll()
-    }
+//    class func cleanStripConfigs() {
+//        StripDetectorManager.singleton.stripsConfigurations.removeAll()
+//    }
     
 }

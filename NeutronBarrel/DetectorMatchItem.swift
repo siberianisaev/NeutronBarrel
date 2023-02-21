@@ -24,12 +24,8 @@ class DetectorMatchItem {
     
     fileprivate var _strip1_N: Int?
     var strip1_N: Int? {
-        if nil == _strip1_N, let strip0_15 = strip0_15, let encoder = encoder {
-            if let side = side, let stripDetector = stripDetector {
-                _strip1_N = StripDetectorManager.singleton.getStripConfigurations(stripDetector).strip1_N_For(side: side, encoder: Int(encoder), strip0_15: strip0_15)
-            } else {
-                print("Unable to calculate 'strip1_N': detector side was not determined!")
-            }
+        if nil == _strip1_N, let encoder = encoder {
+            _strip1_N = StripDetectorManager.singleton.stripConfiguration.strip1_N_For(channel: Int(encoder))
         }
         return _strip1_N
     }
@@ -37,11 +33,6 @@ class DetectorMatchItem {
     fileprivate var _encoder: CUnsignedShort?
     var encoder: CUnsignedShort? {
         return _encoder
-    }
-    
-    fileprivate var _strip0_15: CUnsignedShort?
-    var strip0_15: CUnsignedShort? {
-        return _strip0_15
     }
     
     fileprivate var _side: StripsSide?
@@ -79,12 +70,11 @@ class DetectorMatchItem {
         return _type
     }
     
-    init(type: SearchType, stripDetector: StripDetector?, energy: Double? = nil, encoder: CUnsignedShort? = nil, strip0_15: CUnsignedShort? = nil, eventNumber: CUnsignedLongLong? = nil, deltaTime: CLongLong? = nil, marker: CUnsignedShort? = nil, channel: CUnsignedShort? = nil, value: Double? = nil, subMatches: [SearchType: DetectorMatch?]? = nil, back: DetectorMatch? = nil, side: StripsSide?) {
+    init(type: SearchType, stripDetector: StripDetector?, energy: Double? = nil, encoder: CUnsignedShort? = nil, eventNumber: CUnsignedLongLong? = nil, deltaTime: CLongLong? = nil, marker: CUnsignedShort? = nil, channel: CUnsignedShort? = nil, value: Double? = nil, subMatches: [SearchType: DetectorMatch?]? = nil, back: DetectorMatch? = nil, side: StripsSide?) {
         self._type = type
         self._stripDetector = stripDetector
         self._energy = energy
         self._encoder = encoder
-        self._strip0_15 = strip0_15
         self._eventNumber = eventNumber
         self._deltaTime = deltaTime
         self._marker = marker

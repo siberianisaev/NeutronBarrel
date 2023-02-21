@@ -79,23 +79,6 @@ class DataProtocol {
     fileprivate var AlphaBack = Set<Int>()
     fileprivate var Gamma = Set<Int>()
     
-    fileprivate var isAlphaCache = [Int: Bool]()
-    func isAlpha(eventId: Int) -> Bool {
-        if let b = isAlphaCache[eventId] {
-            return b
-        } else {
-            var b = false
-            for s in [AlphaFront, AlphaBack, AlphaWell, AlphaWellFront, AlphaWellBack, AlphaMotherFront, AlphaMotherBack, AlphaDaughterFront, AlphaDaughterBack] {
-                if s.contains(eventId) {
-                    b = true
-                    break
-                }
-            }
-            isAlphaCache[eventId] = b
-            return b
-        }
-    }
-    
     class func load(_ path: String?) -> DataProtocol {
         var result = [String: Int]()
         if let path = path {
@@ -135,23 +118,7 @@ class DataProtocol {
         }
         
         p.encoderForEventIdCache.removeAll()
-        p.isValidEventIdForTimeCheckCache.removeAll()
         return p
-    }
-    
-    fileprivate var isValidEventIdForTimeCheckCache = [Int: Bool]()
-    
-    /**
-     Not all events have time data.
-     */
-    func isValidEventIdForTimeCheck(_ eventId: Int) -> Bool {
-        if let cached = isValidEventIdForTimeCheckCache[eventId] {
-            return cached
-        }
-        
-        let value = isAlpha(eventId: eventId) || isTOFEvent(eventId) != nil || isGammaEvent(eventId) || isNeutronsOldEvent(eventId) || isNeutronsNewEvent(eventId) || isNeutrons_N_Event(eventId) || isVETOEvent(eventId)
-        isValidEventIdForTimeCheckCache[eventId] = value
-        return value
     }
     
     func keyFor(value: Int) -> String? {
@@ -211,6 +178,10 @@ class DataProtocol {
     let eventIdsWellFront = Set(256...383)
     let eventIdsWellBack = Set(384...511)
     let eventIdsNeutrons = Set(512...640)
+    
+    func isAlpha(_ eventId: Int) ->  Bool {
+        return isAlphaFronEvent(eventId) || isAlphaBackEvent(eventId) || isAlphaWellEvent(eventId)
+    }
     
     func isAlphaFronEvent(_ eventId: Int) -> Bool {
         return eventIdsFocalFront.contains(eventId)
