@@ -62,7 +62,6 @@ class EventSorter {
                         while feof(fileRead) != 1 {
                             var event = Event()
                             fread(&event, Event.size, 1, fileRead)
-                            event.bigEndian()
 //                            if dataProtocol.isCycleTimeEvent(Int(event.eventId)) {
 //                                writeToFile(event) // store cycle event
 //                                if firstCycleEventFound {
@@ -97,7 +96,7 @@ class EventSorter {
     
     fileprivate func sort(_ events: [Event]) -> [Event] {
         //TODO: пока сортируем просто по event.param1
-        return events.sorted { $0.time < $1.time }
+        return events.sorted { $0.time.bigEndian < $1.time.bigEndian }
 //        var time: CUnsignedShort = 0
 //        for event in events {
 //            if dataProtocol.isValidEventIdForTimeCheck(Int(event.eventId)) {
