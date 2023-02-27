@@ -771,7 +771,7 @@
         <window title="NeutronBarrel" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" animationBehavior="default" id="QvC-M9-y7g">
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
             <rect key="contentRect" x="335" y="390" width="1870" height="900"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="2560" height="1415"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="1440" height="875"/>
             <value key="minSize" type="size" width="1870" height="900"/>
             <value key="maxSize" type="size" width="1870" height="900"/>
             <value key="minFullScreenContentSize" type="size" width="1870" height="900"/>
@@ -2981,7 +2981,7 @@
                             <segmentedControl verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="C6M-rp-BQ8">
                                 <rect key="frame" x="13" y="244" width="200" height="24"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                <segmentedCell key="cell" borderStyle="border" alignment="left" style="rounded" trackingMode="selectOne" id="1v0-mr-UzV">
+                                <segmentedCell key="cell" enabled="NO" borderStyle="border" alignment="left" style="rounded" trackingMode="selectOne" id="1v0-mr-UzV">
                                     <font key="font" metaFont="system"/>
                                     <segments>
                                         <segment label="48x48" width="96"/>

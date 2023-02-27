@@ -62,18 +62,9 @@ class EventSorter {
                         while feof(fileRead) != 1 {
                             var event = Event()
                             fread(&event, Event.size, 1, fileRead)
-//                            if dataProtocol.isCycleTimeEvent(Int(event.eventId)) {
-//                                writeToFile(event) // store cycle event
-//                                if firstCycleEventFound {
-//                                    storeIntercycleEvents()
-//                                } else {
-//                                    firstCycleEventFound = true
-//                                }
-//                            } else if firstCycleEventFound { // Skip data before first cycle time (first file only, when turn on the electronics).
                             intercycleEvents.append(event)
-//                            }
                         }
-                        // Last events in file (no cycle time at the end of it)
+                        // TODO: now no any cycles in files, optimise sorting logic for large files
                         storeIntercycleEvents()
                     } else {
                         exit(-1)

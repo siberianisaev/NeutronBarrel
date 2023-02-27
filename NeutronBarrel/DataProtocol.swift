@@ -177,6 +177,7 @@ class DataProtocol {
     let eventIdsWellFront = Set(256...383)
     let eventIdsWellBack = Set(384...511)
     let eventIdsNeutrons = Set(512...640)
+    let eventIdsGamma = Set(640...659)
     
     func isAlpha(_ eventId: Int) ->  Bool {
         return isAlphaFronEvent(eventId) || isAlphaBackEvent(eventId) || isAlphaWellEvent(eventId)
@@ -206,22 +207,15 @@ class DataProtocol {
         return eventIdsNeutrons.contains(eventId)
     }
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
     func isGammaEvent(_ eventId: Int) -> Bool {
-        return Gamma.contains(eventId)
+        return eventIdsGamma.contains(eventId)
     }
+    
+    
+    
+    
+    
+    // TODO: support
     
     func isVETOEvent(_ eventId: Int) -> Bool {
         return AVeto == eventId
@@ -246,10 +240,6 @@ class DataProtocol {
     
     func hasNeutrons_N() -> Bool {
         return Neutrons_N.count > 0
-    }
-    
-    func isCycleTimeEvent(_ eventId: Int) -> Bool {
-        return CycleTime == eventId
     }
     
     func isBeamEnergy(_ eventId: Int) -> Bool {
