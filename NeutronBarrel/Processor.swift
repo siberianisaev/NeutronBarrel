@@ -22,6 +22,24 @@ extension UInt64 {
     
 }
 
+// TODO: refactor it
+extension CLongLong {
+    
+    func toMks() -> Double {
+        return Double(self) / 125.0
+    }
+    
+}
+
+// TODO: refactor it
+extension Float {
+    
+    func toMks() -> Double {
+        return Double(self) / 125.0
+    }
+    
+}
+
 extension Event {
     
     // TODO: need custom fread with it to call in all places

@@ -454,7 +454,7 @@ class ResultsTable {
 //                                            field = String(format: "%hu", strip)
 //                                        }
                                     case keyColumnGammaDeltaTime(false):
-                                        if let deltaTime = g.itemAt(index: row)?.deltaTime {
+                                        if let deltaTime = g.itemAt(index: row)?.deltaTime?.toMks() {
                                             field = String(format: "%lld", deltaTime)
                                         }
                                     case keyColumnGammaMarker(false):
@@ -498,7 +498,7 @@ class ResultsTable {
                         field = String(format: "%hu", marker)
                     }
                 case keyColumnRecoilFrontDeltaTime(log: false), keyColumnRecoilFrontDeltaTime(log: true):
-                    if let deltaTime = delegate.recoilAt(side: .front, index: row)?.deltaTime {
+                    if let deltaTime = delegate.recoilAt(side: .front, index: row)?.deltaTime?.toMks() {
                         if column == keyColumnRecoilFrontDeltaTime(log: false) {
                             field = String(format: "%lld", deltaTime)
                         } else {
@@ -519,7 +519,7 @@ class ResultsTable {
                         field = String(format: format, value)
                     }
                 case keyColumnTofDeltaTime, keyColumnTof2DeltaTime:
-                    if let deltaTime = firstTOF(row: row, type: column == keyColumnTofDeltaTime ? .tof : .tof2)?.deltaTime {
+                    if let deltaTime = firstTOF(row: row, type: column == keyColumnTofDeltaTime ? .tof : .tof2)?.deltaTime?.toMks() {
                         field = String(format: "%lld", deltaTime)
                     }
                 case keyColumnStartEvent:
@@ -542,7 +542,7 @@ class ResultsTable {
                         field = String(format: "%hu", marker)
                     }
                 case keyColumnStartFrontDeltaTime:
-                    if let deltaTime = delegate.firstParticleAt(side: .front).itemAt(index: row)?.deltaTime {
+                    if let deltaTime = delegate.firstParticleAt(side: .front).itemAt(index: row)?.deltaTime?.toMks() {
                         field = String(format: "%lld", deltaTime)
                     }
                 case keyColumnStartFrontStrip:
@@ -575,7 +575,7 @@ class ResultsTable {
                         field = String(format: "%hu", marker)
                     }
                 case keyColumnStartBackDeltaTime:
-                    if let deltaTime = delegate.firstParticleAt(side: .back).itemAt(index: row)?.deltaTime {
+                    if let deltaTime = delegate.firstParticleAt(side: .back).itemAt(index: row)?.deltaTime?.toMks() {
                         field = String(format: "%lld", deltaTime)
                     }
                 case keyColumnStartBackStrip:
@@ -651,7 +651,7 @@ class ResultsTable {
                 case keyColumnNeutronsAverageTime:
                     if row == 0 {
                         let neutrons = delegate.neutrons()
-                        let average = neutrons.averageTime
+                        let average = neutrons.averageTime.toMks()
                         if average > 0 {
                             field = String(format: "%.1f", average)
                         } else {
@@ -664,7 +664,7 @@ class ResultsTable {
                         let index = row - 1
                         let times = neutrons.times
                         if index < times.count {
-                            field = String(format: "%.1f", times[index])
+                            field = String(format: "%.1f", times[index].toMks())
                         }
                     }
                 case keyColumnNeutronCounter, keyColumnNeutronBlock, keyColumnNeutronCounterX, keyColumnNeutronCounterY, keyColumnNeutronAngle, keyColumnNeutronRelatedFissionBack:
@@ -730,7 +730,7 @@ class ResultsTable {
 //                        field = String(format: "%hu", strip)
 //                    }
                 case keyColumnGammaDeltaTime(true):
-                    if let deltaTime = gammaAt(row: row)?.itemWithMaxEnergy()?.deltaTime {
+                    if let deltaTime = gammaAt(row: row)?.itemWithMaxEnergy()?.deltaTime?.toMks() {
                         field = String(format: "%lld", deltaTime)
                     }
                 case keyColumnGammaCount:
@@ -782,7 +782,7 @@ class ResultsTable {
 //                        field = String(format: "%hu", strip0_15 + 1)
 //                    }
                 case keyColumnVetoDeltaTime:
-                    if let deltaTime = delegate.vetoAt(index: row)?.deltaTime {
+                    if let deltaTime = delegate.vetoAt(index: row)?.deltaTime?.toMks() {
                         field = String(format: "%lld", deltaTime)
                     }
                 case keyColumnFissionAlphaFrontEvent(2), keyColumnFissionAlphaFrontEvent(3):
@@ -916,7 +916,7 @@ class ResultsTable {
     }
     
     fileprivate func fissionAlphaDeltaTime(_ index: Int, row: Int, side: StripsSide) -> String {
-        if let deltaTime = fissionAlpha(index, row: row, side: side)?.deltaTime {
+        if let deltaTime = fissionAlpha(index, row: row, side: side)?.deltaTime?.toMks() {
             return String(format: "%lld", deltaTime)
         }
         return ""
