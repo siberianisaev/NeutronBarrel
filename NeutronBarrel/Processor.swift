@@ -25,8 +25,8 @@ extension UInt64 {
 // TODO: refactor it
 extension CLongLong {
     
-    func toMks() -> Double {
-        return Double(self) / 125.0
+    func toMks() -> CLongLong {
+        return self / 125
     }
     
 }
