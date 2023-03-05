@@ -28,9 +28,17 @@ class DataProtocol {
             return "WellBack"
         } else if isNeutronsNewEvent(value) {
             return "Neutrons"
+        } else if isBeamEnergy(value) {
+            return "BeamEnergy"
+        } else if isBeamIntegral(value) {
+            return "Integral"
+        } else if isBeamCurrent(value) {
+            return "Current"
+        } else if isBeamBackground(value) {
+            return "Background"
         } else {
             // TODO: !!!
-            return nil
+            return ""
         }
 //        for (k, v) in dict {
 //            if v == value {

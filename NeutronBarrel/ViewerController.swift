@@ -11,7 +11,7 @@ import Cocoa
 class ViewerController: NSWindowController {
     
     enum Column: Int, CaseCountable {
-        case number = 0, name, ID, time, strip, alpha, fission, markers
+        case number = 0, name, ID, time, strip, energy, tof, overflow, pileup
         
         static let count = Column.countCases()
         
@@ -27,12 +27,14 @@ class ViewerController: NSWindowController {
                 return "Time"
             case .strip:
                 return "Strip"
-            case .alpha:
-                return "Alpha"
-            case .fission:
-                return "Fission"
-            case .markers:
-                return "Markers"
+            case .energy:
+                return "Energy"
+            case .tof:
+                return "TOF"
+            case .overflow:
+                return "Overflow"
+            case .pileup:
+                return "PileUp"
             }
         }
         
@@ -209,24 +211,14 @@ extension ViewerController: NSTableViewDelegate {
                         if strip1_N != -1 {
                             string += "_str\(strip1_N)"
                         }
-                    case .alpha:
-                        // TODO: !!!
+                    case .energy:
                         string = "\(event.energy)"
-//                        if dataProtocol.isNeutronsNewEvent(id) {
-//                            let CT = NeutronCT.init(event: event)
-//                            string = "R: \(CT.R), W: \(CT.W)"
-//                        } else {
-//                            string = "\(event.getChannelFor(type: .alpha))"
-//                        }
-                    case .fission:
-                        string = ""
-                    case .markers:
-                        string = ""
-//                        if dataProtocol.isGammaEvent(id) {
-//                            string = String(event.param3 >> 15)
-//                        } else {
-//                            string = String(event.getMarker(), radix: 2)
-//                        }
+                    case .tof:
+                        string = String(event.tof)
+                    case .overflow:
+                        string = String(event.overflow)
+                    case .pileup:
+                        string = String(event.pileUp)
                     }
                 }
                 cell.textField?.stringValue = string
