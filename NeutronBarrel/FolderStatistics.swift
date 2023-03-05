@@ -30,7 +30,7 @@ class FolderStatistics {
     fileprivate var currents = [Double]()
     
     var integral: Float {
-        return integralEvent?.getFloatValue() ?? 0
+        return Float(integralEvent?.energy ?? 0) 
     }
     fileprivate var integralEvent: Event?
     

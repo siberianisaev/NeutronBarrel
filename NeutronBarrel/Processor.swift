@@ -463,12 +463,12 @@ class Processor {
     fileprivate func updateFolderStatistics(_ event: Event, folder: FolderStatistics) {
         let id = Int(event.eventId)
         if dataProtocol.isBeamEnergy(id) {
-            let e = event.getFloatValue()
+            let e = Float(event.energy) / 10.0
             folder.handleEnergy(e)
         } else if dataProtocol.isBeamIntegral(id) {
             folder.handleIntergal(event)
         } else if dataProtocol.isBeamCurrent(id) {
-            let c = event.getFloatValue()
+            let c = Float(event.energy) / 1000.0
             folder.handleCurrent(c)
         }
     }

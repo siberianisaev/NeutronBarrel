@@ -679,25 +679,25 @@ class ResultsTable {
                 case keyColumnBeamEnergy:
                     if row == 0 {
                         if let e = delegate.beamState().energy {
-                            field = String(format: "%.1f", e.getFloatValue())
+                            field = String(format: "%.1f", Float(e.energy) / 10.0)
                         }
                     }
                 case keyColumnBeamCurrent:
                     if row == 0 {
                         if let e = delegate.beamState().current {
-                            field = String(format: "%.2f", e.getFloatValue())
+                            field = String(format: "%.2f", Float(e.energy) / 1000.0)
                         }
                     }
                 case keyColumnBeamBackground:
                     if row == 0 {
                         if let e = delegate.beamState().background {
-                            field = String(format: "%.1f", e.getFloatValue())
+                            field = String(format: "%.1f", Float(e.energy))
                         }
                     }
                 case keyColumnBeamIntegral:
                     if row == 0 {
                         if let e = delegate.beamState().integral {
-                            field = String(format: "%.1f", e.getFloatValue())
+                            field = String(format: "%.1f", Float(e.energy))
                         }
                     }
                 case keyColumnFissionAlphaFrontEvent(2), keyColumnFissionAlphaFrontEvent(3):
