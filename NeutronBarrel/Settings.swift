@@ -68,15 +68,6 @@ enum Setting: String {
     SimultaneousDecaysFilterForNeutrons = "SimultaneousDecaysFilterForNeutrons",
     MixingTimesFilterForNeutrons = "MixingTimesFilterForNeutrons",
     NeutronsPositions = "NeutronsPositions",
-    StartSearchType = "StartSearchType",
-    StartBackSearchType = "StartBackSearchType",
-    SecondFrontSearchType = "SecondFrontSearchType",
-    SecondBackSearchType = "SecondBackSearchType",
-    ThirdFrontSearchType = "ThirdFrontSearchType",
-    ThirdBackSearchType = "ThirdBackSearchType",
-    FourthFrontSearchType = "FourthFrontSearchType",
-    FourthBackSearchType = "FourthBackSearchType",
-    WellBackSearchType = "WellBackSearchType",
     SearchFissionAlpha1 = "SearchFissionAlpha1",
     SearchFissionAlpha2 = "SearchFissionAlpha2",
     SearchFissionAlpha3 = "SearchFissionAlpha3",
@@ -112,8 +103,6 @@ enum Setting: String {
     SpecialEventIds = "SpecialEventIds",
     GammaEncodersOnly = "GammaEncodersOnly",
     GammaEncoderIds = "GammaEncoderIds",
-    SelectedRecoilType = "SelectedRecoilType",
-    SelectedRecoilBackType = "SelectedRecoilBackType",
     SearchFissionBackByFact = "SearchFissionBackByFact",
     SearchFissionBack2ByFact = "SearchFissionBack2ByFact",
     SearchFissionBack3ByFact = "SearchFissionBack3ByFact",
@@ -121,7 +110,6 @@ enum Setting: String {
     SearchRecoilBackByFact = "SearchRecoilBackByFact",
     SearchWell = "SearchWell",
     ResultsFolderName = "ResultsFolderName",
-    FocalDetectorType = "FocalDetectorType",
     InBeamOnly = "InBeamOnly",
     OverflowOnly = "OverflowOnly"
 }
@@ -242,7 +230,7 @@ class Settings {
             return 4
         case .MaxNeutronTime:
             return 132
-        case .MinFissionBackEnergy, .MaxRecoilFrontDeltaStrips, .MaxRecoilBackDeltaStrips, .SearchFissionAlpha1, .SearchFissionAlpha2, .SearchFissionAlpha3, .SearchFissionAlpha4, .StartSearchType, .StartBackSearchType, .WellBackSearchType, .SecondFrontSearchType, .SecondBackSearchType, .ThirdFrontSearchType, .ThirdBackSearchType, .FourthFrontSearchType, .FourthBackSearchType, .TOFUnits, .MinFissionAlpha2Time, .MaxFissionAlpha2FrontDeltaStrips, .MinFissionAlpha3Time, .MinFissionAlpha4Time, .MaxFissionAlpha3FrontDeltaStrips, .MaxFissionAlpha4FrontDeltaStrips, .MinRecoilTime, .MinTOFValue, .MaxFissionBackBackwardTime, .MaxFissionWellBackwardTime, .MaxRecoilBackBackwardTime, .MinFissionWellEnergy, .MaxGammaBackwardTime, .SFSource, .MinNeutronTime:
+        case .MinFissionBackEnergy, .MaxRecoilFrontDeltaStrips, .MaxRecoilBackDeltaStrips, .SearchFissionAlpha1, .SearchFissionAlpha2, .SearchFissionAlpha3, .SearchFissionAlpha4, .TOFUnits, .MinFissionAlpha2Time, .MaxFissionAlpha2FrontDeltaStrips, .MinFissionAlpha3Time, .MinFissionAlpha4Time, .MaxFissionAlpha3FrontDeltaStrips, .MaxFissionAlpha4FrontDeltaStrips, .MinRecoilTime, .MinTOFValue, .MaxFissionBackBackwardTime, .MaxFissionWellBackwardTime, .MaxRecoilBackBackwardTime, .MinFissionWellEnergy, .MaxGammaBackwardTime, .SFSource, .MinNeutronTime:
             return 0
         case .RequiredFissionAlphaBack, .SearchFirstRecoilOnly, .RequiredRecoilBack, .SearchNeutrons, .TrackBeamEnergy, .TrackBeamCurrent, .TrackBeamBackground, .TrackBeamIntegral, .SearchWell:
             return true
@@ -250,12 +238,8 @@ class Settings {
             return false
         case .SpecialEventIds, .GammaEncoderIds:
             return nil
-        case .SelectedRecoilType, .SelectedRecoilBackType:
-            return SearchType.recoil.rawValue
         case .ResultsFolderName:
             return ""
-        case .FocalDetectorType:
-            return FocalDetectorType.large
         }
     }
     

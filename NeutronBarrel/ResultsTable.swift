@@ -66,11 +66,10 @@ class ResultsTable {
     
     fileprivate var columns = [String]()
     fileprivate var keyColumnRecoilFrontEvent: String {
-        let name = criteria.recoilType == .recoil ? "Recoil" : "Heavy Recoil"
-        return "Event(\(name))"
+        return "Event(Recoil)"
     }
     fileprivate var keyRecoil: String {
-        return  criteria.recoilType == .recoil ? "R" : "HR"
+        return  "R"
     }
     fileprivate var keyColumnRecoilFrontEnergy: String {
         return "E(\(keyRecoil)Fron)"
@@ -87,8 +86,7 @@ class ResultsTable {
         return s
     }
     fileprivate var keyColumnRecoilBackEvent: String {
-        let name = criteria.recoilBackType == .recoil ? "Recoil" : "Heavy Recoil"
-        return "Event(\(name)Back)"
+        return "Event(RecoilBack)"
     }
     fileprivate let keyColumnRecoilBackEnergy: String = "E(RBack)"
     fileprivate var keyColumnTof = "TOF"
@@ -384,8 +382,8 @@ class ResultsTable {
     
     fileprivate func setupHeaders(_ headers: [String]) -> [AnyObject] {
         let firstFront = criteria.startParticleType.symbol()
-        let firstBack = criteria.startParticleBackType.symbol()
-        let wellBack = criteria.wellParticleBackType.symbol()
+        let firstBack = firstFront
+        let wellBack = SearchType.alpha.symbol()
         // TODO: criteria.next all symbols handling
         let last = criteria.next[criteria.nextMaxIndex() ?? -1]
         let secondFront = last?.frontType.symbol() ?? ""

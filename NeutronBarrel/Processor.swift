@@ -508,8 +508,8 @@ class Processor {
     }
 
     fileprivate func checkIsSimultaneousDecay(_ event: Event, deltaTime: CLongLong) -> Bool {
-        if criteria.simultaneousDecaysFilterForNeutrons && isBack(event, type: criteria.startParticleBackType) && abs(deltaTime) > criteria.fissionAlphaMaxTime {
-            let energy = getEnergy(event, type: criteria.startParticleBackType)
+        if criteria.simultaneousDecaysFilterForNeutrons && isBack(event, type: .alpha) && abs(deltaTime) > criteria.fissionAlphaMaxTime {
+            let energy = getEnergy(event, type: .alpha)
             if energy >= criteria.fissionAlphaBackMinEnergy && energy <= criteria.fissionAlphaBackMaxEnergy {
                 return true
             }
@@ -598,7 +598,7 @@ class Processor {
 
     fileprivate func findFissionAlphaBack() {
         let match = fissionsAlphaPerAct
-        let type = criteria.startParticleBackType
+        let type = SearchType.alpha
         let directions: Set<SearchDirection> = [.backward, .forward]
         let byFact = self.criteria.searchFissionAlphaBackByFact
         search(directions: directions, startTime: firstParticlePerAct.currentEventTime, minDeltaTime: 0, maxDeltaTime: criteria.fissionAlphaMaxTime, maxDeltaTimeBackward: criteria.fissionAlphaBackBackwardMaxTime) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>, _) in
@@ -625,7 +625,7 @@ class Processor {
         let fissionTime = firstParticlePerAct.currentEventTime
         let directions: Set<SearchDirection> = [.backward]
         search(directions: directions, startTime: fissionTime, minDeltaTime: criteria.recoilMinTime, maxDeltaTime: criteria.recoilMaxTime) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>, _) in
-            let isRecoil = self.isFront(event, type: self.criteria.recoilType)
+            let isRecoil = self.isFront(event, type: SearchType.recoil)
             if isRecoil {
                 let isNear = self.isEventStripNearToFirstParticle(event, maxDelta: Int(self.criteria.recoilFrontMaxDeltaStrips), side: .front)
                 if isNear {
@@ -639,7 +639,7 @@ class Processor {
     }
 
     @discardableResult fileprivate func validateRecoil(_ event: Event, deltaTime: CLongLong) -> Bool {
-        let energy = self.getEnergy(event, type: criteria.recoilType)
+        let energy = self.getEnergy(event, type: SearchType.recoil)
         if energy >= criteria.recoilFrontMinEnergy && energy <= criteria.recoilFrontMaxEnergy {
             var position = fpos_t()
             fgetpos(self.file, &position)
@@ -706,7 +706,7 @@ class Processor {
         let directions: Set<SearchDirection> = [.backward, .forward]
         let byFact = self.criteria.searchRecoilBackByFact
         search(directions: directions, startTime: timeRecoilFront, minDeltaTime: 0, maxDeltaTime: criteria.recoilBackMaxTime, maxDeltaTimeBackward: criteria.recoilBackBackwardMaxTime) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>, _) in
-            let type: SearchType = self.criteria.recoilBackType
+            let type: SearchType = .recoil
             if self.isBack(event, type: type) {
                 var store = self.criteria.startFromRecoil() || self.isRecoilBackStripNearToFissionAlphaBack(event)
                 if !byFact && store {
@@ -960,16 +960,7 @@ class Processor {
     }
 
     fileprivate func filterAndStoreFissionAlphaWell(_ event: Event, side: StripsSide) {
-        var type: SearchType
-        if side == .front {
-            if criteria.searchExtraFromLastParticle, let index = criteria.nextMaxIndex(), let t = criteria.next[index]?.frontType {
-                type = t
-            } else {
-                type = criteria.startParticleType
-            }
-        } else {
-            type = criteria.wellParticleBackType
-        }
+        let type: SearchType = .alpha
         let energy = getEnergy(event, type: type)
         if energy < criteria.fissionAlphaWellMinEnergy || energy > criteria.fissionAlphaWellMaxEnergy {
             return
@@ -1049,7 +1040,7 @@ class Processor {
     }
 
     fileprivate func isFront(_ event: Event, type: SearchType) -> Bool {
-        let searchRecoil = type == .recoil || type == .heavy
+        let searchRecoil = type == .recoil
         let currentRecoil = isRecoil(event)
         let sameType = (searchRecoil && currentRecoil) || (!searchRecoil && !currentRecoil)
         return sameType && isFront(event)
@@ -1070,7 +1061,7 @@ class Processor {
 
     fileprivate func isBack(_ event: Event, type: SearchType) -> Bool {
         let eventId = Int(event.eventId)
-        let searchRecoil = type == .recoil || type == .heavy
+        let searchRecoil = type == .recoil
         let currentRecoil = isRecoil(event)
         let sameType = (searchRecoil && currentRecoil) || (!searchRecoil && !currentRecoil)
         return sameType && dataProtocol.isAlphaBackEvent(eventId)

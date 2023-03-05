@@ -11,13 +11,11 @@ import Foundation
 class SearchCriteria {
     
     var resultsFolderName: String = ""
-    var wellParticleBackType: SearchType = .fission
     var neutronsDetectorEfficiency: Double = 0
     var neutronsDetectorEfficiencyError: Double = 0
     var placedSFSource: SFSource?
     
-    var startParticleType: SearchType = .fission
-    var startParticleBackType: SearchType = .fission
+    var startParticleType: SearchType = .alpha
     var summarizeFissionsAlphaFront = false
     var fissionAlphaFrontMinEnergy: Double = 0
     var fissionAlphaFrontMaxEnergy: Double = 0
@@ -150,11 +148,9 @@ class SearchCriteria {
     var gammaEncoderIds = Set<Int>()
     var searchWell = true
     var unitsTOF: TOFUnits = .channels
-    var recoilType: SearchType = .recoil
-    var recoilBackType: SearchType = .recoil
     
     func startFromRecoil() -> Bool {
-        return startParticleType == .recoil || startParticleType == .heavy
+        return startParticleType == .recoil
     }
     
 }
@@ -178,8 +174,8 @@ class SearchNextCriteria {
     }
     var maxDeltaStrips: Int = 0
     var backByFact: Bool = true
-    var frontType: SearchType = .fission
-    var backType: SearchType = .fission
+    var frontType: SearchType = .alpha
+    var backType: SearchType = .alpha
     
     init(summarizeFront: Bool, frontMinEnergy: Double, frontMaxEnergy: Double, backMinEnergy: Double, backMaxEnergy: Double, minTime: CUnsignedLongLong, maxTime: CUnsignedLongLong, maxDeltaStrips: Int, backByFact: Bool, frontType: SearchType, backType: SearchType) {
         self.summarizeFront = summarizeFront

@@ -34,8 +34,7 @@ enum FocalDetectorType: Int {
 class FocalDetector: DoubleSidedDetector {
     
     class var type: FocalDetectorType {
-        let value = Settings.getIntSetting(.FocalDetectorType)
-        return FocalDetectorType(rawValue: value) ?? .large
+        return FocalDetectorType.large
     }
     
     override class func stripsCount() -> (front: Int, back: Int) {
