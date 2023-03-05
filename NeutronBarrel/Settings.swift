@@ -26,9 +26,6 @@ enum Setting: String {
     MinFissionWellEnergy = "MinFissionWellEnergy",
     MaxFissionWellEnergy = "MaxFissionWellEnergy",
     MaxFissionWellAngle = "MaxFissionWellAngle",
-    MinTOFValue = "MinTOFValue",
-    MaxTOFValue = "MaxTOFValue",
-    TOFUnits = "TOFUnits",
     MinRecoilTime = "MinRecoilTime",
     MaxRecoilTime = "MaxRecoilTime",
     MaxRecoilBackTime = "MaxRecoilBackTime",
@@ -36,8 +33,6 @@ enum Setting: String {
     MaxFissionTime = "MaxFissionTime",
     MaxFissionBackBackwardTime = "MaxFissionBackBackwardTime",
     MaxFissionWellBackwardTime = "MaxFissionWellBackwardTime",
-    MaxTOFTime = "MaxTOFTime",
-    MaxVETOTime = "MaxVETOTime",
     MaxGammaTime = "MaxGammaTime",
     MaxGammaBackwardTime = "MaxGammaBackwardTime",
     MinNeutronTime = "MinNeutronTime",
@@ -60,9 +55,6 @@ enum Setting: String {
     RequiredWell = "RequiredWell",
     WellRecoilsAllowed = "WellRecoilsAllowed",
     SearchExtraFromLastParticle = "SearchExtraFromLastParticle",
-    RequiredTOF = "RequiredTOF",
-    UseTOF2 = "UseTOF2",
-    RequiredVETO = "RequiredVETO",
     SearchNeutrons = "SearchNeutrons",
     NeutronsBackground = "NeutronsBackground",
     SimultaneousDecaysFilterForNeutrons = "SimultaneousDecaysFilterForNeutrons",
@@ -72,7 +64,6 @@ enum Setting: String {
     SearchFissionAlpha2 = "SearchFissionAlpha2",
     SearchFissionAlpha3 = "SearchFissionAlpha3",
     SearchFissionAlpha4 = "SearchFissionAlpha4",
-    SearchVETO = "SearchVETO",
     TrackBeamEnergy = "TrackBeamEnergy",
     TrackBeamCurrent = "TrackBeamCurrent",
     TrackBeamBackground = "TrackBeamBackground",
@@ -222,19 +213,17 @@ class Settings {
             return 10
         case .MinRecoilFrontEnergy, .MinRecoilBackEnergy, .NeutronsDetectorEfficiencyError:
             return 1
-        case .MaxFissionBackEnergy, .MaxTOFValue:
+        case .MaxFissionBackEnergy:
             return 10000
-        case .MaxRecoilBackTime, .MaxFissionTime, .MaxVETOTime, .MaxGammaTime, .MinFissionAlpha2Energy, .MinFissionAlpha2BackEnergy, .MinFissionAlpha3Energy, .MinFissionAlpha4Energy, .MinFissionAlpha3BackEnergy, .MinFissionAlpha4BackEnergy, .MaxNeutronBackwardTime:
+        case .MaxRecoilBackTime, .MaxFissionTime, .MaxGammaTime, .MinFissionAlpha2Energy, .MinFissionAlpha2BackEnergy, .MinFissionAlpha3Energy, .MinFissionAlpha4Energy, .MinFissionAlpha3BackEnergy, .MinFissionAlpha4BackEnergy, .MaxNeutronBackwardTime:
             return 5
-        case .MaxTOFTime:
-            return 4
         case .MaxNeutronTime:
             return 132
-        case .MinFissionBackEnergy, .MaxRecoilFrontDeltaStrips, .MaxRecoilBackDeltaStrips, .SearchFissionAlpha1, .SearchFissionAlpha2, .SearchFissionAlpha3, .SearchFissionAlpha4, .TOFUnits, .MinFissionAlpha2Time, .MaxFissionAlpha2FrontDeltaStrips, .MinFissionAlpha3Time, .MinFissionAlpha4Time, .MaxFissionAlpha3FrontDeltaStrips, .MaxFissionAlpha4FrontDeltaStrips, .MinRecoilTime, .MinTOFValue, .MaxFissionBackBackwardTime, .MaxFissionWellBackwardTime, .MaxRecoilBackBackwardTime, .MinFissionWellEnergy, .MaxGammaBackwardTime, .SFSource, .MinNeutronTime:
+        case .MinFissionBackEnergy, .MaxRecoilFrontDeltaStrips, .MaxRecoilBackDeltaStrips, .SearchFissionAlpha1, .SearchFissionAlpha2, .SearchFissionAlpha3, .SearchFissionAlpha4, .MinFissionAlpha2Time, .MaxFissionAlpha2FrontDeltaStrips, .MinFissionAlpha3Time, .MinFissionAlpha4Time, .MaxFissionAlpha3FrontDeltaStrips, .MaxFissionAlpha4FrontDeltaStrips, .MinRecoilTime, .MaxFissionBackBackwardTime, .MaxFissionWellBackwardTime, .MaxRecoilBackBackwardTime, .MinFissionWellEnergy, .MaxGammaBackwardTime, .SFSource, .MinNeutronTime:
             return 0
         case .RequiredFissionAlphaBack, .SearchFirstRecoilOnly, .RequiredRecoilBack, .SearchNeutrons, .TrackBeamEnergy, .TrackBeamCurrent, .TrackBeamBackground, .TrackBeamIntegral, .SearchWell:
             return true
-        case .SummarizeFissionsFront, .SummarizeFissionsFront2, .SummarizeFissionsFront3, .SummarizeFissionsFront4, .SummarizeFissionsBack, .RequiredRecoil, .RequiredGamma, .RequiredGammaOrWell, .SimplifyGamma, .RequiredWell, .WellRecoilsAllowed, .RequiredTOF, .RequiredVETO, .SearchSpecialEvents, .GammaEncodersOnly, .SearchVETO, .SearchFissionBackByFact, .SearchFissionBack2ByFact, .SearchFissionBack3ByFact, .SearchFissionBack4ByFact, .SearchRecoilBackByFact, .UseTOF2, .SearchExtraFromLastParticle, .SFSourcePlaced, .NeutronsPositions, .NeutronsBackground, .SimultaneousDecaysFilterForNeutrons, .MixingTimesFilterForNeutrons, .InBeamOnly, .OverflowOnly:
+        case .SummarizeFissionsFront, .SummarizeFissionsFront2, .SummarizeFissionsFront3, .SummarizeFissionsFront4, .SummarizeFissionsBack, .RequiredRecoil, .RequiredGamma, .RequiredGammaOrWell, .SimplifyGamma, .RequiredWell, .WellRecoilsAllowed, .SearchSpecialEvents, .GammaEncodersOnly, .SearchFissionBackByFact, .SearchFissionBack2ByFact, .SearchFissionBack3ByFact, .SearchFissionBack4ByFact, .SearchRecoilBackByFact, .SearchExtraFromLastParticle, .SFSourcePlaced, .NeutronsPositions, .NeutronsBackground, .SimultaneousDecaysFilterForNeutrons, .MixingTimesFilterForNeutrons, .InBeamOnly, .OverflowOnly:
             return false
         case .SpecialEventIds, .GammaEncoderIds:
             return nil

@@ -66,11 +66,6 @@ protocol ProcessorDelegate: AnyObject {
     
 }
 
-enum TOFUnits {
-    case channels
-    case nanoseconds
-}
-
 class Processor {
     
     fileprivate var neutronsPerAct = NeutronsMatch()
@@ -90,7 +85,6 @@ class Processor {
         return criteria.startFromRecoil() ? recoilsPerAct : fissionsAlphaPerAct
     }
     fileprivate var fissionsAlphaWellPerAct = DoubleSidedStripDetectorMatch()
-    fileprivate var vetoPerAct = DetectorMatch()
     
     fileprivate var stoped = false
     fileprivate var logger: Logger!
@@ -367,15 +361,6 @@ class Processor {
 
             let position = currentPosition
 
-            if criteria.searchVETO {
-                findVETO()
-                fseek(file, position, SEEK_SET)
-                if criteria.requiredVETO && 0 == vetoPerAct.count {
-                    clearActInfo()
-                    return
-                }
-            }
-
             if !isRecoilSearch {
                 findFissionAlphaBack()
                 fseek(file, position, SEEK_SET)
@@ -443,11 +428,6 @@ class Processor {
                     clearActInfo()
                     return
                 }
-            }
-
-            if criteria.searchSpecialEvents {
-                findSpecialEvents()
-                fseek(file, position, SEEK_SET)
             }
 
             if criteria.trackBeamState {
@@ -575,15 +555,6 @@ class Processor {
         }
     }
 
-    fileprivate func findVETO() {
-        let directions: Set<SearchDirection> = [.forward, .backward]
-        search(directions: directions, startTime: firstParticlePerAct.currentEventTime, minDeltaTime: 0, maxDeltaTime: criteria.maxVETOTime) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>, _) in
-            if self.dataProtocol.isVETOEvent(Int(event.eventId)) {
-                self.storeVETO(event, deltaTime: deltaTime)
-            }
-        }
-    }
-
     fileprivate func findGamma(_ position: Int) -> DetectorMatch? {
         let match = DetectorMatch()
         let directions: Set<SearchDirection> = [.forward, .backward]
@@ -645,17 +616,6 @@ class Processor {
             fgetpos(self.file, &position)
             let t = event.time
 
-            let tof = findTOFForRecoil(event, timeRecoil: t, kind: .TOF)
-            fseek(self.file, Int(position), SEEK_SET)
-            var tof2: DetectorMatchItem? = nil
-            if criteria.useTOF2 {
-                tof2 = findTOFForRecoil(event, timeRecoil: t, kind: .TOF2)
-                fseek(self.file, Int(position), SEEK_SET)
-            }
-            if (criteria.requiredTOF && !(tof != nil || tof2 != nil)) {
-                return false
-            }
-
             let found = findRecoilBack(t, position: Int(position))
             if (!found && criteria.requiredRecoilBack) {
                 return false
@@ -673,31 +633,10 @@ class Processor {
             if let gamma = gamma {
                 subMatches[.gamma] = gamma
             }
-            if let tof = tof {
-                subMatches[.tof] = DetectorMatch(items: [tof])
-            }
-            if let tof2 = tof2 {
-                subMatches[.tof2] = DetectorMatch(items: [tof2])
-            }
             self.storeRecoil(event, energy: energy, deltaTime: deltaTime, subMatches: subMatches)
             return true
         }
         return false
-    }
-
-    fileprivate func findTOFForRecoil(_ eventRecoil: Event, timeRecoil: CUnsignedLongLong, kind: TOFKind) -> DetectorMatchItem? {
-        let directions: Set<SearchDirection> = [.forward, .backward]
-        var match: DetectorMatchItem?
-        search(directions: directions, startTime: timeRecoil, minDeltaTime: 0, maxDeltaTime: criteria.maxTOFTime) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>, _) in
-            if let k = self.dataProtocol.isTOFEvent(Int(event.eventId)), k == kind {
-                let value = self.valueTOF(event, eventRecoil: eventRecoil)
-                if value >= self.criteria.minTOFValue && value <= self.criteria.maxTOFValue {
-                    match = self.TOFValue(value, deltaTime: deltaTime)
-                    stop.initialize(to: true)
-                }
-            }
-        }
-        return match
     }
 
     fileprivate func findRecoilBack(_ timeRecoilFront: CUnsignedLongLong, position: Int) -> Bool {
@@ -731,30 +670,12 @@ class Processor {
         }
     }
 
-    fileprivate func findSpecialEvents() {
-//        var setIds = Set<Int>(criteria.specialEventIds)
-//        if setIds.count == 0 {
-//            return
-//        }
-//
-//        forwardSearch { (event: Event, stop: UnsafeMutablePointer<Bool>) in
-//            let id = Int(event.eventId)
-//            if setIds.contains(id) {
-//                self.storeSpecial(event, id: id)
-//                setIds.remove(id)
-//            }
-//            if setIds.count == 0 {
-//                stop.initialize(to: true)
-//            }
-//        }
-    }
-//
     fileprivate func findBeamEvents() {
-//        forwardSearch { (event: Event, stop: UnsafeMutablePointer<Bool>) in
-//            if self.beamStatePerAct.handleEvent(event, criteria: self.criteria, dataProtocol: self.dataProtocol!) {
-//                stop.initialize(to: true)
-//            }
-//        }
+        forwardSearch { (event: Event, stop: UnsafeMutablePointer<Bool>) in
+            if self.beamStatePerAct.handleEvent(event, criteria: self.criteria, dataProtocol: self.dataProtocol!) {
+                stop.initialize(to: true)
+            }
+        }
     }
 
     fileprivate func findFissionAlpha(_ index: Int) {
@@ -938,27 +859,6 @@ class Processor {
         fissionsAlphaNextPerAct[index] = match
     }
 
-    fileprivate func TOFValue(_ value: Double, deltaTime: CLongLong) -> DetectorMatchItem {
-        let item = DetectorMatchItem(type: .tof,
-                                     stripDetector: nil,
-                                     deltaTime: deltaTime,
-                                     value: value,
-                                     side: nil)
-        return item
-    }
-
-    fileprivate func storeVETO(_ event: Event, deltaTime: CLongLong) {
-        let type: SearchType = .veto
-        let energy = getEnergy(event, type: type)
-        let item = DetectorMatchItem(type: type,
-                                     stripDetector: nil,
-                                     energy: energy,
-                                     eventNumber: eventNumber(),
-                                     deltaTime: deltaTime,
-                                     side: nil)
-        vetoPerAct.append(item)
-    }
-
     fileprivate func filterAndStoreFissionAlphaWell(_ event: Event, side: StripsSide) {
         let type: SearchType = .alpha
         let energy = getEnergy(event, type: type)
@@ -985,7 +885,6 @@ class Processor {
         fissionsAlphaWellPerAct.removeAll()
         recoilsPerAct.removeAll()
         fissionsAlphaNextPerAct.removeAll()
-        vetoPerAct.removeAll()
     }
 
     // MARK: - Helpers
@@ -1077,10 +976,6 @@ class Processor {
         return value
     }
 
-    fileprivate func channelForTOF(_ event :Event) -> CUnsignedShort {
-        return event.energy
-    }
-
     fileprivate func getEnergy(_ event: Event, type: SearchType) -> Double {
         // TODO: calibration
         let channel = Double(event.getChannelFor(type: type))
@@ -1089,21 +984,6 @@ class Processor {
 //            return calibration.calibratedValueForAmplitude(channel, type: type, eventId: eventId, encoder: encoder, dataProtocol: dataProtocol)
 //        } else {
             return channel
-//        }
-    }
-
-    fileprivate func valueTOF(_ eventTOF: Event, eventRecoil: Event) -> Double {
-        let channel = Double(channelForTOF(eventTOF))
-        return channel // TODO:
-//        if criteria.unitsTOF == .channels || !calibration.hasData() {
-//            return channel
-//        } else {
-//            if let value = calibration.calibratedTOFValueForAmplitude(channel) {
-//                return value
-//            } else {
-//                let encoder = eventRecoil.eventId
-//                return calibration.calibratedValueForAmplitude(channel, type: SearchType.tof, eventId: encoder, encoder: encoder, dataProtocol: dataProtocol)
-//            }
 //        }
     }
 
@@ -1126,7 +1006,7 @@ class Processor {
 extension Processor: ResultsTableDelegate {
 
     func rowsCountForCurrentResult() -> Int {
-        return max(max(max(max(max(1, vetoPerAct.count), fissionsAlphaPerAct.count), recoilsPerAct.count), neutronsCountWithNewLine()), fissionsAlphaNextPerAct.values.map { $0.count }.max() ?? 0)
+        return max(max(max(max(1, fissionsAlphaPerAct.count), recoilsPerAct.count), neutronsCountWithNewLine()), fissionsAlphaNextPerAct.values.map { $0.count }.max() ?? 0)
     }
 
     // Need special results block for neutron times, so we skeep one line.
@@ -1157,10 +1037,6 @@ extension Processor: ResultsTableDelegate {
             match = fissionsAlphaPerAct
         }
         return match?.matchFor(side: .front)
-    }
-
-    func vetoAt(index: Int) -> DetectorMatchItem? {
-        return vetoPerAct.itemAt(index: index)
     }
 
     func recoilAt(side: StripsSide, index: Int) -> DetectorMatchItem? {

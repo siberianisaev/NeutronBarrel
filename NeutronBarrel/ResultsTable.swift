@@ -15,7 +15,6 @@ protocol ResultsTableDelegate: AnyObject {
     func neutrons() -> NeutronsMatch
     func currentFileEventNumber(_ number: CUnsignedLongLong) -> String
     func focalGammaContainer() -> DetectorMatch?
-    func vetoAt(index: Int) -> DetectorMatchItem?
     func recoilAt(side: StripsSide, index: Int) -> DetectorMatchItem?
     func fissionsAlphaWellAt(side: StripsSide, index: Int) -> DetectorMatchItem?
     func beamState() -> BeamState
@@ -89,10 +88,6 @@ class ResultsTable {
         return "Event(RecoilBack)"
     }
     fileprivate let keyColumnRecoilBackEnergy: String = "E(RBack)"
-    fileprivate var keyColumnTof = "TOF"
-    fileprivate var keyColumnTof2 = "TOF2"
-    fileprivate var keyColumnTofDeltaTime = "dT(TOF-RFron)"
-    fileprivate var keyColumnTof2DeltaTime = "dT(TOF2-RFron)"
     fileprivate var keyColumnStartEvent = "Event($)"
     fileprivate var keyColumnStartFrontSum = "Sum($Fron)"
     fileprivate var keyColumnStartFrontEnergy = "$Fron"
@@ -139,7 +134,6 @@ class ResultsTable {
         }
         return s
     }
-    fileprivate var keyColumnNeutrons_N = "N1...N4"
     fileprivate let keyColumnEvent: String = "Event"
     fileprivate func keyColumnGammaEnergy(_ max: Bool) -> String {
         var s = searchExtraPostfix("Gamma")
@@ -181,18 +175,10 @@ class ResultsTable {
     }
     fileprivate var keyColumnGammaCount = "GammaCount"
     fileprivate var keyColumnGammaSumEnergy = "GammaSumEnergy"
-    fileprivate var keyColumnSpecial = "Special"
-    fileprivate func keyColumnSpecialFor(eventId: Int) -> String {
-        return keyColumnSpecial + String(eventId)
-    }
     fileprivate var keyColumnBeamEnergy = "BeamEnergy"
     fileprivate var keyColumnBeamCurrent = "BeamCurrent"
     fileprivate var keyColumnBeamBackground = "BeamBackground"
     fileprivate var keyColumnBeamIntegral = "BeamIntegral"
-    fileprivate var keyColumnVetoEvent = "Event(VETO)"
-    fileprivate var keyColumnVetoEnergy = "E(VETO)"
-    fileprivate var keyColumnVetoStrip = "Strip(VETO)"
-    fileprivate var keyColumnVetoDeltaTime = "dT($Fron-VETO)"
     fileprivate func keyColumnFissionAlphaFrontSum(_ index: Int) -> String {
         return "Sum(&Front\(index))"
     }
@@ -263,16 +249,6 @@ class ResultsTable {
             ])
         }
         columns.append(contentsOf: [
-            keyColumnTof,
-            keyColumnTofDeltaTime
-        ])
-        if criteria.useTOF2 {
-            columns.append(contentsOf: [
-                keyColumnTof2,
-                keyColumnTof2DeltaTime,
-            ])
-        }
-        columns.append(contentsOf: [
             keyColumnStartEvent,
             keyColumnStartFrontSum,
             keyColumnStartFrontEnergy,
@@ -309,9 +285,6 @@ class ResultsTable {
         }
         if criteria.searchNeutrons {
             columns.append(contentsOf: [keyColumnNeutronsAverageTime, keyColumnNeutronTime, keyColumnNeutronCounter, keyColumnNeutronBlock, keyColumnNeutrons])
-            if dataProtocol.hasNeutrons_N() {
-                columns.append(keyColumnNeutrons_N)
-            }
             if criteria.neutronsPositions {
                 columns.append(contentsOf: [keyColumnNeutronCounterX, keyColumnNeutronCounterY, keyColumnNeutronAngle, keyColumnNeutronRelatedFissionBack])
             }
@@ -324,12 +297,6 @@ class ResultsTable {
             keyColumnGammaDeltaTime(true),
             keyColumnGammaCount
             ])
-        if criteria.searchSpecialEvents {
-            let values = criteria.specialEventIds.map({ (i: Int) -> String in
-                return keyColumnSpecialFor(eventId: i)
-            })
-            columns.append(contentsOf: values)
-        }
         if criteria.trackBeamEnergy {
             columns.append(keyColumnBeamEnergy)
         }
@@ -341,14 +308,6 @@ class ResultsTable {
         }
         if criteria.trackBeamIntegral {
             columns.append(keyColumnBeamIntegral)
-        }
-        if criteria.searchVETO {
-            columns.append(contentsOf: [
-                keyColumnVetoEvent,
-                keyColumnVetoEnergy,
-                keyColumnVetoStrip,
-                keyColumnVetoDeltaTime
-                ])
         }
         
         func columnsForNextEvent(_ index: Int) -> [String] {
@@ -400,10 +359,6 @@ class ResultsTable {
             }
             return result
         } as [AnyObject]
-    }
-    
-    fileprivate func firstTOF(row: Int, type: SearchType) -> DetectorMatchItem? {
-        return delegate.recoilAt(side: .front, index: row)?.subMatches?[type]??.itemAt(index: 0) ?? nil
     }
     
     fileprivate var currentStartEventNumber: CUnsignedLongLong?
@@ -510,15 +465,6 @@ class ResultsTable {
                 case keyColumnRecoilBackEnergy:
                     if let energy = delegate.recoilAt(side: .back, index: row)?.energy {
                         field = String(format: "%.7f", energy)
-                    }
-                case keyColumnTof, keyColumnTof2:
-                    if let value = firstTOF(row: row, type: column == keyColumnTof ? .tof : .tof2)?.value {
-                        let format = "%." + (criteria.unitsTOF == .channels ? "0" : "7") + "f"
-                        field = String(format: format, value)
-                    }
-                case keyColumnTofDeltaTime, keyColumnTof2DeltaTime:
-                    if let deltaTime = firstTOF(row: row, type: column == keyColumnTofDeltaTime ? .tof : .tof2)?.deltaTime?.toMks() {
-                        field = String(format: "%lld", deltaTime)
                     }
                 case keyColumnStartEvent:
                     if let eventNumber = delegate.firstParticleAt(side: .front).itemAt(index: row)?.eventNumber {
@@ -704,11 +650,6 @@ class ResultsTable {
                         let neutrons = delegate.neutrons()
                         field = String(format: "%llu", neutrons.count)
                     }
-                case keyColumnNeutrons_N:
-                    if row == 0 {
-                        let neutrons = delegate.neutrons()
-                        field = String(format: "%llu", neutrons.NSum)
-                    }
                 case keyColumnGammaEnergy(true):
                     if let energy = gammaAt(row: row)?.itemWithMaxEnergy()?.energy {
                         field = String(format: "%.7f", energy)
@@ -735,12 +676,6 @@ class ResultsTable {
                     if let count = gammaAt(row: row)?.count {
                         field = String(format: "%d", count)
                     }
-                case _ where column.hasPrefix(keyColumnSpecial):
-                    if row == 0 {
-                        if let eventId = Int(column.replacingOccurrences(of: keyColumnSpecial, with: "")), let v = delegate.specialWith(eventId: eventId) {
-                            field = String(format: "%hu", v)
-                        }
-                    }
                 case keyColumnBeamEnergy:
                     if row == 0 {
                         if let e = delegate.beamState().energy {
@@ -764,24 +699,6 @@ class ResultsTable {
                         if let e = delegate.beamState().integral {
                             field = String(format: "%.1f", e.getFloatValue())
                         }
-                    }
-                case keyColumnVetoEvent:
-                    if let eventNumber = delegate.vetoAt(index: row)?.eventNumber {
-                        field = delegate.currentFileEventNumber(eventNumber)
-                    }
-                case keyColumnVetoEnergy:
-                    if let energy = delegate.vetoAt(index: row)?.energy {
-                        field = String(format: "%.7f", energy)
-                    }
-                case keyColumnVetoStrip:
-                    // TODO: !!!
-                    field = ""
-//                    if let strip0_15 = delegate.vetoAt(index: row)?.strip0_15 {
-//                        field = String(format: "%hu", strip0_15 + 1)
-//                    }
-                case keyColumnVetoDeltaTime:
-                    if let deltaTime = delegate.vetoAt(index: row)?.deltaTime?.toMks() {
-                        field = String(format: "%lld", deltaTime)
                     }
                 case keyColumnFissionAlphaFrontEvent(2), keyColumnFissionAlphaFrontEvent(3):
                     let index = column == keyColumnFissionAlphaFrontEvent(2) ? 2 : 3

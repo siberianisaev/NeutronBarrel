@@ -32,8 +32,6 @@ class SearchCriteria {
     var recoilBackMinEnergy: Double = 0
     var recoilBackMaxEnergy: Double = 0
     var searchRecoilBackByFact: Bool = false
-    var minTOFValue: Double = 0
-    var maxTOFValue: Double = 0
     var recoilMinTime: CUnsignedLongLong = 0 {
         didSet {
             recoilMinTime.mksToCycles()
@@ -67,16 +65,6 @@ class SearchCriteria {
     var fissionAlphaWellBackwardMaxTime: CUnsignedLongLong = 0 {
         didSet {
             fissionAlphaWellBackwardMaxTime.mksToCycles()
-        }
-    }
-    var maxTOFTime: CUnsignedLongLong = 0 {
-        didSet {
-            maxTOFTime.mksToCycles()
-        }
-    }
-    var maxVETOTime: CUnsignedLongLong = 0 {
-        didSet {
-            maxVETOTime.mksToCycles()
         }
     }
     var maxGammaTime: CUnsignedLongLong = 0 {
@@ -120,10 +108,6 @@ class SearchCriteria {
     var searchExtraFromLastParticle = false
     var inBeamOnly = false
     var overflowOnly = false
-    var requiredTOF = false
-    var useTOF2 = false
-    var requiredVETO = false
-    var searchVETO = false
     var trackBeamEnergy = false
     var trackBeamCurrent = false
     var trackBeamBackground = false
@@ -142,12 +126,9 @@ class SearchCriteria {
         return Array(next.keys).max()
     }
     
-    var searchSpecialEvents = false
-    var specialEventIds = Set<Int>()
     var gammaEncodersOnly = false
     var gammaEncoderIds = Set<Int>()
     var searchWell = true
-    var unitsTOF: TOFUnits = .channels
     
     func startFromRecoil() -> Bool {
         return startParticleType == .recoil

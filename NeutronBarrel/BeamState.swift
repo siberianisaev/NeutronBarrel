@@ -19,41 +19,41 @@ class BeamState {
      Method return 'true' if all beam parameters were found for criteria.
      */
     func handleEvent(_ event: Event, criteria: SearchCriteria, dataProtocol: DataProtocol) -> Bool {
-//        let includeEnergy = criteria.trackBeamEnergy
-//        let includeCurrent = criteria.trackBeamCurrent
-//        let includeBackground = criteria.trackBeamBackground
-//        let includeIntegral = criteria.trackBeamIntegral
-//        
-//        func allFound() -> Bool {
-//            if (includeEnergy && nil == energy) || (includeCurrent && nil == current) || (includeBackground && nil == background) || (includeIntegral && nil == integral) {
-//                return false
-//            } else {
-//                return true
-//            }
-//        }
-//        
-//        let id = Int(event.eventId)
-//        if dataProtocol.isBeamEnergy(id) {
-//            if includeEnergy {
-//                energy = event
-//                return allFound()
-//            }
-//        } else if dataProtocol.isBeamCurrent(id) {
-//            if includeCurrent {
-//                current = event
-//                return allFound()
-//            }
-//        } else if dataProtocol.isBeamBackground(id) {
-//            if includeBackground {
-//                background = event
-//                return allFound()
-//            }
-//        } else if dataProtocol.isBeamIntegral(id) {
-//            if includeIntegral {
-//                integral = event
-//                return allFound()
-//            }
-//        }
+        let includeEnergy = criteria.trackBeamEnergy
+        let includeCurrent = criteria.trackBeamCurrent
+        let includeBackground = criteria.trackBeamBackground
+        let includeIntegral = criteria.trackBeamIntegral
+        
+        func allFound() -> Bool {
+            if (includeEnergy && nil == energy) || (includeCurrent && nil == current) || (includeBackground && nil == background) || (includeIntegral && nil == integral) {
+                return false
+            } else {
+                return true
+            }
+        }
+        
+        let id = Int(event.eventId)
+        if dataProtocol.isBeamEnergy(id) {
+            if includeEnergy {
+                energy = event
+                return allFound()
+            }
+        } else if dataProtocol.isBeamCurrent(id) {
+            if includeCurrent {
+                current = event
+                return allFound()
+            }
+        } else if dataProtocol.isBeamBackground(id) {
+            if includeBackground {
+                background = event
+                return allFound()
+            }
+        } else if dataProtocol.isBeamIntegral(id) {
+            if includeIntegral {
+                integral = event
+                return allFound()
+            }
+        }
         
         return false
     }

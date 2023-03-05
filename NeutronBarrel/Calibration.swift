@@ -116,13 +116,14 @@ class Calibration {
     }
     
     fileprivate func keyFor(type: SearchType, eventId: Int, encoder: CUnsignedShort, strip: CUnsignedShort, dataProtocol: DataProtocol) -> String {
-        let position = dataProtocol.position(eventId)
-        var name = type.symbol() + position
-        if encoder != 0 {
-            name += "\(encoder)."
-        }
-        name += String(strip)
-        return name
+//        let position = dataProtocol.position(eventId)
+//        var name = type.symbol() + position
+//        if encoder != 0 {
+//            name += "\(encoder)."
+//        }
+//        name += String(strip)
+//        return name
+        return ""
     }
     
     fileprivate func calibrationKeyFor(type: SearchType, eventId: Int, encoder: CUnsignedShort, dataProtocol: DataProtocol) -> String {
