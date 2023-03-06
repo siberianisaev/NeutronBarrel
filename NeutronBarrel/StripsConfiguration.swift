@@ -15,8 +15,12 @@ enum StripsSide: Int {
 
 class StripsConfiguration {
     
-//    fileprivate var config = [StripsSide: [[Int]]]()
-//    fileprivate var detector: StripDetector
+    fileprivate var dataProtocol: DataProtocol! {
+        return DataLoader.singleton.dataProtocol
+    }
+    
+    var focalFrontStripToChannel: [Int: CUnsignedShort] = [:]
+    var focalBackStripToChannel: [Int: CUnsignedShort] = [:]
     
     var strips: [CUnsignedShort: Int] = [:]
     
@@ -38,7 +42,15 @@ class StripsConfiguration {
                     }
                     for index in 0...lines.count-1 {
                         let channel = CUnsignedShort(index + tuple.1)
-                        self.strips[channel] = Int(lines[index])
+                        let strip = Int(lines[index])!
+                        self.strips[channel] = strip
+                        
+                        // TODO: create calibrations using channel number
+                        if dataProtocol.isAlphaFronEvent(Int(channel)) {
+                            self.focalFrontStripToChannel[strip] = channel
+                        } else if dataProtocol.isAlphaBackEvent(Int(channel)) {
+                            self.focalBackStripToChannel[strip] = channel
+                        }
                     }
                 } catch {
                     print("Error read file \(url): \(error)")

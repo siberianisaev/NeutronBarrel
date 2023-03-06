@@ -342,7 +342,7 @@ class Processor {
                     return
                 }
             } else { // FFron or AFron
-                let energy = getEnergy(event, type: criteria.startParticleType)
+                let energy = getEnergy(event)
                 if energy < criteria.fissionAlphaFrontMinEnergy || energy > criteria.fissionAlphaFrontMaxEnergy {
                     clearActInfo()
                     return
@@ -489,7 +489,7 @@ class Processor {
 
     fileprivate func checkIsSimultaneousDecay(_ event: Event, deltaTime: CLongLong) -> Bool {
         if criteria.simultaneousDecaysFilterForNeutrons && isBack(event, type: .alpha) && abs(deltaTime) > criteria.fissionAlphaMaxTime {
-            let energy = getEnergy(event, type: .alpha)
+            let energy = getEnergy(event)
             if energy >= criteria.fissionAlphaBackMinEnergy && energy <= criteria.fissionAlphaBackMaxEnergy {
                 return true
             }
@@ -576,7 +576,7 @@ class Processor {
             if self.isBack(event, type: type) {
                 var store = byFact
                 if !store {
-                    let energy = self.getEnergy(event, type: type)
+                    let energy = self.getEnergy(event)
                     store = energy >= self.criteria.fissionAlphaBackMinEnergy && energy <= self.criteria.fissionAlphaBackMaxEnergy
                 }
                 if store {
@@ -610,7 +610,7 @@ class Processor {
     }
 
     @discardableResult fileprivate func validateRecoil(_ event: Event, deltaTime: CLongLong) -> Bool {
-        let energy = self.getEnergy(event, type: SearchType.recoil)
+        let energy = self.getEnergy(event)
         if energy >= criteria.recoilFrontMinEnergy && energy <= criteria.recoilFrontMaxEnergy {
             var position = fpos_t()
             fgetpos(self.file, &position)
@@ -649,7 +649,7 @@ class Processor {
             if self.isBack(event, type: type) {
                 var store = self.criteria.startFromRecoil() || self.isRecoilBackStripNearToFissionAlphaBack(event)
                 if !byFact && store {
-                    let energy = self.getEnergy(event, type: type)
+                    let energy = self.getEnergy(event)
                     store = energy >= self.criteria.recoilBackMinEnergy && energy <= self.criteria.recoilBackMaxEnergy
                 }
                 if store {
@@ -692,7 +692,7 @@ class Processor {
             if isFront {
                 let st = event.time
                 self.fissionsAlphaNextPerAct[index]?.currentEventTime = st
-                let energy = self.getEnergy(event, type: t)
+                let energy = self.getEnergy(event)
                 if self.isEventStripNearToFirstParticle(event, maxDelta: Int(c.maxDeltaStrips), side: .front) && ((!isFront && c.backByFact) || (energy >= c.frontMinEnergy && energy <= c.frontMaxEnergy)) {
                     var store = true
                     var gamma: DetectorMatch?
@@ -735,7 +735,7 @@ class Processor {
             if isBack {
                 var store = self.isEventStripNearToFirstParticle(event, maxDelta: Int(self.criteria.recoilBackMaxDeltaStrips), side: .back)
                 if !byFact && store { // check energy also
-                    let energy = self.getEnergy(event, type: t)
+                    let energy = self.getEnergy(event)
                     store = energy >= c.backMinEnergy && energy <= c.backMaxEnergy
                 }
                 if store {
@@ -758,7 +758,7 @@ class Processor {
 
     fileprivate func focalDetectorMatchItemFrom(_ event: Event, type: SearchType, deltaTime: CLongLong, side: StripsSide) -> DetectorMatchItem {
         let encoder = event.eventId
-        let energy = getEnergy(event, type: type)
+        let energy = getEnergy(event)
         let item = DetectorMatchItem(type: type,
                                      stripDetector: .focal,
                                      energy: energy,
@@ -780,7 +780,7 @@ class Processor {
         let encoder = event.eventId
         let type = criteria.startParticleType
         let channel = event.getChannelFor(type: type)
-        let energy = getEnergy(event, type: type)
+        let energy = getEnergy(event)
         let side: StripsSide = .front
         let item = DetectorMatchItem(type: type,
                                      stripDetector: .focal,
@@ -796,21 +796,14 @@ class Processor {
     }
 
     fileprivate func gammaMatchItem(_ event: Event, deltaTime: CLongLong) -> DetectorMatchItem? {
-        let channel = event.energy
         let encoder = event.eventId
 
         if criteria.gammaEncodersOnly, !criteria.gammaEncoderIds.contains(Int(encoder)) {
             return nil
         }
 
-        let energy: Double
+        let energy = getEnergy(event)
         let type: SearchType = .gamma
-        // TODO: calibration
-//        if calibration.hasData() {
-//            energy = calibration.calibratedValueForAmplitude(channel, type: type, eventId: eventId, encoder: encoder, strip0_15: nil, dataProtocol: dataProtocol)
-//        } else {
-        energy = Double(channel)
-//        }
         // TODO: use marker info
         // let coincidenceWithBGO = (event.param3 >> 15) == 1
         let item = DetectorMatchItem(type: type,
@@ -840,7 +833,7 @@ class Processor {
 
     fileprivate func storeFissionAlpha(_ index: Int, event: Event, type: SearchType, deltaTime: CLongLong, subMatches: [SearchType: DetectorMatch?]?, back: DetectorMatchItem?) {
         let encoder = event.eventId
-        let energy = getEnergy(event, type: type)
+        let energy = getEnergy(event)
         let side: StripsSide = .front
         let item = DetectorMatchItem(type: type,
                                      stripDetector: .focal,
@@ -861,7 +854,7 @@ class Processor {
 
     fileprivate func filterAndStoreFissionAlphaWell(_ event: Event, side: StripsSide) {
         let type: SearchType = .alpha
-        let energy = getEnergy(event, type: type)
+        let energy = getEnergy(event)
         if energy < criteria.fissionAlphaWellMinEnergy || energy > criteria.fissionAlphaWellMaxEnergy {
             return
         }
@@ -976,15 +969,9 @@ class Processor {
         return value
     }
 
-    fileprivate func getEnergy(_ event: Event, type: SearchType) -> Double {
-        // TODO: calibration
-        let channel = Double(event.getChannelFor(type: type))
-//        if calibration.hasData() {
-//            let encoder = event.eventId
-//            return calibration.calibratedValueForAmplitude(channel, type: type, eventId: eventId, encoder: encoder, dataProtocol: dataProtocol)
-//        } else {
-            return channel
-//        }
+    fileprivate func getEnergy(_ event: Event) -> Double {
+        let energy = calibration.calibratedValueForAmplitude(Double(event.energy), eventId: event.eventId)
+        return energy
     }
 
     // MARK: - Output

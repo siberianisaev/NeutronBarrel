@@ -22,13 +22,16 @@ class Calibration {
         return Static.sharedInstance
     }
     
-    fileprivate var data = [String: CalibrationEquation]()
+    fileprivate func stripsConfiguration() -> StripsConfiguration {
+        return StripDetectorManager.singleton.stripConfiguration
+    }
+    
+    fileprivate var data = [CUnsignedShort: CalibrationEquation]()
     var stringValue: String?
     
     class func clean() {
         let c = Calibration.singleton
         c.data.removeAll()
-        c.calibrationKeysCache.removeAll()
     }
     
     class func load(_ completion: @escaping ((Bool, [String]?) -> ())) {
@@ -59,28 +62,39 @@ class Calibration {
     }
     
     fileprivate func open(_ URLs: [Foundation.URL], showFailAlert: Bool) -> Bool {
+        var string = "\nCALIBRATION\n----------\nLoad calibration\n(B)\t\t(A)\t\t(Name)\n"
         for URL in URLs {
             let path = URL.path
             do {
+                // TODO: support gamma and well
+                let isFocalFront = path.contains("FocalFront.clb")
+                let isFocalBack = path.contains("FocalBack.clb")
+                
                 var content = try String(contentsOfFile: path, encoding: String.Encoding.utf8)
                 content = content.replacingOccurrences(of: "\r", with: "")
-                var string = "\nCALIBRATION\n----------\nLoad calibration from file: \((path as NSString).lastPathComponent)\n(B)\t\t(A)\t\t(Name)\n"
+                string += "File: \((path as NSString).lastPathComponent)\n"
                 let setSpaces = CharacterSet.whitespaces
                 let setLines = CharacterSet.newlines
-                for line in content.components(separatedBy: setLines) {
-                    let components = line.components(separatedBy: setSpaces).filter() { $0 != "" }
-                    if 3 == components.count {
-                        let b = Double(components[0]) ?? 0
-                        let a = Double(components[1]) ?? 0
-                        var name = (components[2] as String)
-                        if !name.localizedCaseInsensitiveContains("Fron") {
-                            name = name.replacingOccurrences(of: "Fr", with: "Fron")
+                let lines = content.components(separatedBy: setLines)
+                for line in lines {
+                    let strip = lines.firstIndex(of: line)!
+                    let config = stripsConfiguration()
+                    // TODO: support gamma and well
+                    var channel: CUnsignedShort? = nil
+                    if isFocalFront {
+                        channel = config.focalFrontStripToChannel[strip]
+                    } else if isFocalBack {
+                        channel = config.focalBackStripToChannel[strip]
+                    }
+                    
+                    if let channel = channel {
+                        let components = line.components(separatedBy: setSpaces).filter() { $0 != "" }
+                        if 2 == components.count {
+                            let b = Double(components[0]) ?? 0
+                            let a = Double(components[1]) ?? 0
+                            data[channel] = CalibrationEquation(a: a, b: b)
+                            string += "\(channel) \(b) \(a)\n"
                         }
-                        if !name.localizedCaseInsensitiveContains("Back") {
-                            name = name.replacingOccurrences(of: "Bk", with: "Back")
-                        }
-                        string += String(format: "%.6f\t%.6f\t%@\n", b, a, name)
-                        data[name] = CalibrationEquation(a: a, b: b)
                     }
                 }
                 stringValue = string
@@ -103,70 +117,11 @@ class Calibration {
         }
     }
     
-    fileprivate var calibrationKeysCache = [SearchType: [Int: [CUnsignedShort: [CUnsignedShort: String]]]]()
-    
-    fileprivate func cacheCalibrationKey(_ key: String, type: SearchType, eventId: Int, encoder: CUnsignedShort, strip: CUnsignedShort) {
-        var typeDict = calibrationKeysCache[type] ?? [:]
-        var eventIdDict = typeDict[eventId] ?? [:]
-        var encoderDict = eventIdDict[encoder] ?? [:]
-        encoderDict[strip] = key
-        eventIdDict[encoder] = encoderDict
-        typeDict[eventId] = eventIdDict
-        calibrationKeysCache[type] = typeDict
-    }
-    
-    fileprivate func keyFor(type: SearchType, eventId: Int, encoder: CUnsignedShort, strip: CUnsignedShort, dataProtocol: DataProtocol) -> String {
-//        let position = dataProtocol.position(eventId)
-//        var name = type.symbol() + position
-//        if encoder != 0 {
-//            name += "\(encoder)."
-//        }
-//        name += String(strip)
-//        return name
-        return ""
-    }
-    
-    fileprivate func calibrationKeyFor(type: SearchType, eventId: Int, encoder: CUnsignedShort, dataProtocol: DataProtocol) -> String {
-        // TODO: !!!
-        return ""
-//        if let cached = calibrationKeysCache[type]?[eventId]?[encoder]?[strip] {
-//            return cached
-//        }
-//
-//        var key: String
-//        if type == .gamma {
-//            let position = dataProtocol.position(eventId)
-//            key = "\(position)\(encoder)"
-//        } else if type == .tof {
-//            let position = dataProtocol.isAlphaFronEvent(eventId) ? "Fron" : "Back"
-//            key = String(format: "%@%@%d.%d", type.symbol(), position, encoder, strip)
-//        } else {
-//            key = keyFor(type: type, eventId: eventId, encoder: encoder, strip: strip, dataProtocol: dataProtocol)
-//            if false == data.keys.contains(key), let alternative = type.alternativeCalibrationType() {
-//                key = keyFor(type: alternative, eventId: eventId, encoder: encoder, strip: strip, dataProtocol: dataProtocol)
-//            }
-//        }
-//        cacheCalibrationKey(key, type: type, eventId: eventId, encoder: encoder, strip: strip)
-//        return key
-    }
-    
-    func calibratedValueForAmplitude(_ channel: Double, type: SearchType, eventId: Int, encoder: CUnsignedShort, strip0_15: CUnsignedShort?, dataProtocol: DataProtocol) -> Double {
-        // TODO: !!!
-//        let key = calibrationKeyFor(type: type, eventId: eventId, encoder: encoder, dataProtocol: dataProtocol)
-//        if let equation = data[key] {
-//            return equation.applyOn(channel)
-//        }
-//        if hasData() {
-//            print("No calibration for name \(key)")
-//        }
-        return channel
-    }
-    
-    /**
-     New TOF format.
-     */
-    func calibratedTOFValueForAmplitude(_ channel: Double) -> Double? {
-        return data["TOF"]?.applyOn(channel)
+    func calibratedValueForAmplitude(_ amplitude: Double, eventId: CUnsignedShort) -> Double {
+        if let equation = self.data[eventId] {
+            return equation.applyOn(amplitude)
+        }
+        return amplitude
     }
     
 }

@@ -2565,7 +2565,7 @@
                             <button hidden="YES" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="foC-YW-3m0">
                                 <rect key="frame" x="216" y="518" width="20" height="21"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                <buttonCell key="cell" type="bevel" bezelStyle="rounded" image="trash" imagePosition="only" alignment="center" imageScaling="proportionallyDown" inset="2" id="ASo-j6-H7q">
+                                <buttonCell key="cell" type="bevel" bezelStyle="rounded" image="trash" imagePosition="only" alignment="center" enabled="NO" imageScaling="proportionallyDown" inset="2" id="ASo-j6-H7q">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="system" size="8"/>
                                 </buttonCell>
@@ -2629,7 +2629,7 @@
                             <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="wpz-3t-QHu">
                                 <rect key="frame" x="10" y="508" width="200" height="40"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                <buttonCell key="cell" type="bevel" title="Strips Configuration" bezelStyle="regularSquare" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="6HI-ZE-pBC">
+                                <buttonCell key="cell" type="bevel" title="Strips Configuration" bezelStyle="regularSquare" alignment="center" enabled="NO" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="6HI-ZE-pBC">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" size="15" name="HelveticaNeue"/>
                                 </buttonCell>
