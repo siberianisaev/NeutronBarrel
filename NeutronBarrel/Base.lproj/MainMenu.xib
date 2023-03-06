@@ -2761,14 +2761,14 @@
                         </connections>
                     </button>
                     <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="7Pd-vs-la7">
-                        <rect key="frame" x="401" y="190" width="110" height="18"/>
+                        <rect key="frame" x="401" y="190" width="108" height="18"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                        <buttonCell key="cell" type="check" title="Overflow only" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="ZoC-OE-TXD">
+                        <buttonCell key="cell" type="check" title="Use Overflow" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="ZoC-OE-TXD">
                             <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                             <font key="font" metaFont="system"/>
                         </buttonCell>
                         <connections>
-                            <binding destination="Voe-Tx-rLC" name="value" keyPath="self.overflowOnly" id="KFW-Yg-3Ql"/>
+                            <binding destination="Voe-Tx-rLC" name="value" keyPath="self.useOverflow" id="zwp-Cy-aim"/>
                         </connections>
                     </button>
                 </subviews>

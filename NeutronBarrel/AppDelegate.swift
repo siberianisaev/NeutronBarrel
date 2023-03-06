@@ -105,7 +105,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         wellRecoilsAllowed = Settings.getBoolSetting(.WellRecoilsAllowed)
         searchExtraFromLastParticle = Settings.getBoolSetting(.SearchExtraFromLastParticle)
         inBeamOnly = Settings.getBoolSetting(.InBeamOnly)
-        overflowOnly = Settings.getBoolSetting(.OverflowOnly)
+        useOverflow = Settings.getBoolSetting(.UseOverflow)
         searchNeutrons = Settings.getBoolSetting(.SearchNeutrons)
         neutronsBackground = Settings.getBoolSetting(.NeutronsBackground)
         simultaneousDecaysFilterForNeutrons = Settings.getBoolSetting(.SimultaneousDecaysFilterForNeutrons)
@@ -218,7 +218,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBOutlet weak var searchExtraFromLastParticleButton: NSButton!
     @IBInspectable dynamic var searchExtraFromLastParticle: Bool = false
     @IBInspectable dynamic var inBeamOnly: Bool = false
-    @IBInspectable dynamic var overflowOnly: Bool = false
+    @IBInspectable dynamic var useOverflow: Bool = false
     @IBInspectable dynamic var searchNeutrons: Bool = false
     @IBInspectable dynamic var neutronsBackground: Bool = false
     @IBInspectable dynamic var simultaneousDecaysFilterForNeutrons: Bool = false
@@ -551,7 +551,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         sc.recoilBackMaxTime = UInt64(sMaxRecoilBackTime) ?? 0
         sc.recoilBackBackwardMaxTime = UInt64(sMaxRecoilBackBackwardTime) ?? 0
         sc.inBeamOnly = inBeamOnly
-        sc.overflowOnly = overflowOnly
+        sc.useOverflow = useOverflow
         sc.maxGammaTime = UInt64(sMaxGammaTime) ?? 0
         sc.maxGammaBackwardTime = UInt64(sMaxGammaBackwardTime) ?? 0
         sc.requiredGamma = requiredGamma
@@ -817,7 +817,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             .WellRecoilsAllowed: wellRecoilsAllowed,
             .SearchExtraFromLastParticle: searchExtraFromLastParticle,
             .InBeamOnly: inBeamOnly,
-            .OverflowOnly: overflowOnly,
+            .UseOverflow: useOverflow,
             .SearchNeutrons: searchNeutrons,
             .NeutronsBackground: neutronsBackground,
             .SimultaneousDecaysFilterForNeutrons: simultaneousDecaysFilterForNeutrons,

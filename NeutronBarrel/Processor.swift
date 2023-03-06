@@ -329,7 +329,7 @@ class Processor {
         if isFront(event, type: criteria.startParticleType) {
             firstParticlePerAct.currentEventTime = event.time
 
-            if (criteria.inBeamOnly && !isInBeam(event)) || (criteria.overflowOnly && !isOverflow(event)) {
+            if criteria.inBeamOnly && !isInBeam(event) {
                 clearActInfo()
                 return
             }
@@ -343,7 +343,7 @@ class Processor {
                 }
             } else { // FFron or AFron
                 let energy = getEnergy(event)
-                if energy < criteria.fissionAlphaFrontMinEnergy || energy > criteria.fissionAlphaFrontMaxEnergy {
+                if !isOverflowed(event) && (energy < criteria.fissionAlphaFrontMinEnergy || energy > criteria.fissionAlphaFrontMaxEnergy) {
                     clearActInfo()
                     return
                 }
@@ -855,6 +855,7 @@ class Processor {
     fileprivate func filterAndStoreFissionAlphaWell(_ event: Event, side: StripsSide) {
         let type: SearchType = .alpha
         let energy = getEnergy(event)
+        // TODO: overflow use
         if energy < criteria.fissionAlphaWellMinEnergy || energy > criteria.fissionAlphaWellMaxEnergy {
             return
         }
@@ -922,8 +923,8 @@ class Processor {
         return event.inBeam == 1
     }
 
-    fileprivate func isOverflow(_ event: Event) -> Bool {
-        return event.overflow == 1
+    fileprivate func isOverflowed(_ event: Event) -> Bool {
+        return event.overflow == 1 && criteria.useOverflow
     }
 
     fileprivate func isGammaEvent(_ event: Event) -> Bool {
