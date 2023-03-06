@@ -14,7 +14,7 @@
 		</data>
 		<key>Resources/Base.lproj/MainMenu.nib</key>
 		<data>
-		LTj4cxbSpumRjh/pt3pAvKevw4s=
+		uw1X1/g0JDhFh3VqIAskhmUQl6s=
 		</data>
 		<key>Resources/CalculationsController.nib</key>
 		<data>
@@ -23,6 +23,14 @@
 		<key>Resources/EventSorterController.nib</key>
 		<data>
 		VZaDkbH9VOoa/VB/sXw5hltXdNI=
+		</data>
+		<key>Resources/FocalBack.clb</key>
+		<data>
+		X0Shz4HE0UnxoXcC9FVUEyA5x40=
+		</data>
+		<key>Resources/FocalFront.clb</key>
+		<data>
+		StFrwTP5KNQ7Tpg2gqOJDnVR74I=
 		</data>
 		<key>Resources/SF_sources/U238.txt</key>
 		<data>
@@ -55,10 +63,10 @@
 		<dict>
 			<key>cdhash</key>
 			<data>
-			/Un4a+gXmvmgfbZN/9exkUGdN9U=
+			gyiCsRSXMcDz+Katjuem1suUcR8=
 			</data>
 			<key>requirement</key>
-			<string>cdhash H"02603e3cbaf975d7763c6785a9287b44b529425f" or cdhash H"fd49f86be8179af9a07db64dffd7b191419d37d5" or cdhash H"1c60a698d22ed747fd7c806a31f754d8fcffe21a" or cdhash H"d2fad6595391ad4d2e32ad1d5400ab0ba8a2a5d1"</string>
+			<string>cdhash H"88c3f626c446ce99c866b71e4c2ef9b2563a017a" or cdhash H"832882b1149731c0f3f8a6ad8ee7a6d6cb94711f" or cdhash H"1a1cfdc03fb2027182b498efaf2e4c04f3ef0f0c" or cdhash H"b7c0c820e3c42a6de10e6a168d9e7fdbb20fb9d4"</string>
 		</dict>
 		<key>Frameworks/libswiftAppKit.dylib</key>
 		<dict>
@@ -213,7 +221,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			OLL0xcUdIwUFuE4eVaz6XUOATh5nzY5bZrIETNXgR8M=
+			anXdSUh8T7sUO+SZ+A3CxTmzdAXwtyUoUsMnY7IOkxs=
 			</data>
 		</dict>
 		<key>Resources/CalculationsController.nib</key>
@@ -228,6 +236,20 @@
 			<key>hash2</key>
 			<data>
 			sZ+6HuC8OTgewgs4VC5pjwJieBwlzDk8MLwNUFFpL+Q=
+			</data>
+		</dict>
+		<key>Resources/FocalBack.clb</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			Bf2IKy4EXRhQjCH/GeWDHeX6ypMPCUVZUlJNWozCKw0=
+			</data>
+		</dict>
+		<key>Resources/FocalFront.clb</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			sDD4G6aE2i/OnbKUOyrRrvzT7xwbxSK80gPw1bgcaNg=
 			</data>
 		</dict>
 		<key>Resources/SF_sources/U238.txt</key>
