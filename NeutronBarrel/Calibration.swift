@@ -90,8 +90,8 @@ class Calibration {
                     if let channel = channel {
                         let components = line.components(separatedBy: setSpaces).filter() { $0 != "" }
                         if 2 == components.count {
-                            let b = Double(components[0]) ?? 0
-                            let a = Double(components[1]) ?? 0
+                            let a = Double(components[0]) ?? 0
+                            let b = Double(components[1]) ?? 0
                             data[channel] = CalibrationEquation(a: a, b: b)
                             string += "\(channel) \(b) \(a)\n"
                         }
