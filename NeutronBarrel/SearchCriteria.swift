@@ -118,7 +118,7 @@ class SearchCriteria {
     var searchNeutrons = false
     var neutronsBackground = false
     var simultaneousDecaysFilterForNeutrons = false
-    var mixingTimesFilterForNeutrons = false
+    var collapseNeutronOverlays = false
     var neutronsPositions = false
     
     var next = [Int: SearchNextCriteria]()

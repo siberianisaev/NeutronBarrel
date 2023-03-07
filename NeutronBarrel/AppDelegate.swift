@@ -109,7 +109,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         searchNeutrons = Settings.getBoolSetting(.SearchNeutrons)
         neutronsBackground = Settings.getBoolSetting(.NeutronsBackground)
         simultaneousDecaysFilterForNeutrons = Settings.getBoolSetting(.SimultaneousDecaysFilterForNeutrons)
-        mixingTimesFilterForNeutrons = Settings.getBoolSetting(.MixingTimesFilterForNeutrons)
+        collapseNeutronOverlays = Settings.getBoolSetting(.CollapseNeutronOverlays)
         neutronsPositions = Settings.getBoolSetting(.NeutronsPositions)
         sfSourcePlaced = Settings.getBoolSetting(.SFSourcePlaced)
         searchFissionAlpha1 = Settings.getBoolSetting(.SearchFissionAlpha1)
@@ -222,7 +222,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBInspectable dynamic var searchNeutrons: Bool = false
     @IBInspectable dynamic var neutronsBackground: Bool = false
     @IBInspectable dynamic var simultaneousDecaysFilterForNeutrons: Bool = false
-    @IBInspectable dynamic var mixingTimesFilterForNeutrons: Bool = false
+    @IBInspectable dynamic var collapseNeutronOverlays: Bool = false
     @IBInspectable dynamic var neutronsPositions: Bool = false {
         didSet {
             maxWellAngleView.isHidden = !neutronsPositions
@@ -563,7 +563,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         sc.searchNeutrons = searchNeutrons
         sc.neutronsBackground = neutronsBackground
         sc.simultaneousDecaysFilterForNeutrons = simultaneousDecaysFilterForNeutrons
-        sc.mixingTimesFilterForNeutrons = mixingTimesFilterForNeutrons
+        sc.collapseNeutronOverlays = collapseNeutronOverlays
         sc.neutronsPositions = neutronsPositions
         sc.placedSFSource = sfSourcePlaced ? SFSource(rawValue: sfSourceControl.selectedSegment) : nil
         sc.minNeutronTime = UInt64(sMinNeutronTime) ?? 0
@@ -821,7 +821,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             .SearchNeutrons: searchNeutrons,
             .NeutronsBackground: neutronsBackground,
             .SimultaneousDecaysFilterForNeutrons: simultaneousDecaysFilterForNeutrons,
-            .MixingTimesFilterForNeutrons: mixingTimesFilterForNeutrons,
+            .CollapseNeutronOverlays: collapseNeutronOverlays,
             .NeutronsPositions: neutronsPositions,
             .SFSourcePlaced: sfSourcePlaced,
             .TrackBeamEnergy: trackBeamEnergy,

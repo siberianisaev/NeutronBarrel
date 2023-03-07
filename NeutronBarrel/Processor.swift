@@ -503,8 +503,7 @@ class Processor {
             let directions: Set<SearchDirection> = [.forward, .backward]
             let startTime = currentEventTime
             let maxDeltaTime = criteria.maxNeutronTime
-            let checkMaxDeltaTimeExceeded = !criteria.mixingTimesFilterForNeutrons
-            search(directions: directions, startTime: startTime, minDeltaTime: criteria.minNeutronTime, maxDeltaTime: maxDeltaTime, maxDeltaTimeBackward: criteria.maxNeutronBackwardTime, checkMaxDeltaTimeExceeded:checkMaxDeltaTimeExceeded) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>, _) in
+            search(directions: directions, startTime: startTime, minDeltaTime: criteria.minNeutronTime, maxDeltaTime: maxDeltaTime, maxDeltaTimeBackward: criteria.maxNeutronBackwardTime) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>, _) in
                 let id = Int(event.eventId)
                 // 1) Simultaneous Decays Filter - search the events with fragment energy at the same time with current decay.
                 if self.checkIsSimultaneousDecay(event, deltaTime: deltaTime) {
@@ -517,21 +516,17 @@ class Processor {
                         let neutronTime = event.time
                         let isNeutronsBkg = self.criteria.neutronsBackground
                         if (!isNeutronsBkg && neutronTime >= startTime) || (isNeutronsBkg && neutronTime < startTime) { // Effect neutrons must be after SF by time
-                            self.neutronsPerAct.times.append(Float(deltaTime))
                             let counterNumber = self.stripsConfiguration().strip1_N_For(channel: CUnsignedShort(id))
-                            self.neutronsPerAct.counters.append(counterNumber)
+                            var validNeutron = true
+                            if self.criteria.collapseNeutronOverlays {
+                                validNeutron = !self.neutronsPerAct.counters.contains(counterNumber)
+                            }
+                            if validNeutron {
+                                self.neutronsPerAct.counters.append(counterNumber)
+                                self.neutronsPerAct.times.append(Float(deltaTime))
+                            }
                         }
                     }
-//                    else if self.dataProtocol.isNeutronsOldEvent(id) {
-//                        let t = Float(event.param3 & Mask.neutronsOld.rawValue)
-//                        self.neutronsPerAct.times.append(t)
-//                    }
-//                    if self.dataProtocol.hasNeutrons_N() && self.dataProtocol.isNeutrons_N_Event(id) {
-//                        self.neutronsPerAct.NSum += 1
-//                    }
-                } else if !checkMaxDeltaTimeExceeded && !self.dataProtocol.isNeutronsNewEvent(id) {
-                    // 2) The Mixing Neutrons Times Filter. We don't check time for neutrons only. It's necessary to stop the search from this checker if delta-time is exceeded for other events.
-                    stop.initialize(to: true)
                 }
             }
             fseek(file, Int(position), SEEK_SET)

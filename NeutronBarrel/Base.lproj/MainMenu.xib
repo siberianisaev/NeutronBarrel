@@ -757,7 +757,7 @@
         <window title="NeutronBarrel" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" animationBehavior="default" id="QvC-M9-y7g">
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
             <rect key="contentRect" x="335" y="390" width="1870" height="900"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="1440" height="875"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="2560" height="1415"/>
             <value key="minSize" type="size" width="1870" height="900"/>
             <value key="maxSize" type="size" width="1870" height="900"/>
             <value key="minFullScreenContentSize" type="size" width="1870" height="900"/>
@@ -1262,7 +1262,7 @@
                                     <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="D7S-jZ-Umx">
                                         <rect key="frame" x="261" y="236" width="142" height="30"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                        <buttonCell key="cell" type="check" title="Simultaneous decays" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="oau-Zu-DP1">
+                                        <buttonCell key="cell" type="check" title="Simultaneous Decays" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="oau-Zu-DP1">
                                             <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                             <font key="font" size="10" name="HelveticaNeue-Bold"/>
                                         </buttonCell>
@@ -1273,12 +1273,12 @@
                                     <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="llf-Z7-nOW">
                                         <rect key="frame" x="261" y="212" width="145" height="30"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                        <buttonCell key="cell" type="check" title="Mixing times" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="6At-X5-SZy">
+                                        <buttonCell key="cell" type="check" title="Collapse Overlays" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="6At-X5-SZy">
                                             <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                             <font key="font" size="10" name="HelveticaNeue-Bold"/>
                                         </buttonCell>
                                         <connections>
-                                            <binding destination="Voe-Tx-rLC" name="value" keyPath="self.mixingTimesFilterForNeutrons" id="LYQ-CJ-R7X"/>
+                                            <binding destination="Voe-Tx-rLC" name="value" keyPath="self.collapseNeutronOverlays" id="h6c-YG-VJ0"/>
                                         </connections>
                                     </button>
                                 </subviews>
