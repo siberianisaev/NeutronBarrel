@@ -111,7 +111,6 @@ class Processor {
     fileprivate var currentFileName: String?
     fileprivate var totalEventNumber: CUnsignedLongLong = 0
     fileprivate var correlationsPerFile: CUnsignedLongLong = 0
-    fileprivate var lastEventTime: UInt64 = 0
     
     fileprivate var criteria = SearchCriteria()
     fileprivate weak var delegate: ProcessorDelegate?
@@ -248,17 +247,14 @@ class Processor {
         resultsTable.logResultsHeader()
         resultsTable.logGammaHeader()
 
-        var folders = [String: FolderStatistics]()
+        var fileStats = [String: FileStatistics]()
 
         for fp in files {
             let path = fp as NSString
-            let folderName = FolderStatistics.folderNameFromPath(fp) ?? ""
-            var folder = folders[folderName]
-            if nil == folder {
-                folder = FolderStatistics(folderName: folderName)
-                folders[folderName] = folder
-            }
-            folder!.startFile(fp)
+            let fileName = FileStatistics.fileNameFromPath(fp) ?? ""
+            let fileStat = FileStatistics(fileName: fileName)
+            fileStats[fileName] = fileStat
+            fileStat.startFile(fp)
 
             autoreleasepool {
                 file = fopen(path.utf8String, "rb")
@@ -280,8 +276,7 @@ class Processor {
                                     stop.initialize(to: true)
                                 }
                             }
-                            self?.mainCycleEventCheck(event, folder: folder!)
-                            self?.lastEventTime = event.time
+                            self?.mainCycleEventCheck(event, fileStat: fileStat)
                         }
                     })
                 } else {
@@ -290,7 +285,7 @@ class Processor {
 
                 totalEventNumber += Processor.calculateTotalEventNumberForFile(file)
                 fclose(file)
-                folder!.endFile(fp, secondsFromFirstFileStart: TimeInterval(lastEventTime.toMks()) * 1e-6, correlationsPerFile: correlationsPerFile)
+                fileStat.endFile(fp, correlationsPerFile: correlationsPerFile)
 
                 filesFinishedCount += 1
                 DispatchQueue.main.async { [weak self] in
@@ -301,7 +296,7 @@ class Processor {
         }
 
         logInput(onEnd: true)
-        logger.logStatistics(folders)
+        logger.logStatistics(fileStats)
         if criteria.searchNeutrons, let multiplicity = neutronsMultiplicity {
             logger.log(multiplicity: multiplicity)
         }
@@ -325,7 +320,9 @@ class Processor {
         return position
     }
 
-    fileprivate func mainCycleEventCheck(_ event: Event, folder: FolderStatistics) {
+    fileprivate func mainCycleEventCheck(_ event: Event, fileStat: FileStatistics) {
+        fileStat.handleEvent(event)
+        
         if isFront(event, type: criteria.startParticleType) {
             firstParticlePerAct.currentEventTime = event.time
 
@@ -438,7 +435,7 @@ class Processor {
             // Important: this search must be last because we don't do file repositioning here
             // Sum(FFron or AFron)
             if !isRecoilSearch && criteria.summarizeFissionsAlphaFront {
-                findAllFirstFissionsAlphaFront(folder)
+                findAllFirstFissionsAlphaFront(fileStat)
             }
 
             if criteria.searchNeutrons {
@@ -452,7 +449,7 @@ class Processor {
             }
             clearActInfo()
         } else {
-            updateFolderStatistics(event, folder: folder)
+            updateFileStatistics(event, fileStat: fileStat)
         }
     }
 
@@ -460,16 +457,17 @@ class Processor {
         return criteria.searchWell && criteria.requiredWell && fissionsAlphaWellPerAct.matchFor(side: .front).count == 0
     }
 
-    fileprivate func updateFolderStatistics(_ event: Event, folder: FolderStatistics) {
+    fileprivate func updateFileStatistics(_ event: Event, fileStat: FileStatistics) {
         let id = Int(event.eventId)
         if dataProtocol.isBeamEnergy(id) {
             let e = Float(event.energy) / 10.0
-            folder.handleEnergy(e)
+            fileStat.handleEnergy(e)
         } else if dataProtocol.isBeamIntegral(id) {
-            folder.handleIntergal(event)
+            let i = Float(event.energy) * 10.0
+            fileStat.handleIntergal(i)
         } else if dataProtocol.isBeamCurrent(id) {
             let c = Float(event.energy) / 1000.0
-            folder.handleCurrent(c)
+            fileStat.handleCurrent(c)
         }
     }
 
@@ -534,7 +532,7 @@ class Processor {
         return excludeSFEvent
     }
 
-    fileprivate func findAllFirstFissionsAlphaFront(_ folder: FolderStatistics) {
+    fileprivate func findAllFirstFissionsAlphaFront(_ fileStat: FileStatistics) {
         var initial = fpos_t()
         fgetpos(file, &initial)
         var current = initial
@@ -545,7 +543,7 @@ class Processor {
             if current != initial && self.isFront(event, type: self.criteria.startParticleType) && self.isFissionStripNearToFirstFissionFront(event) {
                 self.storeFissionAlphaFront(event, deltaTime: deltaTime, subMatches: nil)
             } else {
-                self.updateFolderStatistics(event, folder: folder)
+                self.updateFileStatistics(event, fileStat: fileStat)
             }
         }
     }

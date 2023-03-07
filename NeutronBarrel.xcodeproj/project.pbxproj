@@ -47,7 +47,7 @@
 		65DA92A220D5527D002643DB /* BeamState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65DA92A120D5527D002643DB /* BeamState.swift */; };
 		65DA92A520D57794002643DB /* DetectorMatchItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65DA92A420D57794002643DB /* DetectorMatchItem.swift */; };
 		65DA92A820D594E9002643DB /* CalibrationEquation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65DA92A720D594E9002643DB /* CalibrationEquation.swift */; };
-		65EDDD4420C51BAB009441D8 /* FolderStatistics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65EDDD4320C51BAB009441D8 /* FolderStatistics.swift */; };
+		65EDDD4420C51BAB009441D8 /* FileStatistics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65EDDD4320C51BAB009441D8 /* FileStatistics.swift */; };
 		780BC3A61A5EF99700EDEECE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 780BC3A51A5EF99700EDEECE /* AppDelegate.swift */; };
 		784150DA1AC184C400831384 /* CSVWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 784150D91AC184C400831384 /* CSVWriter.swift */; };
 		784B0B891ABB13F80041FA66 /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 784B0B881ABB13F80041FA66 /* Settings.swift */; };
@@ -102,7 +102,7 @@
 		65DA92A420D57794002643DB /* DetectorMatchItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetectorMatchItem.swift; sourceTree = "<group>"; };
 		65DA92A720D594E9002643DB /* CalibrationEquation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalibrationEquation.swift; sourceTree = "<group>"; };
 		65E78380203AD7F700091FA4 /* Event.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Event.h; sourceTree = "<group>"; };
-		65EDDD4320C51BAB009441D8 /* FolderStatistics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderStatistics.swift; sourceTree = "<group>"; };
+		65EDDD4320C51BAB009441D8 /* FileStatistics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileStatistics.swift; sourceTree = "<group>"; };
 		780BC3A51A5EF99700EDEECE /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		784150D91AC184C400831384 /* CSVWriter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CSVWriter.swift; sourceTree = "<group>"; };
 		784B0B881ABB13F80041FA66 /* Settings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
@@ -159,7 +159,7 @@
 				784B0B881ABB13F80041FA66 /* Settings.swift */,
 				78FC51301A530D0300FE5737 /* DataLoader.swift */,
 				656A05DB1EADEDD500677B0F /* DataProtocol.swift */,
-				65EDDD4320C51BAB009441D8 /* FolderStatistics.swift */,
+				65EDDD4320C51BAB009441D8 /* FileStatistics.swift */,
 				5A8997561FB4F9F800DD9956 /* StripsConfiguration.swift */,
 				5A9B179C2206137800E80805 /* StripDetectorManager.swift */,
 				5AAE352E22717FAB00035B52 /* SideDetector.swift */,
@@ -491,7 +491,7 @@
 				65DA92A220D5527D002643DB /* BeamState.swift in Sources */,
 				65B84173274693A3000DA3F2 /* EventSorterController.swift in Sources */,
 				65B2A92A25FB955000D97986 /* NeutronsMatch.swift in Sources */,
-				65EDDD4420C51BAB009441D8 /* FolderStatistics.swift in Sources */,
+				65EDDD4420C51BAB009441D8 /* FileStatistics.swift in Sources */,
 				65BBD8F8261DC07700D93026 /* CalculationsController.swift in Sources */,
 				65DA929F20D54F65002643DB /* SearchType.swift in Sources */,
 				5AAE352F22717FAB00035B52 /* SideDetector.swift in Sources */,

@@ -697,7 +697,7 @@ class ResultsTable {
                 case keyColumnBeamIntegral:
                     if row == 0 {
                         if let e = delegate.beamState().integral {
-                            field = String(format: "%.1f", Float(e.energy))
+                            field = String(format: "%.1f", Float(e.energy) * 10.0)
                         }
                     }
                 case keyColumnFissionAlphaFrontEvent(2), keyColumnFissionAlphaFrontEvent(3):

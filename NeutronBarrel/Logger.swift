@@ -80,31 +80,28 @@ class Logger {
         logString(string, path: FileManager.calibrationFilePath(timeStamp, folderName: folderName))
     }
     
-    func logStatistics(_ folders: [String: FolderStatistics]) {
-        let headers = ["Folder", "First File", "Last File", "First File Created On", "Last File Created On", "~ Folder Last Modified", "Median Energy", "Median Current", "Total Integral", "Calculation Time", "Last Cycle Time (s)", "Correlations"]
+    func logStatistics(_ fileStats: [String: FileStatistics]) {
+        let headers = ["File", "Created On",  "Last Modified", "Median Energy", "Median Current", "Total Integral", "Calculation Time", "File Duration", "Correlations"]
         statisticsCSVWriter.writeLineOfFields(headers as [AnyObject])
         statisticsCSVWriter.finishLine()
         
-        let statistics = Array(folders.values).sorted { (fs1: FolderStatistics, fs2: FolderStatistics) -> Bool in
+        let statistics = Array(fileStats.values).sorted { (fs1: FileStatistics, fs2: FileStatistics) -> Bool in
             return (fs1.name ?? "") < (fs2.name ?? "")
         }
         func stringFrom(_ date: Date?) -> String {
             return dateFormatter?.string(from: date ?? Date()) ?? ""
         }
-        for folder in statistics {
-            let name = folder.name ?? ""
-            let firstCreatedOn = stringFrom(folder.firstFileCreatedOn)
-            let lastCreatedOn = stringFrom(folder.lastFileCreatedOn)
-            let firstFile = folder.files.first ?? ""
-            let lastFile = folder.files.last ?? ""
-            let energy = String(folder.medianEnergy)
-            let current = String(folder.medianCurrent)
-            let integral = String(folder.integral)
-            let calculationTime = abs(folder.calculationsStart?.timeIntervalSince(folder.calculationsEnd ?? Date()) ?? 0).stringFromSeconds()
-            let secondsFromStart = folder.secondsFromStart
-            let lastModified = stringFrom(folder.firstFileCreatedOn?.addingTimeInterval(secondsFromStart))
-            let correlations = String(folder.correlationsTotal)
-            let values = [name, firstFile, lastFile, firstCreatedOn, lastCreatedOn, lastModified, energy, current, integral, calculationTime, secondsFromStart, correlations] as [AnyObject]
+        for fileStat in statistics {
+            let name = fileStat.name ?? ""
+            let fileCreatedOn = stringFrom(fileStat.fileCreatedOn)
+            let energy = String(fileStat.medianEnergy)
+            let current = String(fileStat.medianCurrent)
+            let integral = String(fileStat.integral)
+            let calculationTime = abs(fileStat.calculationsStart?.timeIntervalSince(fileStat.calculationsEnd ?? Date()) ?? 0).stringFromSeconds()
+            let secondsFromStart = fileStat.secondsFromStart
+            let lastModified = stringFrom(fileStat.fileCreatedOn?.addingTimeInterval(secondsFromStart))
+            let correlations = String(fileStat.correlationsTotal)
+            let values = [name, fileCreatedOn, lastModified, energy, current, integral, calculationTime, secondsFromStart, correlations] as [AnyObject]
             statisticsCSVWriter.writeLineOfFields(values)
         }
         statisticsCSVWriter.finishLine()

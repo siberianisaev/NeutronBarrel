@@ -8,33 +8,42 @@
 
 import Foundation
 
-class FolderStatistics {
+class FileStatistics {
     
     var name: String?
     
-    var firstFileCreatedOn: Date?
-    var lastFileCreatedOn: Date?
+    var fileCreatedOn: Date?
     var calculationsStart: Date?
     var calculationsEnd: Date?
-    var secondsFromStart: TimeInterval = 0
     var correlationsTotal: CUnsignedLongLong = 0
     
     var medianEnergy: Double {
-        return FolderStatistics.median(energies) ?? 0.0
+        return FileStatistics.median(energies) ?? 0.0
     }
     fileprivate var energies = [Double]()
     
     var medianCurrent: Double {
-        return FolderStatistics.median(currents) ?? 0.0
+        return FileStatistics.median(currents) ?? 0.0
     }
     fileprivate var currents = [Double]()
     
-    var integral: Float {
-        return Float(integralEvent?.energy ?? 0) 
-    }
-    fileprivate var integralEvent: Event?
+    var integral: Float = 0
     
-    var files = [String]()
+    fileprivate var firstEventTime: UInt64?
+    fileprivate var lastEventTime: UInt64?
+    
+    func handleEvent(_ event: Event) {
+        let time = event.time
+        if firstEventTime == nil {
+            firstEventTime = time
+        }
+        lastEventTime = time
+    }
+    
+    var secondsFromStart: Double {
+        let delta = (lastEventTime ?? 0).toMks() - (firstEventTime ?? 0).toMks()
+        return delta / 1e6
+    }
     
     static func median(_ values: [Double]) -> Double? {
         let count = Double(values.count)
@@ -61,19 +70,12 @@ class FolderStatistics {
     }
     
     func startFile(_ path: String) {
-        if let name = path.components(separatedBy: "/").last {
-            files.append(name)
-            if files.count == 1 {
-                calculationsStart = Date()
-                firstFileCreatedOn = creationDate(for: path)
-            }
-        }
+        calculationsStart = Date()
+        fileCreatedOn = creationDate(for: path)
     }
     
-    func endFile(_ path: String, secondsFromFirstFileStart: TimeInterval, correlationsPerFile: CUnsignedLongLong) {
+    func endFile(_ path: String, correlationsPerFile: CUnsignedLongLong) {
         calculationsEnd = Date()
-        lastFileCreatedOn = creationDate(for: path)
-        secondsFromStart = secondsFromFirstFileStart
         correlationsTotal += correlationsPerFile
     }
     
@@ -85,16 +87,16 @@ class FolderStatistics {
         currents.append(Double(value))
     }
     
-    func handleIntergal(_ event: Event) {
-        integralEvent = event
+    func handleIntergal(_ value: Float) {
+        integral = value
     }
     
-    init(folderName: String?) {
-        self.name = folderName
+    init(fileName: String?) {
+        self.name = fileName
     }
     
-    class func folderNameFromPath(_ path: String) -> String? {
-        return path.components(separatedBy: "/").dropLast().last
+    class func fileNameFromPath(_ path: String) -> String? {
+        return path.components(separatedBy: "/").last
     }
     
 }
