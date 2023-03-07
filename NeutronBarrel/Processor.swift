@@ -758,7 +758,7 @@ class Processor {
                                      encoder: encoder,
                                      eventNumber: eventNumber(),
                                      deltaTime: deltaTime,
-                                     marker: 0, // TODO: event.getMarker(),
+                                     overflow: event.overflow,
                                      side: side)
         return item
     }
@@ -781,7 +781,7 @@ class Processor {
                                      encoder: encoder,
                                      eventNumber: eventNumber(),
                                      deltaTime: deltaTime,
-                                     marker: 0, // TODO: event.getMarker(),
+                                     overflow: event.overflow,
                                      channel: channel,
                                      subMatches: subMatches,
                                      side: side)
@@ -797,14 +797,12 @@ class Processor {
 
         let energy = getEnergy(event)
         let type: SearchType = .gamma
-        // TODO: use marker info
-        // let coincidenceWithBGO = (event.param3 >> 15) == 1
         let item = DetectorMatchItem(type: type,
                                      stripDetector: nil,
                                      energy: energy,
                                      encoder: encoder,
                                      deltaTime: deltaTime,
-                                     marker: 0, // TODO: event.getMarker(),
+                                     overflow: event.overflow,
                                      side: nil)
         return item
     }
@@ -818,7 +816,7 @@ class Processor {
                                      encoder: encoder,
                                      eventNumber: eventNumber(),
                                      deltaTime: deltaTime,
-                                     marker: 0, // TODO: event.getMarker(),
+                                     overflow: event.overflow,
                                      subMatches: subMatches,
                                      side: side)
         recoilsPerAct.append(item, side: side)
@@ -834,7 +832,7 @@ class Processor {
                                      encoder: encoder,
                                      eventNumber: eventNumber(),
                                      deltaTime: deltaTime,
-                                     marker: 0, // event.getMarker(), TODO: markers
+                                     overflow: event.overflow,
                                      subMatches: subMatches,
                                      side: side)
         let match = fissionsAlphaNextPerAct[index] ?? DoubleSidedStripDetectorMatch()
@@ -857,7 +855,7 @@ class Processor {
                                      stripDetector: .side,
                                      energy: energy,
                                      encoder: encoder,
-                                     marker: 0, //TODO: event.getMarker(),
+                                     overflow: event.overflow,
                                      side: side)
         fissionsAlphaWellPerAct.append(item, side: side)
         // Store only well event with max energy

@@ -50,9 +50,9 @@ class DetectorMatchItem {
         return _deltaTime
     }
     
-    fileprivate var _marker: CUnsignedShort?
-    var marker: CUnsignedShort? {
-        return _marker
+    fileprivate var _overflow: UInt8?
+    var overflow: UInt8? {
+        return _overflow
     }
     
     fileprivate var _channel: CUnsignedShort?
@@ -70,14 +70,14 @@ class DetectorMatchItem {
         return _type
     }
     
-    init(type: SearchType, stripDetector: StripDetector?, energy: Double? = nil, encoder: CUnsignedShort? = nil, eventNumber: CUnsignedLongLong? = nil, deltaTime: CLongLong? = nil, marker: CUnsignedShort? = nil, channel: CUnsignedShort? = nil, value: Double? = nil, subMatches: [SearchType: DetectorMatch?]? = nil, back: DetectorMatch? = nil, side: StripsSide?) {
+    init(type: SearchType, stripDetector: StripDetector?, energy: Double? = nil, encoder: CUnsignedShort? = nil, eventNumber: CUnsignedLongLong? = nil, deltaTime: CLongLong? = nil, overflow: UInt8? = nil, channel: CUnsignedShort? = nil, value: Double? = nil, subMatches: [SearchType: DetectorMatch?]? = nil, back: DetectorMatch? = nil, side: StripsSide?) {
         self._type = type
         self._stripDetector = stripDetector
         self._energy = energy
         self._encoder = encoder
         self._eventNumber = eventNumber
         self._deltaTime = deltaTime
-        self._marker = marker
+        self._overflow = overflow
         self._channel = channel
         self._value = value
         self.subMatches = subMatches

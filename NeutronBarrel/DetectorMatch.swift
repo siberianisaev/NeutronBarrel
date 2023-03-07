@@ -58,13 +58,6 @@ class DetectorMatch {
         }
     }
     
-    func filteredByMarker(marker: CUnsignedShort) -> DetectorMatch {
-        let array = items.filter({ (i: DetectorMatchItem) -> Bool in
-            return i.marker == marker
-        })
-        return DetectorMatch(items: array)
-    }
-    
     /*
      Used for divided per strips Fission fragments signals.
      */
