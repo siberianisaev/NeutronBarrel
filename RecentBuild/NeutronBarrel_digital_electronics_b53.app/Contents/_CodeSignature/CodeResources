@@ -10,7 +10,7 @@
 		</data>
 		<key>Resources/Assets.car</key>
 		<data>
-		fDN0pk9MGQFddxzNw/EfoC1UuI4=
+		iVOwYW+xLusRkZPzZIaMlRPF+fk=
 		</data>
 		<key>Resources/Base.lproj/MainMenu.nib</key>
 		<data>
@@ -63,10 +63,10 @@
 		<dict>
 			<key>cdhash</key>
 			<data>
-			U9kkLI5Ps1OHrWiApb/Vuy44NSU=
+			hrogZtcdteSozIPXYUAdTxjUdL8=
 			</data>
 			<key>requirement</key>
-			<string>cdhash H"bfb2f18c4e95a4b83d55334fdb511d8d0a746210" or cdhash H"53d9242c8e4fb35387ad6880a5bfd5bb2e383525" or cdhash H"ce27925b7e7549b15de2b25affa51fb67f625efd" or cdhash H"4a62c6da12d6c5fa2974c2d6c245c2fef9c8aa97"</string>
+			<string>cdhash H"e2bbff835185e13fa44f7e8f76676097b0cfd334" or cdhash H"86ba2066d71db5e4a8cc83d761401d4f18d474bf" or cdhash H"baf69758dd1138afa82cc29f8dfc8ad4d9312e72" or cdhash H"9ab739bcfe4f81191d6d49239a8eef864f643b71"</string>
 		</dict>
 		<key>Frameworks/libswiftAppKit.dylib</key>
 		<dict>
@@ -214,7 +214,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			LzONDyJTrzHn/lNnnKQaWp1S9MPfWVk0DEY4C4tTpCk=
+			Ma5VKuMQz+zyG6dkgF989tWp2sqXOxErHu4WZYLSGgk=
 			</data>
 		</dict>
 		<key>Resources/Base.lproj/MainMenu.nib</key>
