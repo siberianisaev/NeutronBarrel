@@ -570,7 +570,7 @@ class Processor {
                 var store = byFact
                 if !store {
                     let energy = self.getEnergy(event)
-                    store = energy >= self.criteria.fissionAlphaBackMinEnergy && energy <= self.criteria.fissionAlphaBackMaxEnergy
+                    store = self.isOverflowed(event) || energy >= self.criteria.fissionAlphaBackMinEnergy && energy <= self.criteria.fissionAlphaBackMaxEnergy
                 }
                 if store {
                     self.storeFissionAlphaBack(event, match: match, type: type, deltaTime: deltaTime)
@@ -846,8 +846,7 @@ class Processor {
     fileprivate func filterAndStoreFissionAlphaWell(_ event: Event, side: StripsSide) {
         let type: SearchType = .alpha
         let energy = getEnergy(event)
-        // TODO: overflow use
-        if energy < criteria.fissionAlphaWellMinEnergy || energy > criteria.fissionAlphaWellMaxEnergy {
+        if !isOverflowed(event) && (energy < criteria.fissionAlphaWellMinEnergy || energy > criteria.fissionAlphaWellMaxEnergy) {
             return
         }
         let encoder = event.eventId
