@@ -757,7 +757,7 @@
         <window title="NeutronBarrel" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" animationBehavior="default" id="QvC-M9-y7g">
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
             <rect key="contentRect" x="335" y="390" width="1870" height="900"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="2560" height="1415"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="1440" height="875"/>
             <value key="minSize" type="size" width="1870" height="900"/>
             <value key="maxSize" type="size" width="1870" height="900"/>
             <value key="minFullScreenContentSize" type="size" width="1870" height="900"/>
@@ -2761,7 +2761,7 @@
                         </connections>
                     </button>
                     <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="7Pd-vs-la7">
-                        <rect key="frame" x="401" y="190" width="108" height="18"/>
+                        <rect key="frame" x="268" y="162" width="108" height="18"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <buttonCell key="cell" type="check" title="Use Overflow" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="ZoC-OE-TXD">
                             <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
@@ -2769,6 +2769,17 @@
                         </buttonCell>
                         <connections>
                             <binding destination="Voe-Tx-rLC" name="value" keyPath="self.useOverflow" id="zwp-Cy-aim"/>
+                        </connections>
+                    </button>
+                    <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="NBj-J0-dao">
+                        <rect key="frame" x="268" y="134" width="96" height="18"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="check" title="Use Pile Up" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="4QO-Bm-6ED">
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                            <font key="font" metaFont="system"/>
+                        </buttonCell>
+                        <connections>
+                            <binding destination="Voe-Tx-rLC" name="value" keyPath="self.usePileUp" id="T1L-ot-Gwm"/>
                         </connections>
                     </button>
                 </subviews>

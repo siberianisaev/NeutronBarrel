@@ -106,6 +106,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         searchExtraFromLastParticle = Settings.getBoolSetting(.SearchExtraFromLastParticle)
         inBeamOnly = Settings.getBoolSetting(.InBeamOnly)
         useOverflow = Settings.getBoolSetting(.UseOverflow)
+        usePileUp = Settings.getBoolSetting(.UsePileUp)
         searchNeutrons = Settings.getBoolSetting(.SearchNeutrons)
         neutronsBackground = Settings.getBoolSetting(.NeutronsBackground)
         simultaneousDecaysFilterForNeutrons = Settings.getBoolSetting(.SimultaneousDecaysFilterForNeutrons)
@@ -219,6 +220,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBInspectable dynamic var searchExtraFromLastParticle: Bool = false
     @IBInspectable dynamic var inBeamOnly: Bool = false
     @IBInspectable dynamic var useOverflow: Bool = false
+    @IBInspectable dynamic var usePileUp: Bool = false
     @IBInspectable dynamic var searchNeutrons: Bool = false
     @IBInspectable dynamic var neutronsBackground: Bool = false
     @IBInspectable dynamic var simultaneousDecaysFilterForNeutrons: Bool = false
@@ -552,6 +554,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         sc.recoilBackBackwardMaxTime = UInt64(sMaxRecoilBackBackwardTime) ?? 0
         sc.inBeamOnly = inBeamOnly
         sc.useOverflow = useOverflow
+        sc.usePileUp = usePileUp
         sc.maxGammaTime = UInt64(sMaxGammaTime) ?? 0
         sc.maxGammaBackwardTime = UInt64(sMaxGammaBackwardTime) ?? 0
         sc.requiredGamma = requiredGamma
@@ -818,6 +821,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             .SearchExtraFromLastParticle: searchExtraFromLastParticle,
             .InBeamOnly: inBeamOnly,
             .UseOverflow: useOverflow,
+            .UsePileUp: usePileUp,
             .SearchNeutrons: searchNeutrons,
             .NeutronsBackground: neutronsBackground,
             .SimultaneousDecaysFilterForNeutrons: simultaneousDecaysFilterForNeutrons,

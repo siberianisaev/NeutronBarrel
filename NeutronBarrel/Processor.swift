@@ -344,6 +344,11 @@ class Processor {
                     clearActInfo()
                     return
                 }
+                
+                if !criteria.usePileUp && event.pileUp == 1 {
+                    clearActInfo()
+                    return
+                }
 
                 if !criteria.searchExtraFromLastParticle {
                     gamma = findGamma(currentPosition)

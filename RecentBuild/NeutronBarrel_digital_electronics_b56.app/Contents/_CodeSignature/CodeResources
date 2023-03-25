@@ -14,7 +14,7 @@
 		</data>
 		<key>Resources/Base.lproj/MainMenu.nib</key>
 		<data>
-		naNqQzUDTdfERNM4DCkSVJBvk+I=
+		OoreSOxNld5lr2BhwwCBt8IkOeU=
 		</data>
 		<key>Resources/CalculationsController.nib</key>
 		<data>
@@ -63,10 +63,10 @@
 		<dict>
 			<key>cdhash</key>
 			<data>
-			xzleYbJ0gElNmKYyUPZCkCU9oEM=
+			ATVJJsEiBrcF3h4ni71IxDOeIiQ=
 			</data>
 			<key>requirement</key>
-			<string>cdhash H"4c01f0ebc8c2d974aa67d4068423b838670a4ae2" or cdhash H"c7395e61b27480494d98a63250f64290253da043" or cdhash H"7772c60848c3fea17a9fc8911285752160f25a6b" or cdhash H"a8e458d4c67054bba206923ec9d7dca35c20c7f0"</string>
+			<string>cdhash H"f915de3b9cd65e0ccc93106bb4c4c699c0fb1b31" or cdhash H"01354926c12206b705de1e278bbd48c4339e2224" or cdhash H"ccacbad13f645796b4b785d257dda99c9e26899f" or cdhash H"76f6f4bd911b2fa84f72f9d3512c945bb4b4fe25"</string>
 		</dict>
 		<key>Frameworks/libswiftAppKit.dylib</key>
 		<dict>
@@ -221,7 +221,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			+eJjbXcS/tn1aelihYVLCwDyuEj743jC4ED9l+XZGiY=
+			XBxRerTDVP715syYJ8OnFfozCetaH9VVDUuLJHZftAQ=
 			</data>
 		</dict>
 		<key>Resources/CalculationsController.nib</key>

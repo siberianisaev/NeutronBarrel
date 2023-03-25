@@ -108,6 +108,7 @@ class SearchCriteria {
     var searchExtraFromLastParticle = false
     var inBeamOnly = false
     var useOverflow = false
+    var usePileUp = false
     var trackBeamEnergy = false
     var trackBeamCurrent = false
     var trackBeamBackground = false
