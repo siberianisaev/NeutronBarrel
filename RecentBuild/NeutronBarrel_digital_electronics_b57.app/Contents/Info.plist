@@ -33,7 +33,7 @@
 	<key>CFBundleVersionGitBranch</key>
 	<string>digital_electronics</string>
 	<key>CFBundleVersionGitSHA</key>
-	<string>aeb9a71</string>
+	<string>6b279e3</string>
 	<key>DTCompiler</key>
 	<string>com.apple.compilers.llvm.clang.1_0</string>
 	<key>DTPlatformBuild</key>

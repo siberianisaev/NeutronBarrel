@@ -88,7 +88,9 @@ class FileStatistics {
     }
     
     func handleIntergal(_ value: Float) {
-        integral = value
+        if value > integral { // must increase in time
+            integral = value
+        }
     }
     
     init(fileName: String?) {

@@ -63,10 +63,10 @@
 		<dict>
 			<key>cdhash</key>
 			<data>
-			ATVJJsEiBrcF3h4ni71IxDOeIiQ=
+			RODQ35/oMdNeOnCLFhPnnI1h6Fk=
 			</data>
 			<key>requirement</key>
-			<string>cdhash H"f915de3b9cd65e0ccc93106bb4c4c699c0fb1b31" or cdhash H"01354926c12206b705de1e278bbd48c4339e2224" or cdhash H"ccacbad13f645796b4b785d257dda99c9e26899f" or cdhash H"76f6f4bd911b2fa84f72f9d3512c945bb4b4fe25"</string>
+			<string>cdhash H"7ce591d9327dd6f1cba046c9a2c6966c5d8ada38" or cdhash H"44e0d0df9fe831d35e3a708b1613e79c8d61e859" or cdhash H"1938f49d408ceaf22fe5214f89487c86ed86c56f" or cdhash H"92e7f4e65e666e98ec450d27b7c36dc06299d452"</string>
 		</dict>
 		<key>Frameworks/libswiftAppKit.dylib</key>
 		<dict>
