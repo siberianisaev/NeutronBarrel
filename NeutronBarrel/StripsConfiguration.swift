@@ -33,6 +33,7 @@ class StripsConfiguration {
     }
     
     init() {
+        // TODO: well detector and gamma for calibration
         for tuple in [("chan_decode_dssd", 0), ("chan_decode_neutrons", 512)] {
             if let url = Bundle.main.url(forResource: tuple.0, withExtension: "txt") {
                 do {

@@ -66,10 +66,6 @@ class Calibration {
         for URL in URLs {
             let path = URL.path
             do {
-                // TODO: support gamma and well
-                let isFocalFront = path.contains("FocalFront.clb")
-                let isFocalBack = path.contains("FocalBack.clb")
-                
                 var content = try String(contentsOfFile: path, encoding: String.Encoding.utf8)
                 content = content.replacingOccurrences(of: "\r", with: "")
                 string += "File: \((path as NSString).lastPathComponent)\n"
@@ -79,19 +75,33 @@ class Calibration {
                 for line in lines {
                     let strip = lines.firstIndex(of: line)!
                     let config = stripsConfiguration()
-                    // TODO: support gamma and well
-                    var channel: CUnsignedShort? = nil
-                    if isFocalFront {
-                        channel = config.focalFrontStripToChannel[strip]
-                    } else if isFocalBack {
-                        channel = config.focalBackStripToChannel[strip]
-                    }
+                    // TODO: support gamma and AWFr / AWBk
                     
-                    if let channel = channel {
-                        let components = line.components(separatedBy: setSpaces).filter() { $0 != "" }
-                        if 2 == components.count {
-                            let a = Double(components[0]) ?? 0
-                            let b = Double(components[1]) ?? 0
+                    let components = line.components(separatedBy: setSpaces).filter() { $0 != "" }
+                    if 3 == components.count {
+                        let a = Double(components[1]) ?? 0
+                        let b = Double(components[0]) ?? 0
+                        let name = components[2]
+                        
+                        var channel: CUnsignedShort? = nil
+                        let focalFront = "AFr"
+                        let focalBack = "ABk"
+                        
+                        func stripFrom(prefix: String, name: String) -> Int? {
+                            return Int(name.replacingOccurrences(of: prefix, with: ""))
+                        }
+                        
+                        if name.contains(focalFront) {
+                            if let strip = stripFrom(prefix: focalFront, name: name) {
+                                channel = config.focalFrontStripToChannel[strip]
+                            }
+                        } else if name.contains(focalBack) {
+                            if let strip = stripFrom(prefix: focalBack, name: name) {
+                                channel = config.focalBackStripToChannel[strip]
+                            }
+                        }
+                        
+                        if let channel = channel {
                             data[channel] = CalibrationEquation(a: a, b: b)
                             string += "\(channel) \(b) \(a)\n"
                         }

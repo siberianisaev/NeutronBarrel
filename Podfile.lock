@@ -1,16 +1,3 @@
-PODS:
-  - SigmaSwiftStatistics (9.0.2)
-
-DEPENDENCIES:
-  - SigmaSwiftStatistics
-
-SPEC REPOS:
-  https://github.com/CocoaPods/Specs.git:
-    - SigmaSwiftStatistics
-
-SPEC CHECKSUMS:
-  SigmaSwiftStatistics: 4ec81cd50b0f397baddba05fe88ce228a66edd8c
-
-PODFILE CHECKSUM: 7ee754300f141f980dd613f00adff9c368c2a515
+PODFILE CHECKSUM: 06096584190436b47cccbc397476c0555eda1712
 
 COCOAPODS: 1.11.3

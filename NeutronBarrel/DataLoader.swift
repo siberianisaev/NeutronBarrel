@@ -13,7 +13,7 @@ class DataLoader {
     
     var files = [String]()
     var protocols = [String]()
-    var dataProtocol: DataProtocol!
+    var dataProtocol = DataProtocol()
     
     class var singleton : DataLoader {
         struct Static {
