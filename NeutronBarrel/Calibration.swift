@@ -103,7 +103,7 @@ class Calibration {
                         
                         if let channel = channel {
                             data[channel] = CalibrationEquation(a: a, b: b)
-                            string += "\(channel) \(b) \(a)\n"
+                            string += "\(b) \(a) \(channel)\n"
                         }
                     }
                 }

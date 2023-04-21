@@ -144,16 +144,8 @@ class SearchNextCriteria {
     var frontMaxEnergy: Double = 0
     var backMinEnergy: Double = 0
     var backMaxEnergy: Double = 0
-    var minTime: CUnsignedLongLong = 0 {
-        didSet {
-            minTime.mksToCycles()
-        }
-    }
-    var maxTime: CUnsignedLongLong = 0 {
-        didSet {
-            maxTime.mksToCycles()
-        }
-    }
+    var minTime: CUnsignedLongLong = 0
+    var maxTime: CUnsignedLongLong = 0
     var maxDeltaStrips: Int = 0
     var backByFact: Bool = true
     var frontType: SearchType = .alpha
@@ -166,7 +158,9 @@ class SearchNextCriteria {
         self.backMinEnergy = backMinEnergy
         self.backMaxEnergy = backMaxEnergy
         self.minTime = minTime
+        self.minTime.mksToCycles()
         self.maxTime = maxTime
+        self.maxTime.mksToCycles()
         self.maxDeltaStrips = maxDeltaStrips
         self.backByFact = backByFact
         self.frontType = frontType
