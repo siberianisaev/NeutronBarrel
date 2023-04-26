@@ -450,7 +450,7 @@ class ResultsTable {
                 case keyColumnRecoilFrontDeltaTime(log: false), keyColumnRecoilFrontDeltaTime(log: true):
                     if let deltaTime = delegate.recoilAt(side: .front, index: row)?.deltaTime?.toMks() {
                         if column == keyColumnRecoilFrontDeltaTime(log: false) {
-                            field = String(format: "%lld", deltaTime)
+                            field = String(format: "%lld", abs(deltaTime))
                         } else {
                             field = String(format: "%.7f", log2(abs(Float(deltaTime))))
                         }
@@ -829,7 +829,7 @@ class ResultsTable {
     
     fileprivate func fissionAlphaDeltaTime(_ index: Int, row: Int, side: StripsSide) -> String {
         if let deltaTime = fissionAlpha(index, row: row, side: side)?.deltaTime?.toMks() {
-            return String(format: "%lld", abs(deltaTime))
+            return String(format: "%lld", deltaTime)
         }
         return ""
     }

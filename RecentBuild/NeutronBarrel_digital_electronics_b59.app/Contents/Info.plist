@@ -29,11 +29,11 @@
 		<string>MacOSX</string>
 	</array>
 	<key>CFBundleVersion</key>
-	<string>58</string>
+	<string>59</string>
 	<key>CFBundleVersionGitBranch</key>
 	<string>digital_electronics</string>
 	<key>CFBundleVersionGitSHA</key>
-	<string>e86fc4b</string>
+	<string>4f5a49f</string>
 	<key>DTCompiler</key>
 	<string>com.apple.compilers.llvm.clang.1_0</string>
 	<key>DTPlatformBuild</key>
