@@ -13,6 +13,7 @@ enum Setting: String {
     case
     NeutronsDetectorEfficiency = "NeutronsDetectorEfficiency",
     NeutronsDetectorEfficiencyError = "NeutronsDetectorEfficiencyError",
+    ExcludeNeutronCounters = "ExcludeNeutronCounters",
     SFSourcePlaced = "SFSourcePlaced",
     SFSource = "SFSource",
     MinFissionEnergy = "MinFissionEnergy",
@@ -228,7 +229,7 @@ class Settings {
             return false
         case .SpecialEventIds, .GammaEncoderIds:
             return nil
-        case .ResultsFolderName:
+        case .ResultsFolderName, .ExcludeNeutronCounters:
             return ""
         }
     }

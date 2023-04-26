@@ -13,6 +13,7 @@ class SearchCriteria {
     var resultsFolderName: String = ""
     var neutronsDetectorEfficiency: Double = 0
     var neutronsDetectorEfficiencyError: Double = 0
+    var excludeNeutronCounters = [Int]()
     var placedSFSource: SFSource?
     
     var startParticleType: SearchType = .alpha

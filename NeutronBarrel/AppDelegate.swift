@@ -65,6 +65,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         sResultsFolderName = Settings.getStringSetting(.ResultsFolderName) ?? ""
         sNeutronsDetectorEfficiency = String(format: "%.1f", Settings.getDoubleSetting(.NeutronsDetectorEfficiency)) // %
         sNeutronsDetectorEfficiencyError = String(format: "%.1f", Settings.getDoubleSetting(.NeutronsDetectorEfficiencyError)) // %
+        sExcludeNeutronCounters = Settings.getStringSetting(.ExcludeNeutronCounters) ?? ""
         sMinFissionEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MinFissionEnergy)) // MeV
         sMaxFissionEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MaxFissionEnergy)) // MeV
         sMinFissionBackEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MinFissionBackEnergy)) // MeV
@@ -177,6 +178,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     }
     @IBInspectable dynamic var sNeutronsDetectorEfficiency: String = ""
     @IBInspectable dynamic var sNeutronsDetectorEfficiencyError: String = ""
+    @IBInspectable dynamic var sExcludeNeutronCounters: String = ""
     @IBInspectable dynamic var sMinFissionEnergy: String = ""
     @IBInspectable dynamic var sMaxFissionEnergy: String = ""
     @IBInspectable dynamic var sMinFissionBackEnergy: String = ""
@@ -476,6 +478,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         let startFromRecoil = startFrontType == .recoil
         sc.neutronsDetectorEfficiency = Double(sNeutronsDetectorEfficiency) ?? 0
         sc.neutronsDetectorEfficiencyError = Double(sNeutronsDetectorEfficiencyError) ?? 0
+        sc.excludeNeutronCounters = sExcludeNeutronCounters.components(separatedBy: ",").compactMap {
+            Int($0.trimmingCharacters(in: .whitespaces))
+        }
         sc.startParticleType = startFromRecoil ? .recoil : .alpha
         sc.fissionAlphaFrontMinEnergy = Double(sMinFissionEnergy) ?? 0
         sc.fissionAlphaFrontMaxEnergy = Double(sMaxFissionEnergy) ?? 0
@@ -778,6 +783,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         let dict: [Setting: Any?] = [
             .NeutronsDetectorEfficiency: Double(sNeutronsDetectorEfficiency),
             .NeutronsDetectorEfficiencyError: Double(sNeutronsDetectorEfficiencyError),
+            .ExcludeNeutronCounters: sExcludeNeutronCounters,
             .MinFissionEnergy: Double(sMinFissionEnergy),
             .MaxFissionEnergy: Double(sMaxFissionEnergy),
             .MinFissionBackEnergy: Double(sMinFissionBackEnergy),

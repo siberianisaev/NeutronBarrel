@@ -521,7 +521,9 @@ class Processor {
                         if (!isNeutronsBkg && neutronTime >= startTime) || (isNeutronsBkg && neutronTime < startTime) { // Effect neutrons must be after SF by time
                             let counterNumber = self.stripsConfiguration().strip1_N_For(channel: CUnsignedShort(id))
                             var validNeutron = true
-                            if self.criteria.collapseNeutronOverlays {
+                            if self.criteria.excludeNeutronCounters.contains(counterNumber) {
+                                validNeutron = false
+                            } else if self.criteria.collapseNeutronOverlays {
                                 validNeutron = !self.neutronsPerAct.counters.contains(counterNumber)
                             }
                             if validNeutron {
