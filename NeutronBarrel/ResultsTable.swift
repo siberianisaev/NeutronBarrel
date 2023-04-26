@@ -829,7 +829,7 @@ class ResultsTable {
     
     fileprivate func fissionAlphaDeltaTime(_ index: Int, row: Int, side: StripsSide) -> String {
         if let deltaTime = fissionAlpha(index, row: row, side: side)?.deltaTime?.toMks() {
-            return String(format: "%lld", deltaTime)
+            return String(format: "%lld", abs(deltaTime))
         }
         return ""
     }
