@@ -24,17 +24,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBOutlet weak var labelCalibrationFileName: NSTextField!
     @IBOutlet weak var labelStripsConfigurationFileName: NSTextField!
     @IBOutlet weak var labelTask: NSTextField!
-    @IBOutlet weak var startParticleControl: NSSegmentedControl!
-    @IBOutlet weak var startParticleBackControl: NSSegmentedControl!
-    @IBOutlet weak var secondParticleFrontControl: NSSegmentedControl!
-    @IBOutlet weak var secondParticleBackControl: NSSegmentedControl!
-    @IBOutlet weak var thirdParticleFrontControl: NSSegmentedControl!
-    @IBOutlet weak var thirdParticleBackControl: NSSegmentedControl!
-    @IBOutlet weak var fourthParticleFrontControl: NSSegmentedControl!
-    @IBOutlet weak var fourthParticleBackControl: NSSegmentedControl!
-    @IBOutlet weak var wellParticleBackControl: NSSegmentedControl!
-    @IBOutlet weak var tofUnitsControl: NSSegmentedControl!
-    @IBOutlet weak var focalDetectorControl: NSSegmentedControl!
     @IBOutlet weak var sfSourceControl: NSSegmentedControl!
     @IBOutlet weak var indicatorData: NSTextField!
     @IBOutlet weak var indicatorCalibration: NSTextField!
@@ -48,13 +37,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBOutlet weak var fissionAlpha3FormView: NSView!
     @IBOutlet weak var fissionAlpha4FormView: NSView!
     @IBOutlet weak var searchExtraView: NSView!
-    @IBOutlet weak var vetoView: NSView!
     @IBOutlet weak var wellView: NSView!
     @IBOutlet weak var requiredRecoilButton: NSButton!
-    @IBOutlet weak var recoilTypeButton: NSPopUpButton!
-    @IBOutlet weak var recoilBackTypeButton: NSPopUpButton!
-    @IBOutlet weak var recoilTypeArrayController: NSArrayController!
-    @IBOutlet weak var recoilBackTypeArrayController: NSArrayController!
     @IBOutlet weak var fissionAlpha1Button: NSButton!
     @IBOutlet weak var fissionAlpha2Button: NSButton!
     @IBOutlet weak var fissionAlpha3Button: NSButton!
@@ -81,6 +65,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         sResultsFolderName = Settings.getStringSetting(.ResultsFolderName) ?? ""
         sNeutronsDetectorEfficiency = String(format: "%.1f", Settings.getDoubleSetting(.NeutronsDetectorEfficiency)) // %
         sNeutronsDetectorEfficiencyError = String(format: "%.1f", Settings.getDoubleSetting(.NeutronsDetectorEfficiencyError)) // %
+        sExcludeNeutronCounters = Settings.getStringSetting(.ExcludeNeutronCounters) ?? ""
         sMinFissionEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MinFissionEnergy)) // MeV
         sMaxFissionEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MaxFissionEnergy)) // MeV
         sMinFissionBackEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MinFissionBackEnergy)) // MeV
@@ -92,8 +77,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         sMinFissionWellEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MinFissionWellEnergy)) // MeV
         sMaxFissionWellEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MaxFissionWellEnergy)) // MeV
         sMaxFissionWellAngle = String(format: "%.1f", Settings.getDoubleSetting(.MaxFissionWellAngle)) // degree
-        sMinTOFValue = String(format: "%d", Settings.getIntSetting(.MinTOFValue)) // channel or ns
-        sMaxTOFValue = String(format: "%d", Settings.getIntSetting(.MaxTOFValue)) // channel or ns
         sMinRecoilTime = String(format: "%d", Settings.getUInt64Setting(.MinRecoilTime)) // mks
         sMaxRecoilTime = String(format: "%d", Settings.getUInt64Setting(.MaxRecoilTime)) // mks
         sMaxRecoilBackTime = String(format: "%d", Settings.getIntSetting(.MaxRecoilBackTime)) // mks
@@ -101,8 +84,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         sMaxFissionTime = String(format: "%d", Settings.getIntSetting(.MaxFissionTime)) // mks
         sMaxFissionBackBackwardTime = String(format: "%d", Settings.getIntSetting(.MaxFissionBackBackwardTime)) // mks
         sMaxFissionWellBackwardTime = String(format: "%d", Settings.getIntSetting(.MaxFissionWellBackwardTime)) // mks
-        sMaxTOFTime = String(format: "%d", Settings.getIntSetting(.MaxTOFTime)) // mks
-        sMaxVETOTime = String(format: "%d", Settings.getIntSetting(.MaxVETOTime)) // mks
         sMaxGammaTime = String(format: "%d", Settings.getIntSetting(.MaxGammaTime)) // mks
         sMaxGammaBackwardTime = String(format: "%d", Settings.getIntSetting(.MaxGammaBackwardTime)) // mks
         sMinNeutronTime = String(format: "%d", Settings.getIntSetting(.MinNeutronTime)) // mks
@@ -125,14 +106,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         wellRecoilsAllowed = Settings.getBoolSetting(.WellRecoilsAllowed)
         searchExtraFromLastParticle = Settings.getBoolSetting(.SearchExtraFromLastParticle)
         inBeamOnly = Settings.getBoolSetting(.InBeamOnly)
-        overflowOnly = Settings.getBoolSetting(.OverflowOnly)
-        requiredTOF = Settings.getBoolSetting(.RequiredTOF)
-        useTOF2 = Settings.getBoolSetting(.UseTOF2)
-        requiredVETO = Settings.getBoolSetting(.RequiredVETO)
+        useOverflow = Settings.getBoolSetting(.UseOverflow)
+        usePileUp = Settings.getBoolSetting(.UsePileUp)
         searchNeutrons = Settings.getBoolSetting(.SearchNeutrons)
         neutronsBackground = Settings.getBoolSetting(.NeutronsBackground)
         simultaneousDecaysFilterForNeutrons = Settings.getBoolSetting(.SimultaneousDecaysFilterForNeutrons)
-        mixingTimesFilterForNeutrons = Settings.getBoolSetting(.MixingTimesFilterForNeutrons)
+        collapseNeutronOverlays = Settings.getBoolSetting(.CollapseNeutronOverlays)
         neutronsPositions = Settings.getBoolSetting(.NeutronsPositions)
         sfSourcePlaced = Settings.getBoolSetting(.SFSourcePlaced)
         searchFissionAlpha1 = Settings.getBoolSetting(.SearchFissionAlpha1)
@@ -161,11 +140,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         sMaxFissionAlpha4Time = String(format: "%d", Settings.getUInt64Setting(.MaxFissionAlpha4Time)) // mks
         sMaxFissionAlpha4FrontDeltaStrips = String(format: "%d", Settings.getIntSetting(.MaxFissionAlpha4FrontDeltaStrips))
         sMaxConcurrentOperations = String(format: "%d", Settings.getIntSetting(.MaxConcurrentOperations))
-        searchSpecialEvents = Settings.getBoolSetting(.SearchSpecialEvents)
-        specialEventIds = Settings.getStringSetting(.SpecialEventIds) ?? ""
         gammaEncodersOnly = Settings.getBoolSetting(.GammaEncodersOnly)
         gammaEncoderIds = Settings.getStringSetting(.GammaEncoderIds) ?? ""
-        searchVETO = Settings.getBoolSetting(.SearchVETO)
         searchWell = Settings.getBoolSetting(.SearchWell)
         trackBeamEnergy = Settings.getBoolSetting(.TrackBeamEnergy)
         trackBeamCurrent = Settings.getBoolSetting(.TrackBeamCurrent)
@@ -177,22 +153,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         searchFissionBack4ByFact = Settings.getBoolSetting(.SearchFissionBack4ByFact)
         searchRecoilBackByFact = Settings.getBoolSetting(.SearchRecoilBackByFact)
         
-        setupRecoilTypes()
-        setupRecoilBackTypes()
-        startParticleControl.selectedSegment = Settings.getIntSetting(.StartSearchType)
-        startParticleBackControl.selectedSegment = Settings.getIntSetting(.StartBackSearchType)
-        secondParticleFrontControl.selectedSegment = Settings.getIntSetting(.SecondFrontSearchType)
-        secondParticleBackControl.selectedSegment = Settings.getIntSetting(.SecondBackSearchType)
-        thirdParticleFrontControl.selectedSegment = Settings.getIntSetting(.ThirdFrontSearchType)
-        thirdParticleBackControl.selectedSegment = Settings.getIntSetting(.ThirdBackSearchType)
-        fourthParticleFrontControl.selectedSegment = Settings.getIntSetting(.FourthFrontSearchType)
-        fourthParticleBackControl.selectedSegment = Settings.getIntSetting(.FourthBackSearchType)
-        wellParticleBackControl.selectedSegment = Settings.getIntSetting(.WellBackSearchType)
         startParticleChanged(nil)
-        secondParticleBackChanged(nil)
-        thirdParticleBackChanged(nil)
-        fourthParticleBackChanged(nil)
-        setupVETOView()
         setupWellView()
         recoilView.setupForm()
         fissionAlphaView.setupForm()
@@ -206,9 +167,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         setupFissionAlpha3BackEnergyView()
         setupFissionAlpha4BackEnergyView()
         setupRecoilBackEnergyView()
-        tofUnitsControl.selectedSegment = Settings.getIntSetting(.TOFUnits)
         sfSourceControl.selectedSegment = Settings.getIntSetting(.SFSource)
-        focalDetectorControl.selectedSegment = Settings.getIntSetting(.FocalDetectorType, defaultValue: FocalDetectorType.large.rawValue)
         setupGammaEncodersView()
     }
     
@@ -219,6 +178,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     }
     @IBInspectable dynamic var sNeutronsDetectorEfficiency: String = ""
     @IBInspectable dynamic var sNeutronsDetectorEfficiencyError: String = ""
+    @IBInspectable dynamic var sExcludeNeutronCounters: String = ""
     @IBInspectable dynamic var sMinFissionEnergy: String = ""
     @IBInspectable dynamic var sMaxFissionEnergy: String = ""
     @IBInspectable dynamic var sMinFissionBackEnergy: String = ""
@@ -230,8 +190,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBInspectable dynamic var sMinFissionWellEnergy: String = ""
     @IBInspectable dynamic var sMaxFissionWellEnergy: String = ""
     @IBInspectable dynamic var sMaxFissionWellAngle: String = ""
-    @IBInspectable dynamic var sMinTOFValue: String = ""
-    @IBInspectable dynamic var sMaxTOFValue: String = ""
     @IBInspectable dynamic var sMinRecoilTime: String = ""
     @IBInspectable dynamic var sMaxRecoilTime: String = ""
     @IBInspectable dynamic var sMaxRecoilBackTime: String = ""
@@ -239,8 +197,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBInspectable dynamic var sMaxFissionTime: String = ""
     @IBInspectable dynamic var sMaxFissionBackBackwardTime: String = ""
     @IBInspectable dynamic var sMaxFissionWellBackwardTime: String = ""
-    @IBInspectable dynamic var sMaxTOFTime: String = ""
-    @IBInspectable dynamic var sMaxVETOTime: String = ""
     @IBInspectable dynamic var sMaxGammaTime: String = ""
     @IBInspectable dynamic var sMaxGammaBackwardTime: String = ""
     @IBInspectable dynamic var sMinNeutronTime: String = ""
@@ -265,14 +221,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBOutlet weak var searchExtraFromLastParticleButton: NSButton!
     @IBInspectable dynamic var searchExtraFromLastParticle: Bool = false
     @IBInspectable dynamic var inBeamOnly: Bool = false
-    @IBInspectable dynamic var overflowOnly: Bool = false
-    @IBInspectable dynamic var requiredTOF: Bool = false
-    @IBInspectable dynamic var useTOF2: Bool = false
-    @IBInspectable dynamic var requiredVETO: Bool = false
+    @IBInspectable dynamic var useOverflow: Bool = false
+    @IBInspectable dynamic var usePileUp: Bool = false
     @IBInspectable dynamic var searchNeutrons: Bool = false
     @IBInspectable dynamic var neutronsBackground: Bool = false
     @IBInspectable dynamic var simultaneousDecaysFilterForNeutrons: Bool = false
-    @IBInspectable dynamic var mixingTimesFilterForNeutrons: Bool = false
+    @IBInspectable dynamic var collapseNeutronOverlays: Bool = false
     @IBInspectable dynamic var neutronsPositions: Bool = false {
         didSet {
             maxWellAngleView.isHidden = !neutronsPositions
@@ -349,13 +303,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         }
     }
     @IBInspectable dynamic var gammaEncoderIds: String = ""
-    @IBInspectable dynamic var searchSpecialEvents: Bool = false
-    @IBInspectable dynamic var specialEventIds: String = ""
-    @IBInspectable dynamic var searchVETO: Bool = false {
-        didSet {
-            setupVETOView()
-        }
-    }
     @IBInspectable dynamic var searchWell: Bool = false {
         didSet {
             setupWellView()
@@ -391,15 +338,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         }
     }
     
-    fileprivate let recoilTypes: [SearchType] = [.recoil, .heavy]
-    fileprivate var selectedRecoilType: SearchType {
-        return recoilTypes[recoilTypeArrayController.selectionIndex]
-    }
-    
-    fileprivate var selectedRecoilBackType: SearchType {
-        return recoilTypes[recoilBackTypeArrayController.selectionIndex]
-    }
-    
     fileprivate func setupGammaEncodersView() {
         gammaEncodersView.isHidden = !gammaEncodersOnly
     }
@@ -418,30 +356,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     
     fileprivate func setupAlpha4FormView() {
         fissionAlpha4FormView.isHidden = !searchFissionAlpha4
-    }
-    
-    fileprivate func setupRecoilTypes() {
-        let array = recoilTypes.map { (t: SearchType) -> String in
-            return t.name()
-        }
-        var index = 0
-        if let t = SearchType(rawValue: Settings.getIntSetting(.SelectedRecoilType)), let i = recoilTypes.firstIndex(of: t) {
-            index = i
-        }
-        recoilTypeArrayController.content = array
-        recoilTypeArrayController.setSelectedObjects([array[index]])
-    }
-    
-    fileprivate func setupRecoilBackTypes() {
-        let array = recoilTypes.map { (t: SearchType) -> String in
-            return t.name()
-        }
-        var index = 0
-        if let t = SearchType(rawValue: Settings.getIntSetting(.SelectedRecoilBackType)), let i = recoilTypes.firstIndex(of: t) {
-            index = i
-        }
-        recoilBackTypeArrayController.content = array
-        recoilBackTypeArrayController.setSelectedObjects([array[index]])
     }
     
     fileprivate func setupFissionAlpha1BackEnergyView() {
@@ -482,20 +396,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     
     @IBAction func removeStripsConfiguration(_ sender: Any) {
         setSelected(false, indicator: indicatorStripsConfig)
-        StripDetectorManager.cleanStripConfigs()
+//        StripDetectorManager.cleanStripConfigs()
         buttonRemoveStripsConfiguration.isHidden = true
         showFilePaths(nil, label: labelStripsConfigurationFileName)
     }
     
-    @IBAction func focalDetectorChanged(_ sender: Any?) {
-        Settings.changeSingle(.FocalDetectorType, value: focalDetectorControl.selectedSegment)
-        StripDetectorManager.singleton.reset()
-        didSelectStripsConfiguration(false, filePaths: nil)
-    }
-    
     fileprivate func startType() -> SearchType {
-        if searchFissionAlpha1, let type = SearchType(rawValue: startParticleControl.selectedSegment) {
-            return type
+        if searchFissionAlpha1 {
+            return .alpha
         } else {
             return .recoil
         }
@@ -507,34 +415,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         requiredRecoil = requiredRecoil || isRecoil
         requiredRecoilButton.state = NSControl.StateValue(rawValue: requiredRecoil ? 1 : 0)
         requiredRecoilButton.isEnabled = !isRecoil
-        if sender != nil, !isRecoil {
-            startParticleBackControl.selectedSegment = type.rawValue
-            if !searchExtraFromLastParticle {
-                wellParticleBackControl.selectedSegment = type.rawValue
-            }
-        }
-    }
-    
-    @IBAction func secondParticleBackChanged(_ sender: Any?) {
-        if let type = SearchType(rawValue: secondParticleBackControl.selectedSegment), searchFissionAlpha2, !searchFissionAlpha3, searchExtraFromLastParticle {
-            wellParticleBackControl.selectedSegment = type.rawValue
-        }
-    }
-    
-    @IBAction func thirdParticleBackChanged(_ sender: Any?) {
-        if let type = SearchType(rawValue: thirdParticleBackControl.selectedSegment), searchFissionAlpha3, !searchFissionAlpha4, searchExtraFromLastParticle {
-            wellParticleBackControl.selectedSegment = type.rawValue
-        }
-    }
-    
-    @IBAction func fourthParticleBackChanged(_ sender: Any?) {
-        if let type = SearchType(rawValue: fourthParticleBackControl.selectedSegment), searchFissionAlpha4, searchExtraFromLastParticle {
-            wellParticleBackControl.selectedSegment = type.rawValue
-        }
-    }
-    
-    fileprivate func setupVETOView() {
-        vetoView.isHidden = !searchVETO
     }
     
     fileprivate func setupWellView() {
@@ -598,9 +478,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         let startFromRecoil = startFrontType == .recoil
         sc.neutronsDetectorEfficiency = Double(sNeutronsDetectorEfficiency) ?? 0
         sc.neutronsDetectorEfficiencyError = Double(sNeutronsDetectorEfficiencyError) ?? 0
-        sc.startParticleType = startFromRecoil ? selectedRecoilType : startFrontType
-        sc.startParticleBackType = startFromRecoil ? selectedRecoilBackType : SearchType(rawValue: startParticleBackControl.selectedSegment) ?? .fission
-        sc.wellParticleBackType = SearchType(rawValue: wellParticleBackControl.selectedSegment) ?? .fission
+        sc.excludeNeutronCounters = sExcludeNeutronCounters.components(separatedBy: ",").compactMap {
+            Int($0.trimmingCharacters(in: .whitespaces))
+        }
+        sc.startParticleType = startFromRecoil ? .recoil : .alpha
         sc.fissionAlphaFrontMinEnergy = Double(sMinFissionEnergy) ?? 0
         sc.fissionAlphaFrontMaxEnergy = Double(sMaxFissionEnergy) ?? 0
         sc.fissionAlphaBackMinEnergy = Double(sMinFissionBackEnergy) ?? 0
@@ -627,8 +508,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
                                                maxTime: UInt64(sMaxFissionAlpha2Time) ?? 0,
                                                maxDeltaStrips: Int(sMaxFissionAlpha2FrontDeltaStrips) ?? 0,
                                                backByFact: searchFissionBack2ByFact,
-                                               frontType: SearchType(rawValue: secondParticleFrontControl.selectedSegment) ?? .recoil,
-                                               backType: SearchType(rawValue: secondParticleBackControl.selectedSegment) ?? .recoil)
+                                               frontType: .alpha,
+                                               backType: .alpha)
             next[2] = criteria2
             if searchFissionAlpha3 {
                 let criteria3 = SearchNextCriteria(summarizeFront: summarizeFissionsFront3,
@@ -640,8 +521,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
                                                    maxTime: UInt64(sMaxFissionAlpha3Time) ?? 0,
                                                    maxDeltaStrips: Int(sMaxFissionAlpha3FrontDeltaStrips) ?? 0,
                                                    backByFact: searchFissionBack3ByFact,
-                                                   frontType: SearchType(rawValue: thirdParticleFrontControl.selectedSegment) ?? .recoil,
-                                                   backType: SearchType(rawValue: thirdParticleBackControl.selectedSegment) ?? .recoil)
+                                                   frontType: .alpha,
+                                                   backType: .alpha)
                 next[3] = criteria3
                 
                 if searchFissionAlpha4 {
@@ -654,8 +535,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
                                                        maxTime: UInt64(sMaxFissionAlpha4Time) ?? 0,
                                                        maxDeltaStrips: Int(sMaxFissionAlpha4FrontDeltaStrips) ?? 0,
                                                        backByFact: searchFissionBack4ByFact,
-                                                       frontType: SearchType(rawValue: fourthParticleFrontControl.selectedSegment) ?? .recoil,
-                                                       backType: SearchType(rawValue: fourthParticleBackControl.selectedSegment) ?? .recoil)
+                                                       frontType: .alpha,
+                                                       backType: .alpha)
                     next[4] = criteria4
                 }
             }
@@ -676,16 +557,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         sc.recoilMaxTime = UInt64(sMaxRecoilTime) ?? 0
         sc.recoilBackMaxTime = UInt64(sMaxRecoilBackTime) ?? 0
         sc.recoilBackBackwardMaxTime = UInt64(sMaxRecoilBackBackwardTime) ?? 0
-        sc.minTOFValue = Double(sMinTOFValue) ?? 0
-        sc.maxTOFValue = Double(sMaxTOFValue) ?? 0
-        sc.unitsTOF = tofUnitsControl.selectedSegment == 0 ? .channels : .nanoseconds
-        sc.maxTOFTime = UInt64(sMaxTOFTime) ?? 0
         sc.inBeamOnly = inBeamOnly
-        sc.overflowOnly = overflowOnly
-        sc.requiredTOF = requiredTOF
-        sc.useTOF2 = useTOF2
-        sc.maxVETOTime = UInt64(sMaxVETOTime) ?? 0
-        sc.requiredVETO = requiredVETO
+        sc.useOverflow = useOverflow
+        sc.usePileUp = usePileUp
         sc.maxGammaTime = UInt64(sMaxGammaTime) ?? 0
         sc.maxGammaBackwardTime = UInt64(sMaxGammaBackwardTime) ?? 0
         sc.requiredGamma = requiredGamma
@@ -697,21 +571,17 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         sc.searchNeutrons = searchNeutrons
         sc.neutronsBackground = neutronsBackground
         sc.simultaneousDecaysFilterForNeutrons = simultaneousDecaysFilterForNeutrons
-        sc.mixingTimesFilterForNeutrons = mixingTimesFilterForNeutrons
+        sc.collapseNeutronOverlays = collapseNeutronOverlays
         sc.neutronsPositions = neutronsPositions
         sc.placedSFSource = sfSourcePlaced ? SFSource(rawValue: sfSourceControl.selectedSegment) : nil
         sc.minNeutronTime = UInt64(sMinNeutronTime) ?? 0
         sc.maxNeutronTime = UInt64(sMaxNeutronTime) ?? 0
         sc.maxNeutronBackwardTime = UInt64(sMaxNeutronBackwardTime) ?? 0
-        sc.searchSpecialEvents = searchSpecialEvents
         sc.gammaEncodersOnly = gammaEncodersOnly
-        sc.searchVETO = searchVETO
         sc.trackBeamEnergy = trackBeamEnergy
         sc.trackBeamCurrent = trackBeamCurrent
         sc.trackBeamBackground = trackBeamBackground
         sc.trackBeamIntegral = trackBeamIntegral
-        sc.recoilType = selectedRecoilType
-        sc.recoilBackType = selectedRecoilBackType
         sc.searchWell = searchWell
         
         func idsFrom(string: String) -> Set<Int> {
@@ -722,7 +592,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             })
             return Set(ids)
         }
-        sc.specialEventIds = idsFrom(string: specialEventIds)
         sc.gammaEncoderIds = idsFrom(string: gammaEncoderIds)
         
         let id = UUID().uuidString
@@ -821,11 +690,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
                     self?.didSelectCalibration(s, filePaths: filePaths)
                 }
             }
-            StripsConfiguration.handle(urls: urls) { (s: Bool, filePaths: [String]?) in
-                if s {
-                    self?.didSelectStripsConfiguration(s, filePaths: filePaths)
-                }
-            }
+//            StripsConfiguration.handle(urls: urls) { (s: Bool, filePaths: [String]?) in
+//                if s {
+//                    self?.didSelectStripsConfiguration(s, filePaths: filePaths)
+//                }
+//            }
         }
     }
     
@@ -914,6 +783,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         let dict: [Setting: Any?] = [
             .NeutronsDetectorEfficiency: Double(sNeutronsDetectorEfficiency),
             .NeutronsDetectorEfficiencyError: Double(sNeutronsDetectorEfficiencyError),
+            .ExcludeNeutronCounters: sExcludeNeutronCounters,
             .MinFissionEnergy: Double(sMinFissionEnergy),
             .MaxFissionEnergy: Double(sMaxFissionEnergy),
             .MinFissionBackEnergy: Double(sMinFissionBackEnergy),
@@ -925,9 +795,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             .MinFissionWellEnergy: Double(sMinFissionWellEnergy),
             .MaxFissionWellEnergy: Double(sMaxFissionWellEnergy),
             .MaxFissionWellAngle: Double(sMaxFissionWellAngle),
-            .MinTOFValue: Int(sMinTOFValue),
-            .MaxTOFValue: Int(sMaxTOFValue),
-            .TOFUnits: tofUnitsControl.selectedSegment,
             .SFSource: sfSourceControl.selectedSegment,
             .MinRecoilTime: Int(sMinRecoilTime),
             .MaxRecoilTime: Int(sMaxRecoilTime),
@@ -936,8 +803,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             .MaxFissionTime: Int(sMaxFissionTime),
             .MaxFissionBackBackwardTime: Int(sMaxFissionBackBackwardTime),
             .MaxFissionWellBackwardTime: Int(sMaxFissionWellBackwardTime),
-            .MaxTOFTime: Int(sMaxTOFTime),
-            .MaxVETOTime: Int(sMaxVETOTime),
             .MaxGammaTime: Int(sMaxGammaTime),
             .MaxGammaBackwardTime: Int(sMaxGammaBackwardTime),
             .MinNeutronTime: Int(sMinNeutronTime),
@@ -961,28 +826,18 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             .WellRecoilsAllowed: wellRecoilsAllowed,
             .SearchExtraFromLastParticle: searchExtraFromLastParticle,
             .InBeamOnly: inBeamOnly,
-            .OverflowOnly: overflowOnly,
-            .RequiredTOF: requiredTOF,
-            .UseTOF2: useTOF2,
-            .RequiredVETO: requiredVETO,
+            .UseOverflow: useOverflow,
+            .UsePileUp: usePileUp,
             .SearchNeutrons: searchNeutrons,
             .NeutronsBackground: neutronsBackground,
             .SimultaneousDecaysFilterForNeutrons: simultaneousDecaysFilterForNeutrons,
-            .MixingTimesFilterForNeutrons: mixingTimesFilterForNeutrons,
+            .CollapseNeutronOverlays: collapseNeutronOverlays,
             .NeutronsPositions: neutronsPositions,
             .SFSourcePlaced: sfSourcePlaced,
-            .SearchVETO: searchVETO,
             .TrackBeamEnergy: trackBeamEnergy,
             .TrackBeamCurrent: trackBeamCurrent,
             .TrackBeamBackground: trackBeamBackground,
             .TrackBeamIntegral: trackBeamIntegral,
-            .StartSearchType: startParticleControl.selectedSegment,
-            .StartBackSearchType: startParticleBackControl.selectedSegment,
-            .SecondFrontSearchType: secondParticleFrontControl.selectedSegment,
-            .SecondBackSearchType: secondParticleBackControl.selectedSegment,
-            .ThirdFrontSearchType: thirdParticleFrontControl.selectedSegment,
-            .ThirdBackSearchType: thirdParticleBackControl.selectedSegment,
-            .WellBackSearchType: wellParticleBackControl.selectedSegment,
             .SearchFissionAlpha1: searchFissionAlpha1,
             .SearchFissionAlpha2: searchFissionAlpha2,
             .SearchFissionAlpha3: searchFissionAlpha3,
@@ -1009,20 +864,15 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             .MaxFissionAlpha4Time: Int(sMaxFissionAlpha4Time),
             .MaxFissionAlpha4FrontDeltaStrips: Int(sMaxFissionAlpha4FrontDeltaStrips),
             .MaxConcurrentOperations: maxConcurrentOperationCount,
-            .SearchSpecialEvents: searchSpecialEvents,
-            .SpecialEventIds: specialEventIds,
             .GammaEncodersOnly: gammaEncodersOnly,
             .GammaEncoderIds: gammaEncoderIds,
-            .SelectedRecoilType: selectedRecoilType.rawValue,
-            .SelectedRecoilBackType: selectedRecoilBackType.rawValue,
             .SearchFissionBackByFact: searchFissionBackByFact,
             .SearchFissionBack2ByFact: searchFissionBack2ByFact,
             .SearchFissionBack3ByFact: searchFissionBack3ByFact,
             .SearchFissionBack4ByFact: searchFissionBack4ByFact,
             .SearchRecoilBackByFact: searchRecoilBackByFact,
             .SearchWell: searchWell,
-            .ResultsFolderName: sResultsFolderName,
-            .FocalDetectorType: focalDetectorControl.selectedSegment
+            .ResultsFolderName: sResultsFolderName
         ]
         Settings.change(dict)
     }

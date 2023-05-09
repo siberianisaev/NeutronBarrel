@@ -13,10 +13,10 @@ struct NeutronCT {
     var R: UInt16 = 0
     var W: UInt16 = 0
     
-    init(event: Event) {
-        R = (event.param3 & 0xE0) >> 5
-        W = (event.param3 & 0x700) >> 8
-    }
+//    init(event: Event) {
+//        R = (event.param3 & 0xE0) >> 5
+//        W = (event.param3 & 0x700) >> 8
+//    }
 }
 
 class NeutronsMatch {

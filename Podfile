@@ -3,7 +3,7 @@ use_frameworks!
 
 def shared_pods
     platform :osx, '10.13'
-    pod 'SigmaSwiftStatistics'
+#    pod 'SigmaSwiftStatistics'
 end
 
 target 'NeutronBarrel' do

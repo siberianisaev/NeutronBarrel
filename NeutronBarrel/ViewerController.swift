@@ -11,7 +11,7 @@ import Cocoa
 class ViewerController: NSWindowController {
     
     enum Column: Int, CaseCountable {
-        case number = 0, name, ID, time, strip, alpha, fission, markers
+        case number = 0, name, ID, time, strip, energy, tof, overflow, pileup
         
         static let count = Column.countCases()
         
@@ -27,12 +27,14 @@ class ViewerController: NSWindowController {
                 return "Time"
             case .strip:
                 return "Strip"
-            case .alpha:
-                return "Alpha"
-            case .fission:
-                return "Fission"
-            case .markers:
-                return "Markers"
+            case .energy:
+                return "Energy"
+            case .tof:
+                return "TOF"
+            case .overflow:
+                return "Overflow"
+            case .pileup:
+                return "PileUp"
             }
         }
         
@@ -64,9 +66,7 @@ class ViewerController: NSWindowController {
         return DataLoader.singleton.dataProtocol
     }
     
-    fileprivate func stripsConfiguration(detector: StripDetector) -> StripsConfiguration {
-        return StripDetectorManager.singleton.getStripConfigurations(detector)
-    }
+    fileprivate var stripsConfiguration = StripsConfiguration()
     
     override func windowDidLoad() {
         super.windowDidLoad()
@@ -146,6 +146,7 @@ class ViewerController: NSWindowController {
             fseek(file, row * size, SEEK_SET)
             var event = Event()
             fread(&event, size, 1, file)
+            event.bigEndian()
             return event
         } else {
             return nil
@@ -180,7 +181,7 @@ extension ViewerController: NSTableViewDelegate {
                 var highlight = false
                 if let event = getEventForRow(row) {
                     let id = Int(event.eventId)
-                    let isAlpha = dataProtocol?.isAlpha(eventId: id) ?? false
+                    let isAlpha = dataProtocol?.isAlpha(id) ?? false
                     switch column {
                     case .number:
                         string = "\(row + 1)"
@@ -189,61 +190,35 @@ extension ViewerController: NSTableViewDelegate {
                         textColor = colorFor(name: string)
                         // channel number
                         var strip: UInt16?
-                        if isAlpha {
-                            strip = event.param2 >> 12
-                        } else if dataProtocol.isNeutronsNewEvent(id) {
-                            strip = event.param3 & Mask.neutronsNew.rawValue
-                        } else if dataProtocol.isGammaEvent(id) {
-                            strip = (event.param3 << 1) >> 12
-                        }
+                        // TODO: strip
+//                        if isAlpha {
+//                            strip = event.param2 >> 12
+//                        } else if dataProtocol.isNeutronsNewEvent(id) {
+//                            strip = event.param3 & Mask.neutronsNew.rawValue
+//                        } else if dataProtocol.isGammaEvent(id) {
+//                            strip = (event.param3 << 1) >> 12
+//                        }
                         if let strip = strip {
                             string += ".\(strip+1)"
                         }
                     case .ID:
                         string = "\(event.eventId)"
                     case .time:
-                        if dataProtocol?.isValidEventIdForTimeCheck(id) == true {
-                            string = "\(event.param1)"
-                        }
+                        string = String(format: "%.3f", event.time.toMks())
                     case .strip:
-                        if let encoder = dataProtocol?.encoderForEventId(Int(id)) {
-                            if dataProtocol?.isAlpha(eventId: id) ?? false {
-                                let strip0_15 = event.param2 >> 12
-                                let side: StripsSide = (dataProtocol?.isAlphaFronEvent(id) ?? false) ? .front : .back
-                                let strip1_N = stripsConfiguration(detector: .focal).strip1_N_For(side: side, encoder: Int(encoder), strip0_15: strip0_15)
-                                string = "\(strip1_N)"
-                                if let number = Int(sHighlightedStrip), strip1_N == number {
-                                    highlight = true
-                                }
-                            } else if dataProtocol.isNeutronsNewEvent(id) {
-                                let strip = event.param3 & Mask.neutronsNew.rawValue
-                                let counterNumber = self.stripsConfiguration(detector: .neutron).strip1_N_For(side: .front, encoder: Int(encoder), strip0_15: strip)
-                                string = "\(counterNumber)"
-                            } else if dataProtocol.isGammaEvent(id) {
-                                let strip = (event.param3 << 1) >> 12
-                                string = "\(strip)"
-                            }
+                        string = "enc\(id)"
+                        let strip1_N = stripsConfiguration.strip1_N_For(channel: CUnsignedShort(id))
+                        if strip1_N != -1 {
+                            string += "_str\(strip1_N)"
                         }
-                    case .alpha:
-                        if dataProtocol.isCycleTimeEvent(id) {
-                            string = "\(event.param3)"
-                        } else if dataProtocol.isNeutronsNewEvent(id) {
-                            let CT = NeutronCT.init(event: event)
-                            string = "R: \(CT.R), W: \(CT.W)"
-                        } else {
-                            string = "\(event.getChannelFor(type: .alpha))"
-                        }
-                    case .fission:
-                        let isAlpha = dataProtocol?.isAlpha(eventId: id) ?? false
-                        if isAlpha {
-                            string = "\(event.getChannelFor(type: .fission))"
-                        }
-                    case .markers:
-                        if dataProtocol.isGammaEvent(id) {
-                            string = String(event.param3 >> 15)
-                        } else {
-                            string = String(event.getMarker(), radix: 2)
-                        }
+                    case .energy:
+                        string = "\(event.energy)"
+                    case .tof:
+                        string = String(event.tof)
+                    case .overflow:
+                        string = String(event.overflow)
+                    case .pileup:
+                        string = String(event.pileUp)
                     }
                 }
                 cell.textField?.stringValue = string

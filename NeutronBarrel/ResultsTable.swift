@@ -15,7 +15,6 @@ protocol ResultsTableDelegate: AnyObject {
     func neutrons() -> NeutronsMatch
     func currentFileEventNumber(_ number: CUnsignedLongLong) -> String
     func focalGammaContainer() -> DetectorMatch?
-    func vetoAt(index: Int) -> DetectorMatchItem?
     func recoilAt(side: StripsSide, index: Int) -> DetectorMatchItem?
     func fissionsAlphaWellAt(side: StripsSide, index: Int) -> DetectorMatchItem?
     func beamState() -> BeamState
@@ -66,17 +65,16 @@ class ResultsTable {
     
     fileprivate var columns = [String]()
     fileprivate var keyColumnRecoilFrontEvent: String {
-        let name = criteria.recoilType == .recoil ? "Recoil" : "Heavy Recoil"
-        return "Event(\(name))"
+        return "Event(Recoil)"
     }
     fileprivate var keyRecoil: String {
-        return  criteria.recoilType == .recoil ? "R" : "HR"
+        return  "R"
     }
     fileprivate var keyColumnRecoilFrontEnergy: String {
         return "E(\(keyRecoil)Fron)"
     }
-    fileprivate var keyColumnRecoilFrontFrontMarker: String {
-        return "\(keyRecoil)FronMarker"
+    fileprivate var keyColumnRecoilFrontOverflow: String {
+        return "\(keyRecoil)FronOverflow"
     }
     fileprivate func keyColumnRecoilFrontDeltaTime(log: Bool) -> String {
         var s = ""
@@ -87,18 +85,13 @@ class ResultsTable {
         return s
     }
     fileprivate var keyColumnRecoilBackEvent: String {
-        let name = criteria.recoilBackType == .recoil ? "Recoil" : "Heavy Recoil"
-        return "Event(\(name)Back)"
+        return "Event(RecoilBack)"
     }
     fileprivate let keyColumnRecoilBackEnergy: String = "E(RBack)"
-    fileprivate var keyColumnTof = "TOF"
-    fileprivate var keyColumnTof2 = "TOF2"
-    fileprivate var keyColumnTofDeltaTime = "dT(TOF-RFron)"
-    fileprivate var keyColumnTof2DeltaTime = "dT(TOF2-RFron)"
     fileprivate var keyColumnStartEvent = "Event($)"
     fileprivate var keyColumnStartFrontSum = "Sum($Fron)"
     fileprivate var keyColumnStartFrontEnergy = "$Fron"
-    fileprivate var keyColumnStartFrontMarker = "$FronMarker"
+    fileprivate var keyColumnStartFrontOverflow = "$FronOverflow"
     fileprivate var keyColumnStartFrontDeltaTime = "dT($FronFirst-Next)"
     fileprivate var keyColumnStartFrontStrip = "Strip($Fron)"
     fileprivate func keyColumnStartFocal(position: Position) -> String {
@@ -106,13 +99,13 @@ class ResultsTable {
     }
     fileprivate var keyColumnStartBackSum = "Sum(@Back)"
     fileprivate var keyColumnStartBackEnergy = "@Back"
-    fileprivate var keyColumnStartBackMarker = "@BackMarker"
+    fileprivate var keyColumnStartBackOverflow = "@BackOverflow"
     fileprivate var keyColumnStartBackDeltaTime = "dT($Fron-@Back)"
     fileprivate var keyColumnStartBackStrip = "Strip(@Back)"
     fileprivate var keyColumnWellEnergy: String {
         return searchExtraPostfix("$Well")
     }
-    fileprivate var keyColumnWellMarker = "$WellMarker"
+    fileprivate var keyColumnWellOverflow = "$WellOverflow"
     fileprivate var keyColumnWellPosition = "$WellPos"
     fileprivate func keyColumnWell(position: Position) -> String {
         return "$WellPos\(position.rawValue)"
@@ -120,7 +113,7 @@ class ResultsTable {
     fileprivate var keyColumnWellAngle = "$WellAngle"
     fileprivate var keyColumnWellStrip = "Strip($Well)"
     fileprivate var keyColumnWellBackEnergy = "*WellBack"
-    fileprivate var keyColumnWellBackMarker = "*WellBackMarker"
+    fileprivate var keyColumnWellBackOverflow = "*WellBackOverflow"
     fileprivate var keyColumnWellBackPosition = "*WellBackPos"
     fileprivate var keyColumnWellBackStrip = "Strip(*WellBack)"
     fileprivate var keyColumnWellRangeInDeadLayers = "WellRangeInDeadLayers"
@@ -141,7 +134,6 @@ class ResultsTable {
         }
         return s
     }
-    fileprivate var keyColumnNeutrons_N = "N1...N4"
     fileprivate let keyColumnEvent: String = "Event"
     fileprivate func keyColumnGammaEnergy(_ max: Bool) -> String {
         var s = searchExtraPostfix("Gamma")
@@ -174,27 +166,19 @@ class ResultsTable {
         }
         return s + ")"
     }
-    fileprivate func keyColumnGammaMarker(_ max: Bool) -> String {
+    fileprivate func keyColumnGammaOverflow(_ max: Bool) -> String {
         var s = "Gamma"
         if max {
             s += "Max"
         }
-        return s + "Marker"
+        return s + "Overflow"
     }
     fileprivate var keyColumnGammaCount = "GammaCount"
     fileprivate var keyColumnGammaSumEnergy = "GammaSumEnergy"
-    fileprivate var keyColumnSpecial = "Special"
-    fileprivate func keyColumnSpecialFor(eventId: Int) -> String {
-        return keyColumnSpecial + String(eventId)
-    }
     fileprivate var keyColumnBeamEnergy = "BeamEnergy"
     fileprivate var keyColumnBeamCurrent = "BeamCurrent"
     fileprivate var keyColumnBeamBackground = "BeamBackground"
     fileprivate var keyColumnBeamIntegral = "BeamIntegral"
-    fileprivate var keyColumnVetoEvent = "Event(VETO)"
-    fileprivate var keyColumnVetoEnergy = "E(VETO)"
-    fileprivate var keyColumnVetoStrip = "Strip(VETO)"
-    fileprivate var keyColumnVetoDeltaTime = "dT($Fron-VETO)"
     fileprivate func keyColumnFissionAlphaFrontSum(_ index: Int) -> String {
         return "Sum(&Front\(index))"
     }
@@ -204,8 +188,8 @@ class ResultsTable {
     fileprivate func keyColumnFissionAlphaFrontEnergy(_ index: Int) -> String {
         return "E(&Front\(index))"
     }
-    fileprivate func keyColumnFissionAlphaFrontMarker(_ index: Int) -> String {
-        return "&Front\(index)Marker"
+    fileprivate func keyColumnFissionAlphaFrontOverflow(_ index: Int) -> String {
+        return "&Front\(index)Overflow"
     }
     fileprivate func keyColumnFissionAlphaFrontDeltaTime(_ index: Int) -> String {
         return "dT($Front\(index-1)-&Front\(index))"
@@ -219,8 +203,8 @@ class ResultsTable {
     fileprivate func keyColumnFissionAlphaBackEnergy(_ index: Int) -> String {
         return "^Back\(index)"
     }
-    fileprivate func keyColumnFissionAlphaBackMarker(_ index: Int) -> String {
-        return "^Back\(index)Marker"
+    fileprivate func keyColumnFissionAlphaBackOverflow(_ index: Int) -> String {
+        return "^Back\(index)Overflow"
     }
     fileprivate func keyColumnFissionAlphaBackDeltaTime(_ index: Int) -> String {
         return "dT($Front\(index)-&Back\(index))"
@@ -240,7 +224,7 @@ class ResultsTable {
                 keyColumnGammaEncoder(false),
                 keyColumnGammaStrip(false),
                 keyColumnGammaDeltaTime(false),
-                keyColumnGammaMarker(false),
+                keyColumnGammaOverflow(false),
                 keyColumnGammaCount
             ])
             let headers = setupHeaders(columnsGamma)
@@ -257,7 +241,7 @@ class ResultsTable {
             columns.append(contentsOf: [
                 keyColumnRecoilFrontEvent,
                 keyColumnRecoilFrontEnergy,
-                keyColumnRecoilFrontFrontMarker,
+                keyColumnRecoilFrontOverflow,
                 keyColumnRecoilFrontDeltaTime(log: false),
                 keyColumnRecoilFrontDeltaTime(log: true),
                 keyColumnRecoilBackEvent,
@@ -265,20 +249,10 @@ class ResultsTable {
             ])
         }
         columns.append(contentsOf: [
-            keyColumnTof,
-            keyColumnTofDeltaTime
-        ])
-        if criteria.useTOF2 {
-            columns.append(contentsOf: [
-                keyColumnTof2,
-                keyColumnTof2DeltaTime,
-            ])
-        }
-        columns.append(contentsOf: [
             keyColumnStartEvent,
             keyColumnStartFrontSum,
             keyColumnStartFrontEnergy,
-            keyColumnStartFrontMarker,
+            keyColumnStartFrontOverflow,
             keyColumnStartFrontDeltaTime,
             keyColumnStartFrontStrip
         ])
@@ -286,14 +260,14 @@ class ResultsTable {
         columns.append(contentsOf: [
             keyColumnStartBackSum,
             keyColumnStartBackEnergy,
-            keyColumnStartBackMarker,
+            keyColumnStartBackOverflow,
             keyColumnStartBackDeltaTime,
             keyColumnStartBackStrip
         ])
         if criteria.searchWell {
             columns.append(contentsOf: [
                 keyColumnWellEnergy,
-                keyColumnWellMarker,
+                keyColumnWellOverflow,
                 keyColumnWellPosition
                 ])
             columns.append(contentsOf: ([.X, .Y, .Z] as [Position]).map { keyColumnWell(position: $0) })
@@ -301,7 +275,7 @@ class ResultsTable {
                 keyColumnWellAngle,
                 keyColumnWellStrip,
                 keyColumnWellBackEnergy,
-                keyColumnWellBackMarker,
+                keyColumnWellBackOverflow,
                 keyColumnWellBackPosition,
                 keyColumnWellBackStrip,
                 keyColumnWellRangeInDeadLayers,
@@ -311,9 +285,6 @@ class ResultsTable {
         }
         if criteria.searchNeutrons {
             columns.append(contentsOf: [keyColumnNeutronsAverageTime, keyColumnNeutronTime, keyColumnNeutronCounter, keyColumnNeutronBlock, keyColumnNeutrons])
-            if dataProtocol.hasNeutrons_N() {
-                columns.append(keyColumnNeutrons_N)
-            }
             if criteria.neutronsPositions {
                 columns.append(contentsOf: [keyColumnNeutronCounterX, keyColumnNeutronCounterY, keyColumnNeutronAngle, keyColumnNeutronRelatedFissionBack])
             }
@@ -326,12 +297,6 @@ class ResultsTable {
             keyColumnGammaDeltaTime(true),
             keyColumnGammaCount
             ])
-        if criteria.searchSpecialEvents {
-            let values = criteria.specialEventIds.map({ (i: Int) -> String in
-                return keyColumnSpecialFor(eventId: i)
-            })
-            columns.append(contentsOf: values)
-        }
         if criteria.trackBeamEnergy {
             columns.append(keyColumnBeamEnergy)
         }
@@ -343,14 +308,6 @@ class ResultsTable {
         }
         if criteria.trackBeamIntegral {
             columns.append(keyColumnBeamIntegral)
-        }
-        if criteria.searchVETO {
-            columns.append(contentsOf: [
-                keyColumnVetoEvent,
-                keyColumnVetoEnergy,
-                keyColumnVetoStrip,
-                keyColumnVetoDeltaTime
-                ])
         }
         
         func columnsForNextEvent(_ index: Int) -> [String] {
@@ -384,8 +341,8 @@ class ResultsTable {
     
     fileprivate func setupHeaders(_ headers: [String]) -> [AnyObject] {
         let firstFront = criteria.startParticleType.symbol()
-        let firstBack = criteria.startParticleBackType.symbol()
-        let wellBack = criteria.wellParticleBackType.symbol()
+        let firstBack = firstFront
+        let wellBack = SearchType.alpha.symbol()
         // TODO: criteria.next all symbols handling
         let last = criteria.next[criteria.nextMaxIndex() ?? -1]
         let secondFront = last?.frontType.symbol() ?? ""
@@ -404,10 +361,6 @@ class ResultsTable {
         } as [AnyObject]
     }
     
-    fileprivate func firstTOF(row: Int, type: SearchType) -> DetectorMatchItem? {
-        return delegate.recoilAt(side: .front, index: row)?.subMatches?[type]??.itemAt(index: 0) ?? nil
-    }
-    
     fileprivate var currentStartEventNumber: CUnsignedLongLong?
     
     fileprivate func gammaAt(row: Int) -> DetectorMatch? {
@@ -420,9 +373,6 @@ class ResultsTable {
             if count > 0 {
                 for i in 0...count-1 {
                     if let item = f.itemAt(index: i), let gamma = item.subMatches?[.gamma], var g = gamma {
-                        if GeOnly {
-                            g = g.filteredByMarker(marker: 0)
-                        }
                         let destination: LoggerDestination = GeOnly ? .gammaGeOnly : .gammaAll
                         let c = g.count
                         if c > 0 {
@@ -448,16 +398,18 @@ class ResultsTable {
                                             field = String(format: "%hu", encoder)
                                         }
                                     case keyColumnGammaStrip(false):
-                                        if let strip = g.itemAt(index: row)?.strip0_15 {
-                                            field = String(format: "%hu", strip)
-                                        }
+                                        // TODO: !!!
+                                        field = ""
+//                                        if let strip = g.itemAt(index: row)?.strip0_15 {
+//                                            field = String(format: "%hu", strip)
+//                                        }
                                     case keyColumnGammaDeltaTime(false):
-                                        if let deltaTime = g.itemAt(index: row)?.deltaTime {
+                                        if let deltaTime = g.itemAt(index: row)?.deltaTime?.toMks() {
                                             field = String(format: "%lld", deltaTime)
                                         }
-                                    case keyColumnGammaMarker(false):
-                                        if let marker = g.itemAt(index: row)?.marker {
-                                            field = String(format: "%hu", marker)
+                                    case keyColumnGammaOverflow(false):
+                                        if let overflow = g.itemAt(index: row)?.overflow {
+                                            field = String(format: "%hu", overflow)
                                         }
                                     case keyColumnGammaCount:
                                         if row == 0 {
@@ -491,14 +443,14 @@ class ResultsTable {
                     if let energy = delegate.recoilAt(side: .front, index: row)?.energy {
                         field = String(format: "%.7f", energy)
                     }
-                case keyColumnRecoilFrontFrontMarker:
-                    if let marker = delegate.recoilAt(side: .front, index: row)?.marker {
-                        field = String(format: "%hu", marker)
+                case keyColumnRecoilFrontOverflow:
+                    if let overflow = delegate.recoilAt(side: .front, index: row)?.overflow {
+                        field = String(format: "%hu", overflow)
                     }
                 case keyColumnRecoilFrontDeltaTime(log: false), keyColumnRecoilFrontDeltaTime(log: true):
-                    if let deltaTime = delegate.recoilAt(side: .front, index: row)?.deltaTime {
+                    if let deltaTime = delegate.recoilAt(side: .front, index: row)?.deltaTime?.toMks() {
                         if column == keyColumnRecoilFrontDeltaTime(log: false) {
-                            field = String(format: "%lld", deltaTime)
+                            field = String(format: "%lld", abs(deltaTime))
                         } else {
                             field = String(format: "%.7f", log2(abs(Float(deltaTime))))
                         }
@@ -510,15 +462,6 @@ class ResultsTable {
                 case keyColumnRecoilBackEnergy:
                     if let energy = delegate.recoilAt(side: .back, index: row)?.energy {
                         field = String(format: "%.7f", energy)
-                    }
-                case keyColumnTof, keyColumnTof2:
-                    if let value = firstTOF(row: row, type: column == keyColumnTof ? .tof : .tof2)?.value {
-                        let format = "%." + (criteria.unitsTOF == .channels ? "0" : "7") + "f"
-                        field = String(format: format, value)
-                    }
-                case keyColumnTofDeltaTime, keyColumnTof2DeltaTime:
-                    if let deltaTime = firstTOF(row: row, type: column == keyColumnTofDeltaTime ? .tof : .tof2)?.deltaTime {
-                        field = String(format: "%lld", deltaTime)
                     }
                 case keyColumnStartEvent:
                     if let eventNumber = delegate.firstParticleAt(side: .front).itemAt(index: row)?.eventNumber {
@@ -535,12 +478,12 @@ class ResultsTable {
                     if let energy = delegate.firstParticleAt(side: .front).itemAt(index: row)?.energy {
                         field = String(format: "%.7f", energy)
                     }
-                case keyColumnStartFrontMarker:
-                    if let marker = delegate.firstParticleAt(side: .front).itemAt(index: row)?.marker {
-                        field = String(format: "%hu", marker)
+                case keyColumnStartFrontOverflow:
+                    if let overflow = delegate.firstParticleAt(side: .front).itemAt(index: row)?.overflow {
+                        field = String(format: "%hu", overflow)
                     }
                 case keyColumnStartFrontDeltaTime:
-                    if let deltaTime = delegate.firstParticleAt(side: .front).itemAt(index: row)?.deltaTime {
+                    if let deltaTime = delegate.firstParticleAt(side: .front).itemAt(index: row)?.deltaTime?.toMks() {
                         field = String(format: "%lld", deltaTime)
                     }
                 case keyColumnStartFrontStrip:
@@ -568,12 +511,12 @@ class ResultsTable {
                     if let energy = delegate.firstParticleAt(side: .back).itemAt(index: row)?.energy {
                         field = String(format: "%.7f", energy)
                     }
-                case keyColumnStartBackMarker:
-                    if let marker = delegate.firstParticleAt(side: .back).itemAt(index: row)?.marker {
-                        field = String(format: "%hu", marker)
+                case keyColumnStartBackOverflow:
+                    if let overflow = delegate.firstParticleAt(side: .back).itemAt(index: row)?.overflow {
+                        field = String(format: "%hu", overflow)
                     }
                 case keyColumnStartBackDeltaTime:
-                    if let deltaTime = delegate.firstParticleAt(side: .back).itemAt(index: row)?.deltaTime {
+                    if let deltaTime = delegate.firstParticleAt(side: .back).itemAt(index: row)?.deltaTime?.toMks() {
                         field = String(format: "%lld", deltaTime)
                     }
                 case keyColumnStartBackStrip:
@@ -584,14 +527,16 @@ class ResultsTable {
                     if row == 0, let energy = delegate.fissionsAlphaWellAt(side: .front, index: 0)?.energy {
                         field = String(format: "%.7f", energy)
                     }
-                case keyColumnWellMarker:
-                    if row == 0, let marker = delegate.fissionsAlphaWellAt(side: .front, index: 0)?.marker {
-                        field = String(format: "%hu", marker)
+                case keyColumnWellOverflow:
+                    if row == 0, let overflow = delegate.fissionsAlphaWellAt(side: .front, index: 0)?.overflow {
+                        field = String(format: "%hu", overflow)
                     }
                 case keyColumnWellPosition:
-                    if row == 0, let item = delegate.fissionsAlphaWellAt(side: .front, index: 0), let strip0_15 = item.strip0_15, let encoder = item.encoder {
-                        field = String(format: "FWell%d.%d", encoder, strip0_15 + 1)
-                    }
+                    // TODO: !!!
+                    field = ""
+//                    if row == 0, let item = delegate.fissionsAlphaWellAt(side: .front, index: 0), let strip0_15 = item.strip0_15, let encoder = item.encoder {
+//                        field = String(format: "FWell%d.%d", encoder, strip0_15 + 1)
+//                    }
                 case keyColumnWell(position: .X), keyColumnWell(position: .Y), keyColumnWell(position: .Z):
                     var p: Position
                     switch column {
@@ -622,14 +567,16 @@ class ResultsTable {
                     if row == 0, let energy = delegate.fissionsAlphaWellAt(side: .back, index: 0)?.energy {
                         field = String(format: "%.7f", energy)
                     }
-                case keyColumnWellBackMarker:
-                    if row == 0, let marker = delegate.fissionsAlphaWellAt(side: .back, index: 0)?.marker {
-                        field = String(format: "%hu", marker)
+                case keyColumnWellBackOverflow:
+                    if row == 0, let overflow = delegate.fissionsAlphaWellAt(side: .back, index: 0)?.overflow {
+                        field = String(format: "%hu", overflow)
                     }
                 case keyColumnWellBackPosition:
-                    if row == 0, let item = delegate.fissionsAlphaWellAt(side: .back, index: 0), let strip0_15 = item.strip0_15, let encoder = item.encoder {
-                        field = String(format: "FWellBack%d.%d", encoder, strip0_15 + 1)
-                    }
+                    // TODO: !!!
+                    field = ""
+//                    if row == 0, let item = delegate.fissionsAlphaWellAt(side: .back, index: 0), let strip0_15 = item.strip0_15, let encoder = item.encoder {
+//                        field = String(format: "FWellBack%d.%d", encoder, strip0_15 + 1)
+//                    }
                 case keyColumnWellBackStrip:
                     if row == 0, let strip = delegate.fissionsAlphaWellAt(side: .back, index: 0)?.strip1_N {
                         field = String(format: "%d", strip)
@@ -645,7 +592,7 @@ class ResultsTable {
                 case keyColumnNeutronsAverageTime:
                     if row == 0 {
                         let neutrons = delegate.neutrons()
-                        let average = neutrons.averageTime
+                        let average = neutrons.averageTime.toMks()
                         if average > 0 {
                             field = String(format: "%.1f", average)
                         } else {
@@ -658,7 +605,7 @@ class ResultsTable {
                         let index = row - 1
                         let times = neutrons.times
                         if index < times.count {
-                            field = String(format: "%.1f", times[index])
+                            field = String(format: "%.1f", times[index].toMks())
                         }
                     }
                 case keyColumnNeutronCounter, keyColumnNeutronBlock, keyColumnNeutronCounterX, keyColumnNeutronCounterY, keyColumnNeutronAngle, keyColumnNeutronRelatedFissionBack:
@@ -700,11 +647,6 @@ class ResultsTable {
                         let neutrons = delegate.neutrons()
                         field = String(format: "%llu", neutrons.count)
                     }
-                case keyColumnNeutrons_N:
-                    if row == 0 {
-                        let neutrons = delegate.neutrons()
-                        field = String(format: "%llu", neutrons.NSum)
-                    }
                 case keyColumnGammaEnergy(true):
                     if let energy = gammaAt(row: row)?.itemWithMaxEnergy()?.energy {
                         field = String(format: "%.7f", energy)
@@ -718,62 +660,42 @@ class ResultsTable {
                         field = String(format: "%hu", encoder)
                     }
                 case keyColumnGammaStrip(true):
-                    if let strip = gammaAt(row: row)?.itemWithMaxEnergy()?.strip0_15 {
-                        field = String(format: "%hu", strip)
-                    }
+                    // TODO: !!!
+                    field = ""
+//                    if let strip = gammaAt(row: row)?.itemWithMaxEnergy()?.strip0_15 {
+//                        field = String(format: "%hu", strip)
+//                    }
                 case keyColumnGammaDeltaTime(true):
-                    if let deltaTime = gammaAt(row: row)?.itemWithMaxEnergy()?.deltaTime {
+                    if let deltaTime = gammaAt(row: row)?.itemWithMaxEnergy()?.deltaTime?.toMks() {
                         field = String(format: "%lld", deltaTime)
                     }
                 case keyColumnGammaCount:
                     if let count = gammaAt(row: row)?.count {
                         field = String(format: "%d", count)
                     }
-                case _ where column.hasPrefix(keyColumnSpecial):
-                    if row == 0 {
-                        if let eventId = Int(column.replacingOccurrences(of: keyColumnSpecial, with: "")), let v = delegate.specialWith(eventId: eventId) {
-                            field = String(format: "%hu", v)
-                        }
-                    }
                 case keyColumnBeamEnergy:
                     if row == 0 {
                         if let e = delegate.beamState().energy {
-                            field = String(format: "%.1f", e.getFloatValue())
+                            field = String(format: "%.1f", Float(e.energy) / 10.0)
                         }
                     }
                 case keyColumnBeamCurrent:
                     if row == 0 {
                         if let e = delegate.beamState().current {
-                            field = String(format: "%.2f", e.getFloatValue())
+                            field = String(format: "%.2f", Float(e.energy) / 1000.0)
                         }
                     }
                 case keyColumnBeamBackground:
                     if row == 0 {
                         if let e = delegate.beamState().background {
-                            field = String(format: "%.1f", e.getFloatValue())
+                            field = String(format: "%.1f", Float(e.energy))
                         }
                     }
                 case keyColumnBeamIntegral:
                     if row == 0 {
                         if let e = delegate.beamState().integral {
-                            field = String(format: "%.1f", e.getFloatValue())
+                            field = String(format: "%.1f", Float(e.energy) * 10.0)
                         }
-                    }
-                case keyColumnVetoEvent:
-                    if let eventNumber = delegate.vetoAt(index: row)?.eventNumber {
-                        field = delegate.currentFileEventNumber(eventNumber)
-                    }
-                case keyColumnVetoEnergy:
-                    if let energy = delegate.vetoAt(index: row)?.energy {
-                        field = String(format: "%.7f", energy)
-                    }
-                case keyColumnVetoStrip:
-                    if let strip0_15 = delegate.vetoAt(index: row)?.strip0_15 {
-                        field = String(format: "%hu", strip0_15 + 1)
-                    }
-                case keyColumnVetoDeltaTime:
-                    if let deltaTime = delegate.vetoAt(index: row)?.deltaTime {
-                        field = String(format: "%lld", deltaTime)
                     }
                 case keyColumnFissionAlphaFrontEvent(2), keyColumnFissionAlphaFrontEvent(3):
                     let index = column == keyColumnFissionAlphaFrontEvent(2) ? 2 : 3
@@ -784,9 +706,9 @@ class ResultsTable {
                 case keyColumnFissionAlphaFrontEnergy(2), keyColumnFissionAlphaFrontEnergy(3):
                     let index = column == keyColumnFissionAlphaFrontEnergy(2) ? 2 : 3
                     field = fissionAlphaEnergy(index, row: row, side: .front)
-                case keyColumnFissionAlphaFrontMarker(2), keyColumnFissionAlphaFrontMarker(3):
-                    let index = column == keyColumnFissionAlphaFrontMarker(2) ? 2 : 3
-                    field = fissionAlphaMarker(index, row: row, side: .front)
+                case keyColumnFissionAlphaFrontOverflow(2), keyColumnFissionAlphaFrontOverflow(3):
+                    let index = column == keyColumnFissionAlphaFrontOverflow(2) ? 2 : 3
+                    field = fissionAlphaOverflow(index, row: row, side: .front)
                 case keyColumnFissionAlphaFrontDeltaTime(2), keyColumnFissionAlphaFrontDeltaTime(3):
                     let index = column == keyColumnFissionAlphaFrontDeltaTime(2) ? 2 : 3
                     field = fissionAlphaDeltaTime(index, row: row, side: .front)
@@ -799,9 +721,9 @@ class ResultsTable {
                 case keyColumnFissionAlphaBackEnergy(2), keyColumnFissionAlphaBackEnergy(3):
                     let index = column == keyColumnFissionAlphaBackEnergy(2) ? 2 : 3
                     field = fissionAlphaEnergy(index, row: row, side: .back)
-                case keyColumnFissionAlphaBackMarker(2), keyColumnFissionAlphaBackMarker(3):
-                    let index = column == keyColumnFissionAlphaBackMarker(2) ? 2 : 3
-                    field = fissionAlphaMarker(index, row: row, side: .back)
+                case keyColumnFissionAlphaBackOverflow(2), keyColumnFissionAlphaBackOverflow(3):
+                    let index = column == keyColumnFissionAlphaBackOverflow(2) ? 2 : 3
+                    field = fissionAlphaOverflow(index, row: row, side: .back)
                 case keyColumnFissionAlphaBackDeltaTime(2), keyColumnFissionAlphaBackDeltaTime(3):
                     let index = column == keyColumnFissionAlphaBackDeltaTime(2) ? 2 : 3
                     field = fissionAlphaDeltaTime(index, row: row, side: .back)
@@ -843,12 +765,13 @@ class ResultsTable {
     }
     
     fileprivate func pointForWell(row: Int) -> PointXYZ? {
-        if row == 0, let itemFront = delegate.fissionsAlphaWellAt(side: .front, index: 0), let stripFront0 = itemFront.strip0_15, let itemBack = delegate.fissionsAlphaWellAt(side: .back, index: 0), let stripBack0 = itemBack.strip0_15, let encoder = itemFront.encoder {
-            let point = DetectorsWellGeometry.coordinatesXYZ(stripDetector: .side, stripFront0: Int(stripFront0), stripBack0: Int(stripBack0), encoderSide: Int(encoder))
-            return point
-        } else {
+        // TODO: !!!
+//        if row == 0, let itemFront = delegate.fissionsAlphaWellAt(side: .front, index: 0), let itemBack = delegate.fissionsAlphaWellAt(side: .back, index: 0), let encoder = itemFront.encoder {
+//            let point = DetectorsWellGeometry.coordinatesXYZ(stripDetector: .side, stripFront0: Int(stripFront0), stripBack0: Int(stripBack0), encoderSide: Int(encoder))
+//            return point
+//        } else {
             return nil
-        }
+//        }
     }
     
     fileprivate func well(position: Position, row: Int) -> String? {
@@ -860,14 +783,15 @@ class ResultsTable {
     }
     
     func wellAngle() -> CGFloat? {
-        if let itemFocalFront = delegate.firstParticleAt(side: .front).itemAt(index: 0), let stripFocalFront1 = itemFocalFront.strip1_N, let itemFocalBack = delegate.firstParticleAt(side: .back).itemAt(index: 0), let stripFocalBack1 = itemFocalBack.strip1_N, let itemSideFront = delegate.fissionsAlphaWellAt(side: .front, index: 0), let stripSideFront0 = itemSideFront.strip0_15, let itemSideBack = delegate.fissionsAlphaWellAt(side: .back, index: 0), let stripSideBack0 = itemSideBack.strip0_15, let encoderSide = itemSideFront.encoder {
-            let pointFront = DetectorsWellGeometry.coordinatesXYZ(stripDetector: .focal, stripFront0: stripFocalFront1 - 1, stripBack0: stripFocalBack1 - 1)
-            let pointSide = DetectorsWellGeometry.coordinatesXYZ(stripDetector: .side, stripFront0: Int(stripSideFront0), stripBack0: Int(stripSideBack0), encoderSide: Int(encoderSide))
-            let angle = pointFront.angleFrom(point: pointSide)
-            return angle
-        } else {
+        // TODO: !!!
+//        if let itemFocalFront = delegate.firstParticleAt(side: .front).itemAt(index: 0), let stripFocalFront1 = itemFocalFront.strip1_N, let itemFocalBack = delegate.firstParticleAt(side: .back).itemAt(index: 0), let stripFocalBack1 = itemFocalBack.strip1_N, let itemSideFront = delegate.fissionsAlphaWellAt(side: .front, index: 0), let stripSideFront0 = itemSideFront.strip0_15, let itemSideBack = delegate.fissionsAlphaWellAt(side: .back, index: 0), let stripSideBack0 = itemSideBack.strip0_15, let encoderSide = itemSideFront.encoder {
+//            let pointFront = DetectorsWellGeometry.coordinatesXYZ(stripDetector: .focal, stripFront0: stripFocalFront1 - 1, stripBack0: stripFocalBack1 - 1)
+//            let pointSide = DetectorsWellGeometry.coordinatesXYZ(stripDetector: .side, stripFront0: Int(stripSideFront0), stripBack0: Int(stripSideBack0), encoderSide: Int(encoderSide))
+//            let angle = pointFront.angleFrom(point: pointSide)
+//            return angle
+//        } else {
             return nil
-        }
+//        }
     }
     
     fileprivate func fissionAlpha(_ index: Int, row: Int, side: StripsSide) -> DetectorMatchItem? {
@@ -896,15 +820,15 @@ class ResultsTable {
         return ""
     }
     
-    fileprivate func fissionAlphaMarker(_ index: Int, row: Int, side: StripsSide) -> String {
-        if let marker = fissionAlpha(index, row: row, side: side)?.marker {
-            return String(format: "%hu", marker)
+    fileprivate func fissionAlphaOverflow(_ index: Int, row: Int, side: StripsSide) -> String {
+        if let overflow = fissionAlpha(index, row: row, side: side)?.overflow {
+            return String(format: "%hu", overflow)
         }
         return ""
     }
     
     fileprivate func fissionAlphaDeltaTime(_ index: Int, row: Int, side: StripsSide) -> String {
-        if let deltaTime = fissionAlpha(index, row: row, side: side)?.deltaTime {
+        if let deltaTime = fissionAlpha(index, row: row, side: side)?.deltaTime?.toMks() {
             return String(format: "%lld", deltaTime)
         }
         return ""

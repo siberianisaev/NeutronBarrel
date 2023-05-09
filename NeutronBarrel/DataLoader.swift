@@ -13,7 +13,7 @@ class DataLoader {
     
     var files = [String]()
     var protocols = [String]()
-    var dataProtocol: DataProtocol!
+    var dataProtocol = DataProtocol()
     
     class var singleton : DataLoader {
         struct Static {
@@ -42,21 +42,8 @@ class DataLoader {
                         selected.append(path)
                     }
                 }
-                
-                let protocols = selected.filter() { $0.hasSuffix(".PRO") }
-                dl.protocols = protocols
-                //TODO: show alert for data with many different protocols
-                let protocolURLString = protocols.first
-                let protocolObject = DataProtocol.load(protocolURLString)
-                // Every data file has numeric extension like ".001"
-                let decimalSet = CharacterSet.decimalDigits
-                selected = selected.filter({ (s: String) -> Bool in
-                    if let ext = s.fileNameAndExtension().1 {
-                        let set = CharacterSet(charactersIn: ext)
-                        return decimalSet.isSuperset(of: set)
-                    } else {
-                        return false
-                    }
+                selected = selected.filter({ (s: String) in
+                    return !s.contains(".DS_Store")
                 })
                 selected = selected.sorted(by: { (s1: String, s2: String) -> Bool in
                     let t1 = s1.fileNameAndExtension()
@@ -72,7 +59,7 @@ class DataLoader {
                     }
                 })
                 dl.files = selected
-                dl.dataProtocol = protocolObject
+                dl.dataProtocol = DataProtocol()
                 completion(selected.count > 0, urls)
             }
         }

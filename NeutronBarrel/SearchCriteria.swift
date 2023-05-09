@@ -11,13 +11,12 @@ import Foundation
 class SearchCriteria {
     
     var resultsFolderName: String = ""
-    var wellParticleBackType: SearchType = .fission
     var neutronsDetectorEfficiency: Double = 0
     var neutronsDetectorEfficiencyError: Double = 0
+    var excludeNeutronCounters = [Int]()
     var placedSFSource: SFSource?
     
-    var startParticleType: SearchType = .fission
-    var startParticleBackType: SearchType = .fission
+    var startParticleType: SearchType = .alpha
     var summarizeFissionsAlphaFront = false
     var fissionAlphaFrontMinEnergy: Double = 0
     var fissionAlphaFrontMaxEnergy: Double = 0
@@ -34,22 +33,66 @@ class SearchCriteria {
     var recoilBackMinEnergy: Double = 0
     var recoilBackMaxEnergy: Double = 0
     var searchRecoilBackByFact: Bool = false
-    var minTOFValue: Double = 0
-    var maxTOFValue: Double = 0
-    var recoilMinTime: CUnsignedLongLong = 0
-    var recoilMaxTime: CUnsignedLongLong = 0
-    var recoilBackMaxTime: CUnsignedLongLong = 0
-    var fissionAlphaMaxTime: CUnsignedLongLong = 0
-    var recoilBackBackwardMaxTime: CUnsignedLongLong = 0
-    var fissionAlphaBackBackwardMaxTime: CUnsignedLongLong = 0
-    var fissionAlphaWellBackwardMaxTime: CUnsignedLongLong = 0
-    var maxTOFTime: CUnsignedLongLong = 0
-    var maxVETOTime: CUnsignedLongLong = 0
-    var maxGammaTime: CUnsignedLongLong = 0
-    var maxGammaBackwardTime: CUnsignedLongLong = 0
-    var minNeutronTime: CUnsignedLongLong = 0
-    var maxNeutronTime: CUnsignedLongLong = 0
-    var maxNeutronBackwardTime: CUnsignedLongLong = 0
+    var recoilMinTime: CUnsignedLongLong = 0 {
+        didSet {
+            recoilMinTime.mksToCycles()
+        }
+    }
+    var recoilMaxTime: CUnsignedLongLong = 0 {
+        didSet {
+            recoilMaxTime.mksToCycles()
+        }
+    }
+    var recoilBackMaxTime: CUnsignedLongLong = 0 {
+        didSet {
+            recoilBackMaxTime.mksToCycles()
+        }
+    }
+    var fissionAlphaMaxTime: CUnsignedLongLong = 0 {
+        didSet {
+            fissionAlphaMaxTime.mksToCycles()
+        }
+    }
+    var recoilBackBackwardMaxTime: CUnsignedLongLong = 0 {
+        didSet {
+            recoilBackBackwardMaxTime.mksToCycles()
+        }
+    }
+    var fissionAlphaBackBackwardMaxTime: CUnsignedLongLong = 0 {
+        didSet {
+            fissionAlphaBackBackwardMaxTime.mksToCycles()
+        }
+    }
+    var fissionAlphaWellBackwardMaxTime: CUnsignedLongLong = 0 {
+        didSet {
+            fissionAlphaWellBackwardMaxTime.mksToCycles()
+        }
+    }
+    var maxGammaTime: CUnsignedLongLong = 0 {
+        didSet {
+            maxGammaTime.mksToCycles()
+        }
+    }
+    var maxGammaBackwardTime: CUnsignedLongLong = 0 {
+        didSet {
+            maxGammaBackwardTime.mksToCycles()
+        }
+    }
+    var minNeutronTime: CUnsignedLongLong = 0 {
+        didSet {
+            minNeutronTime.mksToCycles()
+        }
+    }
+    var maxNeutronTime: CUnsignedLongLong = 0 {
+        didSet {
+            maxNeutronTime.mksToCycles()
+        }
+    }
+    var maxNeutronBackwardTime: CUnsignedLongLong = 0 {
+        didSet {
+            maxNeutronBackwardTime.mksToCycles()
+        }
+    }
     var checkNeutronMaxDeltaTimeExceeded: Bool = true
     var recoilFrontMaxDeltaStrips: Int = 0
     var recoilBackMaxDeltaStrips: Int = 0
@@ -65,11 +108,8 @@ class SearchCriteria {
     var wellRecoilsAllowed = false
     var searchExtraFromLastParticle = false
     var inBeamOnly = false
-    var overflowOnly = false
-    var requiredTOF = false
-    var useTOF2 = false
-    var requiredVETO = false
-    var searchVETO = false
+    var useOverflow = false
+    var usePileUp = false
     var trackBeamEnergy = false
     var trackBeamCurrent = false
     var trackBeamBackground = false
@@ -80,7 +120,7 @@ class SearchCriteria {
     var searchNeutrons = false
     var neutronsBackground = false
     var simultaneousDecaysFilterForNeutrons = false
-    var mixingTimesFilterForNeutrons = false
+    var collapseNeutronOverlays = false
     var neutronsPositions = false
     
     var next = [Int: SearchNextCriteria]()
@@ -88,17 +128,12 @@ class SearchCriteria {
         return Array(next.keys).max()
     }
     
-    var searchSpecialEvents = false
-    var specialEventIds = Set<Int>()
     var gammaEncodersOnly = false
     var gammaEncoderIds = Set<Int>()
     var searchWell = true
-    var unitsTOF: TOFUnits = .channels
-    var recoilType: SearchType = .recoil
-    var recoilBackType: SearchType = .recoil
     
     func startFromRecoil() -> Bool {
-        return startParticleType == .recoil || startParticleType == .heavy
+        return startParticleType == .recoil
     }
     
 }
@@ -114,8 +149,8 @@ class SearchNextCriteria {
     var maxTime: CUnsignedLongLong = 0
     var maxDeltaStrips: Int = 0
     var backByFact: Bool = true
-    var frontType: SearchType = .fission
-    var backType: SearchType = .fission
+    var frontType: SearchType = .alpha
+    var backType: SearchType = .alpha
     
     init(summarizeFront: Bool, frontMinEnergy: Double, frontMaxEnergy: Double, backMinEnergy: Double, backMaxEnergy: Double, minTime: CUnsignedLongLong, maxTime: CUnsignedLongLong, maxDeltaStrips: Int, backByFact: Bool, frontType: SearchType, backType: SearchType) {
         self.summarizeFront = summarizeFront
@@ -124,7 +159,9 @@ class SearchNextCriteria {
         self.backMinEnergy = backMinEnergy
         self.backMaxEnergy = backMaxEnergy
         self.minTime = minTime
+        self.minTime.mksToCycles()
         self.maxTime = maxTime
+        self.maxTime.mksToCycles()
         self.maxDeltaStrips = maxDeltaStrips
         self.backByFact = backByFact
         self.frontType = frontType

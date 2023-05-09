@@ -9,8 +9,13 @@
 #import <Foundation/Foundation.h>
 
 typedef struct {
-    unsigned short eventId;
-    unsigned short param1;
-    unsigned short param2;
-    unsigned short param3;
+    
+    UInt16 eventId; // TODO: rename to channel
+    UInt16 energy;
+    UInt8 overflow;
+    UInt8 pileUp;
+    UInt8 inBeam;
+    UInt8 tof;
+    UInt64 time;
+
 } Event;
