@@ -36,6 +36,8 @@ class DataProtocol {
             return "Current"
         } else if isBeamBackground(value) {
             return "Background"
+        } else if isGammaEvent(value) {
+            return "Gamma"
         } else {
             // TODO: !!!
             return ""
