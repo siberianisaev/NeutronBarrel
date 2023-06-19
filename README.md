@@ -2,11 +2,11 @@ Neutron Barrel
 ==============
 
 References:
-* Spontaneous fission of 260Rf / May 2023 / Planned
+* Spontaneous fission of 260Rf and study of SF isomers in Am region (transfer reactions) / May 2023 / Data analysis in progress
 * Prompt neutrons of 260Sg / April 2023 / Data analysis in progress
-* Prompt neutrons of 244Fm / March 2023 / Data analysis in progress
-* Prompt neutron yields in spontaneous fission of 250No / February 2022 experiment / Preprint in progress
-* [Fine structure of the prompt neutron multiplicity distribution in the spontaneous fission of superheavy nucleus 256Rf](https://www.researchgate.net/publication/366275831_Fine_structure_of_the_prompt_neutron_multiplicity_distribution_in_the_spontaneous_fission_of_superheavy_nucleus_256Rf), 2022
+* Prompt neutrons of 244Fm / March 2023 / Data analysis done
+* Decay properties of ground and isomer states of 250No / February 2022 experiment / Preparing submission to PRC
+* [Structure of the prompt neutron multiplicity distribution in the spontaneous fission of 256Rf](https://doi.org/10.1016/j.physletb.2023.138008), 2023
 * [Prompt neutron emission in the spontaneous fission of 246Fm](http://dx.doi.org/10.1140/epja/s10050-022-00761-3), 2022
 * [The SFiNx detector system](https://doi.org/10.1134/S154747712201006X), 2022
 * [The new 249No isotope](https://doi.org/10.1134/S1547477121040154), 2021
