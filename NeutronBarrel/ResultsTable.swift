@@ -524,19 +524,17 @@ class ResultsTable {
                         field = String(format: "%d", strip)
                     }
                 case keyColumnWellEnergy:
-                    if row == 0, let energy = delegate.fissionsAlphaWellAt(side: .front, index: 0)?.energy {
+                    if let energy = delegate.fissionsAlphaWellAt(side: .front, index: row)?.energy {
                         field = String(format: "%.7f", energy)
                     }
                 case keyColumnWellOverflow:
-                    if row == 0, let overflow = delegate.fissionsAlphaWellAt(side: .front, index: 0)?.overflow {
+                    if let overflow = delegate.fissionsAlphaWellAt(side: .front, index: row)?.overflow {
                         field = String(format: "%hu", overflow)
                     }
                 case keyColumnWellPosition:
-                    // TODO: !!!
-                    field = ""
-//                    if row == 0, let item = delegate.fissionsAlphaWellAt(side: .front, index: 0), let strip0_15 = item.strip0_15, let encoder = item.encoder {
-//                        field = String(format: "FWell%d.%d", encoder, strip0_15 + 1)
-//                    }
+                    if let item = delegate.fissionsAlphaWellAt(side: .front, index: row), let strip1_N = item.strip1_N, let encoder = item.encoder {
+                        field = String(format: "FWell%d.%d", encoder, strip1_N)
+                    }
                 case keyColumnWell(position: .X), keyColumnWell(position: .Y), keyColumnWell(position: .Z):
                     var p: Position
                     switch column {
@@ -551,7 +549,7 @@ class ResultsTable {
                         field = s
                     }
                 case keyColumnWellAngle, keyColumnWellRangeInDeadLayers:
-                    if row == 0, let angle = wellAngle() {
+                    if let angle = wellAngle(row: row) {
                         if column == keyColumnWellAngle {
                             field = String(format: "%.2f", angle)
                         } else {
@@ -560,25 +558,23 @@ class ResultsTable {
                         }
                     }
                 case keyColumnWellStrip:
-                    if row == 0, let strip = delegate.fissionsAlphaWellAt(side: .front, index: 0)?.strip1_N {
+                    if let strip = delegate.fissionsAlphaWellAt(side: .front, index: row)?.strip1_N {
                         field = String(format: "%d", strip)
                     }
                 case keyColumnWellBackEnergy:
-                    if row == 0, let energy = delegate.fissionsAlphaWellAt(side: .back, index: 0)?.energy {
+                    if let energy = delegate.fissionsAlphaWellAt(side: .back, index: row)?.energy {
                         field = String(format: "%.7f", energy)
                     }
                 case keyColumnWellBackOverflow:
-                    if row == 0, let overflow = delegate.fissionsAlphaWellAt(side: .back, index: 0)?.overflow {
+                    if let overflow = delegate.fissionsAlphaWellAt(side: .back, index: row)?.overflow {
                         field = String(format: "%hu", overflow)
                     }
                 case keyColumnWellBackPosition:
-                    // TODO: !!!
-                    field = ""
-//                    if row == 0, let item = delegate.fissionsAlphaWellAt(side: .back, index: 0), let strip0_15 = item.strip0_15, let encoder = item.encoder {
-//                        field = String(format: "FWellBack%d.%d", encoder, strip0_15 + 1)
-//                    }
+                    if let item = delegate.fissionsAlphaWellAt(side: .back, index: row), let strip1_N = item.strip1_N, let encoder = item.encoder {
+                        field = String(format: "FWellBack%d.%d", encoder, strip1_N)
+                    }
                 case keyColumnWellBackStrip:
-                    if row == 0, let strip = delegate.fissionsAlphaWellAt(side: .back, index: 0)?.strip1_N {
+                    if let strip = delegate.fissionsAlphaWellAt(side: .back, index: row)?.strip1_N {
                         field = String(format: "%d", strip)
                     }
                 case keyColumnTKEFront:
@@ -625,6 +621,7 @@ class ResultsTable {
                                     field = String(format: "%d", counterIndex)
                                 } else if let point = NeutronDetector.pointFor(counter: counterIndex) {
                                     if column == keyColumnNeutronAngle || column == keyColumnNeutronRelatedFissionBack {
+                                        // TODO: revision of this logic, pointForWell(row: 0)
                                         if let pointFront = pointForFirstParticleFocal(row: 0), let pointSide = pointForWell(row: 0) {
                                             let angle = NeutronDetector.angle(neutronPoint: point, focalFragmentPoint: pointFront, sideFragmentPoint: pointSide)
                                             if column == keyColumnNeutronAngle {
@@ -748,8 +745,8 @@ class ResultsTable {
     }
     
     fileprivate func pointForFirstParticleFocal(row: Int) -> PointXYZ? {
-        if let itemFront = delegate.firstParticleAt(side: .front).itemAt(index: row), let stripFront1 = itemFront.strip1_N, let itemBack = delegate.firstParticleAt(side: .back).itemAt(index: row), let stripBack1 = itemBack.strip1_N {
-            let point = DetectorsWellGeometry.coordinatesXYZ(stripDetector: .focal, stripFront0: stripFront1 - 1, stripBack0: stripBack1 - 1)
+        if let itemFront = delegate.firstParticleAt(side: .front).itemAt(index: row), let stripFront1_N = itemFront.strip1_N, let itemBack = delegate.firstParticleAt(side: .back).itemAt(index: row), let stripBack1_N = itemBack.strip1_N {
+            let point = DetectorsWellGeometry.coordinatesXYZ(stripDetector: .focal, stripFront0_N: stripFront1_N - 1, stripBack0_N: stripBack1_N - 1)
             return point
         } else {
             return nil
@@ -765,13 +762,12 @@ class ResultsTable {
     }
     
     fileprivate func pointForWell(row: Int) -> PointXYZ? {
-        // TODO: !!!
-//        if row == 0, let itemFront = delegate.fissionsAlphaWellAt(side: .front, index: 0), let itemBack = delegate.fissionsAlphaWellAt(side: .back, index: 0), let encoder = itemFront.encoder {
-//            let point = DetectorsWellGeometry.coordinatesXYZ(stripDetector: .side, stripFront0: Int(stripFront0), stripBack0: Int(stripBack0), encoderSide: Int(encoder))
-//            return point
-//        } else {
+        if let itemFront = delegate.fissionsAlphaWellAt(side: .front, index: row), let stripFront1_N = itemFront.strip1_N, let itemBack = delegate.fissionsAlphaWellAt(side: .back, index: row), let stripBack1_N = itemBack.strip1_N, let encoder = itemFront.encoder {
+            let point = DetectorsWellGeometry.coordinatesXYZ(stripDetector: .side, stripFront0_N: stripFront1_N - 1, stripBack0_N: stripBack1_N - 1, encoderSide: Int(encoder))
+            return point
+        } else {
             return nil
-//        }
+        }
     }
     
     fileprivate func well(position: Position, row: Int) -> String? {
@@ -782,16 +778,15 @@ class ResultsTable {
         }
     }
     
-    func wellAngle() -> CGFloat? {
-        // TODO: !!!
-//        if let itemFocalFront = delegate.firstParticleAt(side: .front).itemAt(index: 0), let stripFocalFront1 = itemFocalFront.strip1_N, let itemFocalBack = delegate.firstParticleAt(side: .back).itemAt(index: 0), let stripFocalBack1 = itemFocalBack.strip1_N, let itemSideFront = delegate.fissionsAlphaWellAt(side: .front, index: 0), let stripSideFront0 = itemSideFront.strip0_15, let itemSideBack = delegate.fissionsAlphaWellAt(side: .back, index: 0), let stripSideBack0 = itemSideBack.strip0_15, let encoderSide = itemSideFront.encoder {
-//            let pointFront = DetectorsWellGeometry.coordinatesXYZ(stripDetector: .focal, stripFront0: stripFocalFront1 - 1, stripBack0: stripFocalBack1 - 1)
-//            let pointSide = DetectorsWellGeometry.coordinatesXYZ(stripDetector: .side, stripFront0: Int(stripSideFront0), stripBack0: Int(stripSideBack0), encoderSide: Int(encoderSide))
-//            let angle = pointFront.angleFrom(point: pointSide)
-//            return angle
-//        } else {
+    func wellAngle(row: Int) -> CGFloat? {
+        if let itemFocalFront = delegate.firstParticleAt(side: .front).itemAt(index: 0), let stripFocalFront1_N = itemFocalFront.strip1_N, let itemFocalBack = delegate.firstParticleAt(side: .back).itemAt(index: 0), let stripFocalBack1_N = itemFocalBack.strip1_N, let itemSideFront = delegate.fissionsAlphaWellAt(side: .front, index: row), let stripSideFront1_N = itemSideFront.strip1_N, let itemSideBack = delegate.fissionsAlphaWellAt(side: .back, index: row), let stripSideBack1_N = itemSideBack.strip1_N, let encoderSide = itemSideFront.encoder {
+            let pointFront = DetectorsWellGeometry.coordinatesXYZ(stripDetector: .focal, stripFront0_N: stripFocalFront1_N - 1, stripBack0_N: stripFocalBack1_N - 1)
+            let pointSide = DetectorsWellGeometry.coordinatesXYZ(stripDetector: .side, stripFront0_N: stripSideFront1_N - 1, stripBack0_N: stripSideBack1_N - 1, encoderSide: Int(encoderSide))
+            let angle = pointFront.angleFrom(point: pointSide)
+            return angle
+        } else {
             return nil
-//        }
+        }
     }
     
     fileprivate func fissionAlpha(_ index: Int, row: Int, side: StripsSide) -> DetectorMatchItem? {

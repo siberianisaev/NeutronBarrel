@@ -31,19 +31,20 @@ struct PointXYZ {
 
 class DetectorsWellGeometry {
     
-    class func coordinatesXYZ(stripDetector: StripDetector, stripFront0: Int, stripBack0: Int, encoderSide: Int? = nil) -> PointXYZ {
+    // TODO: handle encoderSide for isSecondCristal & negative on digital electronics
+    class func coordinatesXYZ(stripDetector: StripDetector, stripFront0_N: Int, stripBack0_N: Int, encoderSide: Int? = nil) -> PointXYZ {
         var x: CGFloat = 0
         var y: CGFloat = 0
         var z: CGFloat = 0
         // Z
         if stripDetector == .side {
-            z = (CGFloat(SideDetector.stripsCount().back - stripBack0) - 0.5) * SideDetector.stripsWidth().back
+            z = (CGFloat(SideDetector.stripsCount().back - stripBack0_N) - 0.5) * SideDetector.stripsWidth().back
         }
         // XY
         if stripDetector == .focal {
             let sw = FocalDetector.stripsWidth()
-            x = (CGFloat(stripBack0) + 0.5) * sw.back
-            y = (CGFloat(stripFront0) + 0.5) * sw.front
+            x = (CGFloat(stripBack0_N) + 0.5) * sw.back
+            y = (CGFloat(stripFront0_N) + 0.5) * sw.front
         } else if let encoder = encoderSide {
             let twoCristalsWidth = SideDetector.activeAreaSize().width * 2
             let sideWidth = twoCristalsWidth + SideDetector.interCristalPadding
@@ -52,7 +53,7 @@ class DetectorsWellGeometry {
             let halfStripAndShift: CGFloat = 0.5 + (isSecondCristal ? 16.0 : 0.0)
             
             func position(negative: Bool) -> CGFloat {
-                var p = (CGFloat(stripFront0) + halfStripAndShift) * sripWidth
+                var p = (CGFloat(stripFront0_N) + halfStripAndShift) * sripWidth
                 if negative {
                     p = twoCristalsWidth - p
                 }

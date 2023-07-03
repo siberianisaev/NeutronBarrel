@@ -42,23 +42,8 @@ class DataProtocol {
             // TODO: !!!
             return ""
         }
-//        for (k, v) in dict {
-//            if v == value {
-//                return k
-//            }
-//        }
-//        return nil
     }
-    
 
-    
-    
-    
-    
-    
-    
-    
-    
     let eventIdsFocalFront = Set(0...127)
     let eventIdsFocalBack = Set(128...255)
     let eventIdsWellFront = Set(256...383)
