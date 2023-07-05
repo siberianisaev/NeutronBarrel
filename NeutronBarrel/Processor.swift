@@ -380,7 +380,7 @@ class Processor {
                 }
                 
                 if !criteria.searchExtraFromLastParticle {
-                    findFissionAlphaWell(position)
+                    findWellFront(position)
                     if wellSearchFailed() {
                         clearActInfo()
                         return
@@ -480,18 +480,39 @@ class Processor {
         }
     }
     
-    fileprivate func findFissionAlphaWell(_ position: Int) {
+    fileprivate func findWellFront(_ position: Int) {
         if criteria.searchWell {
+            let side: StripsSide = .front
             let directions: Set<SearchDirection> = [.backward, .forward]
             search(directions: directions, startTime: currentEventTime, minDeltaTime: 0, maxDeltaTime: criteria.fissionAlphaMaxTime, maxDeltaTimeBackward: criteria.fissionAlphaWellBackwardMaxTime, useCycleTime: false, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>, _) in
-                for side in [.front, .back] as [StripsSide] {
-                    if self.isFissionOrAlphaWell(event, side: side) {
-                        self.filterAndStoreFissionAlphaWell(event, side: side)
+                if self.isFissionOrAlphaWell(event, side: side), let itemFront = self.wellDetectorMatchItemFrom(event, side: side) {
+                    var positionFront = fpos_t()
+                    fgetpos(self.file, &positionFront)
+                    // TODO: Back is required for well this moment, add UI for this setting
+                    if let itemBack = self.findWellBack(time, position: Int(positionFront)) {
+                        self.fissionsAlphaWellPerAct.append(itemFront, side: side)
+                        self.fissionsAlphaWellPerAct.append(itemBack, side: .back)
                     }
                 }
             }
             fseek(file, position, SEEK_SET)
         }
+    }
+    
+    fileprivate func findWellBack(_ timeWellFront: CUnsignedLongLong, position: Int) -> DetectorMatchItem? {
+        var items = [DetectorMatchItem]()
+        let side: StripsSide = .back
+        let directions: Set<SearchDirection> = [.backward, .forward]
+        search(directions: directions, startTime: timeWellFront, minDeltaTime: 0, maxDeltaTime: criteria.fissionAlphaMaxTime, maxDeltaTimeBackward: criteria.fissionAlphaWellBackwardMaxTime, useCycleTime: false, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>, _) in
+            if self.isFissionOrAlphaWell(event, side: side), let item = self.wellDetectorMatchItemFrom(event, side: side) {
+                items.append(item)
+            }
+        }
+
+        fseek(self.file, Int(position), SEEK_SET)
+
+        let item = DetectorMatch.getItemWithMaxEnergy(items)
+        return item
     }
     
     fileprivate func checkIsSimultaneousDecay(_ event: Event, deltaTime: CLongLong) -> Bool {
@@ -778,7 +799,7 @@ class Processor {
                     } else {
                         // Extra Search
                         if isLastNext, self.criteria.searchExtraFromLastParticle {
-                            self.findFissionAlphaWell(position)
+                            self.findWellFront(position)
                             if self.findNeutrons(position) {
                                 store = false
                             }
@@ -971,7 +992,10 @@ class Processor {
         vetoPerAct.append(item)
     }
     
-    fileprivate func filterAndStoreFissionAlphaWell(_ event: Event, side: StripsSide) {
+    fileprivate func wellDetectorMatchItemFrom(_ event: Event, side: StripsSide) -> DetectorMatchItem? {
+        let id = event.eventId
+        let encoder = dataProtocol.encoderForEventId(Int(id))
+        
         var type: SearchType
         if side == .front {
             if criteria.searchExtraFromLastParticle, let index = criteria.nextMaxIndex(), let t = criteria.next[index]?.frontType {
@@ -984,9 +1008,9 @@ class Processor {
         }
         let energy = getEnergy(event, type: type)
         if energy < criteria.fissionAlphaWellMinEnergy || energy > criteria.fissionAlphaWellMaxEnergy {
-            return
+            return nil
         }
-        let encoder = dataProtocol.encoderForEventId(Int(event.eventId))
+        
         let strip0_15 = event.param2 >> 12
         let item = DetectorMatchItem(type: type,
                                      stripDetector: .side,
@@ -995,7 +1019,7 @@ class Processor {
                                      strip0_15: strip0_15,
                                      marker: event.getMarker(),
                                      side: side)
-        fissionsAlphaWellPerAct.append(item, side: side)
+        return item
     }
     
     fileprivate func storeSpecial(_ event: Event, id: Int) {
