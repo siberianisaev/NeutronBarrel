@@ -7,7 +7,6 @@
 //
 
 import Foundation
-import SigmaSwiftStatistics
 
 class FolderStatistics {
     
@@ -21,12 +20,12 @@ class FolderStatistics {
     var correlationsTotal: CUnsignedLongLong = 0
     
     var medianEnergy: Double {
-        return Sigma.median(energies) ?? 0.0
+        return FolderStatistics.median(energies) ?? 0.0
     }
     fileprivate var energies = [Double]()
     
     var medianCurrent: Double {
-        return Sigma.median(currents) ?? 0.0
+        return FolderStatistics.median(currents) ?? 0.0
     }
     fileprivate var currents = [Double]()
     
@@ -81,4 +80,21 @@ class FolderStatistics {
         return path.components(separatedBy: "/").dropLast().last
     }
     
+    class func median(_ values: [Double]) -> Double? {
+      let count = Double(values.count)
+      if count == 0 { return nil }
+      let sorted = values.sorted { $0 < $1 }
+      
+      if count.truncatingRemainder(dividingBy: 2) == 0 {
+        // Even number of items - return the mean of two middle values
+        let leftIndex = Int(count / 2 - 1)
+        let leftValue = sorted[leftIndex]
+        let rightValue = sorted[leftIndex + 1]
+        return (leftValue + rightValue) / 2
+      } else {
+        // Odd number of items - take the middle item.
+        return sorted[Int(count / 2)]
+      }
+    }
+
 }

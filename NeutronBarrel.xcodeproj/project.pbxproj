@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		196929E76DA98B0EFAD8AEB4 /* Pods_NeutronBarrel.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E13D29EC7741329349E6A15A /* Pods_NeutronBarrel.framework */; };
 		5A036F711EB0F5C80092D3C4 /* Processor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A036F701EB0F5C80092D3C4 /* Processor.swift */; };
 		5A2A99352056F66800B3D1A0 /* DoubleSidedStripDetectorMatch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A2A99342056F66800B3D1A0 /* DoubleSidedStripDetectorMatch.swift */; };
 		5A2A99382057083A00B3D1A0 /* DetectorMatch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A2A99372057083A00B3D1A0 /* DetectorMatch.swift */; };
@@ -108,11 +107,6 @@
 		78B6A55D193A3B3900C7E36A /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/MainMenu.xib; sourceTree = "<group>"; };
 		78B6A55F193A3B3900C7E36A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		78FC51301A530D0300FE5737 /* DataLoader.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DataLoader.swift; sourceTree = "<group>"; };
-		9AC874740EC76B0E2A66EA21 /* Pods-NeutronBarrel.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-NeutronBarrel.debug.xcconfig"; path = "Target Support Files/Pods-NeutronBarrel/Pods-NeutronBarrel.debug.xcconfig"; sourceTree = "<group>"; };
-		A1C577C37319983D7DADA162 /* Pods-NeutronBarrel.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-NeutronBarrel.release.xcconfig"; path = "Target Support Files/Pods-NeutronBarrel/Pods-NeutronBarrel.release.xcconfig"; sourceTree = "<group>"; };
-		AB8579886283AC5E0C0E3AA3 /* Pods-NeutronsReader.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-NeutronsReader.release.xcconfig"; path = "Target Support Files/Pods-NeutronsReader/Pods-NeutronsReader.release.xcconfig"; sourceTree = "<group>"; };
-		E13D29EC7741329349E6A15A /* Pods_NeutronBarrel.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_NeutronBarrel.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		FB0C4DFAB51214D65074DA56 /* Pods-NeutronsReader.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-NeutronsReader.debug.xcconfig"; path = "Target Support Files/Pods-NeutronsReader/Pods-NeutronsReader.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -121,7 +115,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				78B6A548193A3B3900C7E36A /* Cocoa.framework in Frameworks */,
-				196929E76DA98B0EFAD8AEB4 /* Pods_NeutronBarrel.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -193,17 +186,6 @@
 			name = Model;
 			sourceTree = "<group>";
 		};
-		5BEA756E879CBE150C72695F /* Pods */ = {
-			isa = PBXGroup;
-			children = (
-				FB0C4DFAB51214D65074DA56 /* Pods-NeutronsReader.debug.xcconfig */,
-				AB8579886283AC5E0C0E3AA3 /* Pods-NeutronsReader.release.xcconfig */,
-				9AC874740EC76B0E2A66EA21 /* Pods-NeutronBarrel.debug.xcconfig */,
-				A1C577C37319983D7DADA162 /* Pods-NeutronBarrel.release.xcconfig */,
-			);
-			path = Pods;
-			sourceTree = "<group>";
-		};
 		6562B35D26246B970070A491 /* NeutronEfficiency */ = {
 			isa = PBXGroup;
 			children = (
@@ -246,7 +228,6 @@
 				78B6A54D193A3B3900C7E36A /* NeutronBarrel */,
 				78B6A546193A3B3900C7E36A /* Frameworks */,
 				78B6A545193A3B3900C7E36A /* Products */,
-				5BEA756E879CBE150C72695F /* Pods */,
 			);
 			sourceTree = "<group>";
 		};
@@ -263,7 +244,6 @@
 			children = (
 				78B6A547193A3B3900C7E36A /* Cocoa.framework */,
 				78B6A549193A3B3900C7E36A /* Other Frameworks */,
-				E13D29EC7741329349E6A15A /* Pods_NeutronBarrel.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -312,12 +292,10 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 78B6A575193A3B3900C7E36A /* Build configuration list for PBXNativeTarget "NeutronBarrel" */;
 			buildPhases = (
-				B8AF9E10B25B8B722EB04F17 /* [CP] Check Pods Manifest.lock */,
 				78B6A540193A3B3900C7E36A /* Sources */,
 				78B6A541193A3B3900C7E36A /* Frameworks */,
 				78B6A542193A3B3900C7E36A /* Resources */,
 				789E3F801ABC786F0093DBD8 /* Git SHA */,
-				FC9B11080AD16AB040E96948 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -403,46 +381,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "# write git version SHA into Info.plist\ncd \"$PROJECT_DIR\"\n# say hello\n/usr/libexec/PlistBuddy -c \"Set :CFBundleVersionGitSHA $(git rev-parse --short HEAD)\" \"$TARGET_BUILD_DIR/$INFOPLIST_PATH\"\n/usr/libexec/PlistBuddy -c \"Set :CFBundleVersionGitBranch $(git rev-parse --short HEAD --symbolic --abbrev-ref $1)\" \"$TARGET_BUILD_DIR/$INFOPLIST_PATH\"\n";
-		};
-		B8AF9E10B25B8B722EB04F17 /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-NeutronBarrel-checkManifestLockResult.txt",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
-		FC9B11080AD16AB040E96948 /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-NeutronBarrel/Pods-NeutronBarrel-frameworks.sh",
-				"${BUILT_PRODUCTS_DIR}/SigmaSwiftStatistics/SigmaSwiftStatistics.framework",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputPaths = (
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/SigmaSwiftStatistics.framework",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-NeutronBarrel/Pods-NeutronBarrel-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -613,14 +551,13 @@
 		};
 		78B6A576193A3B3900C7E36A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 9AC874740EC76B0E2A66EA21 /* Pods-NeutronBarrel.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 47;
+				CURRENT_PROJECT_VERSION = 48;
 				DEVELOPMENT_TEAM = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "NeutronBarrel/NeutronBarrel-Prefix.pch";
@@ -641,14 +578,13 @@
 		};
 		78B6A577193A3B3900C7E36A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = A1C577C37319983D7DADA162 /* Pods-NeutronBarrel.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 47;
+				CURRENT_PROJECT_VERSION = 48;
 				DEVELOPMENT_TEAM = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "NeutronBarrel/NeutronBarrel-Prefix.pch";

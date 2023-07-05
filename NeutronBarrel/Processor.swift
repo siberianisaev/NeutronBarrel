@@ -996,8 +996,6 @@ class Processor {
                                      marker: event.getMarker(),
                                      side: side)
         fissionsAlphaWellPerAct.append(item, side: side)
-        // Store only well event with max energy
-        fissionsAlphaWellPerAct.matchFor(side: side).filterItemsByMaxEnergy(maxStripsDelta: criteria.recoilBackMaxDeltaStrips)
     }
     
     fileprivate func storeSpecial(_ event: Event, id: Int) {
@@ -1185,7 +1183,7 @@ class Processor {
 extension Processor: ResultsTableDelegate {
     
     func rowsCountForCurrentResult() -> Int {
-        return max(max(max(max(max(1, vetoPerAct.count), fissionsAlphaPerAct.count), recoilsPerAct.count), neutronsCountWithNewLine()), fissionsAlphaNextPerAct.values.map { $0.count }.max() ?? 0)
+        return max(max(max(max(max(max(fissionsAlphaWellPerAct.count, 1), vetoPerAct.count), fissionsAlphaPerAct.count), recoilsPerAct.count), neutronsCountWithNewLine()), fissionsAlphaNextPerAct.values.map { $0.count }.max() ?? 0)
     }
     
     // Need special results block for neutron times, so we skeep one line.

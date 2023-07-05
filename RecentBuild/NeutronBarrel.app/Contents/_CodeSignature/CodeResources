@@ -6,15 +6,15 @@
 	<dict>
 		<key>Resources/AppIcon.icns</key>
 		<data>
-		VHkfEtlyoxRKgXqnYB7aMjEnNVo=
+		maMVVC1388M6AqNJ4aMfVREbELE=
 		</data>
 		<key>Resources/Assets.car</key>
 		<data>
-		ilO2YfC4xXQwHvbAX/0Z6PjWXno=
+		2zxi+54u3Bam7w9iJ3+SAoHuU8k=
 		</data>
 		<key>Resources/Base.lproj/MainMenu.nib</key>
 		<data>
-		h8LsfY6vZj7nD+V4pULzNcCQV8E=
+		lqKnLiXBgyzppLEf/KzzUMKBo2c=
 		</data>
 		<key>Resources/CalculationsController.nib</key>
 		<data>
@@ -34,24 +34,15 @@
 		</data>
 		<key>Resources/ViewerController.nib/keyedobjects-101300.nib</key>
 		<data>
-		o+8JqXm3xEmFzlywj/fxxeNZPT0=
+		XR+vKcetW3lEO09TZCl3nLXWo7w=
 		</data>
 		<key>Resources/ViewerController.nib/keyedobjects-110000.nib</key>
 		<data>
-		RxxwTmV7+BMYv941yiM51UG9jPk=
+		6927fbWYC7vpo4gNbb//e08Yd9c=
 		</data>
 	</dict>
 	<key>files2</key>
 	<dict>
-		<key>Frameworks/SigmaSwiftStatistics.framework</key>
-		<dict>
-			<key>cdhash</key>
-			<data>
-			GgGOZg7tAur1eTRXrp4CVSeSPoI=
-			</data>
-			<key>requirement</key>
-			<string>cdhash H"76ffb3765de3f338b8593258d405338c477eddaf" or cdhash H"1a018e660eed02eaf5793457ae9e025527923e82" or cdhash H"c1aed6ec2334b20db90691f90ccc973a243be6e0" or cdhash H"56fff8db04bafa8182c7c3baf7349ebf5b85f1dc"</string>
-		</dict>
 		<key>Frameworks/libswiftAppKit.dylib</key>
 		<dict>
 			<key>cdhash</key>
@@ -191,21 +182,21 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			MuyEOZLpLIIqAOP9X29ZLldsaqu1lDDvlembXuCnm4o=
+			+tES8fuqwxzM1GhNY0LR5oKMUM7IkSLngBopd7lKWpg=
 			</data>
 		</dict>
 		<key>Resources/Assets.car</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			kmA0AllNuV+EfANb9Y3vvkVEv68+AOGoLmCpyiKoi0k=
+			XO1ZawJbOz7J3Kmdtgv77n1iX0L+hnSqJaW/BPk99Sc=
 			</data>
 		</dict>
 		<key>Resources/Base.lproj/MainMenu.nib</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			PtdTJ6SOypeuAw/V++mOQitPNf6no7cFv8QdSNEjGOs=
+			WighjVRgktDQg7kEgPsPU/jim80rRy4R6tdtBIywM6I=
 			</data>
 		</dict>
 		<key>Resources/CalculationsController.nib</key>
@@ -240,14 +231,14 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			fjn6tEAUnRR14p7BTPJDzFf5aClxyEo9JnTTTGm8evk=
+			piGws4O+JP7roWrS0RxmVrclKoVxwPul67ezBXOyOjw=
 			</data>
 		</dict>
 		<key>Resources/ViewerController.nib/keyedobjects-110000.nib</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			FYJEgSvFaWl6W4Vax9ZG258JmaA5EUe5Thf6AulJQ14=
+			CTb9LfKW4Yhz/VG+c3/Ko/TnnkbhEHFEpxuAOf+0ipU=
 			</data>
 		</dict>
 	</dict>
