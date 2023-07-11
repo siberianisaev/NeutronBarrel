@@ -29,28 +29,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBOutlet weak var indicatorCalibration: NSTextField!
     @IBOutlet weak var indicatorStripsConfig: NSTextField!
     @IBOutlet weak var buttonRun: NSButton!
-    @IBOutlet weak var recoilView: NSView!
-    @IBOutlet weak var fissionAlphaView: NSView!
-    @IBOutlet weak var fissionAlpha1View: NSView!
-    @IBOutlet weak var fissionAlpha2View: NSView!
-    @IBOutlet weak var fissionAlpha2FormView: NSView!
-    @IBOutlet weak var fissionAlpha3FormView: NSView!
-    @IBOutlet weak var fissionAlpha4FormView: NSView!
     @IBOutlet weak var searchExtraView: NSView!
-    @IBOutlet weak var wellView: NSView!
-    @IBOutlet weak var requiredRecoilButton: NSButton!
-    @IBOutlet weak var fissionAlpha1Button: NSButton!
-    @IBOutlet weak var fissionAlpha2Button: NSButton!
-    @IBOutlet weak var fissionAlpha3Button: NSButton!
-    @IBOutlet weak var fissionAlpha4Button: NSButton!
     @IBOutlet weak var buttonRemoveCalibration: NSButton!
     @IBOutlet weak var buttonRemoveStripsConfiguration: NSButton!
     @IBOutlet weak var buttonCancel: NSButton!
-    @IBOutlet weak var fissionAlpha1BackEnergyView: NSView!
-    @IBOutlet weak var fissionAlpha2BackEnergyView: NSView!
-    @IBOutlet weak var fissionAlpha3BackEnergyView: NSView!
-    @IBOutlet weak var fissionAlpha4BackEnergyView: NSView!
-    @IBOutlet weak var recoilBackEnergyView: NSView!
     @IBOutlet weak var actionsView: NSView!
     @IBOutlet weak var resultsFolderButton: NSButton!
     @IBOutlet weak var maxWellAngleView: NSView!
@@ -155,18 +137,16 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         
         startParticleChanged(nil)
         setupWellView()
-        recoilView.setupForm()
-        fissionAlphaView.setupForm()
         searchExtraView.setupForm()
-        setupAlpha1FormView()
-        setupAlpha2FormView()
-        setupAlpha3FormView()
-        setupAlpha4FormView()
-        setupFissionAlpha1BackEnergyView()
-        setupFissionAlpha2BackEnergyView()
-        setupFissionAlpha3BackEnergyView()
-        setupFissionAlpha4BackEnergyView()
-        setupRecoilBackEnergyView()
+//        setupAlpha1FormView()
+//        setupAlpha2FormView()
+//        setupAlpha3FormView()
+//        setupAlpha4FormView()
+//        setupFissionAlpha1BackEnergyView()
+//        setupFissionAlpha2BackEnergyView()
+//        setupFissionAlpha3BackEnergyView()
+//        setupFissionAlpha4BackEnergyView()
+//        setupRecoilBackEnergyView()
         sfSourceControl.selectedSegment = Settings.getIntSetting(.SFSource)
         setupGammaEncodersView()
     }
@@ -240,7 +220,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBInspectable dynamic var searchFissionAlpha1: Bool = false {
         didSet {
             startParticleChanged(nil)
-            setupAlpha1FormView()
+//            setupAlpha1FormView()
             if !searchFissionAlpha1 {
                 searchFissionAlpha2 = false
             }
@@ -248,7 +228,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     }
     @IBInspectable dynamic var searchFissionAlpha2: Bool = false {
         didSet {
-            setupAlpha2FormView()
+//            setupAlpha2FormView()
             if !searchFissionAlpha2 {
                 searchFissionAlpha3 = false
             }
@@ -256,18 +236,18 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     }
     @IBInspectable dynamic var searchFissionAlpha3: Bool = false {
         didSet {
-            setupAlpha3FormView()
-            searchExtraFromLastParticle = searchFissionAlpha3
-            searchExtraFromLastParticleButton.state = searchExtraFromLastParticle ? .on : .off
-            searchExtraFromLastParticleButton.isHidden = !searchFissionAlpha3
-            if !searchFissionAlpha3 {
-                searchFissionAlpha4 = false
-            }
+//            setupAlpha3FormView()
+//            searchExtraFromLastParticle = searchFissionAlpha3
+//            searchExtraFromLastParticleButton.state = searchExtraFromLastParticle ? .on : .off
+//            searchExtraFromLastParticleButton.isHidden = !searchFissionAlpha3
+//            if !searchFissionAlpha3 {
+//                searchFissionAlpha4 = false
+//            }
         }
     }
     @IBInspectable dynamic var searchFissionAlpha4: Bool = false {
         didSet {
-            setupAlpha4FormView()
+//            setupAlpha4FormView()
         }
     }
     @IBInspectable dynamic var sMinFissionAlpha2Energy: String = ""
@@ -314,68 +294,32 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBInspectable dynamic var trackBeamIntegral: Bool = false
     @IBInspectable dynamic var searchFissionBackByFact: Bool = false {
         didSet {
-            setupFissionAlpha1BackEnergyView()
+//            setupFissionAlpha1BackEnergyView()
         }
     }
     @IBInspectable dynamic var searchFissionBack2ByFact: Bool = false {
         didSet {
-            setupFissionAlpha2BackEnergyView()
+//            setupFissionAlpha2BackEnergyView()
         }
     }
     @IBInspectable dynamic var searchFissionBack3ByFact: Bool = false {
         didSet {
-            setupFissionAlpha3BackEnergyView()
+//            setupFissionAlpha3BackEnergyView()
         }
     }
     @IBInspectable dynamic var searchFissionBack4ByFact: Bool = false {
         didSet {
-            setupFissionAlpha4BackEnergyView()
+//            setupFissionAlpha4BackEnergyView()
         }
     }
     @IBInspectable dynamic var searchRecoilBackByFact: Bool = false {
         didSet {
-            setupRecoilBackEnergyView()
+//            setupRecoilBackEnergyView()
         }
     }
     
     fileprivate func setupGammaEncodersView() {
-        gammaEncodersView.isHidden = !gammaEncodersOnly
-    }
-    
-    fileprivate func setupAlpha1FormView() {
-        fissionAlpha1View.isHidden = !searchFissionAlpha1
-    }
-    
-    fileprivate func setupAlpha2FormView() {
-        fissionAlpha2FormView.isHidden = !searchFissionAlpha2
-    }
-    
-    fileprivate func setupAlpha3FormView() {
-        fissionAlpha3FormView.isHidden = !searchFissionAlpha3
-    }
-    
-    fileprivate func setupAlpha4FormView() {
-        fissionAlpha4FormView.isHidden = !searchFissionAlpha4
-    }
-    
-    fileprivate func setupFissionAlpha1BackEnergyView() {
-        fissionAlpha1BackEnergyView.isHidden = searchFissionBackByFact
-    }
-    
-    fileprivate func setupFissionAlpha2BackEnergyView() {
-        fissionAlpha2BackEnergyView.isHidden = searchFissionBack2ByFact
-    }
-    
-    fileprivate func setupFissionAlpha3BackEnergyView() {
-        fissionAlpha3BackEnergyView.isHidden = searchFissionBack3ByFact
-    }
-    
-    fileprivate func setupFissionAlpha4BackEnergyView() {
-        fissionAlpha4BackEnergyView.isHidden = searchFissionBack4ByFact
-    }
-    
-    fileprivate func setupRecoilBackEnergyView() {
-        recoilBackEnergyView.isHidden = searchRecoilBackByFact
+//        gammaEncodersView.isHidden = !gammaEncodersOnly
     }
     
     func applicationDidFinishLaunching(_ aNotification: Notification) {
@@ -410,15 +354,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     }
     
     @IBAction func startParticleChanged(_ sender: Any?) {
-        let type = startType()
-        let isRecoil = type == .recoil
-        requiredRecoil = requiredRecoil || isRecoil
-        requiredRecoilButton.state = NSControl.StateValue(rawValue: requiredRecoil ? 1 : 0)
-        requiredRecoilButton.isEnabled = !isRecoil
+//        let type = startType()
+//        let isRecoil = type == .recoil
+//        requiredRecoil = requiredRecoil || isRecoil
+//        requiredRecoilButton.isEnabled = !isRecoil
     }
     
     fileprivate func setupWellView() {
-        wellView.isHidden = !searchWell
+//        wellView.isHidden = !searchWell
     }
     
     @IBAction func calculations(_ sender: Any) {
