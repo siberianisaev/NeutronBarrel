@@ -64,8 +64,8 @@ class ResultsTable {
     }
     
     fileprivate var columns = [String]()
-    fileprivate var keyColumnRecoilFrontEvent: String {
-        return "Event(Recoil)"
+    fileprivate var keyColumnEnergyEvent: String {
+        return "Event(Energy)"
     }
     fileprivate var keyRecoil: String {
         return  "R"
@@ -236,67 +236,13 @@ class ResultsTable {
     }
     
     func logResultsHeader() {
-        columns = []
-        if !criteria.startFromRecoil() {
-            columns.append(contentsOf: [
-                keyColumnRecoilFrontEvent,
-                keyColumnRecoilFrontEnergy,
-                keyColumnRecoilFrontOverflow,
-                keyColumnRecoilFrontDeltaTime(log: false),
-                keyColumnRecoilFrontDeltaTime(log: true),
-                keyColumnRecoilBackEvent,
-                keyColumnRecoilBackEnergy
-            ])
-        }
-        columns.append(contentsOf: [
-            keyColumnStartEvent,
-            keyColumnStartFrontSum,
-            keyColumnStartFrontEnergy,
-            keyColumnStartFrontOverflow,
-            keyColumnStartFrontDeltaTime,
-            keyColumnStartFrontStrip
-        ])
-        columns.append(contentsOf: ([.X, .Y, .Z] as [Position]).map { keyColumnStartFocal(position: $0) })
-        columns.append(contentsOf: [
-            keyColumnStartBackSum,
-            keyColumnStartBackEnergy,
-            keyColumnStartBackOverflow,
-            keyColumnStartBackDeltaTime,
-            keyColumnStartBackStrip
-        ])
-        if criteria.searchWell {
-            columns.append(contentsOf: [
-                keyColumnWellEnergy,
-                keyColumnWellOverflow,
-                keyColumnWellPosition
-                ])
-            columns.append(contentsOf: ([.X, .Y, .Z] as [Position]).map { keyColumnWell(position: $0) })
-            columns.append(contentsOf: [
-                keyColumnWellAngle,
-                keyColumnWellStrip,
-                keyColumnWellBackEnergy,
-                keyColumnWellBackOverflow,
-                keyColumnWellBackPosition,
-                keyColumnWellBackStrip,
-                keyColumnWellRangeInDeadLayers,
-                keyColumnTKEFront,
-                keyColumnTKEBack
-                ])
-        }
+        columns = [keyColumnEnergyEvent]
         if criteria.searchNeutrons {
             columns.append(contentsOf: [keyColumnNeutronsAverageTime, keyColumnNeutronTime, keyColumnNeutronCounter, keyColumnNeutronBlock, keyColumnNeutrons])
             if criteria.neutronsPositions {
                 columns.append(contentsOf: [keyColumnNeutronCounterX, keyColumnNeutronCounterY, keyColumnNeutronAngle, keyColumnNeutronRelatedFissionBack])
             }
         }
-        columns.append(contentsOf: [
-            keyColumnGammaEnergy(true),
-            keyColumnGammaSumEnergy,
-            keyColumnGammaEncoder(true),
-            keyColumnGammaStrip(true),
-            keyColumnGammaDeltaTime(true),
-            keyColumnGammaCount
-            ])
         if criteria.trackBeamEnergy {
             columns.append(keyColumnBeamEnergy)
         }
@@ -429,16 +375,14 @@ class ResultsTable {
         }
     }
     
-    func logActResults() {
+    func logActResults(energyEventNumber: CUnsignedLongLong) {
         let rowsMax = delegate.rowsCountForCurrentResult()
         for row in 0 ..< rowsMax {
             for column in columns {
                 var field = ""
                 switch column {
-                case keyColumnRecoilFrontEvent:
-                    if let eventNumber = delegate.recoilAt(side: .front, index: row)?.eventNumber {
-                        field = delegate.currentFileEventNumber(eventNumber)
-                    }
+                case keyColumnEnergyEvent:
+                    field = delegate.currentFileEventNumber(energyEventNumber)
                 case keyColumnRecoilFrontEnergy:
                     if let energy = delegate.recoilAt(side: .front, index: row)?.energy {
                         field = String(format: "%.7f", energy)

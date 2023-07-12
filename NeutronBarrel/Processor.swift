@@ -448,7 +448,8 @@ class Processor {
             }
 
             correlationsPerFile += 1
-            resultsTable.logActResults()
+            let energyEventNumber = eventNumber()
+            resultsTable.logActResults(energyEventNumber: energyEventNumber)
             for b in [false, true] {
                 resultsTable.logGamma(GeOnly: b)
             }
