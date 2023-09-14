@@ -10,7 +10,7 @@ import Foundation
 
 public class NeutronsMultiplicity {
     
-    fileprivate var info: [Int: Int]
+    var info: [Int: Int]
     fileprivate var efficiency: Double
     fileprivate var efficiencyError: Double
     fileprivate var placedSFSource: SFSource?
@@ -91,7 +91,7 @@ public class NeutronsMultiplicity {
                 probErrors.append(NeutronsMultiplicity.errorFor(neutronsCount: counts[i], multiplicity: i)/Double(counts.sum()))
             }
         }
-        string += "\n[" + probErrors.map { String($0) }.joined(separator: ", ") + "]"
+        string += "\nProbErrors: [" + probErrors.map { String($0) }.joined(separator: ", ") + "]"
         string += "\nSF count: \(events)"
         string += "\nNeutrons count: \(neutrons)"
         if neutrons > 0 {
