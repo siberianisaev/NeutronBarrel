@@ -101,11 +101,11 @@ class ResultsTable {
         return "$WellPos\(position.rawValue)"
     }
     fileprivate var keyColumnWellAngle = "$WellAngle"
-    fileprivate var keyColumnWellStrip = "Strip($Well)"
+    fileprivate var keyColumnWellStrip = "Encoder($Well)" // TODO: strip
     fileprivate var keyColumnWellBackEnergy = "*WellBack"
     fileprivate var keyColumnWellBackOverflow = "*WellBackOverflow"
     fileprivate var keyColumnWellBackPosition = "*WellBackPos"
-    fileprivate var keyColumnWellBackStrip = "Strip(*WellBack)"
+    fileprivate var keyColumnWellBackStrip = "Encoder(*WellBack)" // TODO: strip
     fileprivate var keyColumnWellRangeInDeadLayers = "WellRangeInDeadLayers"
     fileprivate var keyColumnTKEFront = "TKEFront"
     fileprivate var keyColumnTKEBack = "TKEBack"
@@ -227,30 +227,30 @@ class ResultsTable {
     
     func logResultsHeader() {
         columns = []
-        columns.append(contentsOf: [
-            keyColumnRecoilFrontEvent,
-            keyColumnRecoilFrontEnergy,
-            keyColumnRecoilFrontOverflow,
-            keyColumnRecoilFrontDeltaTime(log: false),
-            keyColumnRecoilFrontDeltaTime(log: true),
-            keyColumnRecoilBackEvent,
-            keyColumnRecoilBackEnergy
-        ])
+//        columns.append(contentsOf: [
+//            keyColumnRecoilFrontEvent,
+//            keyColumnRecoilFrontEnergy,
+//            keyColumnRecoilFrontOverflow,
+//            keyColumnRecoilFrontDeltaTime(log: false),
+//            keyColumnRecoilFrontDeltaTime(log: true),
+//            keyColumnRecoilBackEvent,
+//            keyColumnRecoilBackEnergy
+//        ])
         columns.append(contentsOf: [
             keyColumnStartEvent,
-//            keyColumnStartFrontSum,
-            keyColumnStartFrontEnergy,
-            keyColumnStartFrontOverflow,
-            keyColumnStartFrontDeltaTime,
-            keyColumnStartFrontStrip
+            keyColumnStartFrontSum,
+//            keyColumnStartFrontEnergy,
+//            keyColumnStartFrontOverflow,
+//            keyColumnStartFrontDeltaTime,
+//            keyColumnStartFrontStrip
         ])
-        columns.append(contentsOf: ([.X, .Y, .Z] as [Position]).map { keyColumnStartFocal(position: $0) })
+//        columns.append(contentsOf: ([.X, .Y, .Z] as [Position]).map { keyColumnStartFocal(position: $0) })
         columns.append(contentsOf: [
-//            keyColumnStartBackSum,
-            keyColumnStartBackEnergy,
-            keyColumnStartBackOverflow,
+            keyColumnStartBackSum,
+//            keyColumnStartBackEnergy,
+//            keyColumnStartBackOverflow,
             keyColumnStartBackDeltaTime,
-            keyColumnStartBackStrip
+//            keyColumnStartBackStrip
         ])
         columns.append(contentsOf: [
             keyColumnWellEnergy,
@@ -259,15 +259,15 @@ class ResultsTable {
             ])
         columns.append(contentsOf: ([.X, .Y, .Z] as [Position]).map { keyColumnWell(position: $0) })
         columns.append(contentsOf: [
-            keyColumnWellAngle,
-            keyColumnWellStrip,
+//            keyColumnWellAngle,
+//            keyColumnWellStrip,
             keyColumnWellBackEnergy,
             keyColumnWellBackOverflow,
             keyColumnWellBackPosition,
-            keyColumnWellBackStrip,
-            keyColumnWellRangeInDeadLayers,
-            keyColumnTKEFront,
-            keyColumnTKEBack
+//            keyColumnWellBackStrip,
+//            keyColumnWellRangeInDeadLayers,
+//            keyColumnTKEFront,
+//            keyColumnTKEBack
             ])
         if criteria.searchNeutrons {
             columns.append(contentsOf: [keyColumnNeutronsAverageTime, keyColumnNeutronTime, keyColumnNeutronCounter, keyColumnNeutronBlock, keyColumnNeutrons])
@@ -431,10 +431,10 @@ class ResultsTable {
                     } else if row < delegate.neutronsCountWithNewLine(), let eventNumber = currentStartEventNumber { // Need track start event number for neutron times results
                         field = delegate.currentFileEventNumber(eventNumber)
                     }
-//                case keyColumnStartFrontSum:
-//                    if row == 0, !criteria.startFromRecoil(), let sum = delegate.firstParticleAt(side: .front).getSumEnergy() {
-//                        field = String(format: "%.7f", sum)
-//                    }
+                case keyColumnStartFrontSum:
+                    if row == 0, let sum = delegate.firstParticleAt(side: .front).getSumEnergy() {
+                        field = String(format: "%.7f", sum)
+                    }
                 case keyColumnStartFrontEnergy:
                     if let energy = delegate.firstParticleAt(side: .front).itemAt(index: row)?.energy {
                         field = String(format: "%.7f", energy)
@@ -464,10 +464,10 @@ class ResultsTable {
                     if let s = firstParticleFocal(position: p, row: row) {
                         field = s
                     }
-//                case keyColumnStartBackSum:
-//                    if row == 0, !criteria.startFromRecoil(), let sum = delegate.firstParticleAt(side: .back).getSumEnergy() {
-//                        field = String(format: "%.7f", sum)
-//                    }
+                case keyColumnStartBackSum:
+                    if row == 0, let sum = delegate.firstParticleAt(side: .back).getSumEnergy() {
+                        field = String(format: "%.7f", sum)
+                    }
                 case keyColumnStartBackEnergy:
                     if let energy = delegate.firstParticleAt(side: .back).itemAt(index: row)?.energy {
                         field = String(format: "%.7f", energy)
@@ -520,8 +520,9 @@ class ResultsTable {
                         }
                     }
                 case keyColumnWellStrip:
-                    if let strip = delegate.fissionsAlphaWellAt(side: .front, index: row)?.strip1_N {
-                        field = String(format: "%d", strip)
+                    if let encoder = delegate.fissionsAlphaWellAt(side: .front, index: row)?.encoder {
+//                    if let strip = delegate.fissionsAlphaWellAt(side: .front, index: row)?.strip1_N {
+                        field = String(format: "%d", encoder)
                     }
                 case keyColumnWellBackEnergy:
                     if let energy = delegate.fissionsAlphaWellAt(side: .back, index: row)?.energy {
@@ -536,8 +537,9 @@ class ResultsTable {
                         field = String(format: "FWellBack%d.%d", encoder, strip1_N)
                     }
                 case keyColumnWellBackStrip:
-                    if let strip = delegate.fissionsAlphaWellAt(side: .back, index: row)?.strip1_N {
-                        field = String(format: "%d", strip)
+                    if let encoder = delegate.fissionsAlphaWellAt(side: .back, index: row)?.encoder {
+//                    if let strip = delegate.fissionsAlphaWellAt(side: .back, index: row)?.strip1_N {
+                        field = String(format: "%d", encoder)
                     }
                 case keyColumnTKEFront:
                     if let s = TKE(row: row, side: .front) {

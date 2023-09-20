@@ -16,11 +16,10 @@ class SearchCriteria {
     var excludeNeutronCounters = [Int]()
     
     var startParticleType: SearchType = .alpha
-    var summarizeFissionsAlphaFront = false
+    var summarizeWell = true
     var fissionAlphaWellMinEnergy: Double = 0
     var fissionAlphaWellMaxEnergy: Double = 0
     var fissionAlphaWellMaxAngle: Double = 0
-    var summarizeFissionsAlphaBack = false
     var fissionAlphaMaxTime: CUnsignedLongLong = 5 // TODO: !!!
     var fissionAlphaBackMaxDeltaStrips: Int = 1 // TODO: !!!
 

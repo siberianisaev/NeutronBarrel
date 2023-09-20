@@ -43,7 +43,8 @@ enum Setting: String {
     ResultsFolderName = "ResultsFolderName",
     InBeamOnly = "InBeamOnly",
     UseOverflow = "UseOverflow",
-    UsePileUp = "UsePileUp"
+    UsePileUp = "UsePileUp",
+    SummarizeWell = "SummarizeWell"
 }
 
 class Settings {
@@ -160,7 +161,7 @@ class Settings {
             return 0
         case .SearchNeutrons, .TrackBeamEnergy, .TrackBeamCurrent, .TrackBeamBackground, .TrackBeamIntegral, .SearchWell:
             return true
-        case .RequiredGamma, .SimplifyGamma, .SearchSpecialEvents, .GammaEncodersOnly, .NeutronsPositions, .NeutronsBackground, .SimultaneousDecaysFilterForNeutrons, .CollapseNeutronOverlays, .InBeamOnly, .UseOverflow, .UsePileUp:
+        case .RequiredGamma, .SimplifyGamma, .SearchSpecialEvents, .GammaEncodersOnly, .NeutronsPositions, .NeutronsBackground, .SimultaneousDecaysFilterForNeutrons, .CollapseNeutronOverlays, .InBeamOnly, .UseOverflow, .UsePileUp, .SummarizeWell:
             return false
         case .SpecialEventIds, .GammaEncoderIds:
             return nil

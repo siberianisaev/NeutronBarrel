@@ -64,6 +64,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         usePileUp = Settings.getBoolSetting(.UsePileUp)
         searchNeutrons = Settings.getBoolSetting(.SearchNeutrons)
         neutronsBackground = Settings.getBoolSetting(.NeutronsBackground)
+        summarizeWell = Settings.getBoolSetting(.SummarizeWell)
         simultaneousDecaysFilterForNeutrons = Settings.getBoolSetting(.SimultaneousDecaysFilterForNeutrons)
         collapseNeutronOverlays = Settings.getBoolSetting(.CollapseNeutronOverlays)
         neutronsPositions = Settings.getBoolSetting(.NeutronsPositions)
@@ -105,6 +106,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBInspectable dynamic var usePileUp: Bool = false
     @IBInspectable dynamic var searchNeutrons: Bool = false
     @IBInspectable dynamic var neutronsBackground: Bool = false
+    @IBInspectable dynamic var summarizeWell: Bool = false
     @IBInspectable dynamic var simultaneousDecaysFilterForNeutrons: Bool = false
     @IBInspectable dynamic var collapseNeutronOverlays: Bool = false
     @IBInspectable dynamic var neutronsPositions: Bool = false {
@@ -236,6 +238,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         sc.simplifyGamma = simplifyGamma
         sc.searchNeutrons = searchNeutrons
         sc.neutronsBackground = neutronsBackground
+        sc.summarizeWell = summarizeWell
         sc.simultaneousDecaysFilterForNeutrons = simultaneousDecaysFilterForNeutrons
         sc.collapseNeutronOverlays = collapseNeutronOverlays
         sc.neutronsPositions = neutronsPositions
@@ -464,6 +467,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             .UsePileUp: usePileUp,
             .SearchNeutrons: searchNeutrons,
             .NeutronsBackground: neutronsBackground,
+            .SummarizeWell: summarizeWell,
             .SimultaneousDecaysFilterForNeutrons: simultaneousDecaysFilterForNeutrons,
             .CollapseNeutronOverlays: collapseNeutronOverlays,
             .NeutronsPositions: neutronsPositions,
