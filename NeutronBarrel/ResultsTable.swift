@@ -15,11 +15,9 @@ protocol ResultsTableDelegate: AnyObject {
     func neutrons() -> NeutronsMatch
     func currentFileEventNumber(_ number: CUnsignedLongLong) -> String
     func focalGammaContainer() -> DetectorMatch?
-    func recoilAt(side: StripsSide, index: Int) -> DetectorMatchItem?
     func fissionsAlphaWellAt(side: StripsSide, index: Int) -> DetectorMatchItem?
     func beamState() -> BeamState
     func firstParticleAt(side: StripsSide) -> DetectorMatch
-    func nextParticleAt(side: StripsSide, index: Int) -> DetectorMatch?
     func specialWith(eventId: Int) -> CUnsignedShort?
     
 }
@@ -53,14 +51,6 @@ class ResultsTable {
         self.criteria = criteria
         self.logger = logger
         self.delegate = delegate
-    }
-    
-    fileprivate func searchExtraPostfix(_ s: String) -> String {
-        if criteria.searchExtraFromLastParticle {
-            return s + "(\(criteria.nextMaxIndex() ?? 0))"
-        } else {
-            return s
-        }
     }
     
     fileprivate var columns = [String]()
@@ -103,7 +93,7 @@ class ResultsTable {
     fileprivate var keyColumnStartBackDeltaTime = "dT($Fron-@Back)"
     fileprivate var keyColumnStartBackStrip = "Strip(@Back)"
     fileprivate var keyColumnWellEnergy: String {
-        return searchExtraPostfix("$Well")
+        return "$Well"
     }
     fileprivate var keyColumnWellOverflow = "$WellOverflow"
     fileprivate var keyColumnWellPosition = "$WellPos"
@@ -128,7 +118,7 @@ class ResultsTable {
     fileprivate var keyColumnNeutronAngle = "NeutronAngle"
     fileprivate var keyColumnNeutronRelatedFissionBack = "NeutronRelatedFissionBack"
     fileprivate var keyColumnNeutrons: String {
-        var s = searchExtraPostfix("Neutrons")
+        var s = "Neutrons"
         if criteria.neutronsBackground {
             s += "(BKG)"
         }
@@ -136,7 +126,7 @@ class ResultsTable {
     }
     fileprivate let keyColumnEvent: String = "Event"
     fileprivate func keyColumnGammaEnergy(_ max: Bool) -> String {
-        var s = searchExtraPostfix("Gamma")
+        var s = "Gamma"
         if max {
             s += "Max"
         }
@@ -237,20 +227,18 @@ class ResultsTable {
     
     func logResultsHeader() {
         columns = []
-        if !criteria.startFromRecoil() {
-            columns.append(contentsOf: [
-                keyColumnRecoilFrontEvent,
-                keyColumnRecoilFrontEnergy,
-                keyColumnRecoilFrontOverflow,
-                keyColumnRecoilFrontDeltaTime(log: false),
-                keyColumnRecoilFrontDeltaTime(log: true),
-                keyColumnRecoilBackEvent,
-                keyColumnRecoilBackEnergy
-            ])
-        }
+        columns.append(contentsOf: [
+            keyColumnRecoilFrontEvent,
+            keyColumnRecoilFrontEnergy,
+            keyColumnRecoilFrontOverflow,
+            keyColumnRecoilFrontDeltaTime(log: false),
+            keyColumnRecoilFrontDeltaTime(log: true),
+            keyColumnRecoilBackEvent,
+            keyColumnRecoilBackEnergy
+        ])
         columns.append(contentsOf: [
             keyColumnStartEvent,
-            keyColumnStartFrontSum,
+//            keyColumnStartFrontSum,
             keyColumnStartFrontEnergy,
             keyColumnStartFrontOverflow,
             keyColumnStartFrontDeltaTime,
@@ -258,31 +246,29 @@ class ResultsTable {
         ])
         columns.append(contentsOf: ([.X, .Y, .Z] as [Position]).map { keyColumnStartFocal(position: $0) })
         columns.append(contentsOf: [
-            keyColumnStartBackSum,
+//            keyColumnStartBackSum,
             keyColumnStartBackEnergy,
             keyColumnStartBackOverflow,
             keyColumnStartBackDeltaTime,
             keyColumnStartBackStrip
         ])
-        if criteria.searchWell {
-            columns.append(contentsOf: [
-                keyColumnWellEnergy,
-                keyColumnWellOverflow,
-                keyColumnWellPosition
-                ])
-            columns.append(contentsOf: ([.X, .Y, .Z] as [Position]).map { keyColumnWell(position: $0) })
-            columns.append(contentsOf: [
-                keyColumnWellAngle,
-                keyColumnWellStrip,
-                keyColumnWellBackEnergy,
-                keyColumnWellBackOverflow,
-                keyColumnWellBackPosition,
-                keyColumnWellBackStrip,
-                keyColumnWellRangeInDeadLayers,
-                keyColumnTKEFront,
-                keyColumnTKEBack
-                ])
-        }
+        columns.append(contentsOf: [
+            keyColumnWellEnergy,
+            keyColumnWellOverflow,
+            keyColumnWellPosition
+            ])
+        columns.append(contentsOf: ([.X, .Y, .Z] as [Position]).map { keyColumnWell(position: $0) })
+        columns.append(contentsOf: [
+            keyColumnWellAngle,
+            keyColumnWellStrip,
+            keyColumnWellBackEnergy,
+            keyColumnWellBackOverflow,
+            keyColumnWellBackPosition,
+            keyColumnWellBackStrip,
+            keyColumnWellRangeInDeadLayers,
+            keyColumnTKEFront,
+            keyColumnTKEBack
+            ])
         if criteria.searchNeutrons {
             columns.append(contentsOf: [keyColumnNeutronsAverageTime, keyColumnNeutronTime, keyColumnNeutronCounter, keyColumnNeutronBlock, keyColumnNeutrons])
             if criteria.neutronsPositions {
@@ -310,30 +296,6 @@ class ResultsTable {
             columns.append(keyColumnBeamIntegral)
         }
         
-        func columnsForNextEvent(_ index: Int) -> [String] {
-            var result = [String]()
-            if let c = criteria.next[index] {
-                result.append(keyColumnFissionAlphaFrontEvent(index))
-                if c.summarizeFront {
-                    result.append(keyColumnFissionAlphaFrontSum(index))
-                }
-                result.append(contentsOf: [
-                    keyColumnFissionAlphaFrontEnergy(index),
-                    keyColumnFissionAlphaFrontDeltaTime(index),
-                    keyColumnFissionAlphaFrontStrip(index),
-                    keyColumnFissionAlphaBackSum(index),
-                    keyColumnFissionAlphaBackEnergy(index),
-                    keyColumnFissionAlphaBackDeltaTime(index),
-                    keyColumnFissionAlphaBackStrip(index)
-                    ])
-                return result
-            }
-            return result
-        }
-        for i in [2, 3] {
-            columns.append(contentsOf: columnsForNextEvent(i))
-        }
-        
         let headers = setupHeaders(columns)
         logger.writeLineOfFields(headers, destination: .results)
         logger.finishLine(.results) // +1 line padding
@@ -344,9 +306,8 @@ class ResultsTable {
         let firstBack = firstFront
         let wellBack = SearchType.alpha.symbol()
         // TODO: criteria.next all symbols handling
-        let last = criteria.next[criteria.nextMaxIndex() ?? -1]
-        let secondFront = last?.frontType.symbol() ?? ""
-        let secondBack = last?.backType.symbol() ?? ""
+        let secondFront = "A"
+        let secondBack = "A"
         let dict = ["$": firstFront,
                     "@": firstBack,
                     "*": wellBack,
@@ -436,19 +397,19 @@ class ResultsTable {
                 var field = ""
                 switch column {
                 case keyColumnRecoilFrontEvent:
-                    if let eventNumber = delegate.recoilAt(side: .front, index: row)?.eventNumber {
+                    if let eventNumber = delegate.fissionsAlphaWellAt(side: .front, index: row)?.eventNumber {
                         field = delegate.currentFileEventNumber(eventNumber)
                     }
                 case keyColumnRecoilFrontEnergy:
-                    if let energy = delegate.recoilAt(side: .front, index: row)?.energy {
+                    if let energy = delegate.fissionsAlphaWellAt(side: .front, index: row)?.energy {
                         field = String(format: "%.7f", energy)
                     }
                 case keyColumnRecoilFrontOverflow:
-                    if let overflow = delegate.recoilAt(side: .front, index: row)?.overflow {
+                    if let overflow = delegate.fissionsAlphaWellAt(side: .front, index: row)?.overflow {
                         field = String(format: "%hu", overflow)
                     }
                 case keyColumnRecoilFrontDeltaTime(log: false), keyColumnRecoilFrontDeltaTime(log: true):
-                    if let deltaTime = delegate.recoilAt(side: .front, index: row)?.deltaTime?.toMks() {
+                    if let deltaTime = delegate.fissionsAlphaWellAt(side: .front, index: row)?.deltaTime?.toMks() {
                         if column == keyColumnRecoilFrontDeltaTime(log: false) {
                             field = String(format: "%lld", abs(deltaTime))
                         } else {
@@ -456,11 +417,11 @@ class ResultsTable {
                         }
                     }
                 case keyColumnRecoilBackEvent:
-                    if let eventNumber = delegate.recoilAt(side: .back, index: row)?.eventNumber {
+                    if let eventNumber = delegate.fissionsAlphaWellAt(side: .back, index: row)?.eventNumber {
                         field = delegate.currentFileEventNumber(eventNumber)
                     }
                 case keyColumnRecoilBackEnergy:
-                    if let energy = delegate.recoilAt(side: .back, index: row)?.energy {
+                    if let energy = delegate.fissionsAlphaWellAt(side: .back, index: row)?.energy {
                         field = String(format: "%.7f", energy)
                     }
                 case keyColumnStartEvent:
@@ -470,10 +431,10 @@ class ResultsTable {
                     } else if row < delegate.neutronsCountWithNewLine(), let eventNumber = currentStartEventNumber { // Need track start event number for neutron times results
                         field = delegate.currentFileEventNumber(eventNumber)
                     }
-                case keyColumnStartFrontSum:
-                    if row == 0, !criteria.startFromRecoil(), let sum = delegate.firstParticleAt(side: .front).getSumEnergy() {
-                        field = String(format: "%.7f", sum)
-                    }
+//                case keyColumnStartFrontSum:
+//                    if row == 0, !criteria.startFromRecoil(), let sum = delegate.firstParticleAt(side: .front).getSumEnergy() {
+//                        field = String(format: "%.7f", sum)
+//                    }
                 case keyColumnStartFrontEnergy:
                     if let energy = delegate.firstParticleAt(side: .front).itemAt(index: row)?.energy {
                         field = String(format: "%.7f", energy)
@@ -503,10 +464,10 @@ class ResultsTable {
                     if let s = firstParticleFocal(position: p, row: row) {
                         field = s
                     }
-                case keyColumnStartBackSum:
-                    if row == 0, !criteria.startFromRecoil(), let sum = delegate.firstParticleAt(side: .back).getSumEnergy() {
-                        field = String(format: "%.7f", sum)
-                    }
+//                case keyColumnStartBackSum:
+//                    if row == 0, !criteria.startFromRecoil(), let sum = delegate.firstParticleAt(side: .back).getSumEnergy() {
+//                        field = String(format: "%.7f", sum)
+//                    }
                 case keyColumnStartBackEnergy:
                     if let energy = delegate.firstParticleAt(side: .back).itemAt(index: row)?.energy {
                         field = String(format: "%.7f", energy)
@@ -553,8 +514,9 @@ class ResultsTable {
                         if column == keyColumnWellAngle {
                             field = String(format: "%.2f", angle)
                         } else {
-                            let range = StripDetector.side.deadLayer()/sin(angle * CGFloat.pi / 180) + StripDetector.focal.deadLayer()/sin((90 - angle) * CGFloat.pi / 180)
-                            field = String(format: "%.5f", range)
+                            // TODO: !!!
+//                            let range = StripDetector.side.deadLayer()/sin(angle * CGFloat.pi / 180) + StripDetector.focal.deadLayer()/sin((90 - angle) * CGFloat.pi / 180)
+//                            field = String(format: "%.5f", range)
                         }
                     }
                 case keyColumnWellStrip:
@@ -694,39 +656,6 @@ class ResultsTable {
                             field = String(format: "%.1f", Float(e.energy) * 10.0)
                         }
                     }
-                case keyColumnFissionAlphaFrontEvent(2), keyColumnFissionAlphaFrontEvent(3):
-                    let index = column == keyColumnFissionAlphaFrontEvent(2) ? 2 : 3
-                    field = fissionAlphaEventNumber(index, row: row, side: .front)
-                case keyColumnFissionAlphaFrontSum(2), keyColumnFissionAlphaFrontSum(3):
-                    let index = column == keyColumnFissionAlphaFrontSum(2) ? 2 : 3
-                    field = fissionAlphaSum(index, row: row, side: .front)
-                case keyColumnFissionAlphaFrontEnergy(2), keyColumnFissionAlphaFrontEnergy(3):
-                    let index = column == keyColumnFissionAlphaFrontEnergy(2) ? 2 : 3
-                    field = fissionAlphaEnergy(index, row: row, side: .front)
-                case keyColumnFissionAlphaFrontOverflow(2), keyColumnFissionAlphaFrontOverflow(3):
-                    let index = column == keyColumnFissionAlphaFrontOverflow(2) ? 2 : 3
-                    field = fissionAlphaOverflow(index, row: row, side: .front)
-                case keyColumnFissionAlphaFrontDeltaTime(2), keyColumnFissionAlphaFrontDeltaTime(3):
-                    let index = column == keyColumnFissionAlphaFrontDeltaTime(2) ? 2 : 3
-                    field = fissionAlphaDeltaTime(index, row: row, side: .front)
-                case keyColumnFissionAlphaFrontStrip(2), keyColumnFissionAlphaFrontStrip(3):
-                    let index = column == keyColumnFissionAlphaFrontStrip(2) ? 2 : 3
-                    field = fissionAlphaStrip(index, row: row, side: .front)
-                case keyColumnFissionAlphaBackSum(2), keyColumnFissionAlphaBackSum(3):
-                    let index = column == keyColumnFissionAlphaBackSum(2) ? 2 : 3
-                    field = fissionAlphaSum(index, row: row, side: .back)
-                case keyColumnFissionAlphaBackEnergy(2), keyColumnFissionAlphaBackEnergy(3):
-                    let index = column == keyColumnFissionAlphaBackEnergy(2) ? 2 : 3
-                    field = fissionAlphaEnergy(index, row: row, side: .back)
-                case keyColumnFissionAlphaBackOverflow(2), keyColumnFissionAlphaBackOverflow(3):
-                    let index = column == keyColumnFissionAlphaBackOverflow(2) ? 2 : 3
-                    field = fissionAlphaOverflow(index, row: row, side: .back)
-                case keyColumnFissionAlphaBackDeltaTime(2), keyColumnFissionAlphaBackDeltaTime(3):
-                    let index = column == keyColumnFissionAlphaBackDeltaTime(2) ? 2 : 3
-                    field = fissionAlphaDeltaTime(index, row: row, side: .back)
-                case keyColumnFissionAlphaBackStrip(2), keyColumnFissionAlphaBackStrip(3):
-                    let index = column == keyColumnFissionAlphaBackStrip(2) ? 2 : 3
-                    field = fissionAlphaStrip(index, row: row, side: .back)
                 default:
                     break
                 }
@@ -745,12 +674,12 @@ class ResultsTable {
     }
     
     fileprivate func pointForFirstParticleFocal(row: Int) -> PointXYZ? {
-        if let itemFront = delegate.firstParticleAt(side: .front).itemAt(index: row), let stripFront1_N = itemFront.strip1_N, let itemBack = delegate.firstParticleAt(side: .back).itemAt(index: row), let stripBack1_N = itemBack.strip1_N {
-            let point = DetectorsWellGeometry.coordinatesXYZ(stripDetector: .focal, stripFront0_N: stripFront1_N - 1, stripBack0_N: stripBack1_N - 1)
-            return point
-        } else {
-            return nil
-        }
+//        if let itemFront = delegate.firstParticleAt(side: .front).itemAt(index: row), let stripFront1_N = itemFront.strip1_N, let itemBack = delegate.firstParticleAt(side: .back).itemAt(index: row), let stripBack1_N = itemBack.strip1_N {
+//            let point = DetectorsWellGeometry.coordinatesXYZ(stripDetector: .focal, stripFront0_N: stripFront1_N - 1, stripBack0_N: stripBack1_N - 1)
+//            return point
+//        } else {
+        return nil
+//        }
     }
     
     fileprivate func firstParticleFocal(position: Position, row: Int) -> String? {
@@ -780,60 +709,61 @@ class ResultsTable {
     
     func wellAngle(row: Int) -> CGFloat? {
         if let itemFocalFront = delegate.firstParticleAt(side: .front).itemAt(index: 0), let stripFocalFront1_N = itemFocalFront.strip1_N, let itemFocalBack = delegate.firstParticleAt(side: .back).itemAt(index: 0), let stripFocalBack1_N = itemFocalBack.strip1_N, let itemSideFront = delegate.fissionsAlphaWellAt(side: .front, index: row), let stripSideFront1_N = itemSideFront.strip1_N, let itemSideBack = delegate.fissionsAlphaWellAt(side: .back, index: row), let stripSideBack1_N = itemSideBack.strip1_N, let encoderSide = itemSideFront.encoder {
-            let pointFront = DetectorsWellGeometry.coordinatesXYZ(stripDetector: .focal, stripFront0_N: stripFocalFront1_N - 1, stripBack0_N: stripFocalBack1_N - 1)
+            // TODO: !!!
+            let pointFront: PointXYZ? = nil//DetectorsWellGeometry.coordinatesXYZ(stripDetector: .focal, stripFront0_N: stripFocalFront1_N - 1, stripBack0_N: stripFocalBack1_N - 1)
             let pointSide = DetectorsWellGeometry.coordinatesXYZ(stripDetector: .side, stripFront0_N: stripSideFront1_N - 1, stripBack0_N: stripSideBack1_N - 1, encoderSide: Int(encoderSide))
-            let angle = pointFront.angleFrom(point: pointSide)
+            let angle = pointFront?.angleFrom(point: pointSide)
             return angle
         } else {
             return nil
         }
     }
     
-    fileprivate func fissionAlpha(_ index: Int, row: Int, side: StripsSide) -> DetectorMatchItem? {
-        return delegate.nextParticleAt(side: side, index: index)?.itemAt(index: row)
-    }
+//    fileprivate func fissionAlpha(_ index: Int, row: Int, side: StripsSide) -> DetectorMatchItem? {
+//        return delegate.nextParticleAt(side: side, index: index)?.itemAt(index: row)
+//    }
+//
+//    fileprivate func fissionAlphaSum(_ index: Int, row: Int, side: StripsSide) -> String {
+//        if row == 0, let sum = delegate.nextParticleAt(side: side, index: index)?.getSumEnergy() {
+//            return String(format: "%.7f", sum)
+//        } else {
+//            return ""
+//        }
+//    }
     
-    fileprivate func fissionAlphaSum(_ index: Int, row: Int, side: StripsSide) -> String {
-        if row == 0, let sum = delegate.nextParticleAt(side: side, index: index)?.getSumEnergy() {
-            return String(format: "%.7f", sum)
-        } else {
-            return ""
-        }
-    }
-    
-    fileprivate func fissionAlphaEventNumber(_ index: Int, row: Int, side: StripsSide) -> String {
-        if let eventNumber = fissionAlpha(index, row: row, side: side)?.eventNumber {
-            return delegate.currentFileEventNumber(eventNumber)
-        }
-        return ""
-    }
-    
-    fileprivate func fissionAlphaEnergy(_ index: Int, row: Int, side: StripsSide) -> String {
-        if let energy = fissionAlpha(index, row: row, side: side)?.energy {
-            return String(format: "%.7f", energy)
-        }
-        return ""
-    }
-    
-    fileprivate func fissionAlphaOverflow(_ index: Int, row: Int, side: StripsSide) -> String {
-        if let overflow = fissionAlpha(index, row: row, side: side)?.overflow {
-            return String(format: "%hu", overflow)
-        }
-        return ""
-    }
-    
-    fileprivate func fissionAlphaDeltaTime(_ index: Int, row: Int, side: StripsSide) -> String {
-        if let deltaTime = fissionAlpha(index, row: row, side: side)?.deltaTime?.toMks() {
-            return String(format: "%lld", deltaTime)
-        }
-        return ""
-    }
-    
-    fileprivate func fissionAlphaStrip(_ index: Int, row: Int, side: StripsSide) -> String {
-        if let strip = fissionAlpha(index, row: row, side: side)?.strip1_N {
-            return String(format: "%d", strip)
-        }
-        return ""
-    }
+//    fileprivate func fissionAlphaEventNumber(_ index: Int, row: Int, side: StripsSide) -> String {
+//        if let eventNumber = fissionAlpha(index, row: row, side: side)?.eventNumber {
+//            return delegate.currentFileEventNumber(eventNumber)
+//        }
+//        return ""
+//    }
+//
+//    fileprivate func fissionAlphaEnergy(_ index: Int, row: Int, side: StripsSide) -> String {
+//        if let energy = fissionAlpha(index, row: row, side: side)?.energy {
+//            return String(format: "%.7f", energy)
+//        }
+//        return ""
+//    }
+//
+//    fileprivate func fissionAlphaOverflow(_ index: Int, row: Int, side: StripsSide) -> String {
+//        if let overflow = fissionAlpha(index, row: row, side: side)?.overflow {
+//            return String(format: "%hu", overflow)
+//        }
+//        return ""
+//    }
+//
+//    fileprivate func fissionAlphaDeltaTime(_ index: Int, row: Int, side: StripsSide) -> String {
+//        if let deltaTime = fissionAlpha(index, row: row, side: side)?.deltaTime?.toMks() {
+//            return String(format: "%lld", deltaTime)
+//        }
+//        return ""
+//    }
+//
+//    fileprivate func fissionAlphaStrip(_ index: Int, row: Int, side: StripsSide) -> String {
+//        if let strip = fissionAlpha(index, row: row, side: side)?.strip1_N {
+//            return String(format: "%d", strip)
+//        }
+//        return ""
+//    }
     
 }

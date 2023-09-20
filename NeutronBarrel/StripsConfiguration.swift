@@ -47,9 +47,10 @@ class StripsConfiguration {
                         self.strips[channel] = strip
                         
                         // TODO: create calibrations using channel number
-                        if dataProtocol.isAlphaFronEvent(Int(channel)) {
+                        // TODO: !!! focalFrontStripToChannel --> well detector
+                        if dataProtocol.isAlphaWellFrontEvent(Int(channel)) {
                             self.focalFrontStripToChannel[strip] = channel
-                        } else if dataProtocol.isAlphaBackEvent(Int(channel)) {
+                        } else if dataProtocol.isAlphaWellBackEvent(Int(channel)) {
                             self.focalBackStripToChannel[strip] = channel
                         }
                     }

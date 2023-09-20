@@ -18,11 +18,11 @@ class DataProtocol {
     
     
     func keyFor(value: Int) -> String? {
-        if isAlphaFronEvent(value) {
-            return "FocalFront"
-        } else if isAlphaBackEvent(value) {
-            return "FocalBack"
-        } else if isAlphaWellFrontEvent(value) {
+//        if isAlphaFronEvent(value) {
+//            return "FocalFront"
+//        } else if isAlphaBackEvent(value) {
+//            return "FocalBack"
+        if isAlphaWellFrontEvent(value) {
             return "WellFront"
         } else if isAlphaWellBackEvent(value) {
             return "WellBack"
@@ -44,8 +44,8 @@ class DataProtocol {
         }
     }
 
-    let eventIdsFocalFront = Set(0...127)
-    let eventIdsFocalBack = Set(128...255)
+//    let eventIdsFocalFront = Set(0...127)
+//    let eventIdsFocalBack = Set(128...255)
     let eventIdsWellFront = Set(256...383)
     let eventIdsWellBack = Set(384...511)
     let eventIdsNeutrons = Set(512...639)
@@ -56,16 +56,16 @@ class DataProtocol {
     let eventIdEnergy = 999 // need to divide on 10 to MeV
     
     func isAlpha(_ eventId: Int) ->  Bool {
-        return isAlphaFronEvent(eventId) || isAlphaBackEvent(eventId) || isAlphaWellEvent(eventId)
+        return isAlphaWellEvent(eventId) // isAlphaFronEvent(eventId) || isAlphaBackEvent(eventId) || isAlphaWellEvent(eventId)
     }
     
-    func isAlphaFronEvent(_ eventId: Int) -> Bool {
-        return eventIdsFocalFront.contains(eventId)
-    }
-    
-    func isAlphaBackEvent(_ eventId: Int) -> Bool {
-        return eventIdsFocalBack.contains(eventId)
-    }
+//    func isAlphaFronEvent(_ eventId: Int) -> Bool {
+//        return eventIdsFocalFront.contains(eventId)
+//    }
+//    
+//    func isAlphaBackEvent(_ eventId: Int) -> Bool {
+//        return eventIdsFocalBack.contains(eventId)
+//    }
     
     func isAlphaWellEvent(_ eventId: Int) -> Bool {
         return eventIdsWellFront.contains(eventId) || eventIdsWellBack.contains(eventId)

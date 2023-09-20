@@ -73,16 +73,11 @@ class Processor {
     fileprivate var specialPerAct = [Int: CUnsignedShort]()
     fileprivate var beamStatePerAct = BeamState()
     fileprivate var fissionsAlphaPerAct = DoubleSidedStripDetectorMatch()
-    fileprivate var fissionsAlphaNextPerAct = [Int: DoubleSidedStripDetectorMatch]()
-    fileprivate var lastFissionAlphaNextPerAct: DoubleSidedStripDetectorMatch? {
-        return fissionsAlphaNextPerAct[criteria.nextMaxIndex() ?? -1]
-    }
     fileprivate var currentEventTime: CUnsignedLongLong {
-        return (criteria.searchExtraFromLastParticle ? lastFissionAlphaNextPerAct : firstParticlePerAct)?.currentEventTime ?? 0
+        return firstParticlePerAct.currentEventTime
     }
-    fileprivate var recoilsPerAct = DoubleSidedStripDetectorMatch()
     fileprivate var firstParticlePerAct: DoubleSidedStripDetectorMatch {
-        return criteria.startFromRecoil() ? recoilsPerAct : fissionsAlphaPerAct
+        return fissionsAlphaPerAct
     }
     fileprivate var fissionsAlphaWellPerAct = DoubleSidedStripDetectorMatch()
     
@@ -235,7 +230,7 @@ class Processor {
             return
         }
 
-        neutronsMultiplicity = NeutronsMultiplicity(efficiency: criteria.neutronsDetectorEfficiency, efficiencyError: criteria.neutronsDetectorEfficiencyError, placedSFSource: criteria.placedSFSource)
+        neutronsMultiplicity = NeutronsMultiplicity(efficiency: criteria.neutronsDetectorEfficiency, efficiencyError: criteria.neutronsDetectorEfficiencyError, placedSFSource: nil)
         totalEventNumber = 0
         clearActInfo()
 
@@ -323,7 +318,8 @@ class Processor {
     fileprivate func mainCycleEventCheck(_ event: Event, fileStat: FileStatistics) {
         fileStat.handleEvent(event)
         
-        if isFront(event, type: criteria.startParticleType) {
+        // TODO: validate findFissionAlphaWell
+        if isFissionOrAlphaWell(event, side: .front) {
             firstParticlePerAct.currentEventTime = event.time
 
             if criteria.inBeamOnly && !isInBeam(event) {
@@ -332,104 +328,43 @@ class Processor {
             }
 
             var gamma: DetectorMatch?
-            let isRecoilSearch = criteria.startFromRecoil()
-            if isRecoilSearch {
-                if !validateRecoil(event, deltaTime: 0) {
-                    clearActInfo()
-                    return
-                }
-            } else { // FFron or AFron
-                let energy = getEnergy(event)
-                if !isOverflowed(event) && (energy < criteria.fissionAlphaFrontMinEnergy || energy > criteria.fissionAlphaFrontMaxEnergy) {
-                    clearActInfo()
-                    return
-                }
-                
-                if !criteria.usePileUp && event.pileUp == 1 {
-                    clearActInfo()
-                    return
-                }
-
-                if !criteria.searchExtraFromLastParticle {
-                    gamma = findGamma(currentPosition)
-                    if criteria.requiredGamma && nil == gamma {
-                        clearActInfo()
-                        return
-                    }
-                }
-
-                storeFissionAlphaFront(event, deltaTime: 0, subMatches: [.gamma: gamma])
+            // FFron or AFron
+            let energy = getEnergy(event)
+            if !isOverflowed(event) && (energy < criteria.fissionAlphaWellMinEnergy || energy > criteria.fissionAlphaWellMaxEnergy) {
+                clearActInfo()
+                return
             }
-
-            let position = currentPosition
-
-            if !isRecoilSearch {
-                findFissionAlphaBack()
-                fseek(file, position, SEEK_SET)
-                if criteria.requiredFissionAlphaBack && 0 == fissionsAlphaPerAct.matchFor(side: .back).count {
-                    clearActInfo()
-                    return
-                }
-
-                // Search them only after search all FBack/ABack
-                findRecoil()
-                fseek(file, position, SEEK_SET)
-                if criteria.requiredRecoil && 0 == recoilsPerAct.matchFor(side: .front).count {
-                    clearActInfo()
-                    return
-                }
-
-                if !criteria.searchExtraFromLastParticle {
-                    findFissionAlphaWell(position)
-                    if wellSearchFailed() {
-                        clearActInfo()
-                        return
-                    }
-                }
-            }
-
-            if criteria.next[2] != nil {
-                findFissionAlpha(2)
-                fseek(file, position, SEEK_SET)
-                guard let match = fissionsAlphaNextPerAct[2], match.matchFor(side: .front).count > 0 else {
-                    clearActInfo()
-                    return
-                }
-
-                if criteria.next[3] != nil {
-                    findFissionAlpha(3)
-                    fseek(file, position, SEEK_SET)
-                    guard let match = fissionsAlphaNextPerAct[3], match.matchFor(side: .front).count > 0 else {
-                        clearActInfo()
-                        return
-                    }
-
-                    if criteria.next[4] != nil {
-                        findFissionAlpha(4)
-                        fseek(file, position, SEEK_SET)
-                        guard let match = fissionsAlphaNextPerAct[4], match.matchFor(side: .front).count > 0 else {
-                            clearActInfo()
-                            return
-                        }
-                    }
-                }
-
-                if criteria.searchExtraFromLastParticle && wellSearchFailed() {
-                    clearActInfo()
-                    return
-                }
-            }
-
-            if !criteria.startFromRecoil() && criteria.requiredGammaOrWell && gamma == nil && fissionsAlphaWellPerAct.matchFor(side: .front).count == 0 {
+            
+            if !criteria.usePileUp && event.pileUp == 1 {
                 clearActInfo()
                 return
             }
 
-            if !criteria.searchExtraFromLastParticle {
-                if findNeutrons(position) {
-                    clearActInfo()
-                    return
-                }
+            gamma = findGamma(currentPosition)
+            if criteria.requiredGamma && nil == gamma {
+                clearActInfo()
+                return
+            }
+
+            storeFissionAlphaFront(event, deltaTime: 0, subMatches: [.gamma: gamma])
+
+            let position = currentPosition
+
+            findFissionAlphaBack()
+            fseek(file, position, SEEK_SET)
+            if 0 == fissionsAlphaPerAct.matchFor(side: .back).count {
+                clearActInfo()
+                return
+            }
+
+            if criteria.requiredGammaOrWell && gamma == nil {
+                clearActInfo()
+                return
+            }
+
+            if findNeutrons(position) {
+                clearActInfo()
+                return
             }
 
             if criteria.trackBeamState {
@@ -438,8 +373,8 @@ class Processor {
             fseek(file, position, SEEK_SET)
 
             // Important: this search must be last because we don't do file repositioning here
-            // Sum(FFron or AFron)
-            if !isRecoilSearch && criteria.summarizeFissionsAlphaFront {
+            // TODO: well logic for Sum(FFron or AFron)
+            if criteria.summarizeFissionsAlphaFront {
                 findAllFirstFissionsAlphaFront(fileStat)
             }
 
@@ -458,10 +393,6 @@ class Processor {
         }
     }
 
-    fileprivate func wellSearchFailed() -> Bool {
-        return criteria.searchWell && criteria.requiredWell && fissionsAlphaWellPerAct.matchFor(side: .front).count == 0
-    }
-
     fileprivate func updateFileStatistics(_ event: Event, fileStat: FileStatistics) {
         let id = Int(event.eventId)
         if dataProtocol.isBeamEnergy(id) {
@@ -477,28 +408,26 @@ class Processor {
     }
 
     fileprivate func findFissionAlphaWell(_ position: Int) {
-        if criteria.searchWell {
-            let directions: Set<SearchDirection> = [.backward, .forward]
-            search(directions: directions, startTime: currentEventTime, minDeltaTime: 0, maxDeltaTime: criteria.fissionAlphaMaxTime, maxDeltaTimeBackward: criteria.fissionAlphaWellBackwardMaxTime) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>, _) in
-                for side in [.front, .back] as [StripsSide] {
-                    if self.isFissionOrAlphaWell(event, side: side) {
-                        self.filterAndStoreFissionAlphaWell(event, side: side)
-                    }
+        let directions: Set<SearchDirection> = [.backward, .forward]
+        search(directions: directions, startTime: currentEventTime, minDeltaTime: 0, maxDeltaTime: criteria.fissionAlphaMaxTime, maxDeltaTimeBackward: criteria.fissionAlphaWellBackwardMaxTime) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>, _) in
+            for side in [.front, .back] as [StripsSide] {
+                if self.isFissionOrAlphaWell(event, side: side) {
+                    self.filterAndStoreFissionAlphaWell(event, side: side)
                 }
             }
-            fseek(file, position, SEEK_SET)
         }
+        fseek(file, position, SEEK_SET)
     }
 
-    fileprivate func checkIsSimultaneousDecay(_ event: Event, deltaTime: CLongLong) -> Bool {
-        if criteria.simultaneousDecaysFilterForNeutrons && isBack(event, type: .alpha) && abs(deltaTime) > criteria.fissionAlphaMaxTime {
-            let energy = getEnergy(event)
-            if energy >= criteria.fissionAlphaBackMinEnergy && energy <= criteria.fissionAlphaBackMaxEnergy {
-                return true
-            }
-        }
-        return false
-    }
+//    fileprivate func checkIsSimultaneousDecay(_ event: Event, deltaTime: CLongLong) -> Bool {
+//        if criteria.simultaneousDecaysFilterForNeutrons && isBack(event, type: .alpha) && abs(deltaTime) > criteria.fissionAlphaMaxTime {
+//            let energy = getEnergy(event)
+//            if energy >= criteria.fissionAlphaBackMinEnergy && energy <= criteria.fissionAlphaBackMaxEnergy {
+//                return true
+//            }
+//        }
+//        return false
+//    }
 
     fileprivate func findNeutrons(_ position: Int) -> Bool {
         var excludeSFEvent: Bool = false
@@ -508,12 +437,13 @@ class Processor {
             let maxDeltaTime = criteria.maxNeutronTime
             search(directions: directions, startTime: startTime, minDeltaTime: criteria.minNeutronTime, maxDeltaTime: maxDeltaTime, maxDeltaTimeBackward: criteria.maxNeutronBackwardTime) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>, _) in
                 let id = Int(event.eventId)
-                // 1) Simultaneous Decays Filter - search the events with fragment energy at the same time with current decay.
-                if self.checkIsSimultaneousDecay(event, deltaTime: deltaTime) {
-                    excludeSFEvent = true
-                    self.neutronsMultiplicity?.incrementBroken()
-                    stop.initialize(to: true)
-                } else if abs(deltaTime) < maxDeltaTime {
+                // 1) TODO: Simultaneous Decays Filter - search the events with fragment energy at the same time with current decay.
+//                if self.checkIsSimultaneousDecay(event, deltaTime: deltaTime) {
+//                    excludeSFEvent = true
+//                    self.neutronsMultiplicity?.incrementBroken()
+//                    stop.initialize(to: true)
+//                } else if abs(deltaTime) < maxDeltaTime {
+                if abs(deltaTime) < maxDeltaTime {
                     // 3) Store neutron info.
                     if self.dataProtocol.isNeutronsNewEvent(id) {
                         let neutronTime = event.time
@@ -547,7 +477,7 @@ class Processor {
         search(directions: directions, startTime: firstParticlePerAct.currentEventTime, minDeltaTime: 0, maxDeltaTime: criteria.fissionAlphaMaxTime) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>, position: Int) in
             // File-position check is used for skip Fission/Alpha First event!
             fgetpos(self.file, &current)
-            if current != initial && self.isFront(event, type: self.criteria.startParticleType) && self.isFissionStripNearToFirstFissionFront(event) {
+            if current != initial && self.isFissionOrAlphaWell(event, side: .front) && self.isFissionStripNearToFirstFissionFront(event) {
                 self.storeFissionAlphaFront(event, deltaTime: deltaTime, subMatches: nil)
             } else {
                 self.updateFileStatistics(event, fileStat: fileStat)
@@ -571,13 +501,13 @@ class Processor {
         let match = fissionsAlphaPerAct
         let type = SearchType.alpha
         let directions: Set<SearchDirection> = [.backward, .forward]
-        let byFact = self.criteria.searchFissionAlphaBackByFact
-        search(directions: directions, startTime: firstParticlePerAct.currentEventTime, minDeltaTime: 0, maxDeltaTime: criteria.fissionAlphaMaxTime, maxDeltaTimeBackward: criteria.fissionAlphaBackBackwardMaxTime) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>, _) in
-            if self.isBack(event, type: type) {
+        let byFact = false // TODO: add UI for self.criteria.searchFissionAlphaBackByFact
+        search(directions: directions, startTime: firstParticlePerAct.currentEventTime, minDeltaTime: 0, maxDeltaTime: criteria.fissionAlphaMaxTime, maxDeltaTimeBackward: criteria.fissionAlphaWellBackwardMaxTime) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>, _) in
+            if self.isFissionOrAlphaWell(event, side: .back) {
                 var store = byFact
                 if !store {
                     let energy = self.getEnergy(event)
-                    store = self.isOverflowed(event) || energy >= self.criteria.fissionAlphaBackMinEnergy && energy <= self.criteria.fissionAlphaBackMaxEnergy
+                    store = self.isOverflowed(event) || energy >= self.criteria.fissionAlphaWellMinEnergy && energy <= self.criteria.fissionAlphaWellMaxEnergy
                 }
                 if store {
                     self.storeFissionAlphaBack(event, match: match, type: type, deltaTime: deltaTime)
@@ -588,85 +518,7 @@ class Processor {
             }
         }
         if !criteria.summarizeFissionsAlphaBack {
-            match.matchFor(side: .back).filterItemsByMaxEnergy(maxStripsDelta: criteria.recoilBackMaxDeltaStrips)
-        }
-    }
-
-    fileprivate func findRecoil() {
-        let fissionTime = firstParticlePerAct.currentEventTime
-        let directions: Set<SearchDirection> = [.backward]
-        search(directions: directions, startTime: fissionTime, minDeltaTime: criteria.recoilMinTime, maxDeltaTime: criteria.recoilMaxTime) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>, _) in
-            let isRecoil = self.isFront(event, type: SearchType.recoil)
-            if isRecoil {
-                let isNear = self.isEventStripNearToFirstParticle(event, maxDelta: Int(self.criteria.recoilFrontMaxDeltaStrips), side: .front)
-                if isNear {
-                    let found = self.validateRecoil(event, deltaTime: deltaTime)
-                    if found && self.criteria.searchFirstRecoilOnly {
-                        stop.initialize(to: true)
-                    }
-                }
-            }
-        }
-    }
-
-    @discardableResult fileprivate func validateRecoil(_ event: Event, deltaTime: CLongLong) -> Bool {
-        let energy = self.getEnergy(event)
-        if energy >= criteria.recoilFrontMinEnergy && energy <= criteria.recoilFrontMaxEnergy {
-            var position = fpos_t()
-            fgetpos(self.file, &position)
-            let t = event.time
-
-            let found = findRecoilBack(t, position: Int(position))
-            if (!found && criteria.requiredRecoilBack) {
-                return false
-            }
-
-            var gamma: DetectorMatch?
-            if criteria.startFromRecoil(), !criteria.searchExtraFromLastParticle {
-                gamma = findGamma(Int(position))
-                if criteria.requiredGamma && nil == gamma {
-                    return false
-                }
-            }
-
-            var subMatches: [SearchType : DetectorMatch?] = [:]
-            if let gamma = gamma {
-                subMatches[.gamma] = gamma
-            }
-            self.storeRecoil(event, energy: energy, deltaTime: deltaTime, subMatches: subMatches)
-            return true
-        }
-        return false
-    }
-
-    fileprivate func findRecoilBack(_ timeRecoilFront: CUnsignedLongLong, position: Int) -> Bool {
-        var items = [DetectorMatchItem]()
-        let side: StripsSide = .back
-        let directions: Set<SearchDirection> = [.backward, .forward]
-        let byFact = self.criteria.searchRecoilBackByFact
-        search(directions: directions, startTime: timeRecoilFront, minDeltaTime: 0, maxDeltaTime: criteria.recoilBackMaxTime, maxDeltaTimeBackward: criteria.recoilBackBackwardMaxTime) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>, _) in
-            let type: SearchType = .recoil
-            if self.isBack(event, type: type) {
-                var store = self.criteria.startFromRecoil() || self.isRecoilBackStripNearToFissionAlphaBack(event)
-                if !byFact && store {
-                    let energy = self.getEnergy(event)
-                    store = energy >= self.criteria.recoilBackMinEnergy && energy <= self.criteria.recoilBackMaxEnergy
-                }
-                if store {
-                    let item = self.focalDetectorMatchItemFrom(event, type: type, deltaTime: deltaTime, side: side)
-                    items.append(item)
-                    if byFact || self.criteria.searchFirstRecoilOnly { // just stop on first one
-                        stop.initialize(to: true)
-                    }
-                }
-            }
-        }
-        fseek(self.file, Int(position), SEEK_SET)
-        if let item = DetectorMatch.getItemWithMaxEnergy(items) {
-            recoilsPerAct.append(item, side: side)
-            return true
-        } else {
-            return false
+            match.matchFor(side: .back).filterItemsByMaxEnergy(maxStripsDelta: criteria.fissionAlphaBackMaxDeltaStrips)
         }
     }
 
@@ -678,89 +530,13 @@ class Processor {
         }
     }
 
-    fileprivate func findFissionAlpha(_ index: Int) {
-        guard let c = criteria.next[index] else {
-            return
-        }
-        // TODO: did more clear logic in case of recoil search disabled, and implement findFissionAlpha(1)
-        let startTime = index <= 2 ? firstParticlePerAct.currentEventTime : (fissionsAlphaNextPerAct[index-1]?.currentEventTime ?? 0)
-        let directions: Set<SearchDirection> = [.forward]
-        let isLastNext = criteria.nextMaxIndex() == index
-        search(directions: directions, startTime: startTime, minDeltaTime: c.minTime, maxDeltaTime: c.maxTime) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>, position: Int) in
-            let t = c.frontType
-            let isFront = self.isFront(event, type: t)
-            if isFront {
-                let st = event.time
-                self.fissionsAlphaNextPerAct[index]?.currentEventTime = st
-                let energy = self.getEnergy(event)
-                if self.isEventStripNearToFirstParticle(event, maxDelta: Int(c.maxDeltaStrips), side: .front) && ((!isFront && c.backByFact) || (energy >= c.frontMinEnergy && energy <= c.frontMaxEnergy)) {
-                    var store = true
-                    var gamma: DetectorMatch?
-                    // Back
-                    let back = self.findFissionAlphaBack(index, position: position, startTime: st)
-                    if self.criteria.requiredFissionAlphaBack && back == nil {
-                        store = false
-                    } else {
-                        // Extra Search
-                        if isLastNext, self.criteria.searchExtraFromLastParticle {
-                            self.findFissionAlphaWell(position)
-                            if self.findNeutrons(position) {
-                                store = false
-                            }
-                            gamma = self.findGamma(position)
-                            if nil == gamma, self.criteria.requiredGamma {
-                                store = false
-                            }
-                        }
-                    }
-                    if store {
-                        self.storeFissionAlpha(index, event: event, type: t, deltaTime: deltaTime, subMatches: [.gamma: gamma], back: back)
-                    }
-                }
-            }
-        }
-    }
-
-    fileprivate func findFissionAlphaBack(_ index: Int, position: Int, startTime: CUnsignedLongLong) -> DetectorMatchItem? {
-        guard let c = criteria.next[index] else {
-            return nil
-        }
-
-        var items = [DetectorMatchItem]()
-        let directions: Set<SearchDirection> = [.forward, .backward]
-        let byFact = c.backByFact
-        search(directions: directions, startTime: startTime, minDeltaTime: 0, maxDeltaTime: criteria.fissionAlphaMaxTime, maxDeltaTimeBackward: criteria.fissionAlphaBackBackwardMaxTime) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>, position: Int) in
-            let t = c.backType
-            let isBack = self.isBack(event, type: t)
-            if isBack {
-                var store = self.isEventStripNearToFirstParticle(event, maxDelta: Int(self.criteria.recoilBackMaxDeltaStrips), side: .back)
-                if !byFact && store { // check energy also
-                    let energy = self.getEnergy(event)
-                    store = energy >= c.backMinEnergy && energy <= c.backMaxEnergy
-                }
-                if store {
-                    let item = self.focalDetectorMatchItemFrom(event, type: t, deltaTime: deltaTime, side: .back)
-                    items.append(item)
-                    if byFact { // just stop on first one
-                        stop.initialize(to: true)
-                    }
-                }
-            }
-        }
-        fseek(file, position, SEEK_SET)
-        if let item = DetectorMatch.getItemWithMaxEnergy(items) {
-            return item
-        }
-        return nil
-    }
-
     // MARK: - Storage
 
-    fileprivate func focalDetectorMatchItemFrom(_ event: Event, type: SearchType, deltaTime: CLongLong, side: StripsSide) -> DetectorMatchItem {
+    fileprivate func wellDetectorMatchItemFrom(_ event: Event, type: SearchType, deltaTime: CLongLong, side: StripsSide) -> DetectorMatchItem {
         let encoder = event.eventId
         let energy = getEnergy(event)
         let item = DetectorMatchItem(type: type,
-                                     stripDetector: .focal,
+                                     stripDetector: .side,
                                      energy: energy,
                                      encoder: encoder,
                                      eventNumber: eventNumber(),
@@ -772,7 +548,7 @@ class Processor {
 
     fileprivate func storeFissionAlphaBack(_ event: Event, match: DoubleSidedStripDetectorMatch, type: SearchType, deltaTime: CLongLong) {
         let side: StripsSide = .back
-        let item = focalDetectorMatchItemFrom(event, type: type, deltaTime: deltaTime, side: side)
+        let item = wellDetectorMatchItemFrom(event, type: type, deltaTime: deltaTime, side: side)
         match.append(item, side: side)
     }
 
@@ -783,7 +559,7 @@ class Processor {
         let energy = getEnergy(event)
         let side: StripsSide = .front
         let item = DetectorMatchItem(type: type,
-                                     stripDetector: .focal,
+                                     stripDetector: .side,
                                      energy: energy,
                                      encoder: encoder,
                                      eventNumber: eventNumber(),
@@ -814,42 +590,6 @@ class Processor {
         return item
     }
 
-    fileprivate func storeRecoil(_ event: Event, energy: Double, deltaTime: CLongLong, subMatches: [SearchType: DetectorMatch?]?) {
-        let encoder = event.eventId
-        let side: StripsSide = .front
-        let item = DetectorMatchItem(type: .recoil,
-                                     stripDetector: .focal,
-                                     energy: energy,
-                                     encoder: encoder,
-                                     eventNumber: eventNumber(),
-                                     deltaTime: deltaTime,
-                                     overflow: event.overflow,
-                                     subMatches: subMatches,
-                                     side: side)
-        recoilsPerAct.append(item, side: side)
-    }
-
-    fileprivate func storeFissionAlpha(_ index: Int, event: Event, type: SearchType, deltaTime: CLongLong, subMatches: [SearchType: DetectorMatch?]?, back: DetectorMatchItem?) {
-        let encoder = event.eventId
-        let energy = getEnergy(event)
-        let side: StripsSide = .front
-        let item = DetectorMatchItem(type: type,
-                                     stripDetector: .focal,
-                                     energy: energy,
-                                     encoder: encoder,
-                                     eventNumber: eventNumber(),
-                                     deltaTime: deltaTime,
-                                     overflow: event.overflow,
-                                     subMatches: subMatches,
-                                     side: side)
-        let match = fissionsAlphaNextPerAct[index] ?? DoubleSidedStripDetectorMatch()
-        match.append(item, side: side)
-        if let back = back {
-            match.append(back, side: .back)
-        }
-        fissionsAlphaNextPerAct[index] = match
-    }
-
     fileprivate func filterAndStoreFissionAlphaWell(_ event: Event, side: StripsSide) {
         let type: SearchType = .alpha
         let energy = getEnergy(event)
@@ -872,8 +612,6 @@ class Processor {
         specialPerAct.removeAll()
         beamStatePerAct.clean()
         fissionsAlphaWellPerAct.removeAll()
-        recoilsPerAct.removeAll()
-        fissionsAlphaNextPerAct.removeAll()
     }
 
     // MARK: - Helpers
@@ -883,16 +621,6 @@ class Processor {
         let strip1_N = stripsConfiguration().strip1_N_For(channel: encoder)
         if let s = firstParticlePerAct.firstItemsFor(side: side)?.strip1_N {
             return abs(Int32(strip1_N) - Int32(s)) <= Int32(maxDelta)
-        }
-        return false
-    }
-
-    fileprivate func isRecoilBackStripNearToFissionAlphaBack(_ event: Event) -> Bool {
-        let side: StripsSide = .back
-        if let s = fissionsAlphaPerAct.matchFor(side: side).itemWithMaxEnergy()?.strip1_N {
-            let encoder = event.eventId
-            let strip1_N = stripsConfiguration().strip1_N_For(channel: encoder)
-            return abs(Int32(strip1_N) - Int32(s)) <= Int32(criteria.recoilBackMaxDeltaStrips)
         }
         return false
     }
@@ -927,32 +655,12 @@ class Processor {
         return dataProtocol.isGammaEvent(eventId)
     }
 
-    fileprivate func isFront(_ event: Event, type: SearchType) -> Bool {
-        let searchRecoil = type == .recoil
-        let currentRecoil = isRecoil(event)
-        let sameType = (searchRecoil && currentRecoil) || (!searchRecoil && !currentRecoil)
-        return sameType && isFront(event)
-    }
-
-    fileprivate func isFront(_ event: Event) -> Bool {
-        let eventId = Int(event.eventId)
-        return dataProtocol.isAlphaFronEvent(eventId)
-    }
-
     fileprivate func isFissionOrAlphaWell(_ event: Event, side: StripsSide) -> Bool {
         let eventId = Int(event.eventId)
-        if isRecoil(event) && !criteria.wellRecoilsAllowed {
+        if isRecoil(event) {
             return false
         }
         return (side == .front && dataProtocol.isAlphaWellEvent(eventId)) || (side == .back && dataProtocol.isAlphaWellBackEvent(eventId))
-    }
-
-    fileprivate func isBack(_ event: Event, type: SearchType) -> Bool {
-        let eventId = Int(event.eventId)
-        let searchRecoil = type == .recoil
-        let currentRecoil = isRecoil(event)
-        let sameType = (searchRecoil && currentRecoil) || (!searchRecoil && !currentRecoil)
-        return sameType && dataProtocol.isAlphaBackEvent(eventId)
     }
 
     fileprivate func eventNumber(_ total: Bool = false) -> CUnsignedLongLong {
@@ -986,10 +694,10 @@ class Processor {
 
 }
 
-extension Processor: ResultsTableDelegate {
+extension Processor: ResultsTableDelegate {    
 
     func rowsCountForCurrentResult() -> Int {
-        return max(max(max(max(max(1, fissionsAlphaWellPerAct.count), fissionsAlphaPerAct.count), recoilsPerAct.count), neutronsCountWithNewLine()), fissionsAlphaNextPerAct.values.map { $0.count }.max() ?? 0)
+        return max(max(max(1, fissionsAlphaWellPerAct.count), fissionsAlphaPerAct.count), neutronsCountWithNewLine())
     }
 
     // Need special results block for neutron times, so we skeep one line.
@@ -1011,19 +719,8 @@ extension Processor: ResultsTableDelegate {
     }
 
     func focalGammaContainer() -> DetectorMatch? {
-        var match: DoubleSidedStripDetectorMatch?
-        if criteria.searchExtraFromLastParticle {
-            match = lastFissionAlphaNextPerAct
-        } else if criteria.startFromRecoil() {
-            match = recoilsPerAct
-        } else {
-            match = fissionsAlphaPerAct
-        }
-        return match?.matchFor(side: .front)
-    }
-
-    func recoilAt(side: StripsSide, index: Int) -> DetectorMatchItem? {
-        return recoilsPerAct.matchFor(side: side).itemAt(index: index)
+        var match: DoubleSidedStripDetectorMatch = fissionsAlphaPerAct
+        return match.matchFor(side: .front)
     }
 
     func fissionsAlphaWellAt(side: StripsSide, index: Int) -> DetectorMatchItem? {
@@ -1036,10 +733,6 @@ extension Processor: ResultsTableDelegate {
 
     func firstParticleAt(side: StripsSide) -> DetectorMatch {
         return firstParticlePerAct.matchFor(side: side)
-    }
-
-    func nextParticleAt(side: StripsSide, index: Int) -> DetectorMatch? {
-        return fissionsAlphaNextPerAct[index]?.matchFor(side: side)
     }
 
     func specialWith(eventId: Int) -> CUnsignedShort? {

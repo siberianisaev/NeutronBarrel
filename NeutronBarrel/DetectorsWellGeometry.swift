@@ -41,11 +41,12 @@ class DetectorsWellGeometry {
             z = (CGFloat(SideDetector.stripsCount().back - stripBack0_N) - 0.5) * SideDetector.stripsWidth().back
         }
         // XY
-        if stripDetector == .focal {
-            let sw = FocalDetector.stripsWidth()
-            x = (CGFloat(stripBack0_N) + 0.5) * sw.back
-            y = (CGFloat(stripFront0_N) + 0.5) * sw.front
-        } else if let encoder = encoderSide {
+//        if stripDetector == .focal {
+//            let sw = FocalDetector.stripsWidth()
+//            x = (CGFloat(stripBack0_N) + 0.5) * sw.back
+//            y = (CGFloat(stripFront0_N) + 0.5) * sw.front
+//        } else if let encoder = encoderSide {
+        if let encoder = encoderSide {
             let twoCristalsWidth = SideDetector.activeAreaSize().width * 2
             let sideWidth = twoCristalsWidth + SideDetector.interCristalPadding
             let sripWidth = SideDetector.stripsWidth().front

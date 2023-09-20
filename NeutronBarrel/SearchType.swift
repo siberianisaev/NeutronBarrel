@@ -10,7 +10,6 @@ import Foundation
 
 enum SearchType: Int {
     case alpha
-    case recoil
     case veto
     case tof
     case tof2
@@ -20,8 +19,6 @@ enum SearchType: Int {
         switch self {
         case .alpha, .veto:
             return "A"
-        case .recoil:
-            return "R"
         case .tof, .tof2:
             return "T"
         case .gamma:
@@ -35,8 +32,6 @@ enum SearchType: Int {
             return "Alpha"
         case .veto:
             return "Veto"
-        case .recoil:
-            return "Recoil"
         case .tof:
             return "TOF"
         case .tof2:
