@@ -725,4 +725,10 @@ extension Processor: ResultsTableDelegate {
         return specialPerAct[eventId]
     }
     
+    func wellDetectorNumber(_ eventId: Int, stripsSide: StripsSide) -> Int {
+        let startIndex = (stripsSide == .front ? dataProtocol.wellFrontIds : dataProtocol.wellBackIds).first!
+        let detector = (eventId - startIndex) / 32 // TODO: constant
+        return detector
+    }
+    
 }

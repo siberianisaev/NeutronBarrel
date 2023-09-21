@@ -19,6 +19,7 @@ protocol ResultsTableDelegate: AnyObject {
     func beamState() -> BeamState
     func firstParticleAt(side: StripsSide) -> DetectorMatch
     func specialWith(eventId: Int) -> CUnsignedShort?
+    func wellDetectorNumber(_ eventId: Int, stripsSide: StripsSide) -> Int
     
 }
 
@@ -97,6 +98,7 @@ class ResultsTable {
     }
     fileprivate var keyColumnWellOverflow = "$WellOverflow"
     fileprivate var keyColumnWellPosition = "$WellPos"
+    fileprivate var keyColumnWellDetector = "$WellDetector"
     fileprivate func keyColumnWell(position: Position) -> String {
         return "$WellPos\(position.rawValue)"
     }
@@ -255,7 +257,8 @@ class ResultsTable {
         columns.append(contentsOf: [
             keyColumnWellEnergy,
             keyColumnWellOverflow,
-            keyColumnWellPosition
+            keyColumnWellPosition,
+            keyColumnWellDetector
             ])
         columns.append(contentsOf: ([.X, .Y, .Z] as [Position]).map { keyColumnWell(position: $0) })
         columns.append(contentsOf: [
@@ -495,6 +498,11 @@ class ResultsTable {
                 case keyColumnWellPosition:
                     if let item = delegate.fissionsAlphaWellAt(side: .front, index: row), let strip1_N = item.strip1_N, let encoder = item.encoder {
                         field = String(format: "FWell%d.%d", encoder, strip1_N)
+                    }
+                case keyColumnWellDetector:
+                    if let item = delegate.fissionsAlphaWellAt(side: .front, index: row), let encoder = item.encoder {
+                        let detector = delegate.wellDetectorNumber(Int(encoder), stripsSide: .front)
+                        field = String(format: "%d", detector)
                     }
                 case keyColumnWell(position: .X), keyColumnWell(position: .Y), keyColumnWell(position: .Z):
                     var p: Position

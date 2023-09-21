@@ -46,8 +46,14 @@ class DataProtocol {
 
 //    let eventIdsFocalFront = Set(0...127)
 //    let eventIdsFocalBack = Set(128...255)
-    let eventIdsWellFront = Set(256...383)
-    let eventIdsWellBack = Set(384...511)
+    let wellFrontIds = Array(256...383)
+    let wellBackIds = Array(384...511)
+    lazy var eventIdsWellFront: Set = {
+        Set(wellFrontIds)
+    }()
+    lazy var eventIdsWellBack: Set = {
+        Set(wellBackIds)
+    }()
     let eventIdsNeutrons = Set(512...639)
     let eventIdsGamma = Set(640...660)
     let eventIdIntensity = 996 // nA
