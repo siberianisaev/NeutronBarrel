@@ -315,7 +315,7 @@ class Processor {
         fileStat.handleEvent(event)
         
         // TODO: validate findFissionAlphaWell
-        if isFissionOrAlphaWell(event, side: .front) {
+        if dataProtocol.isAlphaWellFrontEvent(Int(event.eventId)) {
             fissionsAlphaPerAct.currentEventTime = event.time
 
             if criteria.inBeamOnly && !isInBeam(event) {
@@ -473,7 +473,7 @@ class Processor {
         search(directions: directions, startTime: fissionsAlphaPerAct.currentEventTime, minDeltaTime: 0, maxDeltaTime: criteria.fissionAlphaMaxTime) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>, position: Int) in
             // File-position check is used for skip Fission/Alpha First event!
             fgetpos(self.file, &current)
-            if current != initial && self.isFissionOrAlphaWell(event, side: .front) { // && self.isFissionStripNearToFirstFissionFront(event)
+            if current != initial && self.dataProtocol.isAlphaWellFrontEvent(Int(event.eventId)) { // && self.isFissionStripNearToFirstFissionFront(event)
                 self.storeFissionAlphaFront(event, deltaTime: deltaTime, subMatches: nil)
             } else {
                 self.updateFileStatistics(event, fileStat: fileStat)
@@ -499,7 +499,7 @@ class Processor {
         let directions: Set<SearchDirection> = [.backward, .forward]
         let byFact = false // TODO: add UI for self.criteria.searchFissionAlphaBackByFact
         search(directions: directions, startTime: fissionsAlphaPerAct.currentEventTime, minDeltaTime: 0, maxDeltaTime: criteria.fissionAlphaMaxTime, maxDeltaTimeBackward: criteria.fissionAlphaWellBackwardMaxTime) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>, _) in
-            if self.isFissionOrAlphaWell(event, side: .back) {
+            if self.dataProtocol.isAlphaWellBackEvent(Int(event.eventId)) {
                 var store = byFact
                 if !store {
                     let energy = self.getEnergy(event)
@@ -648,14 +648,6 @@ class Processor {
     fileprivate func isGammaEvent(_ event: Event) -> Bool {
         let eventId = Int(event.eventId)
         return dataProtocol.isGammaEvent(eventId)
-    }
-
-    fileprivate func isFissionOrAlphaWell(_ event: Event, side: StripsSide) -> Bool {
-        let eventId = Int(event.eventId)
-        if isRecoil(event) {
-            return false
-        }
-        return (side == .front && dataProtocol.isAlphaWellEvent(eventId)) || (side == .back && dataProtocol.isAlphaWellBackEvent(eventId))
     }
 
     fileprivate func eventNumber(_ total: Bool = false) -> CUnsignedLongLong {

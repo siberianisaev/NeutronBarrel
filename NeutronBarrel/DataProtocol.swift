@@ -59,14 +59,6 @@ class DataProtocol {
         return isAlphaWellEvent(eventId) // isAlphaFronEvent(eventId) || isAlphaBackEvent(eventId) || isAlphaWellEvent(eventId)
     }
     
-//    func isAlphaFronEvent(_ eventId: Int) -> Bool {
-//        return eventIdsFocalFront.contains(eventId)
-//    }
-//    
-//    func isAlphaBackEvent(_ eventId: Int) -> Bool {
-//        return eventIdsFocalBack.contains(eventId)
-//    }
-    
     func isAlphaWellEvent(_ eventId: Int) -> Bool {
         return eventIdsWellFront.contains(eventId) || eventIdsWellBack.contains(eventId)
     }
