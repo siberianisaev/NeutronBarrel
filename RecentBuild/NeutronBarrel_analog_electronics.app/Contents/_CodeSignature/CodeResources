@@ -6,19 +6,23 @@
 	<dict>
 		<key>Resources/AppIcon.icns</key>
 		<data>
-		VHkfEtlyoxRKgXqnYB7aMjEnNVo=
+		maMVVC1388M6AqNJ4aMfVREbELE=
 		</data>
 		<key>Resources/Assets.car</key>
 		<data>
-		ilO2YfC4xXQwHvbAX/0Z6PjWXno=
+		2zxi+54u3Bam7w9iJ3+SAoHuU8k=
 		</data>
 		<key>Resources/Base.lproj/MainMenu.nib</key>
 		<data>
-		h8LsfY6vZj7nD+V4pULzNcCQV8E=
+		dLBAXfg5GXH1+8SMbt9qVTzBEKU=
 		</data>
 		<key>Resources/CalculationsController.nib</key>
 		<data>
 		1wbFl8U8O9OXBefG3hBWFmkaHrA=
+		</data>
+		<key>Resources/CalibrationExample.clb</key>
+		<data>
+		rFtt/xI/zl2jyhSlHyjK22yM5jE=
 		</data>
 		<key>Resources/EventSorterController.nib</key>
 		<data>
@@ -34,24 +38,23 @@
 		</data>
 		<key>Resources/ViewerController.nib/keyedobjects-101300.nib</key>
 		<data>
-		o+8JqXm3xEmFzlywj/fxxeNZPT0=
+		zCGRsodht4yGrXdgiZGcVzSSlSs=
 		</data>
 		<key>Resources/ViewerController.nib/keyedobjects-110000.nib</key>
 		<data>
-		RxxwTmV7+BMYv941yiM51UG9jPk=
+		5q6PYfGlZnLP9QKSMg6tXJFaIgg=
+		</data>
+		<key>Resources/chan_decode_dssd.txt</key>
+		<data>
+		NCbDSg1eAtrX0U4Q7k4VtT41WFo=
+		</data>
+		<key>Resources/chan_decode_neutrons.txt</key>
+		<data>
+		XngEJFuRtIGBq41gWZ50EWyfgLE=
 		</data>
 	</dict>
 	<key>files2</key>
 	<dict>
-		<key>Frameworks/SigmaSwiftStatistics.framework</key>
-		<dict>
-			<key>cdhash</key>
-			<data>
-			GgGOZg7tAur1eTRXrp4CVSeSPoI=
-			</data>
-			<key>requirement</key>
-			<string>cdhash H"76ffb3765de3f338b8593258d405338c477eddaf" or cdhash H"1a018e660eed02eaf5793457ae9e025527923e82" or cdhash H"c1aed6ec2334b20db90691f90ccc973a243be6e0" or cdhash H"56fff8db04bafa8182c7c3baf7349ebf5b85f1dc"</string>
-		</dict>
 		<key>Frameworks/libswiftAppKit.dylib</key>
 		<dict>
 			<key>cdhash</key>
@@ -191,21 +194,21 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			MuyEOZLpLIIqAOP9X29ZLldsaqu1lDDvlembXuCnm4o=
+			+tES8fuqwxzM1GhNY0LR5oKMUM7IkSLngBopd7lKWpg=
 			</data>
 		</dict>
 		<key>Resources/Assets.car</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			kmA0AllNuV+EfANb9Y3vvkVEv68+AOGoLmCpyiKoi0k=
+			XO1ZawJbOz7J3Kmdtgv77n1iX0L+hnSqJaW/BPk99Sc=
 			</data>
 		</dict>
 		<key>Resources/Base.lproj/MainMenu.nib</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			PtdTJ6SOypeuAw/V++mOQitPNf6no7cFv8QdSNEjGOs=
+			pZRL5eb5zcT/XWVQtzokqOdrqVst8zUrUvcvkKQugJA=
 			</data>
 		</dict>
 		<key>Resources/CalculationsController.nib</key>
@@ -213,6 +216,13 @@
 			<key>hash2</key>
 			<data>
 			J2x02k4Ygh6y/5w0jiSeeE3Vw+LMOphMcXf+0iEYeFc=
+			</data>
+		</dict>
+		<key>Resources/CalibrationExample.clb</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			5tWhERSf19RV1BBlBBVKxuBWXWy9Uz/VHV/7mxJsLVE=
 			</data>
 		</dict>
 		<key>Resources/EventSorterController.nib</key>
@@ -240,14 +250,28 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			fjn6tEAUnRR14p7BTPJDzFf5aClxyEo9JnTTTGm8evk=
+			HIWDBuPdK1FmBVtwgc47NdepwYRB54pb1WNERxt8saM=
 			</data>
 		</dict>
 		<key>Resources/ViewerController.nib/keyedobjects-110000.nib</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			FYJEgSvFaWl6W4Vax9ZG258JmaA5EUe5Thf6AulJQ14=
+			b0nBaxOhkmKJ8AWswW/L4xrBsMoMpgsOLAkCfDnwWzo=
+			</data>
+		</dict>
+		<key>Resources/chan_decode_dssd.txt</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			9jm+fPRsFJDBALHoanbR+v1NXKsJ4oSkihLTCIAPK24=
+			</data>
+		</dict>
+		<key>Resources/chan_decode_neutrons.txt</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			3JOH1bGAzkEgguKMILln38fJazfUB7DvIxFMzoGG80c=
 			</data>
 		</dict>
 	</dict>
