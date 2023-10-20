@@ -49,7 +49,7 @@ class DataProtocol {
     let eventIdsWellFront = Set(256...383)
     let eventIdsWellBack = Set(384...511)
     let eventIdsNeutrons = Set(512...639)
-    let eventIdsGamma = Set(640...660)
+    let eventIdsGamma = Set(640...679)
     let eventIdIntensity = 996 // nA
     let eventIdIntegral = 997 // need multiply on 10! to mkA
     let eventIdBackground = 998 // Hz
