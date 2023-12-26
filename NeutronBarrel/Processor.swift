@@ -901,6 +901,7 @@ class Processor {
         let channel = Double(event.param3 & Mask.gamma.rawValue)
         let eventId = Int(event.eventId)
         let encoder = dataProtocol.encoderForEventId(eventId)
+        let bgoMarker = event.param3 >> 15
         
         if criteria.gammaEncodersOnly, !criteria.gammaEncoderIds.contains(Int(encoder)) {
             return nil
@@ -913,8 +914,6 @@ class Processor {
         } else {
             energy = channel
         }
-        // TODO: use marker info
-        // let coincidenceWithBGO = (event.param3 >> 15) == 1
         let strip = (event.param3 << 1) >> 12
         let item = DetectorMatchItem(type: type,
                                      stripDetector: nil,
@@ -922,7 +921,7 @@ class Processor {
                                      encoder: encoder,
                                      strip0_15: strip,
                                      deltaTime: deltaTime,
-                                     marker: event.getMarker(),
+                                     marker: bgoMarker,
                                      side: nil)
         return item
     }
