@@ -108,6 +108,7 @@ class SearchCriteria {
     var wellRecoilsAllowed = false
     var searchExtraFromLastParticle = false
     var inBeamOnly = false
+    var outBeamOnly = false
     var useOverflow = false
     var usePileUp = false
     var trackBeamEnergy = false

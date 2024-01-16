@@ -106,6 +106,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         wellRecoilsAllowed = Settings.getBoolSetting(.WellRecoilsAllowed)
         searchExtraFromLastParticle = Settings.getBoolSetting(.SearchExtraFromLastParticle)
         inBeamOnly = Settings.getBoolSetting(.InBeamOnly)
+        outBeamOnly = Settings.getBoolSetting(.OutBeamOnly)
         useOverflow = Settings.getBoolSetting(.UseOverflow)
         usePileUp = Settings.getBoolSetting(.UsePileUp)
         searchNeutrons = Settings.getBoolSetting(.SearchNeutrons)
@@ -221,6 +222,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBOutlet weak var searchExtraFromLastParticleButton: NSButton!
     @IBInspectable dynamic var searchExtraFromLastParticle: Bool = false
     @IBInspectable dynamic var inBeamOnly: Bool = false
+    @IBInspectable dynamic var outBeamOnly: Bool = false
     @IBInspectable dynamic var useOverflow: Bool = false
     @IBInspectable dynamic var usePileUp: Bool = false
     @IBInspectable dynamic var searchNeutrons: Bool = false
@@ -558,6 +560,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         sc.recoilBackMaxTime = UInt64(sMaxRecoilBackTime) ?? 0
         sc.recoilBackBackwardMaxTime = UInt64(sMaxRecoilBackBackwardTime) ?? 0
         sc.inBeamOnly = inBeamOnly
+        sc.outBeamOnly = outBeamOnly
         sc.useOverflow = useOverflow
         sc.usePileUp = usePileUp
         sc.maxGammaTime = UInt64(sMaxGammaTime) ?? 0
@@ -826,6 +829,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             .WellRecoilsAllowed: wellRecoilsAllowed,
             .SearchExtraFromLastParticle: searchExtraFromLastParticle,
             .InBeamOnly: inBeamOnly,
+            .OutBeamOnly: outBeamOnly,
             .UseOverflow: useOverflow,
             .UsePileUp: usePileUp,
             .SearchNeutrons: searchNeutrons,

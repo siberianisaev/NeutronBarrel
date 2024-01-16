@@ -326,7 +326,12 @@ class Processor {
         if isFront(event, type: criteria.startParticleType) {
             firstParticlePerAct.currentEventTime = event.time
 
-            if criteria.inBeamOnly && !isInBeam(event) {
+            let inBeam = isInBeam(event)
+            if criteria.inBeamOnly && !inBeam {
+                clearActInfo()
+                return
+            }
+            if criteria.outBeamOnly && inBeam {
                 clearActInfo()
                 return
             }

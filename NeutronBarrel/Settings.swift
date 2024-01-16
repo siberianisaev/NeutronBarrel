@@ -103,6 +103,7 @@ enum Setting: String {
     SearchWell = "SearchWell",
     ResultsFolderName = "ResultsFolderName",
     InBeamOnly = "InBeamOnly",
+    OutBeamOnly = "OutBeamOnly",
     UseOverflow = "UseOverflow",
     UsePileUp = "UsePileUp"
 }
@@ -225,7 +226,7 @@ class Settings {
             return 0
         case .RequiredFissionAlphaBack, .SearchFirstRecoilOnly, .RequiredRecoilBack, .SearchNeutrons, .TrackBeamEnergy, .TrackBeamCurrent, .TrackBeamBackground, .TrackBeamIntegral, .SearchWell:
             return true
-        case .SummarizeFissionsFront, .SummarizeFissionsFront2, .SummarizeFissionsFront3, .SummarizeFissionsFront4, .SummarizeFissionsBack, .RequiredRecoil, .RequiredGamma, .RequiredGammaOrWell, .SimplifyGamma, .RequiredWell, .WellRecoilsAllowed, .SearchSpecialEvents, .GammaEncodersOnly, .SearchFissionBackByFact, .SearchFissionBack2ByFact, .SearchFissionBack3ByFact, .SearchFissionBack4ByFact, .SearchRecoilBackByFact, .SearchExtraFromLastParticle, .SFSourcePlaced, .NeutronsPositions, .NeutronsBackground, .SimultaneousDecaysFilterForNeutrons, .CollapseNeutronOverlays, .InBeamOnly, .UseOverflow, .UsePileUp:
+        case .SummarizeFissionsFront, .SummarizeFissionsFront2, .SummarizeFissionsFront3, .SummarizeFissionsFront4, .SummarizeFissionsBack, .RequiredRecoil, .RequiredGamma, .RequiredGammaOrWell, .SimplifyGamma, .RequiredWell, .WellRecoilsAllowed, .SearchSpecialEvents, .GammaEncodersOnly, .SearchFissionBackByFact, .SearchFissionBack2ByFact, .SearchFissionBack3ByFact, .SearchFissionBack4ByFact, .SearchRecoilBackByFact, .SearchExtraFromLastParticle, .SFSourcePlaced, .NeutronsPositions, .NeutronsBackground, .SimultaneousDecaysFilterForNeutrons, .CollapseNeutronOverlays, .InBeamOnly, .OutBeamOnly, .UseOverflow, .UsePileUp:
             return false
         case .SpecialEventIds, .GammaEncoderIds:
             return nil
