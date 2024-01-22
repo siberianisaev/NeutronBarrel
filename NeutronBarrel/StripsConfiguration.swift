@@ -34,6 +34,7 @@ class StripsConfiguration {
     
     init() {
         // TODO: well detector and gamma for calibration
+        let encodersFromOne = Settings.getBoolSetting(.EncodersFromOne)
         for tuple in [("chan_decode_dssd", 0), ("chan_decode_neutrons", 512)] {
             if let url = Bundle.main.url(forResource: tuple.0, withExtension: "txt") {
                 do {
@@ -42,7 +43,8 @@ class StripsConfiguration {
                         return !$0.isEmpty
                     }
                     for index in 0...lines.count-1 {
-                        let channel = CUnsignedShort(index + tuple.1)
+                        let shift = encodersFromOne ? 1 : 0
+                        let channel = CUnsignedShort(index + tuple.1 + shift)
                         let strip = Int(lines[index])!
                         self.strips[channel] = strip
                         

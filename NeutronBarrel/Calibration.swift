@@ -73,7 +73,6 @@ class Calibration {
                 let setLines = CharacterSet.newlines
                 let lines = content.components(separatedBy: setLines)
                 for line in lines {
-                    let strip = lines.firstIndex(of: line)!
                     let config = stripsConfiguration()
                     // TODO: support gamma and AWFr / AWBk
                     
@@ -91,19 +90,22 @@ class Calibration {
                             return Int(name.replacingOccurrences(of: prefix, with: ""))
                         }
                         
+                        var s: Int = -1
                         if name.contains(focalFront) {
                             if let strip = stripFrom(prefix: focalFront, name: name) {
                                 channel = config.focalFrontStripToChannel[strip]
+                                s = strip
                             }
                         } else if name.contains(focalBack) {
                             if let strip = stripFrom(prefix: focalBack, name: name) {
                                 channel = config.focalBackStripToChannel[strip]
+                                s = strip
                             }
                         }
                         
                         if let channel = channel {
                             data[channel] = CalibrationEquation(a: a, b: b)
-                            string += "\(b) \(a) \(channel)\n"
+                            string += "b\(b) a\(a) strip\(s) channel\(channel)\n"
                         }
                     }
                 }
