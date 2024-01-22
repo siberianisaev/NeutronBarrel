@@ -11,7 +11,7 @@ import Cocoa
 class ViewerController: NSWindowController {
     
     enum Column: Int, CaseCountable {
-        case number = 0, name, ID, time, strip, energy, tof, overflow, pileup
+        case number = 0, name, ID, time, strip, channel, energy, tof, overflow, pileup
         
         static let count = Column.countCases()
         
@@ -27,6 +27,8 @@ class ViewerController: NSWindowController {
                 return "Time"
             case .strip:
                 return "Strip"
+            case .channel:
+                return "Channel"
             case .energy:
                 return "Energy"
             case .tof:
@@ -67,6 +69,9 @@ class ViewerController: NSWindowController {
     }
     
     fileprivate var stripsConfiguration = StripsConfiguration()
+    fileprivate var calibration: Calibration {
+        return Calibration.singleton
+    }
     
     override func windowDidLoad() {
         super.windowDidLoad()
@@ -173,6 +178,11 @@ extension ViewerController: NSTableViewDelegate {
         return NSColor.black
     }
     
+    func getEnergy(_ event: Event) -> Double {
+        let energy = self.calibration.calibratedValueForAmplitude(Double(event.energy), eventId: event.eventId)
+        return energy
+    }
+    
     func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
         if let tableColumn = tableColumn, let index = tableView.tableColumns.firstIndex(of: tableColumn) {
             if let column = Column(rawValue: index), let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: column.rowId), owner: self) as? NSTableCellView {
@@ -211,8 +221,11 @@ extension ViewerController: NSTableViewDelegate {
                         if strip1_N != -1 {
                             string += "_str\(strip1_N)"
                         }
-                    case .energy:
+                    case .channel:
                         string = "\(event.energy)"
+                    case .energy:
+                        let value = self.getEnergy(event)
+                        string = String(format: "%.2f", value)
                     case .tof:
                         string = String(event.tof)
                     case .overflow:
