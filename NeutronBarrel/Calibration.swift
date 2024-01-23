@@ -22,9 +22,7 @@ class Calibration {
         return Static.sharedInstance
     }
     
-    fileprivate func stripsConfiguration() -> StripsConfiguration {
-        return StripDetectorManager.singleton.stripConfiguration
-    }
+    fileprivate var stripsConfiguration = StripsConfiguration()
     
     fileprivate var data = [CUnsignedShort: CalibrationEquation]()
     var stringValue: String?
@@ -32,6 +30,7 @@ class Calibration {
     class func clean() {
         let c = Calibration.singleton
         c.data.removeAll()
+        c.stripsConfiguration = StripsConfiguration()
     }
     
     class func load(_ completion: @escaping ((Bool, [String]?) -> ())) {
@@ -73,7 +72,7 @@ class Calibration {
                 let setLines = CharacterSet.newlines
                 let lines = content.components(separatedBy: setLines)
                 for line in lines {
-                    let config = stripsConfiguration()
+                    let config = stripsConfiguration
                     // TODO: support gamma and AWFr / AWBk
                     
                     let components = line.components(separatedBy: setSpaces).filter() { $0 != "" }
@@ -105,7 +104,7 @@ class Calibration {
                         
                         if let channel = channel {
                             data[channel] = CalibrationEquation(a: a, b: b)
-                            string += "b\(b) a\(a) strip\(s) channel\(channel)\n"
+                            string += "\(name) a\(a) b\(b) strip\(s) channel\(channel)\n"
                         }
                     }
                 }

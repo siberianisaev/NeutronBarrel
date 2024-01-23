@@ -10,6 +10,7 @@ import Foundation
 
 class DetectorMatchItem {
     
+    var stripConfiguration: StripsConfiguration!
     var subMatches: [SearchType: DetectorMatch?]?
     
     fileprivate var _energy: Double?
@@ -22,12 +23,11 @@ class DetectorMatchItem {
         return _stripDetector
     }
     
-    fileprivate var _strip1_N: Int?
     var strip1_N: Int? {
-        if nil == _strip1_N, let encoder = encoder {
-            _strip1_N = StripDetectorManager.singleton.stripConfiguration.strip1_N_For(channel: encoder)
+        if let encoder = encoder {
+            return stripConfiguration.strip1_N_For(channel: encoder)
         }
-        return _strip1_N
+        return nil
     }
     
     fileprivate var _encoder: CUnsignedShort?
@@ -70,7 +70,7 @@ class DetectorMatchItem {
         return _type
     }
     
-    init(type: SearchType, stripDetector: StripDetector?, energy: Double? = nil, encoder: CUnsignedShort? = nil, eventNumber: CUnsignedLongLong? = nil, deltaTime: CLongLong? = nil, overflow: UInt8? = nil, channel: CUnsignedShort? = nil, value: Double? = nil, subMatches: [SearchType: DetectorMatch?]? = nil, back: DetectorMatch? = nil, side: StripsSide?) {
+    init(type: SearchType, stripDetector: StripDetector?, energy: Double? = nil, encoder: CUnsignedShort? = nil, eventNumber: CUnsignedLongLong? = nil, deltaTime: CLongLong? = nil, overflow: UInt8? = nil, channel: CUnsignedShort? = nil, value: Double? = nil, subMatches: [SearchType: DetectorMatch?]? = nil, back: DetectorMatch? = nil, side: StripsSide?, stripConfiguration: StripsConfiguration) {
         self._type = type
         self._stripDetector = stripDetector
         self._energy = energy
@@ -82,6 +82,7 @@ class DetectorMatchItem {
         self._value = value
         self.subMatches = subMatches
         self._side = side
+        self.stripConfiguration = stripConfiguration
     }
     
 }

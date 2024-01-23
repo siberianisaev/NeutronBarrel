@@ -342,7 +342,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     }
     @IBInspectable dynamic var encodersFromOne: Bool = false {
         didSet {
-            StripDetectorManager.singleton.stripConfiguration = StripsConfiguration()
+            Settings.changeSingle(.EncodersFromOne, value: encodersFromOne)
+            removeCalibration(self)
         }
     }
     
@@ -404,7 +405,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     
     @IBAction func removeStripsConfiguration(_ sender: Any) {
         setSelected(false, indicator: indicatorStripsConfig)
-//        StripDetectorManager.cleanStripConfigs()
         buttonRemoveStripsConfiguration.isHidden = true
         showFilePaths(nil, label: labelStripsConfigurationFileName)
     }

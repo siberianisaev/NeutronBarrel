@@ -95,7 +95,7 @@ class Processor {
     }
     
     fileprivate func stripsConfiguration() -> StripsConfiguration {
-        return StripDetectorManager.singleton.stripConfiguration
+        return criteria.stripsConfiguration
     }
     
     fileprivate var dataProtocol: DataProtocol! {
@@ -771,7 +771,8 @@ class Processor {
                                      eventNumber: eventNumber(),
                                      deltaTime: deltaTime,
                                      overflow: event.overflow,
-                                     side: side)
+                                     side: side,
+                                     stripConfiguration: stripsConfiguration())
         return item
     }
 
@@ -796,7 +797,8 @@ class Processor {
                                      overflow: event.overflow,
                                      channel: channel,
                                      subMatches: subMatches,
-                                     side: side)
+                                     side: side,
+                                     stripConfiguration: stripsConfiguration())
         fissionsAlphaPerAct.append(item, side: side)
     }
 
@@ -815,7 +817,8 @@ class Processor {
                                      encoder: encoder,
                                      deltaTime: deltaTime,
                                      overflow: event.overflow,
-                                     side: nil)
+                                     side: nil,
+                                     stripConfiguration: stripsConfiguration())
         return item
     }
 
@@ -830,7 +833,8 @@ class Processor {
                                      deltaTime: deltaTime,
                                      overflow: event.overflow,
                                      subMatches: subMatches,
-                                     side: side)
+                                     side: side,
+                                     stripConfiguration: stripsConfiguration())
         recoilsPerAct.append(item, side: side)
     }
 
@@ -846,7 +850,8 @@ class Processor {
                                      deltaTime: deltaTime,
                                      overflow: event.overflow,
                                      subMatches: subMatches,
-                                     side: side)
+                                     side: side,
+                                     stripConfiguration: stripsConfiguration())
         let match = fissionsAlphaNextPerAct[index] ?? DoubleSidedStripDetectorMatch()
         match.append(item, side: side)
         if let back = back {
@@ -867,7 +872,8 @@ class Processor {
                                      energy: energy,
                                      encoder: encoder,
                                      overflow: event.overflow,
-                                     side: side)
+                                     side: side,
+                                     stripConfiguration: stripsConfiguration())
         fissionsAlphaWellPerAct.append(item, side: side)
     }
 

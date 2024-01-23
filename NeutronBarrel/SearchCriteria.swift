@@ -10,6 +10,8 @@ import Foundation
 
 class SearchCriteria {
     
+    var stripsConfiguration = StripsConfiguration()
+    
     var resultsFolderName: String = ""
     var neutronsDetectorEfficiency: Double = 0
     var neutronsDetectorEfficiencyError: Double = 0
