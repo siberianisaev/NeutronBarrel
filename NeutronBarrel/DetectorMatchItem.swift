@@ -45,6 +45,11 @@ class DetectorMatchItem {
         return _eventNumber
     }
     
+    fileprivate var _time: UInt64?
+    var time: UInt64? {
+        return _time
+    }
+    
     fileprivate var _deltaTime: CLongLong?
     var deltaTime: CLongLong? {
         return _deltaTime
@@ -53,6 +58,11 @@ class DetectorMatchItem {
     fileprivate var _overflow: UInt8?
     var overflow: UInt8? {
         return _overflow
+    }
+    
+    fileprivate var _inBeam: UInt8?
+    var inBeam: UInt8? {
+        return _inBeam
     }
     
     fileprivate var _channel: CUnsignedShort?
@@ -70,14 +80,16 @@ class DetectorMatchItem {
         return _type
     }
     
-    init(type: SearchType, stripDetector: StripDetector?, energy: Double? = nil, encoder: CUnsignedShort? = nil, eventNumber: CUnsignedLongLong? = nil, deltaTime: CLongLong? = nil, overflow: UInt8? = nil, channel: CUnsignedShort? = nil, value: Double? = nil, subMatches: [SearchType: DetectorMatch?]? = nil, back: DetectorMatch? = nil, side: StripsSide?, stripConfiguration: StripsConfiguration) {
+    init(type: SearchType, stripDetector: StripDetector?, energy: Double? = nil, encoder: CUnsignedShort? = nil, eventNumber: CUnsignedLongLong? = nil, deltaTime: CLongLong? = nil, time: UInt64? = nil, overflow: UInt8? = nil, inBeam: UInt8? = nil, channel: CUnsignedShort? = nil, value: Double? = nil, subMatches: [SearchType: DetectorMatch?]? = nil, back: DetectorMatch? = nil, side: StripsSide?, stripConfiguration: StripsConfiguration) {
         self._type = type
         self._stripDetector = stripDetector
         self._energy = energy
         self._encoder = encoder
         self._eventNumber = eventNumber
         self._deltaTime = deltaTime
+        self._time = time
         self._overflow = overflow
+        self._inBeam = inBeam
         self._channel = channel
         self._value = value
         self.subMatches = subMatches

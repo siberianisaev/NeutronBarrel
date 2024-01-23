@@ -788,13 +788,17 @@ class Processor {
         let channel = event.getChannelFor(type: type)
         let energy = getEnergy(event)
         let side: StripsSide = .front
+        // TODO: add preference in UI to skip recoils search, than use this settings to show alpha event times
+        let time = criteria.fissionAlphaMaxTime == 0 ? nil : event.time
         let item = DetectorMatchItem(type: type,
                                      stripDetector: .focal,
                                      energy: energy,
                                      encoder: encoder,
                                      eventNumber: eventNumber(),
                                      deltaTime: deltaTime,
+                                     time: time,
                                      overflow: event.overflow,
+                                     inBeam: event.inBeam,
                                      channel: channel,
                                      subMatches: subMatches,
                                      side: side,
@@ -832,6 +836,7 @@ class Processor {
                                      eventNumber: eventNumber(),
                                      deltaTime: deltaTime,
                                      overflow: event.overflow,
+                                     inBeam: event.inBeam,
                                      subMatches: subMatches,
                                      side: side,
                                      stripConfiguration: stripsConfiguration())

@@ -67,6 +67,9 @@ class ResultsTable {
     fileprivate var keyColumnRecoilFrontEvent: String {
         return "Event(Recoil)"
     }
+    fileprivate var keyColumnRecoilFrontInBeam: String {
+        return "\(keyRecoil)InBeam"
+    }
     fileprivate var keyRecoil: String {
         return  "R"
     }
@@ -91,7 +94,9 @@ class ResultsTable {
     fileprivate var keyColumnStartEvent = "Event($)"
     fileprivate var keyColumnStartFrontSum = "Sum($Fron)"
     fileprivate var keyColumnStartFrontEnergy = "$Fron"
+    fileprivate var keyColumnStartFrontInBeam = "$FronInBeam"
     fileprivate var keyColumnStartFrontOverflow = "$FronOverflow"
+    fileprivate var keyColumnStartFrontTime = "$FronFirstTime"
     fileprivate var keyColumnStartFrontDeltaTime = "dT($FronFirst-Next)"
     fileprivate var keyColumnStartFrontStrip = "Strip($Fron)"
     fileprivate func keyColumnStartFocal(position: Position) -> String {
@@ -241,6 +246,7 @@ class ResultsTable {
             columns.append(contentsOf: [
                 keyColumnRecoilFrontEvent,
                 keyColumnRecoilFrontEnergy,
+                keyColumnRecoilFrontInBeam,
                 keyColumnRecoilFrontOverflow,
                 keyColumnRecoilFrontDeltaTime(log: false),
                 keyColumnRecoilFrontDeltaTime(log: true),
@@ -252,7 +258,14 @@ class ResultsTable {
             keyColumnStartEvent,
             keyColumnStartFrontSum,
             keyColumnStartFrontEnergy,
+            keyColumnStartFrontInBeam,
             keyColumnStartFrontOverflow,
+        ])
+        // TODO: add preference in UI to skip recoils search, than use this settings to show alpha event times
+        if criteria.fissionAlphaMaxTime == 0 {
+            columns.append(keyColumnStartFrontTime)
+        }
+        columns.append(contentsOf: [
             keyColumnStartFrontDeltaTime,
             keyColumnStartFrontStrip
         ])
@@ -443,6 +456,10 @@ class ResultsTable {
                     if let energy = delegate.recoilAt(side: .front, index: row)?.energy {
                         field = String(format: "%.7f", energy)
                     }
+                case keyColumnRecoilFrontInBeam:
+                    if let inBeam = delegate.recoilAt(side: .front, index: row)?.inBeam {
+                        field = String(format: "%hu", inBeam)
+                    }
                 case keyColumnRecoilFrontOverflow:
                     if let overflow = delegate.recoilAt(side: .front, index: row)?.overflow {
                         field = String(format: "%hu", overflow)
@@ -478,9 +495,17 @@ class ResultsTable {
                     if let energy = delegate.firstParticleAt(side: .front).itemAt(index: row)?.energy {
                         field = String(format: "%.7f", energy)
                     }
+                case keyColumnStartFrontInBeam:
+                    if let inBeam = delegate.firstParticleAt(side: .front).itemAt(index: row)?.inBeam {
+                        field = String(format: "%hu", inBeam)
+                    }
                 case keyColumnStartFrontOverflow:
                     if let overflow = delegate.firstParticleAt(side: .front).itemAt(index: row)?.overflow {
                         field = String(format: "%hu", overflow)
+                    }
+                case keyColumnStartFrontTime:
+                    if let time = delegate.firstParticleAt(side: .front).itemAt(index: row)?.time?.toMks() {
+                        field = String(format: "%lld", time)
                     }
                 case keyColumnStartFrontDeltaTime:
                     if let deltaTime = delegate.firstParticleAt(side: .front).itemAt(index: row)?.deltaTime?.toMks() {
