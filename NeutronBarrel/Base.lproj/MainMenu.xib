@@ -2818,17 +2818,6 @@
                             <binding destination="Voe-Tx-rLC" name="value" keyPath="self.outBeamOnly" id="mZ9-YB-tsf"/>
                         </connections>
                     </button>
-                    <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Cp8-Ca-u4Q">
-                        <rect key="frame" x="53" y="155" width="124" height="18"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                        <buttonCell key="cell" type="check" title="Encoders from 1" bezelStyle="regularSquare" imagePosition="left" inset="2" id="sQn-R5-f6i">
-                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                            <font key="font" metaFont="system"/>
-                        </buttonCell>
-                        <connections>
-                            <binding destination="Voe-Tx-rLC" name="value" keyPath="self.encodersFromOne" id="1XC-kB-0pr"/>
-                        </connections>
-                    </button>
                 </subviews>
             </view>
             <point key="canvasLocation" x="308" y="548"/>

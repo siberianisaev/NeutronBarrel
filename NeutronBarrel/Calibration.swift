@@ -22,15 +22,12 @@ class Calibration {
         return Static.sharedInstance
     }
     
-    fileprivate var stripsConfiguration = StripsConfiguration()
-    
     fileprivate var data = [CUnsignedShort: CalibrationEquation]()
     var stringValue: String?
     
     class func clean() {
         let c = Calibration.singleton
         c.data.removeAll()
-        c.stripsConfiguration = StripsConfiguration()
     }
     
     class func load(_ completion: @escaping ((Bool, [String]?) -> ())) {
@@ -72,7 +69,6 @@ class Calibration {
                 let setLines = CharacterSet.newlines
                 let lines = content.components(separatedBy: setLines)
                 for line in lines {
-                    let config = stripsConfiguration
                     // TODO: support gamma and AWFr / AWBk
                     
                     let components = line.components(separatedBy: setSpaces).filter() { $0 != "" }
@@ -81,30 +77,31 @@ class Calibration {
                         let b = Double(components[0]) ?? 0
                         let name = components[2]
                         
-                        var channel: CUnsignedShort? = nil
                         let focalFront = "AFr"
                         let focalBack = "ABk"
                         
-                        func stripFrom(prefix: String, name: String) -> Int? {
-                            return Int(name.replacingOccurrences(of: prefix, with: ""))
+                        func preChannelFrom(prefix: String, name: String) -> CUnsignedShort? {
+                            if let c = CUnsignedShort(name.replacingOccurrences(of: prefix, with: "")) {
+                                return c - 1
+                            }
+                            return nil
                         }
                         
-                        var s: Int = -1
+                        var channel: CUnsignedShort?
                         if name.contains(focalFront) {
-                            if let strip = stripFrom(prefix: focalFront, name: name) {
-                                channel = config.focalFrontStripToChannel[strip]
-                                s = strip
+                            if let preChannel = preChannelFrom(prefix: focalFront, name: name) {
+                                channel = preChannel
                             }
                         } else if name.contains(focalBack) {
-                            if let strip = stripFrom(prefix: focalBack, name: name) {
-                                channel = config.focalBackStripToChannel[strip]
-                                s = strip
+                            if let preChannel = preChannelFrom(prefix: focalBack, name: name) {
+                                // TODO: 128 is hardcoded this moment
+                                channel = preChannel + 128
                             }
                         }
                         
                         if let channel = channel {
                             data[channel] = CalibrationEquation(a: a, b: b)
-                            string += "\(name) a\(a) b\(b) strip\(s) channel\(channel)\n"
+                            string += "\(name) c\(channel) a\(a) b\(b)\n"
                         }
                     }
                 }

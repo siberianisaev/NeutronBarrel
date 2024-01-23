@@ -144,7 +144,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         gammaEncodersOnly = Settings.getBoolSetting(.GammaEncodersOnly)
         gammaEncoderIds = Settings.getStringSetting(.GammaEncoderIds) ?? ""
         searchWell = Settings.getBoolSetting(.SearchWell)
-        encodersFromOne = Settings.getBoolSetting(.EncodersFromOne)
         trackBeamEnergy = Settings.getBoolSetting(.TrackBeamEnergy)
         trackBeamCurrent = Settings.getBoolSetting(.TrackBeamCurrent)
         trackBeamBackground = Settings.getBoolSetting(.TrackBeamBackground)
@@ -338,12 +337,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBInspectable dynamic var searchRecoilBackByFact: Bool = false {
         didSet {
             setupRecoilBackEnergyView()
-        }
-    }
-    @IBInspectable dynamic var encodersFromOne: Bool = false {
-        didSet {
-            Settings.changeSingle(.EncodersFromOne, value: encodersFromOne)
-            removeCalibration(self)
         }
     }
     
@@ -882,7 +875,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             .SearchFissionBack4ByFact: searchFissionBack4ByFact,
             .SearchRecoilBackByFact: searchRecoilBackByFact,
             .SearchWell: searchWell,
-            .EncodersFromOne: encodersFromOne,
             .ResultsFolderName: sResultsFolderName
         ]
         Settings.change(dict)
