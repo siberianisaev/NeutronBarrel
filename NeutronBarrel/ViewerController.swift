@@ -214,7 +214,7 @@ extension ViewerController: NSTableViewDelegate {
                     case .ID:
                         string = "\(event.eventId)"
                     case .time:
-                        string = String(format: "%.3f", event.time.toMks())
+                        string = String(format: "%.2f", event.time.toMks())
                     case .strip:
                         string = "enc\(id)"
                         let strip1_N = stripsConfiguration.strip1_N_For(channel: CUnsignedShort(id))

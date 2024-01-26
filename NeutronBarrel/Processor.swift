@@ -25,8 +25,8 @@ extension UInt64 {
 // TODO: refactor it
 extension CLongLong {
     
-    func toMks() -> CLongLong {
-        return self / 125
+    func toMks() -> Double {
+        return Double(self) / 125.0
     }
     
 }
@@ -377,11 +377,13 @@ class Processor {
                 }
 
                 // Search them only after search all FBack/ABack
-                findRecoil()
-                fseek(file, position, SEEK_SET)
-                if criteria.requiredRecoil && 0 == recoilsPerAct.matchFor(side: .front).count {
-                    clearActInfo()
-                    return
+                if criteria.searchRecoils {
+                    findRecoil()
+                    fseek(file, position, SEEK_SET)
+                    if criteria.requiredRecoil && 0 == recoilsPerAct.matchFor(side: .front).count {
+                        clearActInfo()
+                        return
+                    }
                 }
 
                 if !criteria.searchExtraFromLastParticle {
@@ -788,8 +790,7 @@ class Processor {
         let channel = event.getChannelFor(type: type)
         let energy = getEnergy(event)
         let side: StripsSide = .front
-        // TODO: add preference in UI to skip recoils search, than use this settings to show alpha event times
-        let time = criteria.fissionAlphaMaxTime == 0 ? nil : event.time
+        let time = criteria.searchRecoils ? nil : event.time
         let item = DetectorMatchItem(type: type,
                                      stripDetector: .focal,
                                      energy: energy,

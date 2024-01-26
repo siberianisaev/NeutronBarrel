@@ -261,8 +261,7 @@ class ResultsTable {
             keyColumnStartFrontInBeam,
             keyColumnStartFrontOverflow,
         ])
-        // TODO: add preference in UI to skip recoils search, than use this settings to show alpha event times
-        if criteria.fissionAlphaMaxTime == 0 {
+        if !criteria.searchRecoils {
             columns.append(keyColumnStartFrontTime)
         }
         columns.append(contentsOf: [
@@ -418,7 +417,7 @@ class ResultsTable {
 //                                        }
                                     case keyColumnGammaDeltaTime(false):
                                         if let deltaTime = g.itemAt(index: row)?.deltaTime?.toMks() {
-                                            field = String(format: "%lld", deltaTime)
+                                            field = String(format: "%.1f", deltaTime)
                                         }
                                     case keyColumnGammaOverflow(false):
                                         if let overflow = g.itemAt(index: row)?.overflow {
@@ -467,7 +466,7 @@ class ResultsTable {
                 case keyColumnRecoilFrontDeltaTime(log: false), keyColumnRecoilFrontDeltaTime(log: true):
                     if let deltaTime = delegate.recoilAt(side: .front, index: row)?.deltaTime?.toMks() {
                         if column == keyColumnRecoilFrontDeltaTime(log: false) {
-                            field = String(format: "%lld", abs(deltaTime))
+                            field = String(format: "%.1f", abs(deltaTime))
                         } else {
                             field = String(format: "%.7f", log2(abs(Float(deltaTime))))
                         }
@@ -505,11 +504,11 @@ class ResultsTable {
                     }
                 case keyColumnStartFrontTime:
                     if let time = delegate.firstParticleAt(side: .front).itemAt(index: row)?.time?.toMks() {
-                        field = String(format: "%lld", time)
+                        field = String(format: "%.1f", time)
                     }
                 case keyColumnStartFrontDeltaTime:
                     if let deltaTime = delegate.firstParticleAt(side: .front).itemAt(index: row)?.deltaTime?.toMks() {
-                        field = String(format: "%lld", deltaTime)
+                        field = String(format: "%.1f", deltaTime)
                     }
                 case keyColumnStartFrontStrip:
                     if let strip = delegate.firstParticleAt(side: .front).itemAt(index: row)?.strip1_N {
@@ -542,7 +541,7 @@ class ResultsTable {
                     }
                 case keyColumnStartBackDeltaTime:
                     if let deltaTime = delegate.firstParticleAt(side: .back).itemAt(index: row)?.deltaTime?.toMks() {
-                        field = String(format: "%lld", deltaTime)
+                        field = String(format: "%.1f", deltaTime)
                     }
                 case keyColumnStartBackStrip:
                     if let strip = delegate.firstParticleAt(side: .back).itemAt(index: row)?.strip1_N {
@@ -689,7 +688,7 @@ class ResultsTable {
 //                    }
                 case keyColumnGammaDeltaTime(true):
                     if let deltaTime = gammaAt(row: row)?.itemWithMaxEnergy()?.deltaTime?.toMks() {
-                        field = String(format: "%lld", deltaTime)
+                        field = String(format: "%.1f", deltaTime)
                     }
                 case keyColumnGammaCount:
                     if let count = gammaAt(row: row)?.count {
@@ -849,7 +848,7 @@ class ResultsTable {
     
     fileprivate func fissionAlphaDeltaTime(_ index: Int, row: Int, side: StripsSide) -> String {
         if let deltaTime = fissionAlpha(index, row: row, side: side)?.deltaTime?.toMks() {
-            return String(format: "%lld", deltaTime)
+            return String(format: "%.1f", deltaTime)
         }
         return ""
     }

@@ -144,6 +144,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         gammaEncodersOnly = Settings.getBoolSetting(.GammaEncodersOnly)
         gammaEncoderIds = Settings.getStringSetting(.GammaEncoderIds) ?? ""
         searchWell = Settings.getBoolSetting(.SearchWell)
+        searchRecoils = Settings.getBoolSetting(.SearchRecoils)
         trackBeamEnergy = Settings.getBoolSetting(.TrackBeamEnergy)
         trackBeamCurrent = Settings.getBoolSetting(.TrackBeamCurrent)
         trackBeamBackground = Settings.getBoolSetting(.TrackBeamBackground)
@@ -237,6 +238,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBInspectable dynamic var sfSourcePlaced: Bool = false {
         didSet {
             sfSourceControl.isHidden = !sfSourcePlaced
+        }
+    }
+    @IBInspectable dynamic var searchRecoils: Bool = true {
+        didSet {
+            recoilView.isHidden = !searchRecoils
         }
     }
     @IBInspectable dynamic var searchFissionAlpha1: Bool = false {
@@ -585,6 +591,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         sc.trackBeamBackground = trackBeamBackground
         sc.trackBeamIntegral = trackBeamIntegral
         sc.searchWell = searchWell
+        sc.searchRecoils = searchRecoils
         
         func idsFrom(string: String) -> Set<Int> {
             let ids = string.components(separatedBy: ",").map({ (s: String) -> Int in
@@ -875,6 +882,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             .SearchFissionBack4ByFact: searchFissionBack4ByFact,
             .SearchRecoilBackByFact: searchRecoilBackByFact,
             .SearchWell: searchWell,
+            .SearchRecoils: searchRecoils,
             .ResultsFolderName: sResultsFolderName
         ]
         Settings.change(dict)

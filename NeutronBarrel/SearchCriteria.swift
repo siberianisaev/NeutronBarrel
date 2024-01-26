@@ -30,6 +30,7 @@ class SearchCriteria {
     var searchFissionAlphaBackByFact: Bool = true
     var summarizeFissionsAlphaBack = false
     
+    var searchRecoils: Bool = true
     var recoilFrontMinEnergy: Double = 0
     var recoilFrontMaxEnergy: Double = 0
     var recoilBackMinEnergy: Double = 0
