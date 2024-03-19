@@ -63,6 +63,7 @@ protocol ProcessorDelegate: AnyObject {
     
     func startProcessingFile(_ name: String?)
     func endProcessingFile(_ name: String?, correlationsFound: CUnsignedLongLong)
+    func progressPerFile(_ value: Int)
     
 }
 
@@ -262,6 +263,8 @@ class Processor {
                 DispatchQueue.main.async { [weak self] in
                     self?.delegate?.startProcessingFile(self?.currentFileName)
                 }
+                
+                let fileInfo = Processor.calculateTotalEventNumberForFile(file)
 
                 if let file = file {
                     setvbuf(file, nil, _IONBF, 0)
@@ -276,14 +279,18 @@ class Processor {
                                     stop.initialize(to: true)
                                 }
                             }
+                            let position = self?.currentPosition
                             self?.mainCycleEventCheck(event, fileStat: fileStat)
+                            DispatchQueue.main.async { [weak self] in
+                                self?.delegate?.progressPerFile(Int(Float(position!)/Float(fileInfo.1) * 100))
+                            }
                         }
                     })
                 } else {
                     exit(-1)
                 }
 
-                totalEventNumber += Processor.calculateTotalEventNumberForFile(file)
+                totalEventNumber += fileInfo.0
                 fclose(file)
                 fileStat.endFile(fp, correlationsPerFile: correlationsPerFile)
 
@@ -306,11 +313,12 @@ class Processor {
         }
     }
 
-    class func calculateTotalEventNumberForFile(_ file: UnsafeMutablePointer<FILE>!) -> CUnsignedLongLong {
+    class func calculateTotalEventNumberForFile(_ file: UnsafeMutablePointer<FILE>!) -> (CUnsignedLongLong, Int) {
         fseek(file, 0, SEEK_END)
         var lastNumber = fpos_t()
         fgetpos(file, &lastNumber)
-        return CUnsignedLongLong(lastNumber)/CUnsignedLongLong(Event.size)
+        fseek(file, 0, SEEK_SET)
+        return (CUnsignedLongLong(lastNumber)/CUnsignedLongLong(Event.size), Int(lastNumber))
     }
 
     fileprivate var currentPosition: Int {

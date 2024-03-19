@@ -19,6 +19,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBOutlet weak var labelBranch: NSTextField!
     @IBOutlet weak var viewBranchStatus: NSView!
     @IBOutlet weak var labelTotalTime: NSTextField!
+    @IBOutlet weak var labelProgressPerFile: NSTextField!
     @IBOutlet weak var labelProcessingFileName: NSTextField!
     @IBOutlet weak var labelFirstDataFileName: NSTextField!
     @IBOutlet weak var labelCalibrationFileName: NSTextField!
@@ -758,6 +759,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         correlationsView.set(correlations: correlationsFound, at: progress)
     }
     
+    func progressPerFile(_ value: Int) {
+        labelProgressPerFile.stringValue = String(format: "%d%%", value)
+    }
+    
     // MARK: - Timer
     
     fileprivate func startTimer() {
@@ -771,6 +776,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         labelTotalTime?.isHidden = false
         labelProcessingFileName?.stringValue = ""
         labelProcessingFileName?.isHidden = false
+        labelProgressPerFile?.stringValue = ""
+        labelProgressPerFile?.isHidden = false
     }
     
     func timeTook() -> String {
@@ -784,6 +791,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     fileprivate func stopTimer() {
         timer?.invalidate()
         labelProcessingFileName?.isHidden = true
+        labelProgressPerFile?.stringValue = ""
+        labelProgressPerFile?.isHidden = true
     }
     
     // MARK: - Settings

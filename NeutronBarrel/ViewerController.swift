@@ -90,7 +90,7 @@ class ViewerController: NSWindowController {
             closeFile()
             file = fopen(path.utf8String, "rb")
             if let f = file {
-                eventCount = Int(Processor.calculateTotalEventNumberForFile(f))
+                eventCount = Int(Processor.calculateTotalEventNumberForFile(f).0)
                 name = path.lastPathComponent
             }
         } else {

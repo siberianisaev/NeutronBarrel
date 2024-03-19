@@ -44,6 +44,7 @@
                 <outlet property="labelCalibrationFileName" destination="BK8-ud-1Pi" id="fz3-id-ufg"/>
                 <outlet property="labelFirstDataFileName" destination="J6K-fY-yds" id="rBP-e7-aMJ"/>
                 <outlet property="labelProcessingFileName" destination="om2-lB-Td7" id="9Qy-lb-5Yx"/>
+                <outlet property="labelProgressPerFile" destination="ba0-cb-noe" id="S8M-mB-IMK"/>
                 <outlet property="labelStripsConfigurationFileName" destination="w7E-g3-GjX" id="YeS-RA-o96"/>
                 <outlet property="labelTask" destination="6KL-ec-xMC" id="JoK-ln-CWA"/>
                 <outlet property="labelTotalTime" destination="2Ow-sS-sNC" id="iCu-v0-Oyd"/>
@@ -2488,7 +2489,7 @@
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <subviews>
                             <textField hidden="YES" horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="2Ow-sS-sNC">
-                                <rect key="frame" x="12" y="400" width="104" height="17"/>
+                                <rect key="frame" x="12" y="362" width="104" height="17"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="00:00:00" placeholderString="00:00:00" id="r2F-9n-wvw">
                                     <font key="font" metaFont="system"/>
@@ -2497,7 +2498,7 @@
                                 </textFieldCell>
                             </textField>
                             <textField hidden="YES" horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="6KL-ec-xMC">
-                                <rect key="frame" x="12" y="373" width="200" height="19"/>
+                                <rect key="frame" x="11" y="314" width="200" height="19"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="center" title="Task" placeholderString="Task" id="VyL-FH-l4Y">
                                     <font key="font" metaFont="systemBold"/>
@@ -2594,7 +2595,7 @@
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                             </progressIndicator>
                             <textField hidden="YES" horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="om2-lB-Td7">
-                                <rect key="frame" x="97" y="400" width="143" height="17"/>
+                                <rect key="frame" x="12" y="400" width="202" height="17"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="left" title="file name" placeholderString="file name" id="pGS-b6-EQJ">
                                     <font key="font" metaFont="system"/>
@@ -2654,7 +2655,7 @@
                                 </connections>
                             </button>
                             <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1Iw-FP-dHE">
-                                <rect key="frame" x="13" y="327" width="200" height="40"/>
+                                <rect key="frame" x="12" y="268" width="200" height="40"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <buttonCell key="cell" type="bevel" title="Select Settings" bezelStyle="regularSquare" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="OTR-28-w1F">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -2763,6 +2764,15 @@
                                 <rect key="frame" x="221" y="10" width="10" height="10"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                             </customView>
+                            <textField hidden="YES" horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="ba0-cb-noe">
+                                <rect key="frame" x="214" y="400" width="43" height="17"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="center" title="1%" placeholderString="1%" id="d1a-Jj-H0L">
+                                    <font key="font" metaFont="system"/>
+                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                    <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                </textFieldCell>
+                            </textField>
                         </subviews>
                     </customView>
                     <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="9nc-rd-YF2">
