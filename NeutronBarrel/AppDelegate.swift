@@ -260,14 +260,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             if !searchFissionAlpha2 {
                 searchFissionAlpha3 = false
             }
+            searchExtraFromLastParticle = searchFissionAlpha2
+            searchExtraFromLastParticleButton.state = searchExtraFromLastParticle ? .on : .off
+            searchExtraFromLastParticleButton.isHidden = !searchFissionAlpha2
         }
     }
     @IBInspectable dynamic var searchFissionAlpha3: Bool = false {
         didSet {
             setupAlpha3FormView()
-            searchExtraFromLastParticle = searchFissionAlpha3
-            searchExtraFromLastParticleButton.state = searchExtraFromLastParticle ? .on : .off
-            searchExtraFromLastParticleButton.isHidden = !searchFissionAlpha3
             if !searchFissionAlpha3 {
                 searchFissionAlpha4 = false
             }
