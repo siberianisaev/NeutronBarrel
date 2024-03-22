@@ -79,6 +79,8 @@ class Calibration {
                         
                         let focalFront = "AFr"
                         let focalBack = "ABk"
+                        let wellFront = "AWel" // 1-128
+                        let wellBack = "AWBk" // 1-128
                         
                         func preChannelFrom(prefix: String, name: String) -> CUnsignedShort? {
                             if let c = CUnsignedShort(name.replacingOccurrences(of: prefix, with: "")) {
@@ -94,8 +96,18 @@ class Calibration {
                             }
                         } else if name.contains(focalBack) {
                             if let preChannel = preChannelFrom(prefix: focalBack, name: name) {
-                                // TODO: 128 is hardcoded this moment
+                                // TODO: hardcoded this moment
                                 channel = preChannel + 128
+                            }
+                        } else if name.contains(wellFront) {
+                            if let preChannel = preChannelFrom(prefix: wellFront, name: name) {
+                                // TODO: hardcoded this moment
+                                channel = preChannel + (128 * 2)
+                            }
+                        } else if name.contains(wellBack) {
+                            if let preChannel = preChannelFrom(prefix: wellBack, name: name) {
+                                // TODO: hardcoded this moment
+                                channel = preChannel + (128 * 3)
                             }
                         }
                         

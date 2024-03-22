@@ -52,6 +52,10 @@
 		<data>
 		XngEJFuRtIGBq41gWZ50EWyfgLE=
 		</data>
+		<key>Resources/channels.png</key>
+		<data>
+		sNMAjl/eI2zaheiy8WpwQIy/sGs=
+		</data>
 	</dict>
 	<key>files2</key>
 	<dict>
@@ -272,6 +276,13 @@
 			<key>hash2</key>
 			<data>
 			3JOH1bGAzkEgguKMILln38fJazfUB7DvIxFMzoGG80c=
+			</data>
+		</dict>
+		<key>Resources/channels.png</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			0PNjWaH+7B2Rw+vkT89OoYY/2Q03i2n6Fn0D4jVEAY0=
 			</data>
 		</dict>
 	</dict>

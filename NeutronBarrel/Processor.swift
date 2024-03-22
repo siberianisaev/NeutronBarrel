@@ -489,7 +489,7 @@ class Processor {
             search(directions: directions, startTime: currentEventTime, minDeltaTime: 0, maxDeltaTime: criteria.fissionAlphaMaxTime, maxDeltaTimeBackward: criteria.fissionAlphaWellBackwardMaxTime) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>, _) in
                 for side in [.front, .back] as [StripsSide] {
                     if self.isFissionOrAlphaWell(event, side: side) {
-                        self.filterAndStoreFissionAlphaWell(event, side: side)
+                        self.filterAndStoreFissionAlphaWell(event, side: side, deltaTime: deltaTime)
                     }
                 }
             }
@@ -866,7 +866,7 @@ class Processor {
         fissionsAlphaNextPerAct[index] = match
     }
 
-    fileprivate func filterAndStoreFissionAlphaWell(_ event: Event, side: StripsSide) {
+    fileprivate func filterAndStoreFissionAlphaWell(_ event: Event, side: StripsSide, deltaTime: CLongLong) {
         let type: SearchType = .alpha
         let energy = getEnergy(event)
         if !isOverflowed(event) && (energy < criteria.fissionAlphaWellMinEnergy || energy > criteria.fissionAlphaWellMaxEnergy) {
@@ -877,6 +877,8 @@ class Processor {
                                      stripDetector: .side,
                                      energy: energy,
                                      encoder: encoder,
+                                     eventNumber: eventNumber(),
+                                     deltaTime: deltaTime,
                                      overflow: event.overflow,
                                      side: side,
                                      stripConfiguration: stripsConfiguration())

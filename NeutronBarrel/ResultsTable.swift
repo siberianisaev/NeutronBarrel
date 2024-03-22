@@ -107,6 +107,8 @@ class ResultsTable {
     fileprivate var keyColumnStartBackOverflow = "@BackOverflow"
     fileprivate var keyColumnStartBackDeltaTime = "dT($Fron-@Back)"
     fileprivate var keyColumnStartBackStrip = "Strip(@Back)"
+    fileprivate var keyColumnWellEvent = "Event($)Well"
+    fileprivate var keyColumnWellDeltaTime = "dT($Well)"
     fileprivate var keyColumnWellEnergy: String {
         return searchExtraPostfix("$Well")
     }
@@ -278,6 +280,8 @@ class ResultsTable {
         ])
         if criteria.searchWell {
             columns.append(contentsOf: [
+                keyColumnWellEvent,
+                keyColumnWellDeltaTime,
                 keyColumnWellEnergy,
                 keyColumnWellOverflow,
                 keyColumnWellPosition
@@ -546,6 +550,14 @@ class ResultsTable {
                 case keyColumnStartBackStrip:
                     if let strip = delegate.firstParticleAt(side: .back).itemAt(index: row)?.strip1_N {
                         field = String(format: "%d", strip)
+                    }
+                case keyColumnWellEvent:
+                    if let eventNumber = delegate.fissionsAlphaWellAt(side: .front, index: row)?.eventNumber {
+                        field = delegate.currentFileEventNumber(eventNumber)
+                    }
+                case keyColumnWellDeltaTime:
+                    if let deltaTime = delegate.fissionsAlphaWellAt(side: .front, index: row)?.deltaTime?.toMks() {
+                        field = String(format: "%.1f", deltaTime)
                     }
                 case keyColumnWellEnergy:
                     if let energy = delegate.fissionsAlphaWellAt(side: .front, index: row)?.energy {

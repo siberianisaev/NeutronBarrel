@@ -27,6 +27,7 @@
 		6513070C1A4E911300E33704 /* FileManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6513070B1A4E911300E33704 /* FileManager.swift */; };
 		651307121A4E94AB00E33704 /* Calibration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 651307111A4E94AB00E33704 /* Calibration.swift */; };
 		651307141A4E94C500E33704 /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 651307131A4E94C500E33704 /* Logger.swift */; };
+		651B703C2BAD82BB005D2CE2 /* channels.png in Resources */ = {isa = PBXBuildFile; fileRef = 651B703B2BAD82BB005D2CE2 /* channels.png */; };
 		6551A3DF2566550700B142CC /* FileExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6551A3DE2566550700B142CC /* FileExtension.swift */; };
 		6562B3522624599C0070A491 /* SF_sources in Resources */ = {isa = PBXBuildFile; fileRef = 6562B3512624599C0070A491 /* SF_sources */; };
 		6562B35526245A800070A491 /* NeutronTotalEfficiency.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6562B35426245A800070A491 /* NeutronTotalEfficiency.swift */; };
@@ -77,6 +78,7 @@
 		6513070D1A4E92CD00E33704 /* NeutronBarrel-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NeutronBarrel-Bridging-Header.h"; sourceTree = "<group>"; };
 		651307111A4E94AB00E33704 /* Calibration.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Calibration.swift; sourceTree = "<group>"; };
 		651307131A4E94C500E33704 /* Logger.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
+		651B703B2BAD82BB005D2CE2 /* channels.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = channels.png; sourceTree = "<group>"; };
 		651FDD8F1EC1012F0041CDE8 /* Constants.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Constants.h; sourceTree = "<group>"; };
 		654FC8041F77091D00E75929 /* NeutronBarrel.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = NeutronBarrel.entitlements; sourceTree = "<group>"; };
 		6551A3DE2566550700B142CC /* FileExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileExtension.swift; sourceTree = "<group>"; };
@@ -149,6 +151,7 @@
 		5A2A993B20570ED800B3D1A0 /* Config */ = {
 			isa = PBXGroup;
 			children = (
+				651B703B2BAD82BB005D2CE2 /* channels.png */,
 				1312840D29A4F69200A922A2 /* chan_decode_dssd.txt */,
 				1312840F29A517E200A922A2 /* chan_decode_neutrons.txt */,
 				6551A3DE2566550700B142CC /* FileExtension.swift */,
@@ -390,6 +393,7 @@
 				65BBD8F9261DC07700D93026 /* CalculationsController.xib in Resources */,
 				1312840E29A4F69200A922A2 /* chan_decode_dssd.txt in Resources */,
 				65C4D73A264A93AF0064A93E /* SFiNx_counters_geometry.csv in Resources */,
+				651B703C2BAD82BB005D2CE2 /* channels.png in Resources */,
 				6562B3522624599C0070A491 /* SF_sources in Resources */,
 				6512B00C1EDACBB20087131D /* ViewerController.xib in Resources */,
 				1312841029A517E200A922A2 /* chan_decode_neutrons.txt in Resources */,
@@ -613,7 +617,7 @@
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 74;
+				CURRENT_PROJECT_VERSION = 75;
 				DEVELOPMENT_TEAM = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "NeutronBarrel/NeutronBarrel-Prefix.pch";
@@ -641,7 +645,7 @@
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 74;
+				CURRENT_PROJECT_VERSION = 75;
 				DEVELOPMENT_TEAM = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "NeutronBarrel/NeutronBarrel-Prefix.pch";
