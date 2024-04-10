@@ -25,6 +25,7 @@ class DataProtocol {
             Neutrons_N = getValues(ofTypes: ["N1", "N2", "N3", "N4"], prefix: false)
             NeutronsNew = getValues(ofTypes: ["NNeut"])
             CycleTime = dict["THi"]
+            Beam = dict["Beam"]
             BeamEnergy = dict["EnergyHi"]
             BeamCurrent = dict["BeamTokHi"]
             BeamBackground = dict["BeamFonHi"]
@@ -57,6 +58,7 @@ class DataProtocol {
         return Set(result)
     }
     
+    fileprivate var Beam: Int?
     fileprivate var BeamEnergy: Int?
     fileprivate var BeamCurrent: Int?
     fileprivate var BeamBackground: Int?
@@ -149,7 +151,7 @@ class DataProtocol {
             return cached
         }
         
-        let value = isAlpha(eventId: eventId) || isTOFEvent(eventId) != nil || isGammaEvent(eventId) || isNeutronsOldEvent(eventId) || isNeutronsNewEvent(eventId) || isNeutrons_N_Event(eventId) || isVETOEvent(eventId)
+        let value = isAlpha(eventId: eventId) || isTOFEvent(eventId) != nil || isGammaEvent(eventId) || isNeutronsOldEvent(eventId) || isNeutronsNewEvent(eventId) || isNeutrons_N_Event(eventId) || isVETOEvent(eventId) || isBeam(eventId)
         isValidEventIdForTimeCheckCache[eventId] = value
         return value
     }
@@ -240,6 +242,10 @@ class DataProtocol {
     
     func isCycleTimeEvent(_ eventId: Int) -> Bool {
         return CycleTime == eventId
+    }
+    
+    func isBeam(_ eventId: Int) -> Bool {
+        return Beam == eventId
     }
     
     func isBeamEnergy(_ eventId: Int) -> Bool {
