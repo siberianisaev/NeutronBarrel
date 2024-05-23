@@ -27,6 +27,11 @@ class FileStatistics {
     }
     fileprivate var currents = [Double]()
     
+    var medianBackground: Double {
+        return FileStatistics.median(backgrounds) ?? 0.0
+    }
+    fileprivate var backgrounds = [Double]()
+    
     var integral: Float = 0
     
     fileprivate var firstEventTime: UInt64?
@@ -85,6 +90,10 @@ class FileStatistics {
     
     func handleCurrent(_ value: Float) {
         currents.append(Double(value))
+    }
+    
+    func handleBackground(_ value: Float) {
+        backgrounds.append(Double(value))
     }
     
     func handleIntergal(_ value: Float) {

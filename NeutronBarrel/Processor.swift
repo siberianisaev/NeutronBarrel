@@ -480,6 +480,9 @@ class Processor {
         } else if dataProtocol.isBeamCurrent(id) {
             let c = Float(event.energy) / 1000.0
             fileStat.handleCurrent(c)
+        } else if dataProtocol.isBeamBackground(id) {
+            let c = Float(event.energy)
+            fileStat.handleBackground(c)
         }
     }
 
