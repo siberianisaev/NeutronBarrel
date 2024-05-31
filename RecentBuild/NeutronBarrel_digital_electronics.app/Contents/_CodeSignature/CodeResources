@@ -10,15 +10,15 @@
 		</data>
 		<key>Resources/Assets.car</key>
 		<data>
-		VXbXgXTKeDPf2y+auJM6aLMgPUQ=
+		2zxi+54u3Bam7w9iJ3+SAoHuU8k=
 		</data>
 		<key>Resources/Base.lproj/MainMenu.nib</key>
 		<data>
-		OrXMG2JhLzGDo5FmMcZI1klDeXo=
+		bEsHoSSf2pOmjMM/1fiee24/AUU=
 		</data>
 		<key>Resources/CalculationsController.nib</key>
 		<data>
-		aVLMOYk6IGQrIHF4jmGx6aCiOVw=
+		1wbFl8U8O9OXBefG3hBWFmkaHrA=
 		</data>
 		<key>Resources/CalibrationExample.clb</key>
 		<data>
@@ -26,7 +26,7 @@
 		</data>
 		<key>Resources/EventSorterController.nib</key>
 		<data>
-		VZaDkbH9VOoa/VB/sXw5hltXdNI=
+		Z3NSQ14SfUj2jtoKCjHcty8l1OU=
 		</data>
 		<key>Resources/SF_sources/U238.txt</key>
 		<data>
@@ -38,11 +38,11 @@
 		</data>
 		<key>Resources/ViewerController.nib/keyedobjects-101300.nib</key>
 		<data>
-		fqbAHzz8a8Xz9zVIH+ZgM6n8MqE=
+		K8n5TlVyxWDjIWXlhEZ2X9RwFo0=
 		</data>
 		<key>Resources/ViewerController.nib/keyedobjects-110000.nib</key>
 		<data>
-		EYDZrJ5HiYbvXrXeFSkJSgmTpzk=
+		WxUE+x/7w77doMifjrI6YdAS4tg=
 		</data>
 		<key>Resources/chan_decode_dssd.txt</key>
 		<data>
@@ -205,21 +205,21 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			P7n41RvAa1jQOY72FOiEoPAOZr8iKqhQkPG5QwK6Skk=
+			XO1ZawJbOz7J3Kmdtgv77n1iX0L+hnSqJaW/BPk99Sc=
 			</data>
 		</dict>
 		<key>Resources/Base.lproj/MainMenu.nib</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			gGko4t6dyfup3SMX4kxfOGM1SaonZrPRrIHP6yx8iMg=
+			ZyyJy+smBHKkNDRkfoNeB7oF9rJcuvkDos/Z3iSioEI=
 			</data>
 		</dict>
 		<key>Resources/CalculationsController.nib</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			uEq9IM2q8WDnbnAo6xij7t8tSTEPYFz5JDLyldVAEVQ=
+			J2x02k4Ygh6y/5w0jiSeeE3Vw+LMOphMcXf+0iEYeFc=
 			</data>
 		</dict>
 		<key>Resources/CalibrationExample.clb</key>
@@ -233,7 +233,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			sZ+6HuC8OTgewgs4VC5pjwJieBwlzDk8MLwNUFFpL+Q=
+			KAtCHD1CIkbq6pCKXKISYBvFKM/0HOeiKWzYNm6ol3g=
 			</data>
 		</dict>
 		<key>Resources/SF_sources/U238.txt</key>
@@ -254,14 +254,14 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			9oqvvan6zTmIhIC3lvPNu5pVgIk4FNBfUJSpDFQ0TP8=
+			U+kYEVNdK63mMUl4vB9bZ1XUL+1GT2GpyUOpt8Mh6cQ=
 			</data>
 		</dict>
 		<key>Resources/ViewerController.nib/keyedobjects-110000.nib</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			InGkJTcNQWushbz3hksrJ+cw35ZOid3V6ws9DuI/3bc=
+			HietavngTHUSChJOTPZY34r2dYTeZ4h7nE1+jjt5BCI=
 			</data>
 		</dict>
 		<key>Resources/chan_decode_dssd.txt</key>

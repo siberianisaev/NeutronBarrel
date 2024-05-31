@@ -620,6 +620,10 @@ class Processor {
     }
 
     @discardableResult fileprivate func validateRecoil(_ event: Event, deltaTime: CLongLong) -> Bool {
+        if !self.criteria.usePileUp && event.pileUp == 1 {
+            return false
+        }
+
         let energy = self.getEnergy(event)
         if energy >= criteria.recoilFrontMinEnergy && energy <= criteria.recoilFrontMaxEnergy {
             var position = fpos_t()
