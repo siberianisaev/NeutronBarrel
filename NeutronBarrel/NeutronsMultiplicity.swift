@@ -56,6 +56,16 @@ public class NeutronsMultiplicity {
     
     public func stringValue() -> String {
         var string = "Multiplicity\tCount\tProbability\n"
+        
+        // Prevent gaps in multiplicity range
+        if let maxMultiplicity = Array(info.keys).max(), maxMultiplicity > 0 {
+            for key in 0...maxMultiplicity-1 {
+                if !info.keys.contains(key) {
+                    info[key] = 0
+                }
+            }
+        }
+        
         let sortedKeys = Array(info.keys).sorted(by: { (i1: Int, i2: Int) -> Bool in
             return i1 < i2
         })
