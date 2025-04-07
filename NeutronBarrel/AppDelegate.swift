@@ -66,25 +66,25 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         sNeutronsDetectorEfficiency = String(format: "%.1f", Settings.getDoubleSetting(.NeutronsDetectorEfficiency)) // %
         sNeutronsDetectorEfficiencyError = String(format: "%.1f", Settings.getDoubleSetting(.NeutronsDetectorEfficiencyError)) // %
         sExcludeNeutronCounters = Settings.getStringSetting(.ExcludeNeutronCounters) ?? ""
-        sMinFissionEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MinFissionEnergy)) // MeV
-        sMaxFissionEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MaxFissionEnergy)) // MeV
-        sMinFissionBackEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MinFissionBackEnergy)) // MeV
-        sMaxFissionBackEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MaxFissionBackEnergy)) // MeV
-        sMinRecoilFrontEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MinRecoilFrontEnergy)) // MeV
-        sMaxRecoilFrontEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MaxRecoilFrontEnergy)) // MeV
-        sMinRecoilBackEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MinRecoilBackEnergy)) // MeV
-        sMaxRecoilBackEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MaxRecoilBackEnergy)) // MeV
-        sMinFissionWellEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MinFissionWellEnergy)) // MeV
-        sMaxFissionWellEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MaxFissionWellEnergy)) // MeV
+        sMinFissionEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MinFissionEnergy)) // keV
+        sMaxFissionEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MaxFissionEnergy)) // keV
+        sMinFissionBackEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MinFissionBackEnergy)) // keV
+        sMaxFissionBackEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MaxFissionBackEnergy)) // keV
+        sMinRecoilFrontEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MinRecoilFrontEnergy)) // keV
+        sMaxRecoilFrontEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MaxRecoilFrontEnergy)) // keV
+        sMinRecoilBackEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MinRecoilBackEnergy)) // keV
+        sMaxRecoilBackEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MaxRecoilBackEnergy)) // keV
+        sMinFissionWellEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MinFissionWellEnergy)) // keV
+        sMaxFissionWellEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MaxFissionWellEnergy)) // keV
         sMaxFissionWellAngle = String(format: "%.1f", Settings.getDoubleSetting(.MaxFissionWellAngle)) // degree
         sMinRecoilTime = String(format: "%d", Settings.getUInt64Setting(.MinRecoilTime)) // mks
         sMaxRecoilTime = String(format: "%d", Settings.getUInt64Setting(.MaxRecoilTime)) // mks
         sMaxRecoilBackTime = String(format: "%d", Settings.getIntSetting(.MaxRecoilBackTime)) // mks
         sMaxRecoilBackBackwardTime = String(format: "%d", Settings.getIntSetting(.MaxRecoilBackBackwardTime)) // mks
-        sMaxFissionTime = String(format: "%d", Settings.getIntSetting(.MaxFissionTime)) // mks
+        sMaxFissionTime = String(format: "%d", Settings.getUInt64Setting(.MaxFissionTime)) // mks
         sMaxFissionBackBackwardTime = String(format: "%d", Settings.getIntSetting(.MaxFissionBackBackwardTime)) // mks
         sMaxFissionWellBackwardTime = String(format: "%d", Settings.getIntSetting(.MaxFissionWellBackwardTime)) // mks
-        sMaxGammaTime = String(format: "%d", Settings.getIntSetting(.MaxGammaTime)) // mks
+        sMaxGammaTime = String(format: "%d", Settings.getUInt64Setting(.MaxGammaTime)) // mks
         sMaxGammaBackwardTime = String(format: "%d", Settings.getIntSetting(.MaxGammaBackwardTime)) // mks
         sMinNeutronTime = String(format: "%d", Settings.getIntSetting(.MinNeutronTime)) // mks
         sMaxNeutronTime = String(format: "%d", Settings.getIntSetting(.MaxNeutronTime)) // mks
@@ -120,24 +120,24 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         searchFissionAlpha2 = Settings.getBoolSetting(.SearchFissionAlpha2)
         searchFissionAlpha3 = Settings.getBoolSetting(.SearchFissionAlpha3)
         searchFissionAlpha4 = Settings.getBoolSetting(.SearchFissionAlpha4)
-        sMinFissionAlpha2Energy = String(format: "%.1f", Settings.getDoubleSetting(.MinFissionAlpha2Energy)) // MeV
-        sMaxFissionAlpha2Energy = String(format: "%.1f", Settings.getDoubleSetting(.MaxFissionAlpha2Energy)) // MeV
-        sMinFissionAlpha2BackEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MinFissionAlpha2BackEnergy)) // MeV
-        sMaxFissionAlpha2BackEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MaxFissionAlpha2BackEnergy)) // MeV
+        sMinFissionAlpha2Energy = String(format: "%.1f", Settings.getDoubleSetting(.MinFissionAlpha2Energy)) // keV
+        sMaxFissionAlpha2Energy = String(format: "%.1f", Settings.getDoubleSetting(.MaxFissionAlpha2Energy)) // keV
+        sMinFissionAlpha2BackEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MinFissionAlpha2BackEnergy)) // keV
+        sMaxFissionAlpha2BackEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MaxFissionAlpha2BackEnergy)) // keV
         sMinFissionAlpha2Time = String(format: "%d", Settings.getUInt64Setting(.MinFissionAlpha2Time)) // mks
         sMaxFissionAlpha2Time = String(format: "%d", Settings.getUInt64Setting(.MaxFissionAlpha2Time)) // mks
         sMaxFissionAlpha2FrontDeltaStrips = String(format: "%d", Settings.getIntSetting(.MaxFissionAlpha2FrontDeltaStrips))
-        sMinFissionAlpha3Energy = String(format: "%.1f", Settings.getDoubleSetting(.MinFissionAlpha3Energy)) // MeV
-        sMaxFissionAlpha3Energy = String(format: "%.1f", Settings.getDoubleSetting(.MaxFissionAlpha3Energy)) // MeV
-        sMinFissionAlpha3BackEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MinFissionAlpha3BackEnergy)) // MeV
-        sMaxFissionAlpha3BackEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MaxFissionAlpha3BackEnergy)) // MeV
+        sMinFissionAlpha3Energy = String(format: "%.1f", Settings.getDoubleSetting(.MinFissionAlpha3Energy)) // keV
+        sMaxFissionAlpha3Energy = String(format: "%.1f", Settings.getDoubleSetting(.MaxFissionAlpha3Energy)) // keV
+        sMinFissionAlpha3BackEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MinFissionAlpha3BackEnergy)) // keV
+        sMaxFissionAlpha3BackEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MaxFissionAlpha3BackEnergy)) // keV
         sMinFissionAlpha3Time = String(format: "%d", Settings.getUInt64Setting(.MinFissionAlpha3Time)) // mks
         sMaxFissionAlpha3Time = String(format: "%d", Settings.getUInt64Setting(.MaxFissionAlpha3Time)) // mks
         sMaxFissionAlpha3FrontDeltaStrips = String(format: "%d", Settings.getIntSetting(.MaxFissionAlpha3FrontDeltaStrips))
-        sMinFissionAlpha4Energy = String(format: "%.1f", Settings.getDoubleSetting(.MinFissionAlpha4Energy)) // MeV
-        sMaxFissionAlpha4Energy = String(format: "%.1f", Settings.getDoubleSetting(.MaxFissionAlpha4Energy)) // MeV
-        sMinFissionAlpha4BackEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MinFissionAlpha4BackEnergy)) // MeV
-        sMaxFissionAlpha4BackEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MaxFissionAlpha4BackEnergy)) // MeV
+        sMinFissionAlpha4Energy = String(format: "%.1f", Settings.getDoubleSetting(.MinFissionAlpha4Energy)) // keV
+        sMaxFissionAlpha4Energy = String(format: "%.1f", Settings.getDoubleSetting(.MaxFissionAlpha4Energy)) // keV
+        sMinFissionAlpha4BackEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MinFissionAlpha4BackEnergy)) // keV
+        sMaxFissionAlpha4BackEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MaxFissionAlpha4BackEnergy)) // keV
         sMinFissionAlpha4Time = String(format: "%d", Settings.getUInt64Setting(.MinFissionAlpha4Time)) // mks
         sMaxFissionAlpha4Time = String(format: "%d", Settings.getUInt64Setting(.MaxFissionAlpha4Time)) // mks
         sMaxFissionAlpha4FrontDeltaStrips = String(format: "%d", Settings.getIntSetting(.MaxFissionAlpha4FrontDeltaStrips))
@@ -808,14 +808,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             .MaxFissionWellEnergy: Double(sMaxFissionWellEnergy),
             .MaxFissionWellAngle: Double(sMaxFissionWellAngle),
             .SFSource: sfSourceControl.selectedSegment,
-            .MinRecoilTime: Int(sMinRecoilTime),
-            .MaxRecoilTime: Int(sMaxRecoilTime),
+            .MinRecoilTime: UInt64(sMinRecoilTime),
+            .MaxRecoilTime: UInt64(sMaxRecoilTime),
             .MaxRecoilBackTime: Int(sMaxRecoilBackTime),
             .MaxRecoilBackBackwardTime: Int(sMaxRecoilBackBackwardTime),
-            .MaxFissionTime: Int(sMaxFissionTime),
+            .MaxFissionTime: UInt64(sMaxFissionTime),
             .MaxFissionBackBackwardTime: Int(sMaxFissionBackBackwardTime),
             .MaxFissionWellBackwardTime: Int(sMaxFissionWellBackwardTime),
-            .MaxGammaTime: Int(sMaxGammaTime),
+            .MaxGammaTime: UInt64(sMaxGammaTime),
             .MaxGammaBackwardTime: Int(sMaxGammaBackwardTime),
             .MinNeutronTime: Int(sMinNeutronTime),
             .MaxNeutronTime: Int(sMaxNeutronTime),
@@ -860,22 +860,22 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             .MaxFissionAlpha2Energy: Double(sMaxFissionAlpha2Energy),
             .MinFissionAlpha2BackEnergy: Double(sMinFissionAlpha2BackEnergy),
             .MaxFissionAlpha2BackEnergy: Double(sMaxFissionAlpha2BackEnergy),
-            .MinFissionAlpha2Time: Int(sMinFissionAlpha2Time),
-            .MaxFissionAlpha2Time: Int(sMaxFissionAlpha2Time),
+            .MinFissionAlpha2Time: UInt64(sMinFissionAlpha2Time),
+            .MaxFissionAlpha2Time: UInt64(sMaxFissionAlpha2Time),
             .MaxFissionAlpha2FrontDeltaStrips: Int(sMaxFissionAlpha2FrontDeltaStrips),
             .MinFissionAlpha3Energy: Double(sMinFissionAlpha3Energy),
             .MaxFissionAlpha3Energy: Double(sMaxFissionAlpha3Energy),
             .MinFissionAlpha3BackEnergy: Double(sMinFissionAlpha3BackEnergy),
             .MaxFissionAlpha3BackEnergy: Double(sMaxFissionAlpha3BackEnergy),
-            .MinFissionAlpha3Time: Int(sMinFissionAlpha3Time),
-            .MaxFissionAlpha3Time: Int(sMaxFissionAlpha3Time),
+            .MinFissionAlpha3Time: UInt64(sMinFissionAlpha3Time),
+            .MaxFissionAlpha3Time: UInt64(sMaxFissionAlpha3Time),
             .MaxFissionAlpha3FrontDeltaStrips: Int(sMaxFissionAlpha3FrontDeltaStrips),
             .MinFissionAlpha4Energy: Double(sMinFissionAlpha4Energy),
             .MaxFissionAlpha4Energy: Double(sMaxFissionAlpha4Energy),
             .MinFissionAlpha4BackEnergy: Double(sMinFissionAlpha4BackEnergy),
             .MaxFissionAlpha4BackEnergy: Double(sMaxFissionAlpha4BackEnergy),
-            .MinFissionAlpha4Time: Int(sMinFissionAlpha4Time),
-            .MaxFissionAlpha4Time: Int(sMaxFissionAlpha4Time),
+            .MinFissionAlpha4Time: UInt64(sMinFissionAlpha4Time),
+            .MaxFissionAlpha4Time: UInt64(sMaxFissionAlpha4Time),
             .MaxFissionAlpha4FrontDeltaStrips: Int(sMaxFissionAlpha4FrontDeltaStrips),
             .MaxConcurrentOperations: maxConcurrentOperationCount,
             .GammaEncodersOnly: gammaEncodersOnly,

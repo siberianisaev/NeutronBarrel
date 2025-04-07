@@ -370,8 +370,7 @@ class Processor {
             let position = currentPosition
 
             if !isRecoilSearch {
-                findFissionAlphaBack(energyFront: energyFront!)
-                fseek(file, position, SEEK_SET)
+                findFissionAlphaBack(position: position, energyFront: energyFront!)
                 if criteria.requiredFissionAlphaBack && 0 == fissionsAlphaPerAct.matchFor(side: .back).count {
                     clearActInfo()
                     return
@@ -379,8 +378,7 @@ class Processor {
 
                 // Search them only after search all FBack/ABack
                 if criteria.searchRecoils {
-                    findRecoil()
-                    fseek(file, position, SEEK_SET)
+                    findRecoil(position: position)
                     if criteria.requiredRecoil && 0 == recoilsPerAct.matchFor(side: .front).count {
                         clearActInfo()
                         return
@@ -545,7 +543,7 @@ class Processor {
                     }
                 }
             }
-            fseek(file, Int(position), SEEK_SET)
+            fseek(file, position, SEEK_SET)
         }
         return excludeSFEvent
     }
@@ -578,7 +576,7 @@ class Processor {
         return match.count > 0 ? match : nil
     }
 
-    fileprivate func findFissionAlphaBack(energyFront: Double) {
+    fileprivate func findFissionAlphaBack(position: Int, energyFront: Double) {
         let match = fissionsAlphaPerAct
         let type = SearchType.alpha
         let directions: Set<SearchDirection> = [.backward, .forward]
@@ -601,9 +599,10 @@ class Processor {
         if !criteria.summarizeFissionsAlphaBack {
             match.matchFor(side: .back).filterItemsByMaxEnergy(maxStripsDelta: criteria.recoilBackMaxDeltaStrips)
         }
+        fseek(file, position, SEEK_SET)
     }
 
-    fileprivate func findRecoil() {
+    fileprivate func findRecoil(position: Int) {
         let fissionTime = firstParticlePerAct.currentEventTime
         let directions: Set<SearchDirection> = [.backward]
         search(directions: directions, startTime: fissionTime, minDeltaTime: criteria.recoilMinTime, maxDeltaTime: criteria.recoilMaxTime) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>, _) in
@@ -618,6 +617,7 @@ class Processor {
                 }
             }
         }
+        fseek(file, position, SEEK_SET)
     }
 
     @discardableResult fileprivate func validateRecoil(_ event: Event, deltaTime: CLongLong) -> Bool {
@@ -676,7 +676,7 @@ class Processor {
                 }
             }
         }
-        fseek(self.file, Int(position), SEEK_SET)
+        fseek(self.file, position, SEEK_SET)
         if let item = DetectorMatch.getItemWithMaxEnergy(items) {
             recoilsPerAct.append(item, side: side)
             return true
