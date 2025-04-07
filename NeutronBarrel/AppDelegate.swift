@@ -20,6 +20,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBOutlet weak var viewBranchStatus: NSView!
     @IBOutlet weak var labelTotalTime: NSTextField!
     @IBOutlet weak var labelProcessingFileName: NSTextField!
+    @IBOutlet weak var labelProcessingEventNumber: NSTextField!
     @IBOutlet weak var labelFirstDataFileName: NSTextField!
     @IBOutlet weak var labelCalibrationFileName: NSTextField!
     @IBOutlet weak var labelStripsConfigurationFileName: NSTextField!
@@ -744,10 +745,15 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     
     func startProcessingFile(_ name: String?) {
         labelProcessingFileName?.stringValue = name ?? ""
+        labelProcessingEventNumber?.stringValue = ""
         let progress = progressIndicator.doubleValue
         if progress <= 0 {
             progressIndicator.doubleValue = Double.ulpOfOne // show indicator
         }
+    }
+    
+    func didProcessingFileAtPosition(_ position: Int?) {
+        labelProcessingEventNumber?.stringValue = String(position ?? 0)
     }
     
     func endProcessingFile(_ name: String?, correlationsFound: CUnsignedLongLong) {
@@ -774,6 +780,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         labelTotalTime?.isHidden = false
         labelProcessingFileName?.stringValue = ""
         labelProcessingFileName?.isHidden = false
+        labelProcessingEventNumber?.stringValue = ""
+        labelProcessingEventNumber?.isHidden = false
     }
     
     func timeTook() -> String {
@@ -787,6 +795,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     fileprivate func stopTimer() {
         timer?.invalidate()
         labelProcessingFileName?.isHidden = true
+        labelProcessingEventNumber?.isHidden = true
     }
     
     // MARK: - Settings

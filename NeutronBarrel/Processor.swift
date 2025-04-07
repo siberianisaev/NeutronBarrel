@@ -62,6 +62,7 @@ extension Event {
 protocol ProcessorDelegate: AnyObject {
     
     func startProcessingFile(_ name: String?)
+    func didProcessingFileAtPosition(_ position: Int?)
     func endProcessingFile(_ name: String?, correlationsFound: CUnsignedLongLong)
     
 }
@@ -265,6 +266,8 @@ class Processor {
 
                 if let file = file {
                     setvbuf(file, nil, _IONBF, 0)
+                    var counter = 0
+                    
                     forwardSearch(checker: { [weak self] (event: Event, stop: UnsafeMutablePointer<Bool>) in
                         autoreleasepool {
                             if let file = self?.file, let currentFileName = self?.currentFileName, let stoped = self?.stoped {
@@ -277,6 +280,15 @@ class Processor {
                                 }
                             }
                             self?.mainCycleEventCheck(event, fileStat: fileStat)
+                            
+                            if counter == 1000000 {
+                                DispatchQueue.main.async { [weak self] in
+                                    self?.delegate?.didProcessingFileAtPosition(self?.currentPosition)
+                                }
+                                counter = 0
+                            } else {
+                                counter += 1
+                            }
                         }
                     })
                 } else {
