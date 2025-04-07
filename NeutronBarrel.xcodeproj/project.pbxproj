@@ -33,6 +33,7 @@
 		6562B35526245A800070A491 /* NeutronTotalEfficiency.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6562B35426245A800070A491 /* NeutronTotalEfficiency.swift */; };
 		656A05DC1EADEDD500677B0F /* DataProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 656A05DB1EADEDD500677B0F /* DataProtocol.swift */; };
 		656A05DE1EAE03BC00677B0F /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 656A05DD1EAE03BC00677B0F /* Extensions.swift */; };
+		658C74342DA3FF99004114EE /* EventMerger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 658C74332DA3FF99004114EE /* EventMerger.swift */; };
 		65B2A92625FB80A100D97986 /* ResultsTable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65B2A92525FB80A100D97986 /* ResultsTable.swift */; };
 		65B2A92A25FB955000D97986 /* NeutronsMatch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65B2A92925FB955000D97986 /* NeutronsMatch.swift */; };
 		65B84170274670BB000DA3F2 /* EventSorter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65B8416F274670BA000DA3F2 /* EventSorter.swift */; };
@@ -86,6 +87,7 @@
 		6562B35426245A800070A491 /* NeutronTotalEfficiency.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NeutronTotalEfficiency.swift; sourceTree = "<group>"; };
 		656A05DB1EADEDD500677B0F /* DataProtocol.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DataProtocol.swift; sourceTree = "<group>"; };
 		656A05DD1EAE03BC00677B0F /* Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
+		658C74332DA3FF99004114EE /* EventMerger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventMerger.swift; sourceTree = "<group>"; };
 		65B2A92525FB80A100D97986 /* ResultsTable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResultsTable.swift; sourceTree = "<group>"; };
 		65B2A92925FB955000D97986 /* NeutronsMatch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NeutronsMatch.swift; sourceTree = "<group>"; };
 		65B8416F274670BA000DA3F2 /* EventSorter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventSorter.swift; sourceTree = "<group>"; };
@@ -299,6 +301,7 @@
 				5A2A993D20570F0C00B3D1A0 /* Model */,
 				5A036F701EB0F5C80092D3C4 /* Processor.swift */,
 				65B8416F274670BA000DA3F2 /* EventSorter.swift */,
+				658C74332DA3FF99004114EE /* EventMerger.swift */,
 				780BC3A51A5EF99700EDEECE /* AppDelegate.swift */,
 				780BC43E1A604AE000EDEECE /* Resources */,
 				78B6A54E193A3B3900C7E36A /* Supporting Files */,
@@ -476,6 +479,7 @@
 				65BBD8F8261DC07700D93026 /* CalculationsController.swift in Sources */,
 				65DA929F20D54F65002643DB /* SearchType.swift in Sources */,
 				5AAE352F22717FAB00035B52 /* SideDetector.swift in Sources */,
+				658C74342DA3FF99004114EE /* EventMerger.swift in Sources */,
 				5AAE352C22717F8300035B52 /* DetectorsWellGeometry.swift in Sources */,
 				5AAE35352271856500035B52 /* FocalDetector.swift in Sources */,
 				65B84170274670BB000DA3F2 /* EventSorter.swift in Sources */,
@@ -619,7 +623,7 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 79;
+				CURRENT_PROJECT_VERSION = 80;
 				DEVELOPMENT_TEAM = "";
 				"DEVELOPMENT_TEAM[sdk=macosx*]" = "";
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -651,7 +655,7 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 79;
+				CURRENT_PROJECT_VERSION = 80;
 				DEVELOPMENT_TEAM = "";
 				"DEVELOPMENT_TEAM[sdk=macosx*]" = "";
 				ENABLE_HARDENED_RUNTIME = YES;

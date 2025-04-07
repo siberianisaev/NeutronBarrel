@@ -135,9 +135,9 @@
                         </items>
                     </menu>
                 </menuItem>
-                <menuItem title="Sorter" id="Uk4-vs-Mtg">
+                <menuItem title="Sort &amp; Merge" id="Uk4-vs-Mtg">
                     <modifierMask key="keyEquivalentModifierMask"/>
-                    <menu key="submenu" title="Sorter" id="TCE-FW-7zB">
+                    <menu key="submenu" title="Sort &amp; Merge" id="TCE-FW-7zB">
                         <items>
                             <menuItem title="Show" id="4jg-ww-yh3">
                                 <modifierMask key="keyEquivalentModifierMask"/>

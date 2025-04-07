@@ -11,11 +11,25 @@ import Cocoa
 class EventSorterController: NSWindowController {
     
     @IBOutlet weak var buttonSort: NSButton!
+    @IBOutlet weak var buttonMerge: NSButton!
     @IBOutlet weak var progressIndicator: NSProgressIndicator!
     
     @IBAction func sort(_ sender: Any) {
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
             EventSorter.singleton.processData { [weak self] (progress: Double) in
+                if let indicator = self?.progressIndicator {
+                    let run = progress < 100.0
+                    run ? indicator.startAnimation(self) : indicator.stopAnimation(self)
+                    indicator.isHidden = !run
+                    indicator.doubleValue = progress <= 0 ? Double.ulpOfOne : progress
+                }
+            }
+        }
+    }
+    
+    @IBAction func merge(_ sender: Any) {
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            EventMerger.singleton.processData { [weak self] (progress: Double) in
                 if let indicator = self?.progressIndicator {
                     let run = progress < 100.0
                     run ? indicator.startAnimation(self) : indicator.stopAnimation(self)
