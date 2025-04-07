@@ -624,7 +624,7 @@
 				INFOPLIST_FILE = "NeutronBarrel/NeutronBarrel-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.13;
-				MARKETING_VERSION = 30;
+				MARKETING_VERSION = 31;
 				PRODUCT_BUNDLE_IDENTIFIER = ru.jinr.flerovlab.NeutronBarrel;
 				PRODUCT_MODULE_NAME = NeutronBarrel;
 				PRODUCT_NAME = NeutronBarrel;
@@ -652,7 +652,7 @@
 				INFOPLIST_FILE = "NeutronBarrel/NeutronBarrel-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.13;
-				MARKETING_VERSION = 30;
+				MARKETING_VERSION = 31;
 				PRODUCT_BUNDLE_IDENTIFIER = ru.jinr.flerovlab.NeutronBarrel;
 				PRODUCT_MODULE_NAME = NeutronBarrel;
 				PRODUCT_NAME = NeutronBarrel;

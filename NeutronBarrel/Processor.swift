@@ -336,6 +336,7 @@ class Processor {
                 return
             }
 
+            var energyFront: Double?
             var gamma: DetectorMatch?
             let isRecoilSearch = criteria.startFromRecoil()
             if isRecoilSearch {
@@ -344,8 +345,8 @@ class Processor {
                     return
                 }
             } else { // FFron or AFron
-                let energy = getEnergy(event)
-                if !isOverflowed(event) && (energy < criteria.fissionAlphaFrontMinEnergy || energy > criteria.fissionAlphaFrontMaxEnergy) {
+                energyFront = getEnergy(event)
+                if !isOverflowed(event) && (energyFront! < criteria.fissionAlphaFrontMinEnergy || energyFront! > criteria.fissionAlphaFrontMaxEnergy) {
                     clearActInfo()
                     return
                 }
@@ -369,7 +370,7 @@ class Processor {
             let position = currentPosition
 
             if !isRecoilSearch {
-                findFissionAlphaBack()
+                findFissionAlphaBack(energyFront: energyFront!)
                 fseek(file, position, SEEK_SET)
                 if criteria.requiredFissionAlphaBack && 0 == fissionsAlphaPerAct.matchFor(side: .back).count {
                     clearActInfo()
@@ -577,7 +578,7 @@ class Processor {
         return match.count > 0 ? match : nil
     }
 
-    fileprivate func findFissionAlphaBack() {
+    fileprivate func findFissionAlphaBack(energyFront: Double) {
         let match = fissionsAlphaPerAct
         let type = SearchType.alpha
         let directions: Set<SearchDirection> = [.backward, .forward]
@@ -587,7 +588,7 @@ class Processor {
                 var store = byFact
                 if !store {
                     let energy = self.getEnergy(event)
-                    store = self.isOverflowed(event) || energy >= self.criteria.fissionAlphaBackMinEnergy && energy <= self.criteria.fissionAlphaBackMaxEnergy
+                    store = self.isOverflowed(event) || (energy >= self.criteria.fissionAlphaBackMinEnergy && energy <= self.criteria.fissionAlphaBackMaxEnergy && abs(energy - energyFront) <= Double(self.criteria.frontBackMaxEnergyDelta))
                 }
                 if store {
                     self.storeFissionAlphaBack(event, match: match, type: type, deltaTime: deltaTime)
@@ -630,7 +631,7 @@ class Processor {
             fgetpos(self.file, &position)
             let t = event.time
 
-            let found = findRecoilBack(t, position: Int(position))
+            let found = findRecoilBack(t, position: Int(position), energyFront: energy)
             if (!found && criteria.requiredRecoilBack) {
                 return false
             }
@@ -653,7 +654,7 @@ class Processor {
         return false
     }
 
-    fileprivate func findRecoilBack(_ timeRecoilFront: CUnsignedLongLong, position: Int) -> Bool {
+    fileprivate func findRecoilBack(_ timeRecoilFront: CUnsignedLongLong, position: Int, energyFront: Double) -> Bool {
         var items = [DetectorMatchItem]()
         let side: StripsSide = .back
         let directions: Set<SearchDirection> = [.backward, .forward]
@@ -664,7 +665,7 @@ class Processor {
                 var store = self.criteria.startFromRecoil() || self.isRecoilBackStripNearToFissionAlphaBack(event)
                 if !byFact && store {
                     let energy = self.getEnergy(event)
-                    store = energy >= self.criteria.recoilBackMinEnergy && energy <= self.criteria.recoilBackMaxEnergy
+                    store = (energy >= self.criteria.recoilBackMinEnergy && energy <= self.criteria.recoilBackMaxEnergy && abs(energy - energyFront) <= Double(self.criteria.frontBackMaxEnergyDelta))
                 }
                 if store {
                     let item = self.focalDetectorMatchItemFrom(event, type: type, deltaTime: deltaTime, side: side)
@@ -711,7 +712,7 @@ class Processor {
                     var store = true
                     var gamma: DetectorMatch?
                     // Back
-                    let back = self.findFissionAlphaBack(index, position: position, startTime: st)
+                    let back = self.findFissionAlphaBack(index, position: position, startTime: st, energyFront: energy)
                     if self.criteria.requiredFissionAlphaBack && back == nil {
                         store = false
                     } else {
@@ -735,7 +736,7 @@ class Processor {
         }
     }
 
-    fileprivate func findFissionAlphaBack(_ index: Int, position: Int, startTime: CUnsignedLongLong) -> DetectorMatchItem? {
+    fileprivate func findFissionAlphaBack(_ index: Int, position: Int, startTime: CUnsignedLongLong, energyFront: Double) -> DetectorMatchItem? {
         guard let c = criteria.next[index] else {
             return nil
         }
@@ -750,7 +751,7 @@ class Processor {
                 var store = self.isEventStripNearToFirstParticle(event, maxDelta: Int(self.criteria.recoilBackMaxDeltaStrips), side: .back)
                 if !byFact && store { // check energy also
                     let energy = self.getEnergy(event)
-                    store = energy >= c.backMinEnergy && energy <= c.backMaxEnergy
+                    store = energy >= c.backMinEnergy && energy <= c.backMaxEnergy && abs(energy - energyFront) <= Double(self.criteria.frontBackMaxEnergyDelta)
                 }
                 if store {
                     let item = self.focalDetectorMatchItemFrom(event, type: t, deltaTime: deltaTime, side: .back)

@@ -41,6 +41,7 @@ enum Setting: String {
     MaxNeutronBackwardTime = "MaxNeutronBackwardTime",
     MaxRecoilFrontDeltaStrips = "MaxRecoilFrontDeltaStrips",
     MaxRecoilBackDeltaStrips = "MaxRecoilBackDeltaStrips",
+    MaxFrontBackEnergyDelta = "MaxFrontBackEnergyDelta",
     SummarizeFissionsFront = "SummarizeFissionsFront",
     SummarizeFissionsFront2 = "SummarizeFissionsFront2",
     SummarizeFissionsFront3 = "SummarizeFissionsFront3",
@@ -211,7 +212,7 @@ class Settings {
             return 8
         case .MinFissionEnergy, .MaxFissionAlpha2Energy, .MaxFissionAlpha2BackEnergy, .MaxFissionAlpha3Energy, .MaxFissionAlpha4Energy, .MaxFissionAlpha3BackEnergy, .MaxFissionAlpha4BackEnergy, .MaxRecoilFrontEnergy, .MaxRecoilBackEnergy:
             return 20
-        case .MaxFissionAlpha2Time, .MaxFissionAlpha3Time, .MaxFissionAlpha4Time, .MaxFissionEnergy, .MaxRecoilTime, .MaxFissionWellEnergy:
+        case .MaxFissionAlpha2Time, .MaxFissionAlpha3Time, .MaxFissionAlpha4Time, .MaxFissionEnergy, .MaxRecoilTime, .MaxFissionWellEnergy, .MaxFrontBackEnergyDelta:
             return 1000
         case .MaxFissionWellAngle:
             return 10

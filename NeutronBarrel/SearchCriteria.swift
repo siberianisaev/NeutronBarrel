@@ -99,6 +99,8 @@ class SearchCriteria {
     var checkNeutronMaxDeltaTimeExceeded: Bool = true
     var recoilFrontMaxDeltaStrips: Int = 0
     var recoilBackMaxDeltaStrips: Int = 0
+
+    var frontBackMaxEnergyDelta: Int = 0
     
     var searchFirstRecoilOnly = false
     var requiredFissionAlphaBack = false

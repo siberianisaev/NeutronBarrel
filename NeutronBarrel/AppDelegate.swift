@@ -91,6 +91,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         sMaxNeutronBackwardTime = String(format: "%d", Settings.getIntSetting(.MaxNeutronBackwardTime)) // mks
         sMaxRecoilFrontDeltaStrips = String(format: "%d", Settings.getIntSetting(.MaxRecoilFrontDeltaStrips))
         sMaxRecoilBackDeltaStrips = String(format: "%d", Settings.getIntSetting(.MaxRecoilBackDeltaStrips))
+        sMaxFrontBackEnergyDelta = String(format: "%d", Settings.getIntSetting(.MaxFrontBackEnergyDelta)) // keV
         summarizeFissionsFront = Settings.getBoolSetting(.SummarizeFissionsFront)
         summarizeFissionsFront2 = Settings.getBoolSetting(.SummarizeFissionsFront2)
         summarizeFissionsFront3 = Settings.getBoolSetting(.SummarizeFissionsFront3)
@@ -206,6 +207,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBInspectable dynamic var sMaxNeutronBackwardTime: String = ""
     @IBInspectable dynamic var sMaxRecoilFrontDeltaStrips: String = ""
     @IBInspectable dynamic var sMaxRecoilBackDeltaStrips: String = ""
+    @IBInspectable dynamic var sMaxFrontBackEnergyDelta: String = ""
     @IBInspectable dynamic var summarizeFissionsFront: Bool = false
     @IBInspectable dynamic var summarizeFissionsFront2: Bool = false
     @IBInspectable dynamic var summarizeFissionsFront3: Bool = false
@@ -552,6 +554,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         
         sc.recoilFrontMaxDeltaStrips = Int(sMaxRecoilFrontDeltaStrips) ?? 0
         sc.recoilBackMaxDeltaStrips = Int(sMaxRecoilBackDeltaStrips) ?? 0
+        sc.frontBackMaxEnergyDelta = Int(sMaxFrontBackEnergyDelta) ?? 0
         sc.requiredFissionAlphaBack = requiredFissionAlphaBack
         sc.searchFirstRecoilOnly = searchFirstRecoilOnly
         sc.requiredRecoilBack = requiredRecoilBack
@@ -819,6 +822,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             .MaxNeutronBackwardTime: Int(sMaxNeutronBackwardTime),
             .MaxRecoilFrontDeltaStrips: Int(sMaxRecoilFrontDeltaStrips),
             .MaxRecoilBackDeltaStrips: Int(sMaxRecoilBackDeltaStrips),
+            .MaxFrontBackEnergyDelta: Int(sMaxFrontBackEnergyDelta),
             .SummarizeFissionsFront: summarizeFissionsFront,
             .SummarizeFissionsFront2: summarizeFissionsFront2,
             .SummarizeFissionsFront3: summarizeFissionsFront3,
