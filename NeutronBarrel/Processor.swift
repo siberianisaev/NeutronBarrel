@@ -319,138 +319,141 @@ class Processor {
     fileprivate func mainCycleEventCheck(_ event: Event, folder: FolderStatistics) {
         if dataProtocol.isCycleTimeEvent(Int(event.eventId)) {
             currentCycle += 1
-        } else if isFront(event, type: criteria.startParticleType) {
+        } else if event.eventId == 38 && event.getChannelFor(type: .alpha) == 8190 { // beam off , for beam on -> 7935
             firstParticlePerAct.currentEventTime = UInt64(event.param1)
-            
-            if (criteria.inBeamOnly && !isInBeam(event)) || (criteria.overflowOnly && !isOverflow(event)) {
-                clearActInfo()
-                return
-            }
-            
-            var gamma: DetectorMatch?
-            let isRecoilSearch = criteria.startFromRecoil()
-            if isRecoilSearch {
-                if !validateRecoil(event, deltaTime: 0) {
-                    clearActInfo()
-                    return
-                }
-            } else { // FFron or AFron
-                let energy = getEnergy(event, type: criteria.startParticleType)
-                if energy < criteria.fissionAlphaFrontMinEnergy || energy > criteria.fissionAlphaFrontMaxEnergy {
-                    clearActInfo()
-                    return
-                }
-                
-                if !criteria.searchExtraFromLastParticle {
-                    gamma = findGamma(currentPosition)
-                    if criteria.requiredGamma && nil == gamma {
-                        clearActInfo()
-                        return
-                    }
-                }
-                
-                storeFissionAlphaFront(event, deltaTime: 0, subMatches: [.gamma: gamma])
-            }
-            
             let position = currentPosition
+            _ = findNeutrons(position)
+            storeFissionAlphaFront(event, deltaTime: 0, subMatches: [:])
             
-            if criteria.searchVETO {
-                findVETO()
-                fseek(file, position, SEEK_SET)
-                if criteria.requiredVETO && 0 == vetoPerAct.count {
-                    clearActInfo()
-                    return
-                }
-            }
+//            if (criteria.inBeamOnly && !isInBeam(event)) || (criteria.overflowOnly && !isOverflow(event)) {
+//                clearActInfo()
+//                return
+//            }
             
-            if !isRecoilSearch {
-                findFissionAlphaBack()
-                fseek(file, position, SEEK_SET)
-                if criteria.requiredFissionAlphaBack && 0 == fissionsAlphaPerAct.matchFor(side: .back).count {
-                    clearActInfo()
-                    return
-                }
-                
-                // Search them only after search all FBack/ABack
-                findRecoil()
-                fseek(file, position, SEEK_SET)
-                if criteria.requiredRecoil && 0 == recoilsPerAct.matchFor(side: .front).count {
-                    clearActInfo()
-                    return
-                }
-                
-                if !criteria.searchExtraFromLastParticle {
-                    findWellFront(position)
-                    if wellSearchFailed() {
-                        clearActInfo()
-                        return
-                    }
-                }
-            }
+//            var gamma: DetectorMatch?
+//            let isRecoilSearch = criteria.startFromRecoil()
+//            if isRecoilSearch {
+//                if !validateRecoil(event, deltaTime: 0) {
+//                    clearActInfo()
+//                    return
+//                }
+//            } else { // FFron or AFron
+//                let energy = getEnergy(event, type: criteria.startParticleType)
+//                if energy < criteria.fissionAlphaFrontMinEnergy || energy > criteria.fissionAlphaFrontMaxEnergy {
+//                    clearActInfo()
+//                    return
+//                }
+//
+//                if !criteria.searchExtraFromLastParticle {
+//                    gamma = findGamma(currentPosition)
+//                    if criteria.requiredGamma && nil == gamma {
+//                        clearActInfo()
+//                        return
+//                    }
+//                }
+//
+//                storeFissionAlphaFront(event, deltaTime: 0, subMatches: [.gamma: gamma])
+//            }
             
-            if criteria.next[2] != nil {
-                findFissionAlpha(2)
-                fseek(file, position, SEEK_SET)
-                guard let match = fissionsAlphaNextPerAct[2], match.matchFor(side: .front).count > 0 else {
-                    clearActInfo()
-                    return
-                }
-                
-                if criteria.next[3] != nil {
-                    findFissionAlpha(3)
-                    fseek(file, position, SEEK_SET)
-                    guard let match = fissionsAlphaNextPerAct[3], match.matchFor(side: .front).count > 0 else {
-                        clearActInfo()
-                        return
-                    }
-                    
-                    if criteria.next[4] != nil {
-                        findFissionAlpha(4)
-                        fseek(file, position, SEEK_SET)
-                        guard let match = fissionsAlphaNextPerAct[4], match.matchFor(side: .front).count > 0 else {
-                            clearActInfo()
-                            return
-                        }
-                    }
-                }
-                
-                if criteria.searchExtraFromLastParticle && wellSearchFailed() {
-                    clearActInfo()
-                    return
-                }
-            }
             
-            if !criteria.startFromRecoil() && criteria.requiredGammaOrWell && gamma == nil && fissionsAlphaWellPerAct.matchFor(side: .front).count == 0 {
-                clearActInfo()
-                return
-            }
             
-            if !criteria.searchExtraFromLastParticle {
-                if findNeutrons(position) {
-                    clearActInfo()
-                    return
-                }
-            }
+//            if criteria.searchVETO {
+//                findVETO()
+//                fseek(file, position, SEEK_SET)
+//                if criteria.requiredVETO && 0 == vetoPerAct.count {
+//                    clearActInfo()
+//                    return
+//                }
+//            }
             
-            if criteria.searchSpecialEvents {
-                findSpecialEvents()
-                fseek(file, position, SEEK_SET)
-            }
+//            if !isRecoilSearch {
+//                findFissionAlphaBack()
+//                fseek(file, position, SEEK_SET)
+//                if criteria.requiredFissionAlphaBack && 0 == fissionsAlphaPerAct.matchFor(side: .back).count {
+//                    clearActInfo()
+//                    return
+//                }
+//
+//                // Search them only after search all FBack/ABack
+//                findRecoil()
+//                fseek(file, position, SEEK_SET)
+//                if criteria.requiredRecoil && 0 == recoilsPerAct.matchFor(side: .front).count {
+//                    clearActInfo()
+//                    return
+//                }
+//
+//                if !criteria.searchExtraFromLastParticle {
+//                    findWellFront(position)
+//                    if wellSearchFailed() {
+//                        clearActInfo()
+//                        return
+//                    }
+//                }
+//            }
+//
+//            if criteria.next[2] != nil {
+//                findFissionAlpha(2)
+//                fseek(file, position, SEEK_SET)
+//                guard let match = fissionsAlphaNextPerAct[2], match.matchFor(side: .front).count > 0 else {
+//                    clearActInfo()
+//                    return
+//                }
+//
+//                if criteria.next[3] != nil {
+//                    findFissionAlpha(3)
+//                    fseek(file, position, SEEK_SET)
+//                    guard let match = fissionsAlphaNextPerAct[3], match.matchFor(side: .front).count > 0 else {
+//                        clearActInfo()
+//                        return
+//                    }
+//
+//                    if criteria.next[4] != nil {
+//                        findFissionAlpha(4)
+//                        fseek(file, position, SEEK_SET)
+//                        guard let match = fissionsAlphaNextPerAct[4], match.matchFor(side: .front).count > 0 else {
+//                            clearActInfo()
+//                            return
+//                        }
+//                    }
+//                }
+//
+//                if criteria.searchExtraFromLastParticle && wellSearchFailed() {
+//                    clearActInfo()
+//                    return
+//                }
+//            }
             
-            if criteria.trackBeamState {
-                findBeamEvents()
-            }
-            fseek(file, position, SEEK_SET)
+//            if !criteria.startFromRecoil() && criteria.requiredGammaOrWell && gamma == nil && fissionsAlphaWellPerAct.matchFor(side: .front).count == 0 {
+//                clearActInfo()
+//                return
+//            }
+            
+//            if !criteria.searchExtraFromLastParticle {
+//            if findNeutrons(position) {
+//                clearActInfo()
+//                return
+//            }
+//            }
+            
+//            if criteria.searchSpecialEvents {
+//                findSpecialEvents()
+//                fseek(file, position, SEEK_SET)
+//            }
+//
+//            if criteria.trackBeamState {
+//                findBeamEvents()
+//            }
+//            fseek(file, position, SEEK_SET)
             
             // Important: this search must be last because we don't do file repositioning here
             // Sum(FFron or AFron)
-            if !isRecoilSearch && criteria.summarizeFissionsAlphaFront {
-                findAllFirstFissionsAlphaFront(folder)
-            }
-            
-            if criteria.searchNeutrons {
-                neutronsMultiplicity?.increment(multiplicity: neutronsPerAct.count)
-            }
+//            if !isRecoilSearch && criteria.summarizeFissionsAlphaFront {
+//                findAllFirstFissionsAlphaFront(folder)
+//            }
+//
+//            if criteria.searchNeutrons {
+//                neutronsMultiplicity?.increment(multiplicity: neutronsPerAct.count)
+//            }
             
             correlationsPerFile += 1
             resultsTable.logActResults()
@@ -534,8 +537,10 @@ class Processor {
             let checkMaxDeltaTimeExceeded = !criteria.mixingTimesFilterForNeutrons
             search(directions: directions, startTime: startTime, minDeltaTime: criteria.minNeutronTime, maxDeltaTime: maxDeltaTime, maxDeltaTimeBackward: criteria.maxNeutronBackwardTime, checkMaxDeltaTimeExceeded:checkMaxDeltaTimeExceeded, useCycleTime: false, updateCycle: false) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>, _) in
                 let id = Int(event.eventId)
-                // 1) Simultaneous Decays Filter - search the events with fragment energy at the same time with current decay.
-                if self.checkIsSimultaneousDecay(event, deltaTime: deltaTime) {
+                if event.eventId == 38 && deltaTime > 0 { // NEXT TIME GATE; hack start from current event with deltaTime > 0 
+                    stop.initialize(to: true)
+                    // 1) Simultaneous Decays Filter - search the events with fragment energy at the same time with current decay.
+                } else if self.checkIsSimultaneousDecay(event, deltaTime: deltaTime) {
                     excludeSFEvent = true
                     self.neutronsMultiplicity?.incrementBroken()
                     stop.initialize(to: true)
