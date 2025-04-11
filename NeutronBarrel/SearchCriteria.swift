@@ -100,7 +100,8 @@ class SearchCriteria {
     var recoilFrontMaxDeltaStrips: Int = 0
     var recoilBackMaxDeltaStrips: Int = 0
 
-    var frontBackMaxEnergyDelta: Int = 0
+    var frontBackMaxEnergyDeltaRecoil: Int = 0
+    var frontBackMaxEnergyDeltaAlpha: Int = 0
     
     var searchFirstRecoilOnly = false
     var requiredFissionAlphaBack = false

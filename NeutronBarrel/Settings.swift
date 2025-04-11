@@ -41,7 +41,8 @@ enum Setting: String {
     MaxNeutronBackwardTime = "MaxNeutronBackwardTime",
     MaxRecoilFrontDeltaStrips = "MaxRecoilFrontDeltaStrips",
     MaxRecoilBackDeltaStrips = "MaxRecoilBackDeltaStrips",
-    MaxFrontBackEnergyDelta = "MaxFrontBackEnergyDelta",
+    MaxFrontBackEnergyDeltaRecoil = "MaxFrontBackEnergyDeltaRecoil",
+    MaxFrontBackEnergyDeltaAlpha = "MaxFrontBackEnergyDeltaAlpha",
     SummarizeFissionsFront = "SummarizeFissionsFront",
     SummarizeFissionsFront2 = "SummarizeFissionsFront2",
     SummarizeFissionsFront3 = "SummarizeFissionsFront3",
@@ -212,13 +213,13 @@ class Settings {
             return 8
         case .MinFissionEnergy, .MaxFissionAlpha2Energy, .MaxFissionAlpha2BackEnergy, .MaxFissionAlpha3Energy, .MaxFissionAlpha4Energy, .MaxFissionAlpha3BackEnergy, .MaxFissionAlpha4BackEnergy, .MaxRecoilFrontEnergy, .MaxRecoilBackEnergy:
             return 20
-        case .MaxFissionAlpha2Time, .MaxFissionAlpha3Time, .MaxFissionAlpha4Time, .MaxFissionEnergy, .MaxRecoilTime, .MaxFissionWellEnergy, .MaxFrontBackEnergyDelta:
+        case .MaxFissionAlpha2Time, .MaxFissionAlpha3Time, .MaxFissionAlpha4Time, .MaxFissionEnergy, .MaxRecoilTime, .MaxFissionWellEnergy, .MaxFrontBackEnergyDeltaRecoil:
             return 1000
         case .MaxFissionWellAngle:
             return 10
         case .MinRecoilFrontEnergy, .MinRecoilBackEnergy, .NeutronsDetectorEfficiencyError:
             return 1
-        case .MaxFissionBackEnergy:
+        case .MaxFissionBackEnergy, .MaxFrontBackEnergyDeltaAlpha:
             return 10000
         case .MaxRecoilBackTime, .MaxFissionTime, .MaxGammaTime, .MinFissionAlpha2Energy, .MinFissionAlpha2BackEnergy, .MinFissionAlpha3Energy, .MinFissionAlpha4Energy, .MinFissionAlpha3BackEnergy, .MinFissionAlpha4BackEnergy, .MaxNeutronBackwardTime:
             return 5
