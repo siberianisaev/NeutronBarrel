@@ -39,8 +39,8 @@ class EventSorter {
                 autoreleasepool {
                     fileRead = fopen(pathRead.utf8String, "rb")
                     
-                    let components = pathRead.components(separatedBy: "/")
-                    _ = components.dropLast()
+                    var components = pathRead.components(separatedBy: "/")
+                    components = components.dropLast()
                     let folder = components.last!
                     let writeFolder = sortedDataFolder.appendingPathComponent(folder)
                     FileManager.createIfNeedsDirectoryAtPath(writeFolder)
