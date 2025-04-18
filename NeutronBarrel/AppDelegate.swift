@@ -295,6 +295,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBInspectable dynamic var searchFissionAlpha2: Bool = false {
         didSet {
             setupAlpha2FormView()
+            setupSearchExtra()
             if !searchFissionAlpha2 {
                 searchFissionAlpha3 = false
             }
@@ -303,9 +304,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBInspectable dynamic var searchFissionAlpha3: Bool = false {
         didSet {
             setupAlpha3FormView()
-            searchExtraFromLastParticle = searchFissionAlpha3
-            searchExtraFromLastParticleButton.state = searchExtraFromLastParticle ? .on : .off
-            searchExtraFromLastParticleButton.isHidden = !searchFissionAlpha3
+            setupSearchExtra()
             if !searchFissionAlpha3 {
                 searchFissionAlpha4 = false
             }
@@ -462,6 +461,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     
     fileprivate func setupRecoilBackEnergyView() {
         recoilBackEnergyView.isHidden = searchRecoilBackByFact
+    }
+    
+    fileprivate func setupSearchExtra() {
+        searchExtraFromLastParticle = searchFissionAlpha3 || searchFissionAlpha2
+        searchExtraFromLastParticleButton.state = searchExtraFromLastParticle ? .on : .off
+        searchExtraFromLastParticleButton.isHidden = !searchFissionAlpha3 && !searchFissionAlpha2
     }
     
     func applicationDidFinishLaunching(_ aNotification: Notification) {
