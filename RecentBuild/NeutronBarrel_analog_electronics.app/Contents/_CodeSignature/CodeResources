@@ -10,19 +10,19 @@
 		</data>
 		<key>Resources/Assets.car</key>
 		<data>
-		NT8z3kpglclN6vRlZc7zoYjdKUU=
+		OI2LmnxrfUATa8wwbHbpB6sAF4g=
 		</data>
 		<key>Resources/Base.lproj/MainMenu.nib</key>
 		<data>
-		eGjG1gjDmF6YbX8CK658/85wgpU=
+		5IDBhnz1cMn2wQ8GjQfBDPFflw4=
 		</data>
 		<key>Resources/CalculationsController.nib</key>
 		<data>
-		aVLMOYk6IGQrIHF4jmGx6aCiOVw=
+		QtTCwdREytfvJV2BZUjVRZkpaew=
 		</data>
 		<key>Resources/EventSorterController.nib</key>
 		<data>
-		VZaDkbH9VOoa/VB/sXw5hltXdNI=
+		GUif7n64+Nsz202OawO+iOdBGfw=
 		</data>
 		<key>Resources/SF_sources/U238.txt</key>
 		<data>
@@ -34,24 +34,15 @@
 		</data>
 		<key>Resources/ViewerController.nib/keyedobjects-101300.nib</key>
 		<data>
-		+G+6OlaaMGhTi8ewKUEOzOz7Sr0=
+		qEUoqqivuqBfiPBAqBScFQeOmsM=
 		</data>
 		<key>Resources/ViewerController.nib/keyedobjects-110000.nib</key>
 		<data>
-		ccsIcbmd0czGYf6DqyR3gYIdsyg=
+		NiaKr1cV40spqORWlMX885wiD1s=
 		</data>
 	</dict>
 	<key>files2</key>
 	<dict>
-		<key>Frameworks/libswiftAppKit.dylib</key>
-		<dict>
-			<key>cdhash</key>
-			<data>
-			/OmwGRbORcnNjnoLmSHJ5YPdYTA=
-			</data>
-			<key>requirement</key>
-			<string>cdhash H"93e4a579dc797d359af753c1d9875e1e368a7be4" or cdhash H"fce9b01916ce45c9cd8e7a0b9921c9e583dd6130"</string>
-		</dict>
 		<key>Frameworks/libswiftCore.dylib</key>
 		<dict>
 			<key>cdhash</key>
@@ -60,15 +51,6 @@
 			</data>
 			<key>requirement</key>
 			<string>cdhash H"5896a3c5c845fa8e206333a333969a967f159eeb" or cdhash H"197e26997abeeff990a23f2865d9fc1eeb70d18f"</string>
-		</dict>
-		<key>Frameworks/libswiftCoreData.dylib</key>
-		<dict>
-			<key>cdhash</key>
-			<data>
-			RgOKaMtfkc0qUMlFJgiXpeQ4Sdo=
-			</data>
-			<key>requirement</key>
-			<string>cdhash H"9ffc88ce5cb9c9b9acd49f00caa1b083efdbe122" or cdhash H"46038a68cb5f91cd2a50c945260897a5e43849da"</string>
 		</dict>
 		<key>Frameworks/libswiftCoreFoundation.dylib</key>
 		<dict>
@@ -178,6 +160,15 @@
 			<key>requirement</key>
 			<string>cdhash H"3406aab10f486b91c2d9334de341504de56a5631" or cdhash H"73e04119822f2d8cd5eeb426ddac2b2b98295def"</string>
 		</dict>
+		<key>Frameworks/libswiftsimd.dylib</key>
+		<dict>
+			<key>cdhash</key>
+			<data>
+			yoevzZNzSjWnQqIYLmXdd/DhGvQ=
+			</data>
+			<key>requirement</key>
+			<string>cdhash H"a91aa60521c71dd382e53441689bc0970469be1b" or cdhash H"ca87afcd93734a35a742a2182e65dd77f0e11af4"</string>
+		</dict>
 		<key>Resources/AppIcon.icns</key>
 		<dict>
 			<key>hash2</key>
@@ -189,28 +180,28 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			DDnLwa+/q4fbstTShdeJZLXEMgjZQA2YoVl93JrxerI=
+			cdJmiSw12UUJHxEo11Km2S8RsvUxpM04dUVo32PGIHs=
 			</data>
 		</dict>
 		<key>Resources/Base.lproj/MainMenu.nib</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			EBhP7eETpUkxaqnlU4EM+8QL9cV2UI5peNm21lnT4Bk=
+			vO9N46UQqEtCOB9nyE8/wbqUIT4rXWMJ0w3+GpAWXJY=
 			</data>
 		</dict>
 		<key>Resources/CalculationsController.nib</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			uEq9IM2q8WDnbnAo6xij7t8tSTEPYFz5JDLyldVAEVQ=
+			E3WzM8Ibarr8CL4bxbfX6INhi3jZHvJ2KxaOHuOTcSk=
 			</data>
 		</dict>
 		<key>Resources/EventSorterController.nib</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			sZ+6HuC8OTgewgs4VC5pjwJieBwlzDk8MLwNUFFpL+Q=
+			XH+i/LQYcTkYYdfa1Uw+daBVxMthX5OQncVRPQEw7QE=
 			</data>
 		</dict>
 		<key>Resources/SF_sources/U238.txt</key>
@@ -231,14 +222,14 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			hodwUiOfO7tDbyAukzG88NQpHLZpt49vrt0MoazNYnk=
+			Lq4ZwPHrBE0vEXtxy7wtQjGaEkPwTdNQDUuxDvblyWE=
 			</data>
 		</dict>
 		<key>Resources/ViewerController.nib/keyedobjects-110000.nib</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			ABGithzXyQBJfsYuBl1oLICcSnwJ/nQ+8m68zpB9gYQ=
+			41TCF17+/U8PU26G1FT+h7rZjGkKfwnqnqB6aooWZfs=
 			</data>
 		</dict>
 	</dict>
