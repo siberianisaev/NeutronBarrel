@@ -53,6 +53,11 @@ class ViewerController: NSWindowController {
             tableView.reloadData()
         }
     }
+    @IBInspectable dynamic var sHighlightedEventId: String = "" {
+        didSet {
+            tableView.reloadData()
+        }
+    }
     
     @IBOutlet weak var tableView: NSTableView!
     @IBOutlet weak var labelFile: NSTextField!
@@ -200,7 +205,11 @@ extension ViewerController: NSTableViewDelegate {
                             string += ".\(strip+1)"
                         }
                     case .ID:
-                        string = "\(event.eventId)"
+                        let eventId = event.eventId
+                        string = "\(eventId)"
+                        if let number = Int(sHighlightedEventId), eventId == number {
+                            highlight = true
+                        }
                     case .time:
                         if dataProtocol?.isValidEventIdForTimeCheck(id) == true {
                             string = "\(event.param1)"
