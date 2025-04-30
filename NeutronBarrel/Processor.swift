@@ -817,9 +817,9 @@ class Processor {
         }
     }
     
-    fileprivate func findFissionAlphaBack(_ index: Int, position: Int, startTime: CUnsignedLongLong) -> [DetectorMatchItem] {
+    fileprivate func findFissionAlphaBack(_ index: Int, position: Int, startTime: CUnsignedLongLong) -> [DetectorMatchItem]? {
         guard let c = criteria.next[index] else {
-            return []
+            return nil
         }
         
         var items = [DetectorMatchItem]()
@@ -849,7 +849,10 @@ class Processor {
                 return [item]
             }
         }
-        return items
+        if items.count > 0 {
+            return items
+        }
+        return nil
     }
     
     // MARK: - Storage
@@ -946,7 +949,7 @@ class Processor {
         recoilsPerAct.append(item, side: side)
     }
     
-    fileprivate func storeFissionAlpha(_ index: Int, event: Event, type: SearchType, deltaTime: CLongLong, subMatches: [SearchType: DetectorMatch?]?, back: [DetectorMatchItem]) {
+    fileprivate func storeFissionAlpha(_ index: Int, event: Event, type: SearchType, deltaTime: CLongLong, subMatches: [SearchType: DetectorMatch?]?, back: [DetectorMatchItem]?) {
         let id = event.eventId
         let encoder = dataProtocol.encoderForEventId(Int(id))
         let strip0_15 = event.param2 >> 12
@@ -964,8 +967,10 @@ class Processor {
                                      side: side)
         let match = fissionsAlphaNextPerAct[index] ?? DoubleSidedStripDetectorMatch()
         match.append(item, side: side)
-        for item in back {
-            match.append(item, side: .back)
+        if let back = back {
+            for item in back {
+                match.append(item, side: .back)
+            }
         }
         fissionsAlphaNextPerAct[index] = match
     }

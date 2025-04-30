@@ -3081,7 +3081,7 @@
                                     <action selector="showResultsFolder:" target="Voe-Tx-rLC" id="qTO-xA-hKT"/>
                                 </connections>
                             </button>
-                            <customView fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="KYX-If-cM9" customClass="CorrelationsView" customModule="NeutronBarrel" customModuleProvider="target">
+                            <customView clipsToBounds="YES" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="KYX-If-cM9" customClass="CorrelationsView" customModule="NeutronBarrel" customModuleProvider="target">
                                 <rect key="frame" x="14" y="472" width="197" height="11"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <connections>
