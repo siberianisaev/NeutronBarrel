@@ -12,17 +12,21 @@ class EventSorterController: NSWindowController {
     
     @IBOutlet weak var buttonSort: NSButton!
     @IBOutlet weak var progressIndicator: NSProgressIndicator!
+    @IBInspectable dynamic var sFilterEventIDs: String = ""
     
     @IBAction func sort(_ sender: Any) {
+        let filterEventIDs = Set(self.sFilterEventIDs.components(separatedBy: ",").compactMap {
+            Int($0.trimmingCharacters(in: .whitespaces))
+        })
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-            EventSorter.singleton.processData { [weak self] (progress: Double) in
+            EventSorter.singleton.processData(filterEventIDs, progressHandler: { [weak self] (progress: Double) in
                 if let indicator = self?.progressIndicator {
                     let run = progress < 100.0
                     run ? indicator.startAnimation(self) : indicator.stopAnimation(self)
                     indicator.isHidden = !run
                     indicator.doubleValue = progress <= 0 ? Double.ulpOfOne : progress
                 }
-            }
+            })
         }
     }
 

@@ -24,7 +24,7 @@ class EventSorter {
     /*
      Call it from bkg thread.
      */
-    func processData(_ progressHandler: @escaping ((Double)->())) {
+    func processData(_ filterEventIDs: Set<Int>, progressHandler: @escaping ((Double)->())) {
         DispatchQueue.main.async {
             progressHandler(0.0)
         }
@@ -49,10 +49,13 @@ class EventSorter {
                     fileWrite = fopen(writeFilePath.utf8String, "wb")
                     
                     var intercycleEvents = [Event]()
+                    let hasFilter = filterEventIDs.count > 0
                     func storeIntercycleEvents() {
                         let sorted = sort(intercycleEvents)
                         for event in sorted {
-                            writeToFile(event)
+                            if false == hasFilter || false == filterEventIDs.contains(Int(event.eventId)) {
+                                writeToFile(event)
+                            }
                         }
                         intercycleEvents.removeAll()
                     }
