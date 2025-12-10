@@ -2,9 +2,9 @@ Neutron Barrel
 ==============
 
 References:
-* Spontaneous fission of 260Rf / May-June 2025 / Data analysis in progress
-* SF isomers in Am region (transfer reactions) / May 2023 & May 2025 / Preparing submission to CPC
-* Prompt neutrons of 260Sg / April 2023 & May 2024 / Data analysis in progress
+* Spontaneous fission of 260Rf / Data analysis in progress
+* Prompt neutron emission in the spontaneous fission of 258,260Sg / Preparing submission to PRC
+* [First investigation of prompt neutrons from spontaneously fissioning isomers produced in multinucleon transfer reactions](https://doi.org/10.1016/j.physletb.2025.140071), 2025
 * [The SFiNx detector system (current status)](https://doi.org/10.1134/S1547477124702303), 2025
 * [Prompt neutron multiplicity from spontaneous fission of 244Fm](https://link.springer.com/article/10.1140/epja/s10050-024-01441-0), 2024
 * [Prompt neutron emission in 250No spontaneous fission associated with ground and isomeric states decay](http://cpc.ihep.ac.cn/article/id/2012efc8-c2ad-464e-a277-215bcbf03e21), 2024
