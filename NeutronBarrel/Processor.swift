@@ -598,7 +598,7 @@ class Processor {
                 var store = byFact
                 if !store {
                     let energy = self.getEnergy(event)
-                    store = self.isOverflowed(event) || (energy >= self.criteria.fissionAlphaBackMinEnergy && energy <= self.criteria.fissionAlphaBackMaxEnergy && abs(energy - energyFront) <= Double(self.criteria.frontBackMaxEnergyDeltaAlpha))
+                    store = self.isOverflowed(event) || (energy >= self.criteria.fissionAlphaBackMinEnergy && energy <= self.criteria.fissionAlphaBackMaxEnergy)
                 }
                 if store {
                     self.storeFissionAlphaBack(event, match: match, type: type, deltaTime: deltaTime)
@@ -677,7 +677,7 @@ class Processor {
                 var store = self.criteria.startFromRecoil() || self.isRecoilBackStripNearToFissionAlphaBack(event)
                 if !byFact && store {
                     let energy = self.getEnergy(event)
-                    store = (energy >= self.criteria.recoilBackMinEnergy && energy <= self.criteria.recoilBackMaxEnergy && abs(energy - energyFront) <= Double(self.criteria.frontBackMaxEnergyDeltaRecoil))
+                    store = (energy >= self.criteria.recoilBackMinEnergy && energy <= self.criteria.recoilBackMaxEnergy)
                 }
                 if store {
                     let item = self.focalDetectorMatchItemFrom(event, type: type, deltaTime: deltaTime, side: side)
@@ -763,7 +763,7 @@ class Processor {
                 var store = self.isEventStripNearToFirstParticle(event, maxDelta: Int(self.criteria.recoilBackMaxDeltaStrips), side: .back)
                 if !byFact && store { // check energy also
                     let energy = self.getEnergy(event)
-                    store = energy >= c.backMinEnergy && energy <= c.backMaxEnergy && abs(energy - energyFront) <= Double(self.criteria.frontBackMaxEnergyDeltaAlpha)
+                    store = (energy >= c.backMinEnergy && energy <= c.backMaxEnergy)
                 }
                 if store {
                     let item = self.focalDetectorMatchItemFrom(event, type: t, deltaTime: deltaTime, side: .back)
