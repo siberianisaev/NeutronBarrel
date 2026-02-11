@@ -797,6 +797,7 @@ class Processor {
                                      eventNumber: eventNumber(),
                                      deltaTime: deltaTime,
                                      overflow: event.overflow,
+                                     pileUp: event.pileUp,
                                      side: side,
                                      stripConfiguration: stripsConfiguration())
         return item
@@ -823,6 +824,7 @@ class Processor {
                                      deltaTime: deltaTime,
                                      time: time,
                                      overflow: event.overflow,
+                                     pileUp: event.pileUp,
                                      inBeam: event.inBeam,
                                      channel: channel,
                                      subMatches: subMatches,
@@ -879,6 +881,7 @@ class Processor {
                                      eventNumber: eventNumber(),
                                      deltaTime: deltaTime,
                                      overflow: event.overflow,
+                                     pileUp: event.pileUp,
                                      subMatches: subMatches,
                                      side: side,
                                      stripConfiguration: stripsConfiguration())
@@ -904,6 +907,7 @@ class Processor {
                                      eventNumber: eventNumber(),
                                      deltaTime: deltaTime,
                                      overflow: event.overflow,
+                                     pileUp: event.pileUp,
                                      side: side,
                                      stripConfiguration: stripsConfiguration())
         fissionsAlphaWellPerAct.append(item, side: side)

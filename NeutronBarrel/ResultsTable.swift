@@ -96,6 +96,7 @@ class ResultsTable {
     fileprivate var keyColumnStartFrontEnergy = "$Fron"
     fileprivate var keyColumnStartFrontInBeam = "$FronInBeam"
     fileprivate var keyColumnStartFrontOverflow = "$FronOverflow"
+    fileprivate var keyColumnStartFrontPileUp = "$FronPileUp"
     fileprivate var keyColumnStartFrontTime = "$FronFirstTime"
     fileprivate var keyColumnStartFrontDeltaTime = "dT($FronFirst-Next)"
     fileprivate var keyColumnStartFrontStrip = "Strip($Fron)"
@@ -105,6 +106,7 @@ class ResultsTable {
     fileprivate var keyColumnStartBackSum = "Sum(@Back)"
     fileprivate var keyColumnStartBackEnergy = "@Back"
     fileprivate var keyColumnStartBackOverflow = "@BackOverflow"
+    fileprivate var keyColumnStartBackPileUp = "@BackPileUp"
     fileprivate var keyColumnStartBackDeltaTime = "dT($Fron-@Back)"
     fileprivate var keyColumnStartBackStrip = "Strip(@Back)"
     fileprivate var keyColumnWellEvent = "Event($)Well"
@@ -262,6 +264,7 @@ class ResultsTable {
             keyColumnStartFrontEnergy,
             keyColumnStartFrontInBeam,
             keyColumnStartFrontOverflow,
+            keyColumnStartFrontPileUp,
         ])
         if !criteria.searchRecoils {
             columns.append(keyColumnStartFrontTime)
@@ -275,6 +278,7 @@ class ResultsTable {
             keyColumnStartBackSum,
             keyColumnStartBackEnergy,
             keyColumnStartBackOverflow,
+            keyColumnStartBackPileUp,
             keyColumnStartBackDeltaTime,
             keyColumnStartBackStrip
         ])
@@ -388,7 +392,7 @@ class ResultsTable {
             let count = f.count
             if count > 0 {
                 for i in 0...count-1 {
-                    if let item = f.itemAt(index: i), let gamma = item.subMatches?[.gamma], var g = gamma {
+                    if let item = f.itemAt(index: i), let gamma = item.subMatches?[.gamma], let g = gamma {
                         let destination: LoggerDestination = GeOnly ? .gammaGeOnly : .gammaAll
                         let c = g.count
                         if c > 0 {
@@ -506,6 +510,10 @@ class ResultsTable {
                     if let overflow = delegate.firstParticleAt(side: .front).itemAt(index: row)?.overflow {
                         field = String(format: "%hu", overflow)
                     }
+                case keyColumnStartFrontPileUp:
+                    if let pileUp = delegate.firstParticleAt(side: .front).itemAt(index: row)?.pileUp {
+                        field = String(format: "%hu", pileUp)
+                    }
                 case keyColumnStartFrontTime:
                     if let time = delegate.firstParticleAt(side: .front).itemAt(index: row)?.time?.toMks() {
                         field = String(format: "%.1f", time)
@@ -542,6 +550,10 @@ class ResultsTable {
                 case keyColumnStartBackOverflow:
                     if let overflow = delegate.firstParticleAt(side: .back).itemAt(index: row)?.overflow {
                         field = String(format: "%hu", overflow)
+                    }
+                case keyColumnStartBackPileUp:
+                    if let pileUp = delegate.firstParticleAt(side: .back).itemAt(index: row)?.pileUp {
+                        field = String(format: "%hu", pileUp)
                     }
                 case keyColumnStartBackDeltaTime:
                     if let deltaTime = delegate.firstParticleAt(side: .back).itemAt(index: row)?.deltaTime?.toMks() {
