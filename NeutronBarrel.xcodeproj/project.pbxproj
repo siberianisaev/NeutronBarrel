@@ -623,7 +623,7 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 82;
+				CURRENT_PROJECT_VERSION = 83;
 				DEVELOPMENT_TEAM = "";
 				"DEVELOPMENT_TEAM[sdk=macosx*]" = "";
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -632,7 +632,7 @@
 				INFOPLIST_FILE = "NeutronBarrel/NeutronBarrel-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.13;
-				MARKETING_VERSION = 31;
+				MARKETING_VERSION = 32;
 				PRODUCT_BUNDLE_IDENTIFIER = ru.jinr.flerovlab.NeutronBarrel;
 				PRODUCT_MODULE_NAME = NeutronBarrel;
 				PRODUCT_NAME = NeutronBarrel;
@@ -655,7 +655,7 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 82;
+				CURRENT_PROJECT_VERSION = 83;
 				DEVELOPMENT_TEAM = "";
 				"DEVELOPMENT_TEAM[sdk=macosx*]" = "";
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -664,7 +664,7 @@
 				INFOPLIST_FILE = "NeutronBarrel/NeutronBarrel-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.13;
-				MARKETING_VERSION = 31;
+				MARKETING_VERSION = 32;
 				PRODUCT_BUNDLE_IDENTIFIER = ru.jinr.flerovlab.NeutronBarrel;
 				PRODUCT_MODULE_NAME = NeutronBarrel;
 				PRODUCT_NAME = NeutronBarrel;
