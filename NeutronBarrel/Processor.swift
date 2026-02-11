@@ -332,6 +332,10 @@ class Processor {
         return position
     }
 
+    fileprivate func isAllowedByPileUp(_ event: Event) -> Bool {
+        return criteria.usePileUp || event.pileUp == 0
+    }
+
     fileprivate func mainCycleEventCheck(_ event: Event, fileStat: FileStatistics) {
         fileStat.handleEvent(event)
         
@@ -363,7 +367,7 @@ class Processor {
                     return
                 }
                 
-                if !criteria.usePileUp && event.pileUp == 1 {
+                if !isAllowedByPileUp(event) {
                     clearActInfo()
                     return
                 }
@@ -568,7 +572,7 @@ class Processor {
         search(directions: directions, startTime: firstParticlePerAct.currentEventTime, minDeltaTime: 0, maxDeltaTime: criteria.fissionAlphaMaxTime) { (event: Event, time: CUnsignedLongLong, deltaTime: CLongLong, stop: UnsafeMutablePointer<Bool>, position: Int) in
             // File-position check is used for skip Fission/Alpha First event!
             fgetpos(self.file, &current)
-            if current != initial && self.isFront(event, type: self.criteria.startParticleType) && self.isFissionStripNearToFirstFissionFront(event) {
+            if current != initial && self.isFront(event, type: self.criteria.startParticleType) && self.isFissionStripNearToFirstFissionFront(event) && self.isAllowedByPileUp(event) {
                 self.storeFissionAlphaFront(event, deltaTime: deltaTime, subMatches: nil)
             } else {
                 self.updateFileStatistics(event, fileStat: fileStat)
@@ -598,7 +602,7 @@ class Processor {
                 var store = byFact
                 if !store {
                     let energy = self.getEnergy(event)
-                    store = self.isOverflowed(event) || (energy >= self.criteria.fissionAlphaBackMinEnergy && energy <= self.criteria.fissionAlphaBackMaxEnergy)
+                    store = self.isAllowedByPileUp(event) && (self.isOverflowed(event) || (energy >= self.criteria.fissionAlphaBackMinEnergy && energy <= self.criteria.fissionAlphaBackMaxEnergy))
                 }
                 if store {
                     self.storeFissionAlphaBack(event, match: match, type: type, deltaTime: deltaTime)
