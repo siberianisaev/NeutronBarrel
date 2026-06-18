@@ -16,6 +16,7 @@ class SearchCriteria {
     var neutronsDetectorEfficiency: Double = 0
     var neutronsDetectorEfficiencyError: Double = 0
     var excludeNeutronCounters = [Int]()
+    var counterConfiguration: [Int: Int] = [:]
     var placedSFSource: SFSource?
     
     var startParticleType: SearchType = .alpha

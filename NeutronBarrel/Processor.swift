@@ -544,7 +544,8 @@ class Processor {
                         let neutronTime = event.time
                         let isNeutronsBkg = self.criteria.neutronsBackground
                         if (!isNeutronsBkg && neutronTime >= startTime) || (isNeutronsBkg && neutronTime < startTime) { // Effect neutrons must be after SF by time
-                            let counterNumber = self.stripsConfiguration().strip1_N_For(channel: CUnsignedShort(id))
+                            // TODO: migrate to self.criteria.counterConfiguration logic
+                            let counterNumber = self.criteria.counterConfiguration[id] ?? Int(self.stripsConfiguration().strip1_N_For(channel: CUnsignedShort(id)))
                             var validNeutron = true
                             if self.criteria.excludeNeutronCounters.contains(counterNumber) {
                                 validNeutron = false

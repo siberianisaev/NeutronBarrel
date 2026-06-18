@@ -14,6 +14,7 @@ enum Setting: String {
     NeutronsDetectorEfficiency = "NeutronsDetectorEfficiency",
     NeutronsDetectorEfficiencyError = "NeutronsDetectorEfficiencyError",
     ExcludeNeutronCounters = "ExcludeNeutronCounters",
+    CounterConfiguration = "CounterConfiguration",
     SFSourcePlaced = "SFSourcePlaced",
     SFSource = "SFSource",
     MinFissionEnergy = "MinFissionEnergy",
@@ -233,6 +234,10 @@ class Settings {
             return nil
         case .ResultsFolderName, .ExcludeNeutronCounters:
             return ""
+        case .CounterConfiguration:
+            return """
+    {513:104,515:115,516:103,517:102,528:107,529:70,530:43,531:106,532:42,533:69,534:41,535:68,536:40,537:67,538:39,539:66,540:38,541:64,542:105,543:116,544:74,546:19,547:71,550:108,551:17,553:73,556:76,557:3,558:77,560:72,561:44,562:45,563:21,564:46,565:22,566:47,567:23,568:48,569:24,570:49,571:25,572:50,573:26,574:51,575:52,576:78,577:109,578:75,579:80,580:81,581:110,582:83,583:82,584:92,585:85,586:111,587:93,588:84,589:79,590:112,591:90,592:27,593:53,594:28,595:54,596:29,597:55,598:30,599:56,600:59,601:32,602:58,603:31,604:57,605:10,606:9,607:11,608:91,609:97,610:5,611:94,612:12,613:6,614:89,615:13,616:7,617:88,618:14,619:8,620:87,621:113,622:86,623:114,624:35,625:36,626:37,627:63,628:62,629:34,630:33,631:98,632:99,633:65,634:100,635:101,636:60,637:61,638:95,639:96}
+    """ // 2026
         }
     }
     

@@ -67,6 +67,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         sNeutronsDetectorEfficiency = String(format: "%.1f", Settings.getDoubleSetting(.NeutronsDetectorEfficiency)) // %
         sNeutronsDetectorEfficiencyError = String(format: "%.1f", Settings.getDoubleSetting(.NeutronsDetectorEfficiencyError)) // %
         sExcludeNeutronCounters = Settings.getStringSetting(.ExcludeNeutronCounters) ?? ""
+        sCounterConfiguration = Settings.getStringSetting(.CounterConfiguration) ?? ""
         sMinFissionEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MinFissionEnergy)) // keV
         sMaxFissionEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MaxFissionEnergy)) // keV
         sMinFissionBackEnergy = String(format: "%.1f", Settings.getDoubleSetting(.MinFissionBackEnergy)) // keV
@@ -182,6 +183,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBInspectable dynamic var sNeutronsDetectorEfficiency: String = ""
     @IBInspectable dynamic var sNeutronsDetectorEfficiencyError: String = ""
     @IBInspectable dynamic var sExcludeNeutronCounters: String = ""
+    @IBInspectable dynamic var sCounterConfiguration: String = ""
     @IBInspectable dynamic var sMinFissionEnergy: String = ""
     @IBInspectable dynamic var sMaxFissionEnergy: String = ""
     @IBInspectable dynamic var sMinFissionBackEnergy: String = ""
@@ -477,6 +479,29 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         updateRunState()
     }
     
+    func parseCounterConfig(from text: String) -> [Int: Int] {
+        let pattern = "(\\d+)\\s*:\\s*(\\d+)"
+
+        guard let regex = try? NSRegularExpression(pattern: pattern) else { return [:] }
+
+        var resultDictionary = [Int: Int]()
+        let range = NSRange(text.startIndex..<text.endIndex, in: text)
+
+        let matches = regex.matches(in: text, options: [], range: range)
+
+        for match in matches {
+            if let keyRange = Range(match.range(at: 1), in: text),
+               let key = Int(text[keyRange]),
+               let valueRange = Range(match.range(at: 2), in: text),
+               let value = Int(text[valueRange]) {
+
+                resultDictionary[key] = value
+            }
+        }
+
+        return resultDictionary
+    }
+    
     @IBAction func start(_ sender: AnyObject?) {
         correlationsView.reset()
         
@@ -489,6 +514,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         sc.excludeNeutronCounters = sExcludeNeutronCounters.components(separatedBy: ",").compactMap {
             Int($0.trimmingCharacters(in: .whitespaces))
         }
+        sc.counterConfiguration = parseCounterConfig(from: sCounterConfiguration)
         sc.startParticleType = startFromRecoil ? .recoil : .alpha
         sc.fissionAlphaFrontMinEnergy = Double(sMinFissionEnergy) ?? 0
         sc.fissionAlphaFrontMaxEnergy = Double(sMaxFissionEnergy) ?? 0
@@ -802,6 +828,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             .NeutronsDetectorEfficiency: Double(sNeutronsDetectorEfficiency),
             .NeutronsDetectorEfficiencyError: Double(sNeutronsDetectorEfficiencyError),
             .ExcludeNeutronCounters: sExcludeNeutronCounters,
+            .CounterConfiguration: sCounterConfiguration,
             .MinFissionEnergy: Double(sMinFissionEnergy),
             .MaxFissionEnergy: Double(sMaxFissionEnergy),
             .MinFissionBackEnergy: Double(sMinFissionBackEnergy),
