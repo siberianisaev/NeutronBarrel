@@ -2,7 +2,7 @@ Neutron Barrel
 ==============
 
 References:
-* Average number of prompt neutrons in the spontaneous fission of 260Rf / The paper is being prepared for EPJ A, 2026
+* [Average number of prompt neutrons in the spontaneous fission of 260Rf](https://doi.org/10.1140/epja/s10050-026-01926-0), 2026
 * [Prompt neutron emission in the spontaneous fission of 258,260Sg](https://www1.jinr.ru/Preprints/2026/03(E7-2026-3).pdf) / Submitted to PRC, 2026
 * [First investigation of prompt neutrons from spontaneously fissioning isomers produced in multinucleon transfer reactions](https://doi.org/10.1016/j.physletb.2025.140071), 2025
 * [The SFiNx detector system (current status)](https://doi.org/10.1134/S1547477124702303), 2025
