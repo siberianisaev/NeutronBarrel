@@ -660,10 +660,18 @@ class Processor {
                     return false
                 }
             }
+            
+            var tof: DetectorMatch?
+            if criteria.searchTOF {
+                tof = findTOF(Int(position))
+            }
 
             var subMatches: [SearchType : DetectorMatch?] = [:]
             if let gamma = gamma {
                 subMatches[.gamma] = gamma
+            }
+            if let tof = tof {
+                subMatches[.tof] = tof
             }
             self.storeRecoil(event, energy: energy, deltaTime: deltaTime, subMatches: subMatches)
             return true

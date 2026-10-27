@@ -38,6 +38,8 @@ class DataProtocol {
             return "Background"
         } else if isGammaEvent(value) {
             return "Gamma"
+        } else if isTOFEvent(value) {
+            return "TOF"
         } else {
             // TODO: !!!
             return ""
@@ -50,6 +52,7 @@ class DataProtocol {
     let eventIdsWellBack = Set(384...511)
     let eventIdsNeutrons = Set(512...639)
     let eventIdsGamma = Set(640...679)
+    let eventIdTOF = 680
     let eventIdIntensity = 996 // nA
     let eventIdIntegral = 997 // need multiply on 10! to mkA
     let eventIdBackground = 998 // Hz
@@ -85,6 +88,10 @@ class DataProtocol {
     
     func isGammaEvent(_ eventId: Int) -> Bool {
         return eventIdsGamma.contains(eventId)
+    }
+    
+    func isTOFEvent(_ eventId: Int) -> Bool {
+        return eventIdTOF == eventId
     }
     
     func isBeamEnergy(_ eventId: Int) -> Bool {
