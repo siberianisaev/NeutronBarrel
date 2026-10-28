@@ -98,8 +98,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         summarizeFissionsFront3 = Settings.getBoolSetting(.SummarizeFissionsFront3)
         summarizeFissionsFront4 = Settings.getBoolSetting(.SummarizeFissionsFront4)
         requiredFissionAlphaBack = Settings.getBoolSetting(.RequiredFissionAlphaBack)
-        searchFirstRecoilOnly = Settings.getBoolSetting(.SearchFirstRecoilOnly)
+        requiredTOF = Settings.getBoolSetting(.RequiredTOF)
         searchTOF = Settings.getBoolSetting(.SearchTOF)
+        sMaxTOFTime = String(format: "%d", Settings.getUInt64Setting(.MaxTOFTime)) // mks
+        searchFirstRecoilOnly = Settings.getBoolSetting(.SearchFirstRecoilOnly)
         requiredRecoilBack = Settings.getBoolSetting(.RequiredRecoilBack)
         requiredRecoil = Settings.getBoolSetting(.RequiredRecoil)
         requiredGamma = Settings.getBoolSetting(.RequiredGamma)
@@ -216,8 +218,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
     @IBInspectable dynamic var summarizeFissionsFront4: Bool = false
     @IBInspectable dynamic var summarizeFissionsBack: Bool = false
     @IBInspectable dynamic var requiredFissionAlphaBack: Bool = false
-    @IBInspectable dynamic var searchFirstRecoilOnly: Bool = false
+    @IBInspectable dynamic var requiredTOF: Bool = false
     @IBInspectable dynamic var searchTOF: Bool = false
+    @IBInspectable dynamic var sMaxTOFTime: String = ""
+    @IBInspectable dynamic var searchFirstRecoilOnly: Bool = false
     @IBInspectable dynamic var requiredRecoilBack: Bool = false
     @IBInspectable dynamic var requiredRecoil: Bool = false
     @IBInspectable dynamic var requiredGamma: Bool = false
@@ -582,8 +586,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
         sc.recoilFrontMaxDeltaStrips = Int(sMaxRecoilFrontDeltaStrips) ?? 0
         sc.recoilBackMaxDeltaStrips = Int(sMaxRecoilBackDeltaStrips) ?? 0
         sc.requiredFissionAlphaBack = requiredFissionAlphaBack
-        sc.searchFirstRecoilOnly = searchFirstRecoilOnly
+        sc.requiredTOF = requiredTOF
         sc.searchTOF = searchTOF
+        sc.tofMaxTime = UInt64(sMaxTOFTime) ?? 0
+        sc.searchFirstRecoilOnly = searchFirstRecoilOnly
         sc.requiredRecoilBack = requiredRecoilBack
         sc.requiredRecoil = requiredRecoil
         sc.recoilFrontMinEnergy = Double(sMinRecoilFrontEnergy) ?? 0
@@ -864,8 +870,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, ProcessorDelegate {
             .SummarizeFissionsFront4: summarizeFissionsFront4,
             .SummarizeFissionsBack: summarizeFissionsBack,
             .RequiredFissionAlphaBack: requiredFissionAlphaBack,
-            .SearchFirstRecoilOnly: searchFirstRecoilOnly,
+            .RequiredTOF: requiredTOF,
             .SearchTOF: searchTOF,
+            .MaxTOFTime: UInt64(sMaxTOFTime),
+            .SearchFirstRecoilOnly: searchFirstRecoilOnly,
             .RequiredRecoilBack: requiredRecoilBack,
             .RequiredRecoil: requiredRecoil,
             .RequiredGamma: requiredGamma,
