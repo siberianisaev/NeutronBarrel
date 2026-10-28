@@ -76,6 +76,8 @@ class ResultsTable {
     fileprivate var keyColumnRecoilFrontEnergy: String {
         return "E(\(keyRecoil)Fron)"
     }
+    fileprivate let keyColumnTOF = "TOF"
+    fileprivate let keyColumnRecoilTOFDeltaTime = "dT(Recoil-TOF)"
     fileprivate var keyColumnRecoilFrontOverflow: String {
         return "\(keyRecoil)FronOverflow"
     }
@@ -249,7 +251,12 @@ class ResultsTable {
         if !criteria.startFromRecoil() {
             columns.append(contentsOf: [
                 keyColumnRecoilFrontEvent,
-                keyColumnRecoilFrontEnergy,
+                keyColumnRecoilFrontEnergy
+            ])
+            if criteria.searchTOF {
+                columns.append(contentsOf: [keyColumnTOF, keyColumnRecoilTOFDeltaTime])
+            }
+            columns.append(contentsOf: [
                 keyColumnRecoilFrontInBeam,
                 keyColumnRecoilFrontOverflow,
                 keyColumnRecoilFrontDeltaTime(log: false),
@@ -261,7 +268,12 @@ class ResultsTable {
         columns.append(contentsOf: [
             keyColumnStartEvent,
             keyColumnStartFrontSum,
-            keyColumnStartFrontEnergy,
+            keyColumnStartFrontEnergy
+        ])
+        if criteria.startFromRecoil() && criteria.searchTOF {
+            columns.append(contentsOf: [keyColumnTOF, keyColumnRecoilTOFDeltaTime])
+        }
+        columns.append(contentsOf: [
             keyColumnStartFrontInBeam,
             keyColumnStartFrontOverflow,
             keyColumnStartFrontPileUp,
@@ -462,6 +474,16 @@ class ResultsTable {
                 case keyColumnRecoilFrontEnergy:
                     if let energy = delegate.recoilAt(side: .front, index: row)?.energy {
                         field = String(format: "%.7f", energy)
+                    }
+                case keyColumnTOF:
+                    if let tof = delegate.recoilAt(side: .front, index: row)?.subMatches?[.tof] ?? nil,
+                       let value = tof.itemAt(index: 0)?.value {
+                        field = String(format: "%.0f", value)
+                    }
+                case keyColumnRecoilTOFDeltaTime:
+                    if let tof = delegate.recoilAt(side: .front, index: row)?.subMatches?[.tof] ?? nil,
+                       let deltaTime = tof.itemAt(index: 0)?.deltaTime?.toMks() {
+                        field = String(format: "%.3f", deltaTime)
                     }
                 case keyColumnRecoilFrontInBeam:
                     if let inBeam = delegate.recoilAt(side: .front, index: row)?.inBeam {

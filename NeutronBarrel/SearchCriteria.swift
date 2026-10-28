@@ -32,6 +32,13 @@ class SearchCriteria {
     var summarizeFissionsAlphaBack = false
     
     var searchRecoils: Bool = true
+    let searchTOF = true
+    let requiredTOF = false
+    let tofMaxTime: CUnsignedLongLong = {
+        var time: CUnsignedLongLong = 5 // µs
+        time.mksToCycles()
+        return time
+    }()
     var recoilFrontMinEnergy: Double = 0
     var recoilFrontMaxEnergy: Double = 0
     var recoilBackMinEnergy: Double = 0

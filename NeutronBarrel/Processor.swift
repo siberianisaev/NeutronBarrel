@@ -161,13 +161,13 @@ class Processor {
             fgetpos(file, &initial)
 
             var current = Int(initial)
-            while current > -1 {
+            while current >= Event.size {
                 let size = Event.size
                 current -= size
                 fseek(file, current, SEEK_SET)
 
                 var event = Event()
-                fread(&event, size, 1, file)
+                guard fread(&event, size, 1, file) == 1 else { break }
                 event.bigEndian()
 
                 let time = event.time
@@ -193,7 +193,7 @@ class Processor {
         if directions.contains(.forward) {
             while feof(file) != 1 {
                 var event = Event()
-                fread(&event, Event.size, 1, file)
+                guard fread(&event, Event.size, 1, file) == 1 else { break }
                 event.bigEndian()
 
                 let time = event.time
@@ -648,6 +648,14 @@ class Processor {
             fgetpos(self.file, &position)
             let t = event.time
 
+            var tof: DetectorMatch?
+            if criteria.searchTOF {
+                tof = findTOF(Int(position), recoilTime: t)
+                if criteria.requiredTOF && tof == nil {
+                    return false
+                }
+            }
+
             let found = findRecoilBack(t, position: Int(position), energyFront: energy)
             if (!found && criteria.requiredRecoilBack) {
                 return false
@@ -661,11 +669,6 @@ class Processor {
                 }
             }
             
-            var tof: DetectorMatch?
-            if criteria.searchTOF {
-                tof = findTOF(Int(position))
-            }
-
             var subMatches: [SearchType : DetectorMatch?] = [:]
             if let gamma = gamma {
                 subMatches[.gamma] = gamma
@@ -677,6 +680,29 @@ class Processor {
             return true
         }
         return false
+    }
+
+    fileprivate func findTOF(_ position: Int, recoilTime: CUnsignedLongLong) -> DetectorMatch? {
+        defer { fseek(file, position, SEEK_SET) }
+        var nearest: DetectorMatchItem?
+        // search() visits the backward direction first, then restores the position and searches forward.
+        search(directions: [.backward, .forward], startTime: recoilTime, minDeltaTime: 0, maxDeltaTime: criteria.tofMaxTime) { (event, time, _, _, _) in
+            guard self.dataProtocol.isTOFEvent(Int(event.eventId)) else { return }
+            // Keep the timestamp sign independent of the event's position in the file.
+            let deltaTime = recoilTime >= time ? CLongLong(recoilTime - time) : -CLongLong(time - recoilTime)
+            if let previousDelta = nearest?.deltaTime, abs(previousDelta) <= abs(deltaTime) {
+                return
+            }
+            nearest = DetectorMatchItem(type: .tof,
+                                        stripDetector: nil,
+                                        deltaTime: deltaTime,
+                                        time: time,
+                                        value: Double(event.energy),
+                                        side: nil,
+                                        stripConfiguration: self.stripsConfiguration())
+        }
+        guard let item = nearest else { return nil }
+        return DetectorMatch(items: [item])
     }
 
     fileprivate func findRecoilBack(_ timeRecoilFront: CUnsignedLongLong, position: Int, energyFront: Double) -> Bool {
