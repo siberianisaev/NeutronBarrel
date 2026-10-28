@@ -33,28 +33,59 @@ public class NeutronsMultiplicity {
         info[multiplicity] = sum
     }
     
-    class func averageNumberOf(neutrons: Int, events: Int) -> (Double, Double) {
-        let average = Double(neutrons)/Double(events)
-        let error = average*(1/Double(neutrons) + 1/Double(events)).squareRoot()
-        return (average, error)
-    }
-    
     class func errorFor(neutronsCount: Int, multiplicity: Int) -> Double {
         return (Double(neutronsCount)/max(1, Double(multiplicity))).squareRoot()
     }
     
-    /**
-     Error formula from work:
-     Hudson D.J. STATISTICS, 1970 (RU edition), equation 66
-     delta = root square from sum of squares of d(Xi)/Xi.
-     */
-    class func averageNumberOf(neutrons: Int, events: Int, efficiency: Double, efficiencyError: Double) -> (Double, Double) {
-        let average = Double(neutrons)/Double(events)
-        let error = (average / (efficiency/100))*(1/Double(neutrons) + 1/Double(events) + pow(efficiencyError/efficiency, 2)).squareRoot()
-        return (average * 100.0/efficiency, error)
+    public struct MeanEstimate {
+        public let events: Int
+        public let neutrons: Double
+        public let mean: Double
+        // nil means that fewer than two fissions are available.
+        public let statisticalUncertainty: Double?
+        public let efficiencyUncertainty: Double
+        public let totalUncertainty: Double?
     }
-    
+
+    public enum MeanError: Error {
+        case invalidHistogram, emptyHistogram, invalidEfficiency
+    }
+
+    /// Uses registered multiplicities per fission. No background correction.
+    /// Efficiency and its absolute uncertainty are both in percentage points.
+    public func meanEstimate() throws -> MeanEstimate {
+        guard efficiency.isFinite, efficiency > 0, efficiency <= 100,
+              efficiencyError.isFinite, efficiencyError >= 0 else {
+            throw MeanError.invalidEfficiency
+        }
+        guard info.allSatisfy({ $0.key >= 0 && $0.value >= 0 }) else {
+            throw MeanError.invalidHistogram
+        }
+        let n = info.values.reduce(0, +)
+        guard n > 0 else { throw MeanError.emptyHistogram }
+        let epsilon = efficiency / 100
+        let epsilonSE = efficiencyError / 100
+        let m = info.reduce(0.0) { $0 + Double($1.key) * Double($1.value) }
+        let detectedMean = m / Double(n)
+        let mean = detectedMean / epsilon
+        // Two-pass centered sum is stable even for narrow distributions.
+        let squares = info.reduce(0.0) {
+            $0 + Double($1.value) * pow(Double($1.key) - detectedMean, 2)
+        }
+        let stat: Double? = n > 1
+            ? sqrt(squares / (Double(n) * Double(n - 1))) / epsilon : nil
+        let eff = abs(mean) * epsilonSE / epsilon
+        return MeanEstimate(events: n, neutrons: m, mean: mean,
+                            statisticalUncertainty: stat,
+                            efficiencyUncertainty: eff,
+                            totalUncertainty: stat.map { hypot($0, eff) })
+    }
+
     public func stringValue() -> String {
+        var info = self.info // Fill display gaps without mutating experimental counts.
+        guard info.allSatisfy({ $0.key >= 0 && $0.value >= 0 }) else {
+            return "Mean multiplicity unavailable: invalid histogram"
+        }
         var string = "Multiplicity\tCount\tProbability\n"
         
         // Prevent gaps in multiplicity range
@@ -104,26 +135,29 @@ public class NeutronsMultiplicity {
         string += "\nProbErrors: [" + probErrors.map { String($0) }.joined(separator: ", ") + "]"
         string += "\nSF count: \(events)"
         string += "\nNeutrons count: \(neutrons)"
+        string += "\nDetector efficiency: \(efficiency) %"
+        string += "\nEfficiency error: \(efficiencyError) %"
+        do {
+            let estimate = try meanEstimate()
+            string += "\n\nMean multiplicity (no background correction): \(estimate.mean)"
+            let stat = estimate.statisticalUncertainty.map { String($0) }
+                ?? "unavailable (requires at least two fissions)"
+            let total = estimate.totalUncertainty.map { String($0) }
+                ?? "unavailable (requires at least two fissions)"
+            string += "\nStatistical uncertainty: \(stat)"
+            string += "\nEfficiency uncertainty: \(estimate.efficiencyUncertainty)"
+            string += "\nTotal uncertainty: \(total)"
+            if neutrons == 0 {
+                string += "\nZero empirical scatter does not imply a zero upper confidence limit."
+            }
+        } catch {
+            string += "\nMean multiplicity unavailable: \(error)"
+        }
         if neutrons > 0 {
-            let tuple = NeutronsMultiplicity.averageNumberOf(neutrons: neutrons, events: events)
-            let average = tuple.0
-            let averageError = tuple.1
-            string += "\nAverage: \(average) ± \(averageError)\n---------------"
-            if efficiency > 0, efficiencyError > 0 {
-                string += "\nDetector efficiency: \(efficiency)%"
-                string += "\nEfficiency error: \(efficiencyError)%"
-                
-                let tuple = NeutronsMultiplicity.averageNumberOf(neutrons: neutrons, events: events, efficiency: efficiency, efficiencyError: efficiencyError)
-                let averageE = tuple.0
-                let averageEError = tuple.1
-                string += "\n*Average: \(averageE) ± \(averageEError)"
-                let meanOfSquares =  Double(neutronsSquares)/Double(events)
-                /*
-                 Dispersion formula from work:
-                 Dakowski M., Lazarev Yu.A., Turchin V.F., Turovtseva L.S.
-                 Reconstruction of particle multiplicity distribution using the method of statistical regularization.
-                 Nucl. Instr. Meth. 1973. V. 113. No 2. P. 195–200.
-                 */
+            if efficiency.isFinite, efficiency > 0, efficiency <= 100 {
+                let average = Double(neutrons) / Double(events)
+                let meanOfSquares = Double(neutronsSquares) / Double(events)
+                // Historical physical-distribution moment, not an error of the mean.
                 string += "\n*Dispersion: \((meanOfSquares - pow(average, 2) - average*(1 - efficiency/100))/pow(efficiency/100, 2))"
             }
             if let sfSource = placedSFSource {

@@ -15,8 +15,10 @@ extension Int {
 //let m = NeutronsMultiplicity.init(info: [0:3, 1:15, 2:20, 3:15, 4:4, 5:5, 6:1], efficiency: 43.0, efficiencyError: 1.0)
 //print(m.stringValue())
 
-let t = NeutronsMultiplicity.averageNumberOf(neutrons: 45+97, events: 25+65, efficiency: 45.0, efficiencyError: 1.0)
-print(t)
+// The event histogram is required: totals alone do not determine the SEM.
+let multiplicity = NeutronsMultiplicity(info: [0: 4, 1: 9, 2: 24, 3: 22, 4: 12, 5: 7, 6: 1],
+                                       efficiency: 57.1, efficiencyError: 1.0)
+print(multiplicity.stringValue())
 //let a1 = [
 //"AR208PB002.001_303889", "AR208PB23.138_375743"]
 //let a2 = ["AR208PB002.001_303889", "AR208PB002.001_303889", "AR208PB002.001_303889"]
@@ -25,14 +27,6 @@ print(t)
 //let sub = set1.symmetricDifference(set2)
 //print(sub)
 
-
-let events = 1419612
-let neutrons = 2435546
-let average = 1.715642020495741 //± 0.001811610238618803
-let efficiency = 54.7
-let efficiencyError = 0.1
-let averageErrorWithEfficiency = (Double(neutrons)/(Double(events) * (efficiency/100)))*(1/Double(neutrons) + 1/Double(events) + pow(efficiencyError/efficiency, 2)).squareRoot()
-print("\n*Average: \(average * 100.0/efficiency) ± \(averageErrorWithEfficiency)")
 
 var measured = [96135, 257551, 269196, 141210, 40847, 7083, 801, 58, 3, 1]
 let PkExpected = [0.0061, 0.0608, 0.2272, 0.3460, 0.2476, 0.0906, 0.0190, 0.0024, 0.0002, 0.0001]
