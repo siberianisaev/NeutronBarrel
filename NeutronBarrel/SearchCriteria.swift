@@ -31,6 +31,14 @@ class SearchCriteria {
     var searchFissionAlphaBackByFact: Bool = true
     var summarizeFissionsAlphaBack = false
     
+    var searchTOF = false
+    var requiredTOF = false
+    var tofMaxTime: CUnsignedLongLong = 0 {
+        didSet {
+            tofMaxTime.mksToCycles()
+        }
+    }
+    
     var searchRecoils: Bool = true
     var recoilFrontMinEnergy: Double = 0
     var recoilFrontMaxEnergy: Double = 0
