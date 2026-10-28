@@ -31,9 +31,9 @@
 	<key>CFBundleVersion</key>
 	<string>86</string>
 	<key>CFBundleVersionGitBranch</key>
-	<string>new_tof</string>
+	<string>master</string>
 	<key>CFBundleVersionGitSHA</key>
-	<string>45cc249</string>
+	<string>1dd5267</string>
 	<key>DTCompiler</key>
 	<string>com.apple.compilers.llvm.clang.1_0</string>
 	<key>DTPlatformBuild</key>
